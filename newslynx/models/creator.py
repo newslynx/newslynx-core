@@ -18,7 +18,7 @@ class Creator(db.Model):
     organization_id = db.Column(
         db.Integer, db.ForeignKey('organizations.id'), index=True, primary_key=True)
     name = db.Column(db.Text, index=True, primary_key=True)
-    created = db.Column(db.DateTime, index=True)
+    created = db.Column(db.DateTime(timezone=True), index=True)
 
     __table_args__ = (
         db.UniqueConstraint('organization_id', 'name'),

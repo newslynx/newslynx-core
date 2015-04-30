@@ -23,7 +23,8 @@ the API and Data Collection Tasks that Power Newslynx.
 - [ ] Re-implement Things API (aka Articles)
     - [x] Implement Postgres-based search
 - [x] Re-implement Tags API
-- [ ] Implement Metrics API
+- [ ] Implement Metrics API:
+    -
     - [ ] Figure out how to use `tablefunc` for pivot tables.
 - [ ] Implement Reports API (Are these just metrics?)
     - [ ] Figure out how to use `pypostgresql` for custom postgres functions.
@@ -70,4 +71,10 @@ the API and Data Collection Tasks that Power Newslynx.
 
 ### Crosstab in Postgres
 * [http://www.postgresonline.com/journal/archives/14-CrossTab-Queries-in-PostgreSQL-using-tablefunc-contrib.html](http://www.postgresonline.com/journal/archives/14-CrossTab-Queries-in-PostgreSQL-using-tablefunc-contrib.html)
+
+### filling in zeros for a timezeries
+* [http://stackoverflow.com/questions/346132/postgres-how-to-return-rows-with-0-count-for-missing-data]
+
+### fetching column names from table
+* [http://www.postgresql.org/message-id/AANLkTilsjTAXyN5DghR3M2U4c8w48UVxhov4-8igMpd1@mail.gmail.com](http://www.postgresql.org/message-id/AANLkTilsjTAXyN5DghR3M2U4c8w48UVxhov4-8igMpd1@mail.gmail.com)
 

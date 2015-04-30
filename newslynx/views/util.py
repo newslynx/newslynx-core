@@ -285,7 +285,7 @@ def validate_thing_types(values):
         values = [values]
     bad_values = []
     for value in values:
-        if value not in THING_TYPES:
+        if value not in THING_TYPES + ['all']:
             bad_values.append(value)
 
     if len(bad_values):

@@ -20,7 +20,7 @@ class Thing(db.Model):
     At this point all things should have a standardized schema,
     though may not have all theses fields filled in.
     """
-     
+
     query_class = SearchQuery
 
     __tablename__ = 'things'
@@ -74,7 +74,7 @@ class Thing(db.Model):
         self.created = kw.get('published', dates.now())
         self.updated = kw.get('last_updated', dates.now())
         self.img_url = kw.get('img_url')
-        self.byline = kw.get('byline')
+        self.byline = kw.get('byline') ## TODO: Autoformat.
         self.title = kw.get('title')
         self.description = kw.get('description')
         self.text = kw.get('text')
@@ -84,7 +84,9 @@ class Thing(db.Model):
         return {
             'id': self.id,
             'organization_id': self.organization_id,
+            'recipe_id': self.recipe_id,
             'url': self.url,
+            'domain': self.domain,
             'type': self.type,
             'created': self.created,
             'updated': self.updated,

@@ -1,5 +1,5 @@
 from flask import Blueprint
-from sqlalchemy import func
+from sqlalchemy import func, desc, asc
 from pprint import pprint
 
 from newslynx.core import db
@@ -235,20 +235,20 @@ def search_events(user, org):
 
         facets = {}
 
-        # get event ids / recipe ids for computing counts
-        filter_entities = event_query.with_entities(
-            Event.id, Event.recipe_id).all()
+        # get all event ids for computing counts
+        filter_entities = event_query.with_entities(Event.id).all()
         event_ids = [f[0] for f in filter_entities]
-        recipe_ids = [f[1] for f in filter_entities]
+
         # excecute count queries
         # TODO: INTEGRATE WITH CELERY
 
         # events by recipes
         if 'recipes' in kw['facets'] or 'all' in kw['facets']:
             recipe_counts = db.session\
-                .query(Recipe.id, Recipe.name, func.count(Recipe.id))\
-                .filter(Recipe.id.in_(recipe_ids))\
-                .group_by(Recipe.id, Recipe.name).all()
+                .query(Event.recipe_id, Recipe.name, func.count(Recipe.id))\
+                .join(Recipe)\
+                .filter(Event.id.in_(event_ids))\
+                .group_by(Event.recipe_id, Recipe.name).all()
             facets['recipes'] = [dict(zip(['id', 'name', 'count'], r))
                                  for r in recipe_counts]
 
@@ -288,10 +288,13 @@ def search_events(user, org):
         if 'tasks' in kw['facets'] or 'all' in kw['facets']:
             task_counts = db.session\
                 .query(Task.name, func.count(Task.name))\
-                .filter(Task.recipes.any(Recipe.id.in_(recipe_ids)))\
-                .group_by(Task.name).all()
+                .join(Recipe)\
+                .join(Event)\
+                .filter(Event.id.in_(event_ids))\
+                .order_by(desc(func.count(Task.name)))\
+                .group_by(Task.name)
             facets['tasks'] = [dict(zip(['name', 'count'], c))
-                               for c in task_counts]
+                               for c in task_counts.all()]
 
         # events by things
         if 'things' in kw['facets'] or 'all' in kw['facets']:
