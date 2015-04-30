@@ -7,14 +7,12 @@ from datetime import datetime, date
 from uuid import UUID
 from decimal import Decimal
 from inspect import isgenerator
+from collections import Counter
 import gzip
 import zlib
 import cStringIO
 from collections import OrderedDict
-import base64
-import io
 
-import requests
 import yaml
 from flask import Response, request
 
@@ -123,6 +121,8 @@ class JSONEncoder(json.JSONEncoder):
             return [o for o in obj]
         if isgenerator(obj):
             return [o for o in obj]
+        if isinstance(obj, Counter):
+            return dict(obj)
         if self.refs and hasattr(obj, 'to_ref'):
             return obj.to_ref()
         if hasattr(obj, 'to_dict'):

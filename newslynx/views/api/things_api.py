@@ -1,6 +1,5 @@
 from flask import Blueprint
 from sqlalchemy import func
-from pprint import pprint
 
 from newslynx.core import db
 from newslynx.exc import RequestError
@@ -14,7 +13,7 @@ from newslynx.views.util import *
 
 
 # blueprint
-bp = Blueprint('events', __name__)
+bp = Blueprint('things', __name__)
 
 
 # utils
@@ -26,94 +25,50 @@ def apply_event_filters(q, **kw):
     """
 
     # filter by organization_id
-    q = q.filter(Event.organization_id == kw['org'])
+    q = q.filter(Thing.organization_id == kw['org'])
 
     # apply search query
     if kw['search_query']:
-        if kw['sort_field'] == 'relevance':
-            sort = True
-        else:
-            sort = False
-        q = q.search(kw['search_query'], sort=sort)
+        q = q.search(kw['search_query'])
 
     # apply status filter
-    if kw['status'] != 'all':
-        q = q.filter(Event.status == kw['status'])
+    if kw['type'] != 'all':
+        q = q.filter(Thing.status == kw['type'])
 
     # apply date filters
     if kw['created_after']:
-        q = q.filter(Event.created >= kw['created_after'])
+        q = q.filter(Thing.created >= kw['created_after'])
     if kw['created_before']:
-        q = q.filter(Event.created <= kw['created_before'])
+        q = q.filter(Thing.created <= kw['created_before'])
     if kw['updated_after']:
-        q = q.filter(Event.updated >= kw['updated_after'])
+        q = q.filter(Thing.updated >= kw['updated_after'])
     if kw['updated_before']:
-        q = q.filter(Event.updated <= kw['updated_before'])
+        q = q.filter(Thing.updated <= kw['updated_before'])
 
     # apply recipe filter
     if len(kw['include_recipes']):
-        q = q.filter(Event.recipe_id.in_(kw['include_recipes']))
+        q = q.filter(Thing.recipe_id.in_(kw['include_recipes']))
     if len(kw['exclude_recipes']):
-        q = q.filter(~Event.recipe_id.in_(kw['exclude_recipes']))
-
-    # apply tag categories/levels filter
-    # TODO don't use multiple queries here.
-    if len(kw['include_categories']):
-        tag_ids = db.session.query(Tag.id).filter_by(organization_id=kw['org'])\
-            .filter(Tag.category.in_(kw['include_categories']))\
-            .all()
-        tag_ids = [t[0] for t in tag_ids]
-        pprint(tag_ids)
-        q = q.filter(Event.tags.any(Tag.id.in_(tag_ids)))
-
-    if len(kw['exclude_categories']):
-        tag_ids = db.session.query(Tag.id).filter_by(organization_id=kw['org'])\
-            .filter(Tag.category.in_(kw['exclude_categories']))\
-            .all()
-        tag_ids = [t[0] for t in tag_ids]
-        pprint(tag_ids)
-        q = q.filter(~Event.tags.any(Tag.id.in_(tag_ids)))
-
-    if len(kw['include_levels']):
-        tag_ids = db.session.query(Tag.id).filter_by(organization_id=kw['org'])\
-            .filter(Tag.level.in_(kw['include_levels']))\
-            .all()
-        tag_ids = [t[0] for t in tag_ids]
-        pprint(tag_ids)
-        q = q.filter(Event.tags.any(Tag.id.in_(tag_ids)))
-
-    if len(kw['exclude_levels']):
-        tag_ids = db.session.query(Tag.id).filter_by(organization_id=kw['org'])\
-            .filter(Tag.level.in_(kw['exclude_levels']))\
-            .all()
-        tag_ids = [t[0] for t in tag_ids]
-        pprint(tag_ids)
-        q = q.filter(~Event.tags.any(Tag.id.in_(tag_ids)))
+        q = q.filter(~Thing.recipe_id.in_(kw['exclude_recipes']))
 
     # apply tags filter
     if len(kw['include_tags']):
-        q = q.filter(Event.tags.any(Tag.id.in_(kw['include_tags'])))
+        q = q.filter(Thing.tags.any(Tag.id.in_(kw['include_tags'])))
     if len(kw['exclude_tags']):
-        q = q.filter(~Event.tags.any(Tag.id.in_(kw['exclude_tags'])))
-
-    # apply things filter
-    if len(kw['include_things']):
-        q = q.filter(Event.things.any(Thing.id.in_(kw['include_things'])))
-    if len(kw['exclude_things']):
-        q = q.filter(~Event.things.any(Thing.id.in_(kw['exclude_things'])))
+        q = q.filter(~Thing.tags.any(Tag.id.in_(kw['exclude_tags'])))
 
     # apply tasks filter
     # TODO: DONT USE MULTIPLE QUERIES HERE
     if len(kw['include_tasks']):
         task_recipes = db.session.query(Recipe.id)\
             .filter(Recipe.task.has(Task.name.in_(kw['include_tasks'])))
-        q = q.filter(Event.recipe_id.in_([r[0] for r in task_recipes.all()]))
+        q = q.filter(Thing.recipe_id.in_([r[0] for r in task_recipes.all()]))
 
     if len(kw['exclude_tasks']):
         task_recipes = db.session.query(Recipe.id)\
             .filter(Recipe.task.has(Task.name.in_(kw['exclude_tasks'])))\
             .all()
-        q = q.filter(~Event.recipe_id.in_([r[0] for r in task_recipes]))
+        q = q.filter(~Thing.recipe_id.in_([r[0] for r in task_recipes]))
 
     return q
 
@@ -136,9 +91,7 @@ def search_events(user, org):
         created_before | isodate variable to filter results before
         updated_after  | isodate variable to filter results after
         updated_before | isodate variable to filter results before
-        status         | ['pending', 'approved', 'deleted']
-        facets         | a comma-separated list of facets to include, default=all
-        tag            | a comma-separated list of tags to filter by
+        type           | ['pending', 'approved', 'deleted']
         categories     | a comma-separated list of tag_categories to filter by
         levels         | a comma-separated list of tag_levels to filter by
         tag_ids        | a comma-separated list of thing_ids to filter by
@@ -164,10 +117,6 @@ def search_events(user, org):
         arg_list('recipe_ids', default=[], typ=int, exclusions=True)
     include_tasks, exclude_tasks = \
         arg_list('tasks', default=[], typ=str, exclusions=True)
-    include_levels, exclude_levels = \
-        arg_list('levels', default=[], typ=str, exclusions=True)
-    include_categories, exclude_categories = \
-        arg_list('categories', default=[], typ=str, exclusions=True)
 
     kw = dict(
         search_query=arg_str('q', default=None),
@@ -180,12 +129,9 @@ def search_events(user, org):
         created_before=arg_date('created_before', default=None),
         updated_after=arg_date('updated_after', default=None),
         updated_before=arg_date('updated_before', default=None),
-        status=arg_str('status', default='all'),
-        facets=arg_list('facets', default=[], typ=str),
-        include_categories=include_categories,
-        exclude_categories=exclude_categories,
-        include_levels=include_levels,
-        exclude_levels=exclude_levels,
+        status=arg_str('status', default='pending'),
+        categories=arg_list('categories', default=None),
+        levels=arg_list('levels', default=None),
         include_tags=include_tags,
         exclude_tags=exclude_tags,
         include_things=include_things,
@@ -199,108 +145,105 @@ def search_events(user, org):
     )
 
     # validate arguments
-
-    # validate sort fields are part of Event object.
-    if kw['sort_field'] and kw['sort_field'] != 'relevance':
+    if kw['sort_field']:
         validate_fields(Event, [kw['sort_field']], 'to sort by')
 
-    # validate select fields.
     if kw['fields']:
         validate_fields(Event, kw['fields'], 'to select by')
 
-    validate_tag_categories(kw['include_categories'])
-    validate_tag_categories(kw['exclude_categories'])
-    validate_tag_levels(kw['include_levels'])
-    validate_tag_levels(kw['exclude_levels'])
-    validate_event_status(kw['status'])
-    validate_event_facets(kw['facets'])
+    if kw['categories']:
+        validate_tag_categories(kw['categories'])
 
-    # base query
+    if kw['status'] != 'pending':
+        validate_event_status(kw['status'])
+
+    # queries
+
+    # base queries
     event_query = Event.query
+
+    recipe_count_query = db.session\
+        .query(Event.recipe_id, func.count(Event.recipe_id))
+
+    category_count_query = db.session\
+        .query(Tag.category, func.count(Tag.category))\
+        .outerjoin(events_tags)
+
+    level_count_query = db.session\
+        .query(Tag.level, func.count(Tag.category))\
+        .outerjoin(events_tags)
+
+    tag_count_query = db.session\
+        .query(events_tags.c.tag_id, func.count(events_tags.c.tag_id))
+
+    task_count_query = db.session\
+        .query(Task.name, func.count(Task.name))
+
+    thing_count_query = db.session\
+        .query(Thing.id, Thing.url, Thing.title, func.count(Thing.id))
 
     # apply filters
     event_query = apply_event_filters(event_query, **kw)
+    recipe_count_query = apply_event_filters(recipe_count_query, **kw)
 
     # select event fields
     if kw['fields']:
         columns = [eval('Event.{}'.format(f)) for f in kw['fields']]
         event_query = event_query.with_entities(*columns)
 
-    # apply sort if we havent already sorted by query relevance.
-    if kw['sort_field'] != 'relevance':
-        sort_obj = eval('Event.{sort_field}.{direction}'.format(**kw))
-        event_query = event_query.order_by(sort_obj())
+    # apply sort
+    sort_obj = eval('Event.{sort_field}.{direction}'.format(**kw))
+    event_query = event_query.order_by(sort_obj())
 
-    if len(kw['facets']):
+    # get event ids / recipe ids for computing counts
+    filter_entities = event_query.with_entities(
+        Event.id, Event.recipe_id).all()
+    event_ids = [f[0] for f in filter_entities]
+    recipe_ids = [f[1] for f in filter_entities]
 
-        facets = {}
+    # excecute count queries
+    # TODO: INTEGRATE WITH CELERY
 
-        # get event ids / recipe ids for computing counts
-        filter_entities = event_query.with_entities(
-            Event.id, Event.recipe_id).all()
-        event_ids = [f[0] for f in filter_entities]
-        recipe_ids = [f[1] for f in filter_entities]
-        # excecute count queries
-        # TODO: INTEGRATE WITH CELERY
+    # events by recipes
+    recipe_counts = recipe_count_query\
+        .group_by(Event.recipe_id).all()
+    recipe_counts = [dict(zip(['id', 'count'], r))
+                     for r in recipe_counts]
 
-        # events by recipes
-        if 'recipes' in kw['facets'] or 'all' in kw['facets']:
-            recipe_counts = db.session\
-                .query(Recipe.id, Recipe.name, func.count(Recipe.id))\
-                .filter(Recipe.id.in_(recipe_ids))\
-                .group_by(Recipe.id, Recipe.name).all()
-            facets['recipes'] = [dict(zip(['id', 'name', 'count'], r))
-                                 for r in recipe_counts]
+    # events by tag
+    tag_counts = tag_count_query\
+        .filter(events_tags.c.event_id.in_(event_ids))\
+        .group_by(events_tags.c.tag_id).all()
+    tag_counts = [dict(zip(['id', 'count'], c))
+                  for c in tag_counts]
 
-        # events by tag
-        if 'tags' in kw['facets'] or 'all' in kw['facets']:
-            print 'here'
-            tag_counts = db.session\
-                .query(Tag.id, Tag.name, Tag.type, Tag.level, Tag.category, Tag.color, func.count(Tag.id))\
-                .outerjoin(events_tags)\
-                .filter(events_tags.c.event_id.in_(event_ids))\
-                .group_by(Tag.id, Tag.name, Tag.type, Tag.level, Tag.category, Tag.color)\
-                .all()
-            facets['tags'] = [dict(zip(['id', 'name', 'type', 'level', 'category', 'color', 'count'], c))
-                              for c in tag_counts]
+    # events by tag category
+    category_counts = category_count_query\
+        .filter(events_tags.c.event_id.in_(event_ids))\
+        .group_by(Tag.category).all()
+    category_counts = [dict(zip(['category', 'count'], c))
+                       for c in category_counts]
 
-        # events by tag category
-        if 'categories' in kw['facets'] or 'all' in kw['facets']:
-            category_counts = db.session\
-                .query(Tag.category, func.count(Tag.category))\
-                .outerjoin(events_tags)\
-                .filter(events_tags.c.event_id.in_(event_ids))\
-                .group_by(Tag.category).all()
-            facets['categories'] = [dict(zip(['category', 'count'], c))
-                                    for c in category_counts]
+    # events by level
+    level_counts = level_count_query\
+        .filter(events_tags.c.event_id.in_(event_ids))\
+        .group_by(Tag.level).all()
+    level_counts = [dict(zip(['level', 'count'], c))
+                    for c in level_counts]
 
-        # events by level
-        if 'levels' in kw['facets'] or 'all' in kw['facets']:
-            level_counts = db.session\
-                .query(Tag.level, func.count(Tag.level))\
-                .outerjoin(events_tags)\
-                .filter(events_tags.c.event_id.in_(event_ids))\
-                .group_by(Tag.level).all()
-            facets['levels'] = [dict(zip(['level', 'count'], c))
-                                for c in level_counts]
+    # events by task
+    task_counts = task_count_query\
+        .filter(Task.recipes.any(Recipe.id.in_(recipe_ids)))\
+        .group_by(Task.name).all()
+    task_counts = [dict(zip(['name', 'count'], c))
+                   for c in task_counts]
 
-        # events by task
-        if 'tasks' in kw['facets'] or 'all' in kw['facets']:
-            task_counts = db.session\
-                .query(Task.name, func.count(Task.name))\
-                .filter(Task.recipes.any(Recipe.id.in_(recipe_ids)))\
-                .group_by(Task.name).all()
-            facets['tasks'] = [dict(zip(['name', 'count'], c))
-                               for c in task_counts]
-
-        # events by things
-        if 'things' in kw['facets'] or 'all' in kw['facets']:
-            thing_counts = db.session\
-                .query(Thing.id, Thing.url, Thing.title, func.count(Thing.id))\
-                .filter(Thing.events.any(Event.id.in_(event_ids)))\
-                .group_by(Thing.id, Thing.url, Thing.title).all()
-            facets['things'] = [dict(zip(['id', 'url', 'title', 'count'], c))
-                                for c in thing_counts]
+    # events by task
+    thing_counts = thing_count_query\
+        .filter(Thing.events.any(Event.id.in_(event_ids)))\
+        .group_by(Thing.id, Thing.url, Thing.title).all()
+    thing_counts = [dict(zip(['id', 'url', 'title', 'count'], c))
+                    for c in thing_counts]
 
     # paginate event_query
     events = event_query\
@@ -322,11 +265,16 @@ def search_events(user, org):
     resp = {
         'results': events,
         'pagination': pagination,
-        'total': total
+        'counts': {
+            'total': total,
+            'recipes': recipe_counts,
+            'categories': category_counts,
+            'levels': level_counts,
+            'tags': tag_counts,
+            'tasks': task_counts,
+            'things': thing_counts
+        }
     }
-
-    if len(kw['facets']):
-        resp['facets'] = facets
 
     return jsonify(resp)
 

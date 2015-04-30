@@ -10,9 +10,9 @@ from flask import Blueprint
 from newslynx.exc import NotFoundError, RequestError
 from newslynx.lib import dates
 from newslynx.lib.serialize import json_to_obj
-from newslynx.taxonomy import *
 from newslynx import settings
 from newslynx.models.util import get_table_columns
+from newslynx.taxonomy import *
 
 BOOL_TRUISH = ['true', '1', 'yes', 'y', 't', 'on']
 
@@ -290,9 +290,9 @@ def validate_thing_types(values):
 
     if len(bad_values):
         if len(bad_values) == 1:
-            msg = 'is not a valid thing type.'
+            msg = 'is not a valid Thing type.'
         else:
-            msg = 'are not valid thing types.'
+            msg = 'are not valid Thing types.'
         raise RequestError("'{}' {}. Choose from: {}."
                            .format(', '.join(bad_values), msg, THING_TYPES))
 
@@ -305,6 +305,27 @@ def validate_event_status(value):
     if value not in statuses:
         raise RequestError("'{}' is not a valid event status. Choose from {}."
                            .format(value, statuses))
+
+
+def validate_event_facets(values):
+    """
+    check a list of values against thing types.
+    """
+    if not isinstance(values, list):
+        values = [values]
+    facets = EVENT_FACETS + ['all']
+    bad_values = []
+    for value in values:
+        if value not in facets:
+            bad_values.append(value)
+
+    if len(bad_values):
+        if len(bad_values) == 1:
+            msg = 'is not a valid Event facet.'
+        else:
+            msg = 'are not valid Event facets.'
+        raise RequestError("'{}' {}. Choose from: {}."
+                           .format(', '.join(bad_values), msg, facets))
 
 
 def validate_hex_code(value):

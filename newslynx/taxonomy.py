@@ -18,6 +18,9 @@ METRIC_CATEGORIES = ['promotion', 'performance', 'impact']
 
 EVENT_STATUSES = ['approved', 'pending', 'deleted']
 
+## TODO: move this out of here.
+EVENT_FACETS = ['tags', 'things', 'levels', 'categories', 'tasks', 'recipes']
+
 # TAGS
 
 TAG_TYPES = [

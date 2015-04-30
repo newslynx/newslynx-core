@@ -1,12 +1,18 @@
+from collections import defaultdict, Counter
+
+from sqlalchemy import func
 from flask import Blueprint
 
 from newslynx.core import db
 from newslynx.exc import RequestError
 from newslynx.models import Tag
+from newslynx.models.relations import events_tags, things_tags
 from newslynx.lib.serialize import jsonify
 from newslynx.views.decorators import load_user, load_org
 from newslynx.models.util import get_table_columns
 from newslynx.views.util import *
+from newslynx.taxonomy import (
+    IMPACT_TAG_CATEGORIES, IMPACT_TAG_LEVELS)
 
 # blueprint
 bp = Blueprint('tags', __name__)
@@ -17,18 +23,82 @@ bp = Blueprint('tags', __name__)
 @load_org
 def get_tags(user, org):
     """
-    Get all tags for an organization.
+    Get all tags + counts for an organization.
     """
     # base query
-    tag_query = Tag.query.filter_by(organization_id=org.id)
 
-    # optionall filter by type
+    # TODO: count number of things that have been assigned events with tags?
+    tag_query = db.session\
+        .query(Tag.id, Tag.organization_id, Tag.name, Tag.type,
+               Tag.level, Tag.category, Tag.color,
+               func.count(events_tags.c.event_id), func.count(things_tags.c.thing_id))\
+        .outerjoin(events_tags)\
+        .outerjoin(things_tags)\
+        .filter(Tag.organization_id == org.id)\
+        .group_by(Tag.id, Tag.organization_id, Tag.name, Tag.type,
+                  Tag.level, Tag.category, Tag.color)
+
+    # optionall filter by type/level/category
     type = arg_str('type', default=None)
+    level = arg_str('level', default=None)
+    category = arg_str('category', default=None)
+
     if type:
         validate_tag_types(type)
-        tag_query = tag_query.filter_by(type=type)
+        tag_query = tag_query.filter(Tag.type == type)
 
-    return jsonify(tag_query.all())
+    if level:
+        validate_tag_levels(level)
+        tag_query = tag_query.filter(Tag.level == level)
+
+    if category:
+        validate_tag_categories(category)
+        tag_query = tag_query.filter(Tag.category == category)
+
+    tag_cols = ['id', 'organization_id', 'name', 'type', 'level',
+                'category', 'color', 'event_count', 'thing_count']
+    tags = [dict(zip(tag_cols, r)) for r in tag_query.all()]
+
+    # just compute facets via python rather
+    # than hitting the database.
+    clean_tags = []
+    c = defaultdict(Counter)
+    for t in tags:
+        c['types'][t['type']] += 1
+        if t['level']:
+            c['levels'][t['level']] += 1
+        if t['category']:
+            c['categories'][t['category']] += 1
+
+        # TODO: refine query so we don't need to do this.
+        if t['type'] == 'impact':
+            t.pop('thing_count')
+        else:
+            t.pop('event_count')
+            t.pop('category')
+            t.pop('level')
+        clean_tags.append(t)
+
+    # format response
+    resp = {'tags': clean_tags, 'facets': c}
+
+    return jsonify(resp)
+
+
+@bp.route('/api/v1/tags/categories', methods=['GET'])
+def tag_categores():
+    """
+    A helper for generating dynamic UIs
+    """
+    return jsonify({'categories': IMPACT_TAG_CATEGORIES})
+
+
+@bp.route('/api/v1/tags/levels', methods=['GET'])
+def tag_levels():
+    """
+    A helper for generating dynamic UIs
+    """
+    return jsonify({'levels': IMPACT_TAG_LEVELS})
 
 
 @bp.route('/api/v1/tags', methods=['POST'])

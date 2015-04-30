@@ -216,10 +216,10 @@ print
 
 print '>>> api.tags'
 resp = api.tags()
-pprint(resp[1])
-pprint(resp[1].color)
-pprint(len(resp))
-tag_id = resp[1].id
+pprint(resp.tags[1])
+pprint(resp.tags[1].color)
+pprint(len(resp.tags))
+tag_id = resp.tags[1].id
 print
 
 print '>>> api.tag_update'
@@ -233,12 +233,12 @@ print
 
 print '>>> api.tags'
 resp = api.tags()
-pprint(len(resp))
+pprint(len(resp.tags))
 print
 
 print '>>> api.tags'
 resp = api.tags(type='impact')
-pprint(len(resp))
+pprint(len(resp.tags))
 print
 
 

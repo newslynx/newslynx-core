@@ -30,7 +30,10 @@ the API and Data Collection Tasks that Power Newslynx.
 - [ ] Implement Tasks API 
 - [ ] Implement Recipes API 
 - [ ] Implement Task Queue (Celery, Redis?)
+- [ ] Implement Thing Creation API
+- [ ] Implement Event Creation API
 - [ ] Implement Modular Tasks
+- [ ] Figure out how best to use OAuth tokens in Tasks. Ideally these should not be exposed to users.
 - [x] Implement API client
 - [ ] Re-implement Tasks
     - [ ] RSS Feeds => Thing

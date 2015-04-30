@@ -90,6 +90,10 @@ class Event(db.Model):
     def tag_ids(self):
         return [t.id for t in self.tags]
 
+    @property
+    def tag_count(self):
+        return len(self.tags)
+
     def to_dict(self):
         return {
             'id': self.id,
