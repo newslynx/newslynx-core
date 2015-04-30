@@ -40,10 +40,6 @@ def db_drop():
 def init():
     db.configure_mappers()
     db.create_all()
-    create_user(email=settings.ADMIN_EMAIL,
-                password=settings.ADMIN_PASSWORD,
-                name=settings.ADMIN_USER,
-                admin=True)
 
 
 @manager.command
@@ -53,7 +49,7 @@ def reinit():
 
 
 @manager.command
-def create_user(email, password, name, admin=False):
+def create_admin_user(email, password, name, admin=False):
     u = db_session.query(User).filter_by(email=settings.ADMIN_EMAIL).first()
     if not u:
         u = User(email=email,

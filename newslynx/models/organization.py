@@ -41,6 +41,8 @@ class Organization(db.Model):
                               cascade='all')
     creators = db.relationship('Creator', lazy='dynamic')
 
+    tags = db.relationship('Tag', lazy='dynamic')
+
     def __init__(self, **kw):
         self.name = kw.get('name')
         self.created = kw.get('created', dates.now())

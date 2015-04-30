@@ -28,7 +28,7 @@ class Tag(db.Model):
     )
 
     def __init__(self, **kw):
-
+        self.organization_id = kw.get('organization_id')
         self.name = kw.get('name')
         self.type = kw.get('type')
         self.color = kw.get('color')
@@ -38,6 +38,7 @@ class Tag(db.Model):
     def to_dict(self):
         return {
             'id': self.id,
+            'organization_id': self.organization_id,
             'name': self.name,
             'type': self.type,
             'color': self.color,

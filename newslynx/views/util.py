@@ -2,7 +2,7 @@ import os
 import importlib
 import math
 from urlparse import urljoin
-
+import re
 
 from flask import request, Response, url_for
 from flask import Blueprint
@@ -16,6 +16,7 @@ from newslynx.models.util import get_table_columns
 
 BOOL_TRUISH = ['true', '1', 'yes', 'y', 't', 'on']
 
+RE_HEX_CODE = re.compile(r'^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$')
 
 # Arguments
 
@@ -220,9 +221,11 @@ def validate_tag_types(values):
     """
     check a list of values against tag types.
     """
+    if not isinstance(values, list):
+        values = [values]
     bad_values = []
     for value in values:
-        if value not in IMPACT_TAG_TYPES:
+        if value not in TAG_TYPES:
             bad_values.append(value)
 
     if len(bad_values):
@@ -238,6 +241,8 @@ def validate_tag_categories(values):
     """
     check a list of values against column names.
     """
+    if not isinstance(values, list):
+        values = [values]
     bad_values = []
     for field in values:
         if field not in IMPACT_TAG_CATEGORIES:
@@ -256,6 +261,8 @@ def validate_tag_levels(values):
     """
     check a list of values against tag levels.
     """
+    if not isinstance(values, list):
+        values = [values]
     bad_values = []
     for value in values:
         if value not in IMPACT_TAG_LEVELS:
@@ -274,6 +281,8 @@ def validate_thing_types(values):
     """
     check a list of values against thing types.
     """
+    if not isinstance(values, list):
+        values = [values]
     bad_values = []
     for value in values:
         if value not in THING_TYPES:
@@ -296,6 +305,14 @@ def validate_event_status(value):
     if value not in statuses:
         raise RequestError("'{}' is not a valid event status. Choose from {}."
                            .format(value, statuses))
+
+
+def validate_hex_code(value):
+    """
+    check a list of values against thing types.
+    """
+    if not RE_HEX_CODE.search(value):
+        raise RequestError("'{}' is not a valid hex code.".format(value))
 
 
 # Pagination

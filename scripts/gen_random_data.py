@@ -7,6 +7,7 @@ from random import choice
 
 from faker import Faker
 
+from newslynx import settings
 from newslynx.models import *
 from newslynx.core import db_session
 from newslynx.taxonomy import *
@@ -146,6 +147,18 @@ def random_meta():
 
 
 # USER
+def gen_admin_user():
+    u = User.query.filter_by(email=settings.ADMIN_EMAIL).first()
+    if not u:
+        u = User(email=settings.ADMIN_EMAIL,
+                 password=settings.ADMIN_PASSWORD,
+                 name=settings.ADMIN_USER,
+                 admin=True)
+        db_session.add(u)
+        db_session.commit()
+    return u
+
+
 def gen_user():
     u = User(
         name=fake.name(),
@@ -202,12 +215,12 @@ def gen_recipe(org, users, tasks):
 
 
 # Tags
-def gen_impact_tags(org):
+def gen_impact_tags(org, n_impact_tags):
     impact_tags = []
-    for name in IMPACT_TAG_NAMES:
+    for _ in xrange(n_impact_tags):
         t = Tag(
             organization_id=org.id,
-            name=name,
+            name=random_text(10),
             color=random_color(),
             type='impact',
             category=choice(IMPACT_TAG_CATEGORIES),
@@ -219,12 +232,12 @@ def gen_impact_tags(org):
 
 
 # TAGS
-def gen_subject_tags(org):
+def gen_subject_tags(org, n_subject_tags):
     subject_tags = []
-    for name in SUBJECT_TAG_NAMES:
+    for _ in xrange(n_subject_tags):
         t = Tag(
             organization_id=org.id,
-            name=name,
+            name=random_text(10),
             color=random_color(),
             type='subject')
         db_session.add(t)
@@ -340,16 +353,19 @@ def main(
         n_users=2,
         n_event_recipes=10,
         n_thing_recipes=10,
-        n_events=1000,
-        n_metrics_per_thing=100,
-        n_things=20,
+        n_subject_tags=10,
+        n_impact_tags=10,
+        n_events=2000,
+        n_metrics_per_thing=20,
+        n_things=200,
         verbose=True):
 
     # top level things
-    users = [gen_user() for _ in xrange(2)]
+    admin = gen_admin_user()
+    users = [gen_user() for _ in xrange(n_users)] + [admin]
     org = gen_org(users)
-    impact_tags = gen_impact_tags(org)
-    subject_tags = gen_subject_tags(org)
+    impact_tags = gen_impact_tags(org, n_subject_tags)
+    subject_tags = gen_subject_tags(org, n_impact_tags)
     creators = gen_creators(org)
     tasks = gen_tasks()
 

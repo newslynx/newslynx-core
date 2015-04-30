@@ -5,7 +5,7 @@ from newslynx import settings
 from newslynx.exc import ClientError
 
 # login to the api w/ username and password
-api = API(apikey='8bb4e779507b6bf65388c4758414b3d6', org=1)
+api = API(apikey='b37c259d33cee964e870a9296e45b63d', org=1)
 
 # login to the api with an apikey
 # print ">>> api.login"
@@ -195,17 +195,17 @@ pprint(resp.results[0].tags)
 print
 
 print '>>> api.event_add_tag'
-resp = api.event_add_tag(event_id, tag_id=3)
+resp = api.event_add_tag(event_id, tag_id=4)
 pprint(resp.tags)
 print
 
 print '>>> api.event_delete_tag'
-resp = api.event_delete_tag(event_id, tag_id=3)
+resp = api.event_delete_tag(event_id, tag_id=4)
 pprint(resp.tags)
 print
 
-print '>>> api.event_add_tag'
-resp = api.event_add_tag(event_id, thing_id=10)
+print '>>> api.event_add_thing'
+resp = api.event_add_thing(event_id, thing_id=10)
 pprint(resp.things)
 print
 
@@ -213,6 +213,34 @@ print '>>> api.event_delete_thing'
 resp = api.event_delete_thing(event_id, thing_id=10)
 pprint(resp.things)
 print
+
+print '>>> api.tags'
+resp = api.tags()
+pprint(resp[1])
+pprint(resp[1].color)
+pprint(len(resp))
+tag_id = resp[1].id
+print
+
+print '>>> api.tag_update'
+resp = api.tag_update(tag_id, color="#fc0")
+pprint(resp.color)
+print
+
+print '>>> api.tag_delete'
+resp = api.tag_delete(tag_id, color="#fco")
+print
+
+print '>>> api.tags'
+resp = api.tags()
+pprint(len(resp))
+print
+
+print '>>> api.tags'
+resp = api.tags(type='impact')
+pprint(len(resp))
+print
+
 
 # delete the current org
 # org = api.delete_org(org.id)

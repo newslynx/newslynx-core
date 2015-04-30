@@ -18,18 +18,19 @@ the API and Data Collection Tasks that Power Newslynx.
 - [x] Re-implement User / Login API
 - [x] Implement Org API
 - [x] Re-implement Settings API
-- [ ] Re-implement Events API
+- [x] Re-implement Events API
     - [x] Implement Postgres-based search
 - [ ] Re-implement Things API (aka Articles)
     - [x] Implement Postgres-based search
-- [ ] Re-implement Tags API
+- [x] Re-implement Tags API
 - [ ] Implement Metrics API
     - [ ] Figure out how to use `tablefunc` for pivot tables.
-- [ ] Implement Benchmarks API (Are these just metrics?)
+- [ ] Implement Reports API (Are these just metrics?)
     - [ ] Figure out how to use `pypostgresql` for custom postgres functions.
+- [ ] Implement Tasks API 
 - [ ] Implement Recipes API 
-- [ ] Implement Modular Tasks
 - [ ] Implement Task Queue (Celery, Redis?)
+- [ ] Implement Modular Tasks
 - [x] Implement API client
 - [ ] Re-implement Tasks
     - [ ] RSS Feeds => Thing

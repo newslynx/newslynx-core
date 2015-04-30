@@ -46,30 +46,30 @@ class API(object):
         url = self._format_url('login')
         return self._request('POST', url, data=kw)
 
-    def me(self):
+    def me(self, **kw):
         """
         Fetch your user profile.
         """
 
         url = self._format_url('me')
-        return self._request('GET', url)
+        return self._request('GET', url, params=kw)
 
     def me_update(self, **kw):
         """
         Update your user profile.
         """
-
+        kw, params = self._split_auth_params_from_kw(**kw)
         url = self._format_url('me')
-        return self._request('PUT', url, data=kw)
+        return self._request('PUT', url, data=kw, params=kw)
 
-    def me_orgs(self):
+    def me_orgs(self, **kw):
         """
         Get orgs you have access to.
         """
         url = self._format_url('orgs')
-        return self._request('GET', url)
+        return self._request('GET', url, params=kw)
 
-    def org(self, org=None):
+    def org(self, org=None, **kw):
         """
         Get an organization.
         """
@@ -80,15 +80,15 @@ class API(object):
                     'You must pass in the org ID or name as the first argument.')
 
         url = self._format_url('orgs', org)
-        return self._request('GET', url)
+        return self._request('GET', url, params=kw)
 
     def org_create(self, **kw):
         """
         Create an organization.
         """
-
+        kw, params = self._split_auth_params_from_kw(**kw)
         url = self._format_url('orgs')
-        return self._request('POST', url, data=kw)
+        return self._request('POST', url, data=kw, params=params)
 
     def org_update(self, org=None, **kw):
         """
@@ -99,11 +99,11 @@ class API(object):
             if not org:
                 raise ValueError(
                     'You must pass in the org ID or name as the first argument.')
-
+        kw, params = self._split_auth_params_from_kw(**kw)
         url = self._format_url('orgs', org)
-        return self._request('PUT', url, data=kw)
+        return self._request('PUT', url, data=kw, params=params)
 
-    def org_delete(self, org=None):
+    def org_delete(self, org=None, **kw):
         """
         Delete an organization.
         """
@@ -114,7 +114,7 @@ class API(object):
                     'You must pass in the org ID or name as the first argument.')
 
         url = self._format_url('orgs', org)
-        return self._request('DELETE', url)
+        return self._request('DELETE', url, params=kw)
 
     def org_create_user(self, org=None, **kw):
         """
@@ -125,11 +125,11 @@ class API(object):
             if not org:
                 raise ValueError(
                     'You must pass in the org ID or name as the first argument.')
-
+        kw, params = self._split_auth_params_from_kw(**kw)
         url = self._format_url('orgs', org, 'users')
-        return self._request('POST', url, data=kw)
+        return self._request('POST', url, data=kw, params=params)
 
-    def org_user(self, org=None, user=None):
+    def org_user(self, org=None, user=None, **kw):
         """
         Get a user profile from an organization
         """
@@ -144,9 +144,9 @@ class API(object):
                 'You must pass in the user id or email as the second argument.')
 
         url = self._format_url('orgs', org, 'users', user)
-        return self._request('GET', url)
+        return self._request('GET', url, params=kw)
 
-    def org_users(self, org=None):
+    def org_users(self, org=None, **kw):
         """
         Get all user profiles under an organization.
         """
@@ -157,9 +157,9 @@ class API(object):
                     'You must pass in the org ID or name as the first argument.')
 
         url = self._format_url('orgs', org, 'users')
-        return self._request('GET', url)
+        return self._request('GET', url, params=kw)
 
-    def org_add_user(self, org=None, user=None):
+    def org_add_user(self, org=None, user=None, **kw):
         """
         Add an existing user to an organization.
         """
@@ -174,9 +174,9 @@ class API(object):
                 'You must pass in the user id or email as the second argument.')
 
         url = self._format_url('orgs', org, 'users', user)
-        return self._request('PUT', url)
+        return self._request('PUT', url, params=kw)
 
-    def org_remove_user(self, org=None, user=None):
+    def org_remove_user(self, org=None, user=None, **kw):
         """
         Remove an existing user from an organization.
         """
@@ -191,7 +191,7 @@ class API(object):
                 'You must pass in the user id or email as the second argument.')
 
         url = self._format_url('orgs', org, 'users', user)
-        return self._request('DELETE', url)
+        return self._request('DELETE', url, params=kw)
 
     def org_add_setting(self, org=None, **kw):
         """
@@ -208,10 +208,12 @@ class API(object):
             if not isinstance(kw.get('value'), basestring):
                 kw['value'] = obj_to_json(kw['value'])
 
-        url = self._format_url('orgs', org, 'settings')
-        return self._request('POST', url, data=kw)
+        kw, params = self._split_auth_params_from_kw(**kw)
 
-    def org_delete_setting(self, org=None, name=None):
+        url = self._format_url('orgs', org, 'settings')
+        return self._request('POST', url, data=kw, params=params)
+
+    def org_delete_setting(self, org=None, name=None, **kw):
         """
         Add/update a setting for an organization.
         """
@@ -226,9 +228,9 @@ class API(object):
                 'You must pass in the user id or email as the second argument.')
 
         url = self._format_url('orgs', org, 'settings', name)
-        return self._request('DELETE', url)
+        return self._request('DELETE', url, params=kw)
 
-    def org_setting(self, org=None, name=None):
+    def org_setting(self, org=None, name=None, **kw):
         """
         Add/update a setting for an organization.
         """
@@ -243,9 +245,9 @@ class API(object):
                 'You must pass in the user id or email as the second argument.')
 
         url = self._format_url('orgs', org, 'settings', name)
-        return self._request('GET', url)
+        return self._request('GET', url, **kw)
 
-    def org_settings(self, org=None):
+    def org_settings(self, org=None, **kw):
         """
         Add/update a setting for an organization.
         """
@@ -256,7 +258,7 @@ class API(object):
                     'You must pass in the org ID or name as the first argument.')
 
         url = self._format_url('orgs', org, 'settings')
-        return self._request('GET', url)
+        return self._request('GET', url, params=kw)
 
     def events(self, **kw):
         """
@@ -271,54 +273,78 @@ class API(object):
         url = self._format_url('events')
         return self._request('GET', url, params=kw)
 
-    def event(self, event_id):
+    def event(self, event_id, **kw):
         """
         Get an individual event.
         """
         url = self._format_url('events', event_id)
-        return self._request('GET', url)
+        return self._request('GET', url, params=kw)
 
     def event_update(self, event_id, **kw):
         """
         Get an individual event.
         """
+        kw, params = self._split_auth_params_from_kw(**kw)
         url = self._format_url('events', event_id)
-        return self._request('PUT', url, data=kw)
+        return self._request('PUT', url, data=kw, params=params)
 
-    def event_delete(self, event_id):
+    def event_delete(self, event_id, **kw):
         """
         Get an individual event.
         """
         url = self._format_url('events', event_id)
-        return self._request('DELETE', url)
+        return self._request('DELETE', url, params=kw)
 
-    def event_add_tag(self, event_id, tag_id):
+    def event_add_tag(self, event_id, tag_id, **kw):
         """
         Get an individual event.
         """
         url = self._format_url('events', event_id, 'tags', tag_id)
-        return self._request('PUT', url)
+        return self._request('PUT', url, params=kw)
 
-    def event_delete_tag(self, event_id, tag_id):
+    def event_delete_tag(self, event_id, tag_id, **kw):
         """
         Get an individual event.
         """
         url = self._format_url('events', event_id, 'tags', tag_id)
-        return self._request('DELETE', url)
+        return self._request('DELETE', url, params=kw)
 
-    def event_add_thing(self, event_id, thing_id):
+    def event_add_thing(self, event_id, thing_id, **kw):
         """
         Get an individual event.
         """
         url = self._format_url('events', event_id, 'things', thing_id)
-        return self._request('PUT', url)
+        return self._request('PUT', url, params=kw)
 
-    def event_delete_thing(self, event_id, thing_id):
+    def event_delete_thing(self, event_id, thing_id, **kw):
         """
         Get an individual event.
         """
         url = self._format_url('events', event_id, 'things', thing_id)
-        return self._request('DELETE', url)
+        return self._request('DELETE', url, params=kw)
+
+    def tags(self, **kw):
+        """
+        Get all tags.
+        """
+        url = self._format_url('tags')
+        return self._request('GET', url, params=kw)
+
+    def tag_update(self, tag_id, **kw):
+        """
+        Update a tag
+        """
+        kw, params = self._split_auth_params_from_kw(**kw)
+        url = self._format_url('tags', tag_id)
+        return self._request('PUT', url, data=kw, params=params)
+
+    def tag_delete(self, tag_id, **kw):
+        """
+        Delete a tag
+        """
+        kw, params = self._split_auth_params_from_kw(**kw)
+        url = self._format_url('tags', tag_id)
+        return self._request('DELETE', url, params=kw)
 
     def _auth(self, **kw):
         """
@@ -379,6 +405,14 @@ class API(object):
 
         # format response
         return self._format_response(resp)
+
+    def _split_auth_params_from_kw(self, **kw):
+        params = {}
+        if 'apikey' in kw:
+            params['apikey'] = kw.pop('apikey')
+        if 'org' in kw:
+            params['org'] = kw.pop('org')
+        return kw, params
 
     def _handle_errors(self, resp, err=None):
         """

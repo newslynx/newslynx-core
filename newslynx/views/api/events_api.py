@@ -1,5 +1,5 @@
+from flask import Blueprint
 from sqlalchemy import func
-import psycopg2
 
 from newslynx.core import db
 from newslynx.exc import RequestError
@@ -286,7 +286,7 @@ def search_events(user, org):
     return jsonify(resp)
 
 
-@bp.route('/api/v1/events/<event_id>', methods=['GET'])
+@bp.route('/api/v1/events/<int:event_id>', methods=['GET'])
 @load_user
 @load_org
 def event(user, org, event_id):
@@ -300,7 +300,7 @@ def event(user, org, event_id):
     return jsonify(e)
 
 
-@bp.route('/api/v1/events/<event_id>', methods=['PUT', 'PATCH'])
+@bp.route('/api/v1/events/<int:event_id>', methods=['PUT', 'PATCH'])
 @load_user
 @load_org
 def event_update(user, org, event_id):
@@ -348,21 +348,24 @@ def event_update(user, org, event_id):
 
     # filter out any non-columns
     columns = get_table_columns(Event)
-    data = {}
-    for k, v in req_data.items():
-        if k in columns:
-            data[k] = v
+    for k in req_data.keys():
+        if k not in columns:
+            req_data.pop(k)
 
     # if we're approving this event, override status
     if approve:
-        data['status'] = 'approved'
+        req_data['status'] = 'approved'
 
     # add "updated" dat
-    data['updated'] = dates.now()
+    req_data['updated'] = dates.now()
 
     # update fields
-    for k, v in data.items():
+    for k, v in req_data.items():
         setattr(e, k, v)
+
+    # ensure no one sneakily/accidentally
+    # updates an organization id
+    e.organization_id = org.id
 
     # if we're approving, add tags + things
     if approve:
@@ -371,6 +374,12 @@ def event_update(user, org, event_id):
         for thing, tag in zip(things, tags):
             if thing.id not in e.thing_ids:
                 e.things.append(thing)
+
+            # validate tag
+            if tag.type != 'impact':
+                raise RequestError('Events can only be assigned Impact Tags.')
+
+            # add it
             if tag.id not in e.tag_ids:
                 e.tags.append(tag)
 
@@ -382,7 +391,7 @@ def event_update(user, org, event_id):
     return jsonify(e)
 
 
-@bp.route('/api/v1/events/<event_id>', methods=['DELETE'])
+@bp.route('/api/v1/events/<int:event_id>', methods=['DELETE'])
 @load_user
 @load_org
 def event_delete(user, org, event_id):
@@ -418,7 +427,7 @@ def event_delete(user, org, event_id):
     return jsonify(e)
 
 
-@bp.route('/api/v1/events/<event_id>/tags/<tag_id>', methods=['PUT', 'PATCH'])
+@bp.route('/api/v1/events/<int:event_id>/tags/<int:tag_id>', methods=['PUT', 'PATCH'])
 @load_user
 @load_org
 def event_add_tag(user, org, event_id, tag_id):
@@ -439,14 +448,22 @@ def event_add_tag(user, org, event_id, tag_id):
         raise RequestError(
             'Tag with ID {} does not exist.'.format(tag_id))
 
+    print(tag.to_dict())
+    if tag.type != 'impact':
+        raise RequestError('Events can only be assigned Impact Tags.')
+
     if tag.id not in e.tag_ids:
         e.tags.append(tag)
+
+    e.updated = dates.now()
+    db.session.add(e)
+    db.session.commit()
 
     # return modified event
     return jsonify(e)
 
 
-@bp.route('/api/v1/events/<event_id>/tags/<tag_id>', methods=['DELETE'])
+@bp.route('/api/v1/events/<int:event_id>/tags/<int:tag_id>', methods=['DELETE'])
 @load_user
 @load_org
 def event_delete_tag(user, org, event_id, tag_id):
@@ -463,15 +480,19 @@ def event_delete_tag(user, org, event_id, tag_id):
             'An Event with ID {} does not currently have an association '
             'with a Tag with ID {}'.format(event_id, tag_id))
 
-    d = events_tags\
-        .delete(events_tags.c.event_id == event_id, events_tags.c.tag_id == tag_id)
-    db.session.execute(d)
+    for tag in e.tags:
+        if tag.id == tag_id:
+            e.tags.remove(tag)
+
+    e.updated = dates.now()
+    db.session.add(e)
+    db.session.commit()
 
     # return modified event
     return jsonify(e)
 
 
-@bp.route('/api/v1/events/<event_id>/things/<thing_id>', methods=['DELETE'])
+@bp.route('/api/v1/events/<int:event_id>/things/<int:thing_id>', methods=['PUT'])
 @load_user
 @load_org
 def event_add_thing(user, org, event_id, thing_id):
@@ -495,11 +516,15 @@ def event_add_thing(user, org, event_id, thing_id):
     if thing.id not in e.thing_ids:
         e.things.append(thing)
 
+    e.updated = dates.now()
+    db.session.add(e)
+    db.session.commit()
+
     # return modified event
     return jsonify(e)
 
 
-@bp.route('/api/v1/events/<event_id>/things/<thing_id>', methods=['DELETE'])
+@bp.route('/api/v1/events/<int:event_id>/things/<int:thing_id>', methods=['DELETE'])
 @load_user
 @load_org
 def event_delete_thing(user, org, event_id, thing_id):
@@ -516,9 +541,13 @@ def event_delete_thing(user, org, event_id, thing_id):
             'An Event with ID {} does not currently have an association '
             'with a Thing with ID {}'.format(event_id, thing_id))
 
-    d = things_events\
-        .delete(things_events.c.event_id == event_id, things_events.c.thing_id == thing_id)
-    db.session.execute(d)
+    for thing in e.things:
+        if thing.id == thing_id:
+            e.things.remove(thing)
+
+    e.updated = dates.now()
+    db.session.add(e)
+    db.session.commit()
 
     # return modified event
     return jsonify(e)
