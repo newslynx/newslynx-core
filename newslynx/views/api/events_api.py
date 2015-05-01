@@ -248,17 +248,18 @@ def search_events(user, org):
                 .query(Event.recipe_id, Recipe.name, func.count(Recipe.id))\
                 .join(Recipe)\
                 .filter(Event.id.in_(event_ids))\
+                .order_by(desc(func.count(Recipe.id)))\
                 .group_by(Event.recipe_id, Recipe.name).all()
             facets['recipes'] = [dict(zip(['id', 'name', 'count'], r))
                                  for r in recipe_counts]
 
         # events by tag
         if 'tags' in kw['facets'] or 'all' in kw['facets']:
-            print 'here'
             tag_counts = db.session\
                 .query(Tag.id, Tag.name, Tag.type, Tag.level, Tag.category, Tag.color, func.count(Tag.id))\
                 .outerjoin(events_tags)\
                 .filter(events_tags.c.event_id.in_(event_ids))\
+                .order_by(desc(func.count(Tag.id)))\
                 .group_by(Tag.id, Tag.name, Tag.type, Tag.level, Tag.category, Tag.color)\
                 .all()
             facets['tags'] = [dict(zip(['id', 'name', 'type', 'level', 'category', 'color', 'count'], c))
@@ -270,6 +271,7 @@ def search_events(user, org):
                 .query(Tag.category, func.count(Tag.category))\
                 .outerjoin(events_tags)\
                 .filter(events_tags.c.event_id.in_(event_ids))\
+                .order_by(desc(func.count(Tag.category)))\
                 .group_by(Tag.category).all()
             facets['categories'] = [dict(zip(['category', 'count'], c))
                                     for c in category_counts]
@@ -280,6 +282,7 @@ def search_events(user, org):
                 .query(Tag.level, func.count(Tag.level))\
                 .outerjoin(events_tags)\
                 .filter(events_tags.c.event_id.in_(event_ids))\
+                .order_by(desc(func.count(Tag.level)))\
                 .group_by(Tag.level).all()
             facets['levels'] = [dict(zip(['level', 'count'], c))
                                 for c in level_counts]
@@ -301,9 +304,20 @@ def search_events(user, org):
             thing_counts = db.session\
                 .query(Thing.id, Thing.url, Thing.title, func.count(Thing.id))\
                 .filter(Thing.events.any(Event.id.in_(event_ids)))\
+                .order_by(desc(func.count(Thing.id)))\
                 .group_by(Thing.id, Thing.url, Thing.title).all()
             facets['things'] = [dict(zip(['id', 'url', 'title', 'count'], c))
                                 for c in thing_counts]
+
+        # events by things
+        if 'statuses' in kw['facets'] or 'all' in kw['statuses']:
+            status_counts = db.session\
+                .query(Event.status, func.count(Event.status))\
+                .filter(Event.id.in_(event_ids))\
+                .order_by(desc(func.count(Event.status)))\
+                .group_by(Event.status).all()
+            facets['statuses'] = [dict(zip(['id', 'url', 'title', 'count'], c))
+                                for c in status_counts]
 
     # paginate event_query
     events = event_query\

@@ -356,15 +356,6 @@ def search_things(user, org):
             facets['tasks'] = [dict(zip(['name', 'count'], c))
                                for c in task_counts]
 
-        # things by things
-        # if 'things' in kw['facets'] or 'all' in kw['facets']:
-        #     thing_counts = db.session\
-        #         .query(Thing.id, Thing.url, Thing.title, func.count(Thing.id))\
-        #         .filter(Thing.things.any(Event.id.in_(event_ids)))\
-        #         .group_by(Thing.id, Thing.url, Thing.title).all()
-        #     facets['things'] = [dict(zip(['id', 'url', 'title', 'count'], c))
-        #                         for c in thing_counts]
-
     # paginate thing_query
     things = thing_query\
         .paginate(kw['page'], kw['per_page'], False)
