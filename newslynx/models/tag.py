@@ -36,16 +36,25 @@ class Tag(db.Model):
         self.level = kw.get('level')
 
     def to_dict(self):
-        return {
-            'id': self.id,
-            'organization_id': self.organization_id,
-            'name': self.name,
-            'type': self.type,
-            'color': self.color,
-            'category': self.category,
-            'level': self.level
-        }
-        
+        if self.type == 'impact':
+            return {
+                'id': self.id,
+                'organization_id': self.organization_id,
+                'name': self.name,
+                'type': self.type,
+                'color': self.color,
+                'category': self.category,
+                'level': self.level
+            }
+        else:
+            return {
+                'id': self.id,
+                'organization_id': self.organization_id,
+                'name': self.name,
+                'type': self.type,
+                'color': self.color,
+            }
+
     def __repr__(self):
 
         return '<Tag %r / %r >' % (self.name, self.type)

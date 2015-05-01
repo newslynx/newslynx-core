@@ -75,8 +75,8 @@ def get_tags(user, org):
             t.pop('thing_count')
         else:
             t.pop('event_count')
-            t.pop('category')
             t.pop('level')
+            t.pop('category')
         clean_tags.append(t)
 
     # format response
