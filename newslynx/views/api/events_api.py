@@ -310,14 +310,14 @@ def search_events(user, org):
                                 for c in thing_counts]
 
         # events by things
-        if 'statuses' in kw['facets'] or 'all' in kw['statuses']:
+        if 'statuses' in kw['facets'] or 'all' in kw['facets']:
             status_counts = db.session\
                 .query(Event.status, func.count(Event.status))\
                 .filter(Event.id.in_(event_ids))\
                 .order_by(desc(func.count(Event.status)))\
                 .group_by(Event.status).all()
             facets['statuses'] = [dict(zip(['id', 'url', 'title', 'count'], c))
-                                for c in status_counts]
+                                  for c in status_counts]
 
     # paginate event_query
     events = event_query\
