@@ -27,7 +27,6 @@ inspect-it==0.3.2
 iso8601==0.1.10
 itsdangerous==0.24
 keyring==5.3
-newslynx==0.0.1
 oauth2client==1.4.7
 psycopg2==2.6
 pyasn1==0.1.7
