@@ -11,6 +11,7 @@ secret_key:
 admin_user: 
 admin_password:
 admin_email:
+super_user_password:
 
 # database config
 sqlalchemy_database_uri: 

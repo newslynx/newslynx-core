@@ -7,11 +7,11 @@ from newslynx.exc import ClientError
 # login to the api w/ username and password
 api = API(apikey='b37c259d33cee964e870a9296e45b63d', org=1)
 
-# login to the api with an apikey
-# print ">>> api.login"
-# api = API(apikey=api.apikey)
-# print "apikey:", api.apikey
-# print
+#login to the api with an apikey
+print ">>> api.login"
+api = API(email=settings.ADMIN_EMAIL, password=settings.ADMIN_PASSWORD)
+print "apikey:", api.apikey
+print
 
 # get your user account
 # print ">>> api.me"
@@ -149,97 +149,97 @@ api = API(apikey='b37c259d33cee964e870a9296e45b63d', org=1)
 # print
 
 # search events
-print '>>> api.events'
-resp = api.events(status='pending', per_page=1)
-event_id = resp.results[0].id
-pprint(resp.results[0].status)
-pprint(resp.results[0].tags)
-pprint(resp.counts.things)
-pprint(resp.updated)
-print
+# print '>>> api.events'
+# resp = api.events(status='pending', per_page=1)
+# event_id = resp.results[0].id
+# pprint(resp.results[0].status)
+# pprint(resp.results[0].tags)
+# pprint(resp.counts.things)
+# pprint(resp.updated)
+# print
 
-# get an event
-print '>>> api.event'
-resp = api.event(event_id)
-pprint(resp.status)
-pprint(resp.tags)
-pprint(resp.updated)
-print
+# # get an event
+# print '>>> api.event'
+# resp = api.event(event_id)
+# pprint(resp.status)
+# pprint(resp.tags)
+# pprint(resp.updated)
+# print
 
-# update an event
-print '>>> api.event_update'
-resp = api.event_update(
-    event_id, thing_ids=[1, 2], tag_ids=[1, 2, 3], description='foo bar')
-pprint(resp.status)
-pprint(resp.tags)
-pprint(resp.things)
-pprint(resp.description)
-pprint(resp.updated)
-print
+# # update an event
+# print '>>> api.event_update'
+# resp = api.event_update(
+#     event_id, thing_ids=[1, 2], tag_ids=[1, 2, 3], description='foo bar')
+# pprint(resp.status)
+# pprint(resp.tags)
+# pprint(resp.things)
+# pprint(resp.description)
+# pprint(resp.updated)
+# print
 
-# update an event
-print '>>> api.event_delete'
-resp = api.event_delete(event_id)
-pprint(resp.status)
-pprint(resp.tags)
-pprint(resp.things)
-pprint(resp.description)
-pprint(resp.updated)
-print
+# # update an event
+# print '>>> api.event_delete'
+# resp = api.event_delete(event_id)
+# pprint(resp.status)
+# pprint(resp.tags)
+# pprint(resp.things)
+# pprint(resp.description)
+# pprint(resp.updated)
+# print
 
-print '>>> api.events'
-resp = api.events(status='approved', per_page=1, sort='updated')
-event_id = resp.results[0].id
-pprint(resp.results[0].things)
-pprint(resp.results[0].tags)
-print
+# print '>>> api.events'
+# resp = api.events(status='approved', per_page=1, sort='updated')
+# event_id = resp.results[0].id
+# pprint(resp.results[0].things)
+# pprint(resp.results[0].tags)
+# print
 
-print '>>> api.event_add_tag'
-resp = api.event_add_tag(event_id, tag_id=4)
-pprint(resp.tags)
-print
+# print '>>> api.event_add_tag'
+# resp = api.event_add_tag(event_id, tag_id=4)
+# pprint(resp.tags)
+# print
 
-print '>>> api.event_delete_tag'
-resp = api.event_delete_tag(event_id, tag_id=4)
-pprint(resp.tags)
-print
+# print '>>> api.event_delete_tag'
+# resp = api.event_delete_tag(event_id, tag_id=4)
+# pprint(resp.tags)
+# print
 
-print '>>> api.event_add_thing'
-resp = api.event_add_thing(event_id, thing_id=10)
-pprint(resp.things)
-print
+# print '>>> api.event_add_thing'
+# resp = api.event_add_thing(event_id, thing_id=10)
+# pprint(resp.things)
+# print
 
-print '>>> api.event_delete_thing'
-resp = api.event_delete_thing(event_id, thing_id=10)
-pprint(resp.things)
-print
+# print '>>> api.event_delete_thing'
+# resp = api.event_delete_thing(event_id, thing_id=10)
+# pprint(resp.things)
+# print
 
-print '>>> api.tags'
-resp = api.tags()
-pprint(resp.tags[1])
-pprint(resp.tags[1].color)
-pprint(len(resp.tags))
-tag_id = resp.tags[1].id
-print
+# print '>>> api.tags'
+# resp = api.tags()
+# pprint(resp.tags[1])
+# pprint(resp.tags[1].color)
+# pprint(len(resp.tags))
+# tag_id = resp.tags[1].id
+# print
 
-print '>>> api.tag_update'
-resp = api.tag_update(tag_id, color="#fc0")
-pprint(resp.color)
-print
+# print '>>> api.tag_update'
+# resp = api.tag_update(tag_id, color="#fc0")
+# pprint(resp.color)
+# print
 
-print '>>> api.tag_delete'
-resp = api.tag_delete(tag_id, color="#fco")
-print
+# print '>>> api.tag_delete'
+# resp = api.tag_delete(tag_id, color="#fco")
+# print
 
-print '>>> api.tags'
-resp = api.tags()
-pprint(len(resp.tags))
-print
+# print '>>> api.tags'
+# resp = api.tags()
+# pprint(len(resp.tags))
+# print
 
-print '>>> api.tags'
-resp = api.tags(type='impact')
-pprint(len(resp.tags))
-print
+# print '>>> api.tags'
+# resp = api.tags(type='impact')
+# pprint(len(resp.tags))
+# print
 
 
 # delete the current org
