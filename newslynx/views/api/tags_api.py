@@ -35,8 +35,7 @@ def get_tags(user, org):
         .outerjoin(events_tags)\
         .outerjoin(things_tags)\
         .filter(Tag.organization_id == org.id)\
-        .group_by(Tag.id, Tag.organization_id, Tag.name, Tag.type,
-                  Tag.level, Tag.category, Tag.color)
+        .group_by(Tag.id)
 
     # optionall filter by type/level/category
     type = arg_str('type', default=None)

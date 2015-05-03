@@ -9,8 +9,8 @@ api = API(apikey='b37c259d33cee964e870a9296e45b63d', org=1)
 
 #login to the api with an apikey
 print ">>> api.login"
-api = API(email=settings.ADMIN_EMAIL, password=settings.ADMIN_PASSWORD)
-print "apikey:", api.apikey
+res = api.login(email=settings.ADMIN_EMAIL, password=settings.ADMIN_PASSWORD)
+pprint(res)
 print
 
 # get your user account
@@ -113,17 +113,17 @@ print
 # pprint(resp)
 # print
 
-# add a setting to an organization
+#add a setting to an organization
 # print '>>> api.org_add_setting'
-# setting = api.org_add_setting(org.id,
+# setting = api.org_add_setting(1,
 #     name='favicon',
 #     value='https://pbs.twimg.com/profile_images/1244937644/02emperor350_400x400.jpg')
 # pprint(setting)
 # print
 
-# add a json setting to an organization
+# #add a json setting to an organization
 # print '>>> api.org_add_setting'
-# setting = api.org_add_setting(org.id,
+# setting = api.org_add_setting(1,
 #     name='sites',
 #     value={'main': 'propalpatine.org', 'tumblr': 'propalpatine.tumblr.com'},
 #     json_value=True)

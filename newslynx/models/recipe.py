@@ -18,6 +18,7 @@ class Recipe(db.Model):
     description = db.Column(db.Text)
     config = db.Column(JSON)
     created = db.Column(db.DateTime(timezone=True), index=True)
+    updated = db.Column(db.DateTime(timezone=True), index=True)
     status = db.Column(
         ENUM('running', 'stable', 'error', name='recipe_status_enum'), index=True)
     scheduled = db.Column(db.Boolean)
@@ -33,8 +34,12 @@ class Recipe(db.Model):
     things = db.relationship(
         'Thing', backref=db.backref('recipe', lazy='joined'), lazy='dynamic')
 
+    # relations
+    metrics = db.relationship(
+        'Metric', backref=db.backref('recipe', lazy='joined'), lazy='dynamic')
+
     task = db.relationship(
-        'Task', backref=db.backref('recipes', lazy='dynamic'), lazy='joined')
+        'Task', backref=db.backref('recipes', lazy='joined'), lazy='joined')
 
     def __init__(self, **kw):
         self.task_id = kw.get('task_id')
@@ -44,6 +49,7 @@ class Recipe(db.Model):
         self.description = kw.get('description')
         self.config = kw.get('config', {})
         self.created = kw.get('created', dates.now())
+        self.updated = kw.get('updated', dates.now())
         self.status = kw.get('status', 'stable')
         self.scheduled = kw.get('scheduled', True)
         self.interval = kw.get('interval', 3600)
@@ -54,6 +60,7 @@ class Recipe(db.Model):
         return {
             'id': self.id,
             'task_id': self.task_id,
+            'task_name': self.task.name,
             'user_id': self.user_id,
             'organization_id': self.organization_id,
             'name': self.name,

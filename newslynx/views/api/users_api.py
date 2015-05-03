@@ -25,7 +25,7 @@ def login():
 
     # check if proper parameters were included
     if not email or not password:
-        raise AuthError('email or password not provided.')
+        raise AuthError('"email" or "password" not provided.')
 
     # check user's existence
     user = User.query.filter_by(email=email).first()
@@ -38,6 +38,14 @@ def login():
         raise ForbiddenError('Invalid password.')
 
     return jsonify(user.to_dict(incl_apikey=True))
+
+
+@bp.route('/auth/v1/login', methods=['POST'])
+def michaels_login():
+    """
+    A special endpoint for michael's app.
+    """
+    return login()
 
 
 @bp.route('/api/v1/me', methods=['GET'])
