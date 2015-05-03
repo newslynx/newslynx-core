@@ -62,7 +62,6 @@ def search_events(user, org):
 
     # process query, compute facets.
     clean_recipes = []
-    recipe_ids = []
     facets = defaultdict(Counter)
     for r in recipe_query.all():
         facets['statuses'][r.status] += 1
