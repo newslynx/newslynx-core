@@ -8,4 +8,10 @@ build:
 	
 	python setup.py install
 
+documentation:
+
+	sphinx-build -b html docs/ docs/_build/html
+	cd docs/_build/html && python -m SimpleHTTPServer
+
+
 

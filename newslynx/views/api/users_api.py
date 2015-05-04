@@ -6,7 +6,7 @@ from newslynx.lib.serialize import jsonify
 from newslynx.exc import (
     AuthError, RequestError, ForbiddenError)
 from newslynx.views.decorators import load_user
-from newslynx.views.util import request_data
+from newslynx.views.util import request_data, delete_response
 
 # bp
 bp = Blueprint('users', __name__)
@@ -88,3 +88,14 @@ def update_me(user):
     db.session.commit()
 
     return jsonify(user.to_dict(incl_apikey=True))
+
+
+@bp.route('/api/v1/me', methods=['DELETE'])
+@load_user
+def delete_me(user):
+    """
+    Delete yourself.
+    """
+    db.session.delete(user)
+    db.session.commit()
+    return delete_response()
