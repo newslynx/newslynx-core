@@ -1,0 +1,251 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>NewsLynx API &mdash; newslynx 0.0.1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/flasky.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="newslynx 0.0.1 documentation" href="index.html" />
+    <link rel="next" title="Command Line Interface" href="cli.html" />
+    <link rel="prev" title="Configuration" href="config.html" />
+   
+  <link href="//fonts.googleapis.com/css?family=Open+Sans:400|Antic+Slab" rel="stylesheet" type="text/css">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="cli.html" title="Command Line Interface"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="config.html" title="Configuration"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">newslynx 0.0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="newslynx-api">
+<h1>NewsLynx API<a class="headerlink" href="#newslynx-api" title="Permalink to this headline">¶</a></h1>
+<p>All of <strong>NewsLynx</strong>&#8216;s functionality is exposed through a <a class="reference external" href="http://en.wikipedia.org/wiki/Representational_state_transfer">REST</a> API.</p>
+<div class="section" id="authentication">
+<h2>Authentication<a class="headerlink" href="#authentication" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="api-keys">
+<h3>API Keys<a class="headerlink" href="#api-keys" title="Permalink to this headline">¶</a></h3>
+<p>All endpoints (except for: <span class="xref std std-ref">endpoints-users-login</span>), require an <code class="docutils literal"><span class="pre">apikey</span></code> passed in as a query-string parameter.  The <code class="docutils literal"><span class="pre">apikey</span></code> is used to ensure that the requesting user is registered and has access to the the requested resource. When a user is created, his/her <code class="docutils literal"><span class="pre">apikey</span></code> is randomnly generated. It can be refreshed at any time.</p>
+</div>
+<div class="section" id="organizaitons">
+<h3>Organizaitons<a class="headerlink" href="#organizaitons" title="Permalink to this headline">¶</a></h3>
+<p>All endpoints unrelated to <strong>Users</strong> (<span class="xref std std-ref">endpoints-users</span>) or <strong>Organizaitons</strong> (<span class="xref std std-ref">endpoints-organizations</span>) require an <code class="docutils literal"><span class="pre">org</span></code> query-string parameter.  Since users can belong to multiple organizations, we use this parameter to ensure:</p>
+<ol class="arabic simple">
+<li>That the requesting user is accessing resources related to his/her associated organization.</li>
+<li>That the requesting user has permission to access the requested resources.</li>
+</ol>
+</div>
+</div>
+<div class="section" id="id1">
+<h2>HTTP Responses<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="successes">
+<h3>Successes<a class="headerlink" href="#successes" title="Permalink to this headline">¶</a></h3>
+<p>Successful responses from the API will only return the following status codes:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="21%" />
+<col width="79%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">HTTP status</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>200 Success</td>
+<td>Standard response for successful HTTP requests.
+The actual response will depend on the request method used.</td>
+</tr>
+<tr class="row-odd"><td>204 No Content</td>
+<td>The server successfully processed the request, but is not
+returning any content.
+This response is only used for certain <code class="docutils literal"><span class="pre">DELETE</span></code> methods.</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="errors">
+<h3>Errors<a class="headerlink" href="#errors" title="Permalink to this headline">¶</a></h3>
+<p>All errors share this common <code class="docutils literal"><span class="pre">json</span></code> schema:</p>
+<div class="highlight-javascript"><div class="highlight"><pre><span class="p">{</span>
+  <span class="s2">&quot;status_code&quot;</span><span class="o">:</span> <span class="mi">401</span><span class="p">,</span>
+  <span class="s2">&quot;error&quot;</span><span class="o">:</span> <span class="s2">&quot;AuthError&quot;</span><span class="p">,</span>
+  <span class="s2">&quot;message&quot;</span><span class="o">:</span> <span class="s2">&quot;Invalid API Key.&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Various status codes connote different categories of errors:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="25%" />
+<col width="75%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">HTTP status</th>
+<th class="head">Description</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>400 Bad Request</td>
+<td>The server rejected the request as invalid.</td>
+</tr>
+<tr class="row-odd"><td>401 Unauthorized</td>
+<td>The authentication associated with the request is invalid</td>
+</tr>
+<tr class="row-even"><td>403 Forbidden</td>
+<td>Authentication is valid, but user is not allowed to perform
+this operation</td>
+</tr>
+<tr class="row-odd"><td>404 Not Found</td>
+<td>A required object for this operation was not found</td>
+</tr>
+<tr class="row-even"><td>405 Invalid</td>
+<td>This method does not exist</td>
+</tr>
+<tr class="row-odd"><td>409 Conflict</td>
+<td>A unique constraint was violated</td>
+</tr>
+<tr class="row-even"><td><dl class="first last docutils">
+<dt>500 Internal Server</dt>
+<dd>Error</dd>
+</dl>
+</td>
+<td>The server encountered an unexpected error while processing
+the request</td>
+</tr>
+</tbody>
+</table>
+<p>However, every error message will contain a highly-specific message for that particular error. In the case of Internal Server Errors, the server will respond with the error message generated by the responsible code.</p>
+</div>
+</div>
+<div class="section" id="endpoints">
+<h2>Endpoints<a class="headerlink" href="#endpoints" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="users">
+<h3>Users<a class="headerlink" href="#users" title="Permalink to this headline">¶</a></h3>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+  
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">NewsLynx API</a><ul>
+<li><a class="reference internal" href="#authentication">Authentication</a><ul>
+<li><a class="reference internal" href="#api-keys">API Keys</a></li>
+<li><a class="reference internal" href="#organizaitons">Organizaitons</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id1">HTTP Responses</a><ul>
+<li><a class="reference internal" href="#successes">Successes</a></li>
+<li><a class="reference internal" href="#errors">Errors</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#endpoints">Endpoints</a><ul>
+<li><a class="reference internal" href="#users">Users</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="config.html" title="previous chapter">Configuration</a></li>
+      <li>Next: <a href="cli.html" title="next chapter">Command Line Interface</a></li>
+  </ul></li>
+</ul>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/api.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="cli.html" title="Command Line Interface"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="config.html" title="Configuration"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">newslynx 0.0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" style="position:relative">
+        <a href="http://www.mozillaopennews.org/" style="position:absolute;left:10px;bottom:-10px"><img src="_static/knight_mozilla_on.jpg" /></a>
+
+      &copy; Copyright 2015, Brian Abelson.
+    </div>
+    <div>
+
+    </div>
+    <a style="position: absolute; top: 0; right: 0; border: 0;" href="https://github.com/newslynx/newslynx" class="github">
+        <img src="http://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+  </body>
+</html>
