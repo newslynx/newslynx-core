@@ -6,6 +6,7 @@ from werkzeug.security import (
 from newslynx.core import db
 from newslynx import settings
 from newslynx.lib import dates
+from uuid import uuid4
 
 
 class User(db.Model):
@@ -26,7 +27,7 @@ class User(db.Model):
         self.set_password(kw.get('password'))
         self.created = kw.get('created', dates.now())
         self.admin = kw.get('admin', False)
-        self.apikey = self.gen_apikey(**kw)
+        self.set_apikey(**kw)
 
     def get_id(self):
         return self.id
@@ -40,9 +41,13 @@ class User(db.Model):
         else:
             return check_password_hash(self.password, password)
 
-    def gen_apikey(self, **kw):
-        s = kw['email'] + kw['password'] + settings.SECRET_KEY
-        return str(md5(s).hexdigest())
+    def set_apikey(self, **kw):
+        s = str(uuid4()) + settings.SECRET_KEY
+        self.apikey = str(md5(s).hexdigest())
+
+    @property
+    def org_ids(self):
+        return [o.id for o in self.organizations]
 
     def to_dict(self, incl_org=True, incl_apikey=False):
         d = {

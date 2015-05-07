@@ -6,7 +6,8 @@ from newslynx.lib.serialize import jsonify
 from newslynx.exc import (
     AuthError, RequestError, ForbiddenError)
 from newslynx.views.decorators import load_user
-from newslynx.views.util import request_data, delete_response
+from newslynx.views.util import (
+    request_data, delete_response, arg_bool)
 
 # bp
 bp = Blueprint('users', __name__)
@@ -57,7 +58,7 @@ def me(user):
     return jsonify(user.to_dict(incl_apikey=True))
 
 
-@bp.route('/api/v1/me', methods=['PUT', 'POST', 'PATCH'])
+@bp.route('/api/v1/me', methods=['PUT', 'PATCH'])
 @load_user
 def update_me(user):
     """
@@ -83,6 +84,10 @@ def update_me(user):
 
     if name:
         user.name = name
+
+    # check if we should refresh the apikey
+    if arg_bool('refresh_apikey', False):
+        user.set_apikey()
 
     db.session.add(user)
     db.session.commit()

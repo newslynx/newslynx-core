@@ -194,11 +194,9 @@ def gen_tasks():
 
 # Recipe
 def gen_recipe(org, users, tasks):
-    u = choice(users)
     t = choice(tasks)
     r = Recipe(
         organization_id=org.id,
-        user_id=u.id,
         task_id=t.id,
         name=random_text(10),
         description=random_text(20),
