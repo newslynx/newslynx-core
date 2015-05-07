@@ -788,7 +788,9 @@ Example
 **POST | PUT | PATCH** ``/orgs/:org_id/settings``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Get a list of an organization's settings.
+Upsert an organization's setting.
+
+TK: I built it this way because i thought it would be easier to build a single form that created / updated, but if you're creating objects for each setting, you may need a normal PUT /settings/:id endpoint.
 
 **NOTE**:
 	- You can pass in either an organization's ``id`` or it's ``name`` to this endpoint.
