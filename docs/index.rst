@@ -4,16 +4,16 @@
    contain the root `toctree` directive.
 
 **newslynx**: own your analytics
-========
+================================
 
 Contents
 --------
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
 
    install
    config
    api
    cli
-
+   taxonomy

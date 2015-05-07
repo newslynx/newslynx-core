@@ -84,22 +84,6 @@ def get_tags(user, org):
     return jsonify(resp)
 
 
-@bp.route('/api/v1/tags/categories', methods=['GET'])
-def tag_categores():
-    """
-    A helper for generating dynamic UIs
-    """
-    return jsonify({'categories': IMPACT_TAG_CATEGORIES})
-
-
-@bp.route('/api/v1/tags/levels', methods=['GET'])
-def tag_levels():
-    """
-    A helper for generating dynamic UIs
-    """
-    return jsonify({'levels': IMPACT_TAG_LEVELS})
-
-
 @bp.route('/api/v1/tags', methods=['POST'])
 @load_user
 @load_org
@@ -145,7 +129,22 @@ def create_tag(user, org):
     return jsonify(tag)
 
 
-@bp.route('/api/v1/tags/<tag_id>', methods=['PUT', 'PATCH'])
+@bp.route('/api/v1/tags/<int:tag_id>', methods=['GET'])
+@load_user
+@load_org
+def get_tag(user, org, tag_id):
+    """
+    GET an individual tag.
+    """
+    # fetch the tag object
+    tag = Tag.query.filter_by(organization_id=org.id, id=tag_id).first()
+    if not tag:
+        raise RequestError('A Tag with ID {} does not exist'.format(tag_id))
+
+    return jsonify(tag)
+
+
+@bp.route('/api/v1/tags/<int:tag_id>', methods=['PUT', 'PATCH'])
 @load_user
 @load_org
 def update_tag(user, org, tag_id):
@@ -205,7 +204,7 @@ def update_tag(user, org, tag_id):
     return jsonify(tag)
 
 
-@bp.route('/api/v1/tags/<tag_id>', methods=['DELETE'])
+@bp.route('/api/v1/tags/<int:tag_id>', methods=['DELETE'])
 @load_user
 @load_org
 def delete_tag(user, org, tag_id):
@@ -220,3 +219,19 @@ def delete_tag(user, org, tag_id):
     db.session.delete(tag)
     db.session.commit()
     return delete_response()
+
+
+@bp.route('/api/v1/tags/categories', methods=['GET'])
+def tag_categores():
+    """
+    A helper for generating dynamic UIs
+    """
+    return jsonify(IMPACT_TAG_CATEGORIES)
+
+
+@bp.route('/api/v1/tags/levels', methods=['GET'])
+def tag_levels():
+    """
+    A helper for generating dynamic UIs
+    """
+    return jsonify(IMPACT_TAG_LEVELS)

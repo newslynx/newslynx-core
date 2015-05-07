@@ -37,7 +37,8 @@ class Setting(db.Model):
         return {
             'id': self.id,
             'name': self.name,
-            'value': v
+            'value': v,
+            'json_value': self.json_value
         }
 
     def __repr__(self):
