@@ -737,7 +737,7 @@ All methods, unless otherwise specified, will return one or many setting objects
 	    "name": "logo_image",
 	    "value": "http://example.com/mylogo.png",
 	    "json_value": false
-    }
+	}
 
 If a setting has been declared as having a ``json_value``, it will be parsed as such in the response:
 
@@ -748,7 +748,7 @@ If a setting has been declared as having a ``json_value``, it will be parsed as 
 	    "name": "domains",
 	    "value": ["propalpatine.org", "blog.propalpatine.org"],
 	    "json_value": true
-    }
+	}
 
 .. _endpoints-orgs-settings-list:
 
@@ -822,21 +822,21 @@ Create a simple setting.
 
 .. code-block:: bash
 	
-		curl --data "name=icon&value=http://example.com/mylogo.png" \
+	curl --data "name=icon&value=http://example.com/mylogo.png" \
 	$NEWSLYNX_API_URL/api/v1/orgs/1/settings\?apikey=$NEWSLYNX_API_KEY
 
 Create a ``json`` setting.
 
 .. code-block:: bash
 	
-		curl --data "name=short_urls&value=[\"prplt.in\"]&json_value=true" \
+	curl --data "name=short_urls&value=[\"prplt.in\"]&json_value=true" \
 	$NEWSLYNX_API_URL/api/v1/orgs/1/settings\?apikey=$NEWSLYNX_API_KEY
 
 Update a setting.
 
 .. code-block:: bash
 	
-		curl --data "name=short_urls&value=[\"zzzz.in\"]&json_value=true" \
+	curl --data "name=short_urls&value=[\"zzzz.in\"]&json_value=true" \
 	$NEWSLYNX_API_URL/api/v1/orgs/1/settings\?apikey=$NEWSLYNX_API_KEY
 
 
@@ -871,7 +871,7 @@ Example
 
 .. code-block:: bash
 	
-		curl $NEWSLYNX_API_URL/api/v1/orgs/1/settings/icon\?apikey=$NEWSLYNX_API_KEY
+	curl $NEWSLYNX_API_URL/api/v1/orgs/1/settings/icon\?apikey=$NEWSLYNX_API_KEY
 
 .. _endpoints-orgs-settings-delete:
 
@@ -904,7 +904,7 @@ Example
 
 .. code-block:: bash
 	
-		curl -X DELETE $NEWSLYNX_API_URL/api/v1/orgs/1/settings/icon\?apikey=$NEWSLYNX_API_KEY
+	curl -X DELETE $NEWSLYNX_API_URL/api/v1/orgs/1/settings/icon\?apikey=$NEWSLYNX_API_KEY
 
 
 .. _endpoints-tags:
