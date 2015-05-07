@@ -1195,7 +1195,7 @@ Example
 **GET** ``/tags/categories``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Get a list of Tag Categories. This endpoint exists to aid in creating dynamic UIs.
+Get a list of every :ref:`taxonomy-tag-cat`. This endpoint exists to aid in creating dynamic UIs.
 
 Returns
 *******
@@ -1215,7 +1215,7 @@ Example
 **GET** ``/tags/levels``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Get a list of Tag levels. This endpoint exists to aid in creating dynamic UIs.
+Get a list of every :ref:`taxonomy-tag-level`. This endpoint exists to aid in creating dynamic UIs.
 
 Returns
 *******
