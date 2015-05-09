@@ -11,7 +11,7 @@ from newslynx.lib.serialize import jsonify
 from newslynx.views.util import register_blueprints
 from newslynx.views import api
 from newslynx.views import admin
-from newslynx.views import oauth
+from newslynx.views import auth
 
 log = logging.getLogger(__name__)
 
@@ -87,4 +87,4 @@ def end_timing(response):
     return response
 
 # register blueprints
-register_blueprints(app, api, admin, oauth)
+register_blueprints(app, api, admin, auth)

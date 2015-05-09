@@ -13,7 +13,7 @@ from newslynx.views.decorators import load_user, load_org
 from newslynx.views.util import obj_or_404, delete_response
 
 # blueprint
-bp = Blueprint('oauth_twitter', __name__)
+bp = Blueprint('auth_twitter', __name__)
 
 # check for necessary credentials
 try:
