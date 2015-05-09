@@ -105,8 +105,8 @@ All endpoints retunrn ``json``. If you'd like to follow along with these example
 
 .. code-block:: bash 
 
-	export NEWSLYNX_API_URL='http://localhost:5000'
-	export NEWSLYNX_API_KEY='djljahflsdkfhasldkfhasldfa'
+    export NEWSLYNX_API_URL='http://localhost:5000'
+    export NEWSLYNX_API_KEY='djljahflsdkfhasldkfhasldfa'
 
 
 .. _endpoints-user:
@@ -126,20 +126,20 @@ All methods (unless otherwise specified) return the following ``json`` object:
 
 .. code-block:: javascript
 
-	{
-	  "organizations": [
-	    {
-	      "id": 1,
-	      "name": "Xosy Media"
-	    }
-	  ],
-	  "apikey": "djljahflsdkfhasldkfhasldfa",
-	  "name": "Merlynne Jones",
-	  "created": "2015-05-03T16:21:41.995821-04:00",
-	  "admin": true,
-	  "id": 1,
-	  "email": "merlynne@newslynx.org"
-	}
+    {
+      "organizations": [
+        {
+          "id": 1,
+          "name": "Xosy Media"
+        }
+      ],
+      "apikey": "djljahflsdkfhasldkfhasldfa",
+      "name": "Merlynne Jones",
+      "created": "2015-05-03T16:21:41.995821-04:00",
+      "admin": true,
+      "id": 1,
+      "email": "merlynne@newslynx.org"
+    }
 
 
 .. _endpoints-user-login:
@@ -168,9 +168,9 @@ Example
 *******
 
 .. code-block:: bash
-	
-	curl --data "email=merlynne@newslynx.org&password=admin-m3rlynn3" \
-	$NEWSLYNX_API_URL/api/v1/login
+    
+    curl --data "email=merlynne@newslynx.org&password=admin-m3rlynn3" \
+    $NEWSLYNX_API_URL/api/v1/login
 
 
 .. _endpoints-user-get-me:
@@ -198,10 +198,10 @@ Example
 *******
 
 .. code-block:: bash
-	
-	curl $NEWSLYNX_API_URL/api/v1/me\?apikey=$NEWSLYNX_API_KEY
+    
+    curl $NEWSLYNX_API_URL/api/v1/me\?apikey=$NEWSLYNX_API_KEY
 
-	
+    
 .. _endpoints-user-update-me:
 
 **PUT** | **PATCH** ``/me``
@@ -247,22 +247,22 @@ Examples
 Change your ``name`` and ``email``.
 
 .. code-block:: bash
-	
-	curl -X PUT -d email=merlynne2@newslynx.org -d name="Meryl Jones" \
-	$NEWSLYNX_API_URL/api/v1/me\?apikey=$NEWSLYNX_API_KEY
+    
+    curl -X PUT -d email=merlynne2@newslynx.org -d name="Meryl Jones" \
+    $NEWSLYNX_API_URL/api/v1/me\?apikey=$NEWSLYNX_API_KEY
 
 Change your ``password``.
 
 .. code-block:: bash
-	
-	curl -X PUT -d old_password="a-secure-p4ssw0rd" -d new_password="a-more-secure-p4ssw0rd" \
-	$NEWSLYNX_API_URL/api/v1/me\?apikey=$NEWSLYNX_API_KEY
+    
+    curl -X PUT -d old_password="a-secure-p4ssw0rd" -d new_password="a-more-secure-p4ssw0rd" \
+    $NEWSLYNX_API_URL/api/v1/me\?apikey=$NEWSLYNX_API_KEY
 
 Refresh your ``apikey``
 
 .. code-block:: bash
-	
-	curl -X PUT $NEWSLYNX_API_URL/api/v1/me\?apikey=$NEWSLYNX_API_KEY\&refresh_apikey=true
+    
+    curl -X PUT $NEWSLYNX_API_URL/api/v1/me\?apikey=$NEWSLYNX_API_KEY\&refresh_apikey=true
 
 
 .. _endpoints-user-delete-me:
@@ -290,8 +290,8 @@ Example
 ********
 
 .. code-block:: bash
-	
-	curl -X DELETE $NEWSLYNX_API_URL/api/v1/me\?apikey=$NEWSLYNX_API_KEY
+    
+    curl -X DELETE $NEWSLYNX_API_URL/api/v1/me\?apikey=$NEWSLYNX_API_KEY
 
 
 .. _endpoints-orgs:
@@ -333,7 +333,7 @@ All methods, unless otherwise specified, will return one or many organization ob
     "id": 1,
     "name": "liveqa"
   }
-	
+    
 
 .. _endpoints-orgs-list:
 
@@ -360,8 +360,8 @@ Example
 *******
 
 .. code-block:: bash
-	
-	curl $NEWSLYNX_API_URL/api/v1/orgs\?apikey=$NEWSLYNX_API_KEY
+    
+    curl $NEWSLYNX_API_URL/api/v1/orgs\?apikey=$NEWSLYNX_API_KEY
 
 
 .. _endpoints-orgs-create:
@@ -372,7 +372,7 @@ Example
 Create an organization. This will also add the requesting user to that organization.
 
 **NOTE**: 
-	- Requires admin privileges.
+    - Requires admin privileges.
 
 
 Params
@@ -402,9 +402,9 @@ Example
 *******
 
 .. code-block:: bash
-	
-	curl --data "name=ProPalpatine" \
-	$NEWSLYNX_API_URL/api/v1/orgs\?apikey=$NEWSLYNX_API_KEY
+    
+    curl --data "name=ProPalpatine" \
+    $NEWSLYNX_API_URL/api/v1/orgs\?apikey=$NEWSLYNX_API_KEY
 
 
 .. _endpoints-orgs-get:
@@ -415,7 +415,7 @@ Example
 Fetch an organization object.
 
 **NOTE**: 
-	- You can pass in either an organization's ``id`` or it's ``name`` to this endpoint.
+    - You can pass in either an organization's ``id`` or it's ``name`` to this endpoint.
 
 Params
 ******
@@ -435,8 +435,8 @@ Example
 *******
 
 .. code-block:: bash
-	
-	curl $NEWSLYNX_API_URL/api/v1/orgs/1\?apikey=$NEWSLYNX_API_KEY
+    
+    curl $NEWSLYNX_API_URL/api/v1/orgs/1\?apikey=$NEWSLYNX_API_KEY
 
 
 .. _endpoints-orgs-update:
@@ -447,8 +447,8 @@ Example
 Change an organization's ``name``.
 
 **NOTE**: 
-	- Requires admin privileges.
-	- You can pass in either an organization's ``id`` or it's (current) ``name`` to this endpoint.
+    - Requires admin privileges.
+    - You can pass in either an organization's ``id`` or it's (current) ``name`` to this endpoint.
 
 Params
 ******
@@ -478,9 +478,9 @@ Example
 *******
 
 .. code-block:: bash
-	
-	curl -X PUT -d name=ProPalpatine2 \
-	$NEWSLYNX_API_URL/api/v1/orgs/2\?apikey=$NEWSLYNX_API_KEY
+    
+    curl -X PUT -d name=ProPalpatine2 \
+    $NEWSLYNX_API_URL/api/v1/orgs/2\?apikey=$NEWSLYNX_API_KEY
 
 
 .. _endpoints-orgs-delete:
@@ -491,11 +491,11 @@ Example
 Delete an organization and all of it's associated collections.
 
 **NOTE**: 
-	- Requires admin privileges.
-	- You can pass in either an organization's ``id`` or it's ``name`` to this endpoint.
+    - Requires admin privileges.
+    - You can pass in either an organization's ``id`` or it's ``name`` to this endpoint.
 
 **WARNING**:
-	- This method will delete all data associated with this organization, except for users.
+    - This method will delete all data associated with this organization, except for users.
 
 Params
 ******
@@ -516,8 +516,8 @@ Example
 *******
 
 .. code-block:: bash
-	
-	curl -X DELETE $NEWSLYNX_API_URL/api/v1/orgs/2\?apikey=$NEWSLYNX_API_KEY
+    
+    curl -X DELETE $NEWSLYNX_API_URL/api/v1/orgs/2\?apikey=$NEWSLYNX_API_KEY
 
 
 .. _endpoints-orgs-users-list:
@@ -528,7 +528,7 @@ Example
 Fetch all users associated with an organization.
 
 **NOTE**: 
-	- You can pass in either an organization's ``id`` or it's ``name`` to this endpoint.
+    - You can pass in either an organization's ``id`` or it's ``name`` to this endpoint.
 
 Params
 ******
@@ -549,8 +549,8 @@ Example
 *******
 
 .. code-block:: bash
-	
-	curl $NEWSLYNX_API_URL/api/v1/orgs/2/users\?apikey=$NEWSLYNX_API_KEY
+    
+    curl $NEWSLYNX_API_URL/api/v1/orgs/2/users\?apikey=$NEWSLYNX_API_KEY
 
 
 .. _endpoints-orgs-users-create:
@@ -561,8 +561,8 @@ Example
 Create a new user under an organization.
 
 **NOTE**: 
-	- Requires admin privileges.
-	- You can pass in either an organization's ``id`` or it's ``name`` to this endpoint.
+    - Requires admin privileges.
+    - You can pass in either an organization's ``id`` or it's ``name`` to this endpoint.
 
 Params
 ******
@@ -596,9 +596,9 @@ Example
 *******
 
 .. code-block:: bash
-	
-	curl --data "name=Brian Abelson&email=b@nytimes.cat&password=l0l4k4t&admin=false" \
-	$NEWSLYNX_API_URL/api/v1/orgs/2/users\?apikey=$NEWSLYNX_API_KEY
+    
+    curl --data "name=Brian Abelson&email=b@nytimes.cat&password=l0l4k4t&admin=false" \
+    $NEWSLYNX_API_URL/api/v1/orgs/2/users\?apikey=$NEWSLYNX_API_KEY
 
 
 .. _endpoints-orgs-users-get-user:
@@ -609,8 +609,8 @@ Example
 Fetch a user that belongs to a given organization.
 
 **NOTE**: 
-	- You can pass in either an organization's ``id`` or it's ``name`` to this endpoint.
-	- You can pass in either an user's ``id`` or his/her ``email`` to this endpoint.
+    - You can pass in either an organization's ``id`` or it's ``name`` to this endpoint.
+    - You can pass in either an user's ``id`` or his/her ``email`` to this endpoint.
 
 Params
 ******
@@ -631,8 +631,8 @@ Example
 *******
 
 .. code-block:: bash
-	
-	curl $NEWSLYNX_API_URL/api/v1/orgs/2/users/b@nytimes.cat\?apikey=$NEWSLYNX_API_KEY
+    
+    curl $NEWSLYNX_API_URL/api/v1/orgs/2/users/b@nytimes.cat\?apikey=$NEWSLYNX_API_KEY
 
 
 .. _endpoints-orgs-users-add-user:
@@ -643,9 +643,9 @@ Example
 Add an existing user to an organization.
 
 **NOTE**:
-	- Requires admin privileges. 
-	- You can pass in either an organization's ``id`` or it's ``name`` to this endpoint.
-	- You can pass in either an user's ``id`` or his/her ``email`` to this endpoint.
+    - Requires admin privileges. 
+    - You can pass in either an organization's ``id`` or it's ``name`` to this endpoint.
+    - You can pass in either an user's ``id`` or his/her ``email`` to this endpoint.
 
 Params
 ******
@@ -666,8 +666,8 @@ Example
 *******
 
 .. code-block:: bash
-	
-	curl -X PUT $NEWSLYNX_API_URL/api/v1/orgs/2/users/m@nytimes.cat\?apikey=$NEWSLYNX_API_KEY
+    
+    curl -X PUT $NEWSLYNX_API_URL/api/v1/orgs/2/users/m@nytimes.cat\?apikey=$NEWSLYNX_API_KEY
 
 
 .. _endpoints-orgs-users-remove-user:
@@ -678,9 +678,9 @@ Example
 Add an existing user to an organization.
 
 **NOTE**:
-	- Requires admin privileges. 
-	- You can pass in either an organization's ``id`` or it's ``name`` to this endpoint.
-	- You can pass in either an user's ``id`` or his/her ``email`` to this endpoint.
+    - Requires admin privileges. 
+    - You can pass in either an organization's ``id`` or it's ``name`` to this endpoint.
+    - You can pass in either an user's ``id`` or his/her ``email`` to this endpoint.
 
 Params
 ******
@@ -711,8 +711,8 @@ Example
 *******
 
 .. code-block:: bash
-	
-	curl -X DELETE $NEWSLYNX_API_URL/api/v1/orgs/2/users/m@nytimes.cat\?apikey=$NEWSLYNX_API_KEY
+    
+    curl -X DELETE $NEWSLYNX_API_URL/api/v1/orgs/2/users/m@nytimes.cat\?apikey=$NEWSLYNX_API_KEY
 
 
 .. _endpoints-settings:
@@ -732,23 +732,23 @@ All methods, unless otherwise specified, will return one or many setting objects
 
 .. code-block:: javascript
 
-	{
-	    "id": 1,
-	    "name": "logo_image",
-	    "value": "http://example.com/mylogo.png",
-	    "json_value": false
-	}
+    {
+        "id": 1,
+        "name": "logo_image",
+        "value": "http://example.com/mylogo.png",
+        "json_value": false
+    }
 
 If a setting has been declared as having a ``json_value``, it will be parsed as such in the response:
 
 .. code-block:: javascript
 
-	{
-	    "id": 1,
-	    "name": "domains",
-	    "value": ["propalpatine.org", "blog.propalpatine.org"],
-	    "json_value": true
-	}
+    {
+        "id": 1,
+        "name": "domains",
+        "value": ["propalpatine.org", "blog.propalpatine.org"],
+        "json_value": true
+    }
 
 .. _endpoints-orgs-settings-list:
 
@@ -758,7 +758,7 @@ If a setting has been declared as having a ``json_value``, it will be parsed as 
 Get a list of an organization's settings.
 
 **NOTE**:
-	- You can pass in either an organization's ``id`` or it's ``name`` to this endpoint.
+    - You can pass in either an organization's ``id`` or it's ``name`` to this endpoint.
 
 Params
 ******
@@ -779,8 +779,8 @@ Example
 *******
 
 .. code-block:: bash
-	
-	curl $NEWSLYNX_API_URL/api/v1/orgs/2/settings\?apikey=$NEWSLYNX_API_KEY
+    
+    curl $NEWSLYNX_API_URL/api/v1/orgs/2/settings\?apikey=$NEWSLYNX_API_KEY
 
 
 .. _endpoints-orgs-settings-upsert:
@@ -793,7 +793,7 @@ Upsert an organization's setting.
 TK: I built it this way because i thought it would be easier to build a single form that created / updated, but if you're creating objects for each setting, you may need a normal PUT /settings/:id endpoint.
 
 **NOTE**:
-	- You can pass in either an organization's ``id`` or it's ``name`` to this endpoint.
+    - You can pass in either an organization's ``id`` or it's ``name`` to this endpoint.
 
 Params
 ******
@@ -821,23 +821,23 @@ Examples
 Create a simple setting.
 
 .. code-block:: bash
-	
-	curl --data "name=icon&value=http://example.com/mylogo.png" \
-	$NEWSLYNX_API_URL/api/v1/orgs/1/settings\?apikey=$NEWSLYNX_API_KEY
+    
+    curl --data "name=icon&value=http://example.com/mylogo.png" \
+    $NEWSLYNX_API_URL/api/v1/orgs/1/settings\?apikey=$NEWSLYNX_API_KEY
 
 Create a ``json`` setting.
 
 .. code-block:: bash
-	
-	curl --data "name=short_urls&value=[\"prplt.in\"]&json_value=true" \
-	$NEWSLYNX_API_URL/api/v1/orgs/1/settings\?apikey=$NEWSLYNX_API_KEY
+    
+    curl --data "name=short_urls&value=[\"prplt.in\"]&json_value=true" \
+    $NEWSLYNX_API_URL/api/v1/orgs/1/settings\?apikey=$NEWSLYNX_API_KEY
 
 Update a setting.
 
 .. code-block:: bash
-	
-	curl --data "name=short_urls&value=[\"zzzz.in\"]&json_value=true" \
-	$NEWSLYNX_API_URL/api/v1/orgs/1/settings\?apikey=$NEWSLYNX_API_KEY
+    
+    curl --data "name=short_urls&value=[\"zzzz.in\"]&json_value=true" \
+    $NEWSLYNX_API_URL/api/v1/orgs/1/settings\?apikey=$NEWSLYNX_API_KEY
 
 
 .. _endpoints-orgs-settings-get:
@@ -848,8 +848,8 @@ Update a setting.
 Get an organization's setting by it's name.
 
 **NOTE**:
-	- You can pass in either an organization's ``id`` or it's ``name`` to this endpoint.
-	- You can pass in either a setting's ``id`` or it's ``name`` to this endpoint.
+    - You can pass in either an organization's ``id`` or it's ``name`` to this endpoint.
+    - You can pass in either a setting's ``id`` or it's ``name`` to this endpoint.
 
 Params
 ******
@@ -870,8 +870,8 @@ Example
 ********
 
 .. code-block:: bash
-	
-	curl $NEWSLYNX_API_URL/api/v1/orgs/1/settings/icon\?apikey=$NEWSLYNX_API_KEY
+    
+    curl $NEWSLYNX_API_URL/api/v1/orgs/1/settings/icon\?apikey=$NEWSLYNX_API_KEY
 
 .. _endpoints-orgs-settings-delete:
 
@@ -881,8 +881,8 @@ Example
 Delete an organization's setting by it's name.
 
 **NOTE**:
-	- You can pass in either an organization's ``id`` or it's ``name`` to this endpoint.
-	- You can pass in either a setting's ``id`` or it's ``name`` to this endpoint.
+    - You can pass in either an organization's ``id`` or it's ``name`` to this endpoint.
+    - You can pass in either a setting's ``id`` or it's ``name`` to this endpoint.
 
 Params
 ******
@@ -903,8 +903,8 @@ Example
 ********
 
 .. code-block:: bash
-	
-	curl -X DELETE $NEWSLYNX_API_URL/api/v1/orgs/1/settings/icon\?apikey=$NEWSLYNX_API_KEY
+    
+    curl -X DELETE $NEWSLYNX_API_URL/api/v1/orgs/1/settings/icon\?apikey=$NEWSLYNX_API_KEY
 
 
 .. _endpoints-tags:
@@ -925,27 +925,27 @@ A :ref:`taxonomy-subject-tags` takes the following schema:
 
 .. code-block:: javascript
 
-	{
-	    "id": 1,
-	    "organization_id": 1,
-	    "name": "Politics",
-	    "type": "subject",
-	    "color": "#fc0"
-	}
+    {
+        "id": 1,
+        "organization_id": 1,
+        "name": "Politics",
+        "type": "subject",
+        "color": "#fc0"
+    }
 
 An :ref:`taxonomy-impact-tags` takes the following schema:
 
 .. code-block:: javascript
 
-	{
-	    "id": 1,
-	    "organization_id": 1,
-	    "name": "Social Media Share",
-	    "type": "impact",
-	    "color": "#0cf",
-	    "category": "citation",
-	    "level": "media"
-	}
+    {
+        "id": 1,
+        "organization_id": 1,
+        "name": "Social Media Share",
+        "type": "impact",
+        "color": "#0cf",
+        "category": "citation",
+        "level": "media"
+    }
 
 .. _endpoints-tags-list:
 
@@ -955,7 +955,7 @@ An :ref:`taxonomy-impact-tags` takes the following schema:
 List all tags associated with an organization, as well as helpful faceted counts.
 
 **NOTE**:
-	- You can pass in either an tag's ``id`` or it's ``name`` to this endpoint.
+    - You can pass in either an tag's ``id`` or it's ``name`` to this endpoint.
 
 Params
 ******
@@ -984,56 +984,56 @@ Returns
 
 .. code-block:: javascript
 
-	{
-	  "facets": {
-	    "levels": {
-	      "instituion": 2,
-	      "media": 3,
-	      "individual": 1,
-	      "internal": 2,
-	      "community": 2
-	    },
-	    "categories": {
-	      "other": 5,
-	      "citation": 1,
-	      "change": 2,
-	      "achievement": 2
-	    },
-	    "types": {
-	      "impact": 10,
-	      "subject": 10
-	    }
-	  },
-	  "tags": [
-	    {
-	      "thing_count": 0,
-	      "name": "nisi illum",
-	      "color": "#13962A",
-	      "organization_id": 1,
-	      "type": "subject",
-	      "id": 14
-	    },
-	    {
-	      "category": "change",
-	      "name": "molestiae ",
-	      "level": "individual",
-	      "color": "#43E1D8",
-	      "event_count": 0,
-	      "organization_id": 1,
-	      "type": "impact",
-	      "id": 1
-	    },
-	    ...
-	  ]
-	}
+    {
+        "facets": {
+            "levels": {
+                "instituion": 2,
+                "media": 3,
+                "individual": 1,
+                "internal": 2,
+                "community": 2
+            },
+            "categories": {
+                "other": 5,
+                "citation": 1,
+                "change": 2,
+                "achievement": 2
+            },
+            "types": {
+                "impact": 10,
+                "subject": 10
+            }
+        },
+        "tags": [
+            {
+                "thing_count": 0,
+                "name": "nisi illum",
+                "color": "#13962A",
+                "organization_id": 1,
+                "type": "subject",
+                "id": 14
+            },
+            {
+                "category": "change",
+                "name": "molestiae ",
+                "level": "individual",
+                "color": "#43E1D8",
+                "event_count": 0,
+                "organization_id": 1,
+                "type": "impact",
+                "id": 1
+            },
+            ...
+        ]
+    }
 
 
 Example
 ********
 
 .. code-block:: bash
-	
-	curl $NEWSLYNX_API_URL/api/v1/tags\?apikey=$NEWSLYNX_API_KEY\&org=1
+    
+    curl $NEWSLYNX_API_URL/api/v1/tags\?apikey=$NEWSLYNX_API_KEY\&org=1
 
 
 .. _endpoints-tags-create:
@@ -1073,16 +1073,16 @@ Example
 Create a subject tag.
 
 .. code-block:: bash
-	
-	curl --data "name=foo&type=subject&color=#fc0" \
-	$NEWSLYNX_API_URL/api/v1/tags\?apikey=$NEWSLYNX_API_KEY\&org=1
+    
+    curl --data "name=foo&type=subject&color=#fc0" \
+    $NEWSLYNX_API_URL/api/v1/tags\?apikey=$NEWSLYNX_API_KEY\&org=1
 
 Create a impact tag.
 
 .. code-block:: bash
-	
-	curl --data "name=bar&type=subject&color=#0cf&level=media&category=change" \
-	$NEWSLYNX_API_URL/api/v1/tags\?apikey=$NEWSLYNX_API_KEY\&org=1
+    
+    curl --data "name=bar&type=subject&color=#0cf&level=media&category=change" \
+    $NEWSLYNX_API_URL/api/v1/tags\?apikey=$NEWSLYNX_API_KEY\&org=1
 
 .. _endpoints-tags-get:
 
@@ -1113,8 +1113,8 @@ Example
 ********
 
 .. code-block:: bash
-	
-	curl $NEWSLYNX_API_URL/api/v1/tags/21\?apikey=$NEWSLYNX_API_KEY\&org=1
+    
+    curl $NEWSLYNX_API_URL/api/v1/tags/21\?apikey=$NEWSLYNX_API_KEY\&org=1
 
 
 .. _endpoints-tags-update:
@@ -1151,9 +1151,9 @@ Example
 ********
 
 .. code-block:: bash
-	
-	curl -X PUT -d "color=#fc0aaa" \
-	$NEWSLYNX_API_URL/api/v1/tags/21\?apikey=$NEWSLYNX_API_KEY\&org=1
+    
+    curl -X PUT -d "color=#fc0aaa" \
+    $NEWSLYNX_API_URL/api/v1/tags/21\?apikey=$NEWSLYNX_API_KEY\&org=1
 
 
 .. _endpoints-tags-delete:
@@ -1186,8 +1186,8 @@ Example
 ********
 
 .. code-block:: bash
-	
-	curl -X DELETE $NEWSLYNX_API_URL/api/v1/tags/21\?apikey=$NEWSLYNX_API_KEY\&org=1
+    
+    curl -X DELETE $NEWSLYNX_API_URL/api/v1/tags/21\?apikey=$NEWSLYNX_API_KEY\&org=1
 
 
 .. _endpoints-tags-categories:
@@ -1206,8 +1206,8 @@ Example
 ********
 
 .. code-block:: bash
-	
-	curl $NEWSLYNX_API_URL/api/v1/tags/categories
+    
+    curl $NEWSLYNX_API_URL/api/v1/tags/categories
 
 .. _endpoints-tags-levels:
 
@@ -1226,5 +1226,5 @@ Example
 ********
 
 .. code-block:: bash
-	
-	curl $NEWSLYNX_API_URL/api/v1/tags/levels
+    
+    curl $NEWSLYNX_API_URL/api/v1/tags/levels

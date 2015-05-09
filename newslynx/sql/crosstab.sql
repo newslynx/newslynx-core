@@ -1,12 +1,4 @@
-with metric_names as (
-    SELECT distinct(name) 
-    FROM metrics 
-        WHERE created IS NOT NULL 
-        AND level = 'thing' 
-    ORDER BY name ASC
-)
-
-with stats as (
+WITH stats as (
     SELECT 
         thing_id, datetime, 
         SUM(coalesce(on_homepage, 0)) AS on_homepage, 
@@ -15,11 +7,17 @@ with stats as (
 
     from crosstab(
         'SELECT 
-         thing_id, date_trunc(''hour'', created) AS datetime, name, SUM(value) AS value FROM metrics 
+            thing_id, date_trunc(''hour'', created) AS datetime, name, SUM(value) AS value 
+         FROM metrics 
          WHERE created IS NOT NULL AND level = ''thing''
          GROUP BY datetime, name, thing_id
          ORDER BY datetime, name ASC', 
-        'select * from metric_names'
+        'SELECT 
+            distinct(name) 
+         FROM metrics 
+         WHERE created IS NOT NULL 
+         AND level = ''thing'' 
+         ORDER BY name ASC'
     ) as 
         ct(
             thing_id int, 
@@ -33,11 +31,12 @@ with stats as (
 ),
 
 calendar AS (
-    select datetime, thing_id from thing_metrics_calendar('1 hour')
+    select datetime, thing_id, org_id from thing_metrics_calendar('1 hour')
 )
 
-SELECT calendar.thing_id, 
-       calendar.datetime, 
+SELECT calendar.org_id, 
+       calendar.thing_id, 
+       calendar.datetime,
        coalesce(on_homepage, 0) as on_homepage, 
        coalesce(pageviews, 0) as pageviews, 
        coalesce(twitter_shares, 0) as twitter_shares 
