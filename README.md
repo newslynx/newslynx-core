@@ -6,6 +6,7 @@ the API and SousChefs that Power Newslynx.
 ## (Re)Setting up the dev environment
 
 * Clone this repository and install `newslynx`
+    
     - preferably do this in a virtual environment.
 
 ```
@@ -22,7 +23,8 @@ username=# create database newslynx;
 ```
 
 * fill out [`sample_config.yaml`](sample_config.yaml) and put it somewhere safe. 
-- MORE DETAILS TK HERE
+    
+    - MORE DETAILS TK HERE
 
 * set the environment variable `NEWSLYNX_CONFIG_FILE` to point to the absolute path of your config file.
 
