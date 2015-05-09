@@ -21,3 +21,10 @@ def load_config():
             name = name.replace('NEWSLYNX_', '').lower()
             config[name] = value
     return config
+
+
+def here(f, *args):
+    """
+    Get the current directory of a file.
+    """
+    return os.path.join(os.path.dirname(f), *args)

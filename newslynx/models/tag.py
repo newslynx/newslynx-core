@@ -42,7 +42,7 @@ class Tag(db.Model):
                 'org_id': self.org_id,
                 'name': self.name,
                 'type': self.type,
-                'color': self.color,
+                'color': self.color.lower(),
                 'category': self.category,
                 'level': self.level
             }
@@ -52,7 +52,7 @@ class Tag(db.Model):
                 'org_id': self.org_id,
                 'name': self.name,
                 'type': self.type,
-                'color': self.color,
+                'color': self.color.lower(),
             }
 
     def __repr__(self):

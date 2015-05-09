@@ -44,3 +44,5 @@ tldextract==1.6
 uritemplate==0.6
 validators==0.7
 wsgiref==0.1.2
+jsonschema==2.4.0
+
