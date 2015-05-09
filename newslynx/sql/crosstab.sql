@@ -33,7 +33,7 @@ with stats as (
 ),
 
 calendar AS (
-    select datetime, thing_id from thing_metrics_calendar()
+    select datetime, thing_id from thing_metrics_calendar('1 hour')
 )
 
 SELECT calendar.thing_id, 

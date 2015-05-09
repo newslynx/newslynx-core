@@ -16,7 +16,7 @@ CREATE OR REPLACE FUNCTION date_trunc_by_hours(int, timestamp with time zone)
 RETURNS timestamp with time zone AS $$ 
 BEGIN
   IF $1 > 12 THEN
-     RAISE EXCEPTION 'the number of hours must be < 12';
+     RAISE EXCEPTION 'the number of hours must be <= 12';
   END IF;
   RETURN 
     date_trunc('day', $2) + 
@@ -42,8 +42,8 @@ BEGIN
    -- parse argument
    bucket := split_part($1, ' ', 1)::int;
    unit := split_part($1, ' ', 2);
-   IF unit != 'minutes' AND unit != 'hours' THEN
-       RAISE EXCEPTION 'unit must be of minutes or hours';
+   IF unit NOT IN {'minutes', 'hours', 'hour', 'minute'} THEN
+       RAISE EXCEPTION 'unit must be of minutes, minue, hours, or hour';
    END IF;
    FOR t_id IN 
        SELECT distinct(id) FROM things
@@ -55,17 +55,17 @@ BEGIN
                 SELECT 
                     MIN(date_trunc_by_' || unit || '(' || bucket || ', metrics.created)) AS minmin,
                     MAX(date_trunc_by_' || unit || '(' || bucket || ', metrics.created)) AS maxmax,
-                    thing_id
+                    thing_id, org_id
                 FROM metrics 
                     WHERE metrics.thing_id=' || t_id || '
                     AND metrics.created IS NOT NULL and metrics.level = ''thing'' 
-                    GROUP BY metrics.thing_id)
+                    GROUP BY metrics.thing_id, metrics.org_id)
             SELECT 
                 generate_series(mm.minmin , mm.maxmax , '''|| $1 || '''::interval) AS datetime,
                 thing_id
             FROM mm
             )
-       SELECT cal.datetime, cal.thing_id FROM cal ORDER BY datetime ASC';
+       SELECT org_id, thing_id, datetime FROM cal ORDER BY datetime ASC';
    END LOOP;
 END
 $BODY$
@@ -88,8 +88,8 @@ BEGIN
    -- parse argument
    bucket := split_part($1, ' ', 1)::int;
    unit := split_part($1, ' ', 2);
-   IF unit != 'minutes' AND unit != 'hours' THEN
-       RAISE EXCEPTION 'unit must be of minutes or hours';
+   IF unit NOT IN {'minutes', 'hours', 'hour', 'minute'} THEN
+       RAISE EXCEPTION 'unit must be of minutes, minue, hours, or hour';
    END IF;
    FOR org_id IN 
        SELECT distinct(id) FROM organizations
@@ -101,17 +101,17 @@ BEGIN
                 SELECT 
                     MIN(date_trunc_by_' || unit || '(' || bucket || ', metrics.created)) AS minmin,
                     MAX(date_trunc_by_' || unit || '(' || bucket || ', metrics.created)) AS maxmax,
-                    organization_id
+                    org_id
                 FROM metrics 
-                    WHERE metrics.organization_id=' || org_id || '
-                    AND metrics.created IS NOT NULL and metrics.level = ''organization'' 
-                    GROUP BY metrics.organization_id)
+                    WHERE metrics.org_id=' || org_id || '
+                    AND metrics.created IS NOT NULL and metrics.level = ''org'' 
+                    GROUP BY metrics.org_id)
             SELECT 
                 generate_series(mm.minmin , mm.maxmax , '''|| $1 || '''::interval) AS datetime,
-                organization_id
+                org_id
             FROM mm
             )
-       SELECT cal.datetime, cal.organization_id FROM cal ORDER BY datetime ASC';
+       SELECT org_id, datetime FROM cal ORDER BY datetime ASC';
    END LOOP;
 END
 $BODY$

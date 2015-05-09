@@ -219,7 +219,7 @@ def search_things(user, org):
         exclude_recipes=exclude_recipes,
         include_sous_chefs=include_sous_chefs,
         exclude_sous_chefs=exclude_sous_chefs,
-        org=org.id
+        org_id=org.id
     )
 
     # validate arguments

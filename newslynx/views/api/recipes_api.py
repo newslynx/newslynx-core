@@ -30,7 +30,7 @@ def search_recipes(user, org):
     scheduled = arg_bool('scheduled', default=None)
     sort_field, direction = arg_sort('sort', default=None)
     include_sous_chefs, exclude_sous_chefs = \
-        arg_list('tasks', default=[], typ=str, exclusions=True)
+        arg_list('sous_chefs', default=[], typ=str, exclusions=True)
 
     # validate sort fields are part of Recipe object.
     if sort_field:
@@ -66,7 +66,7 @@ def search_recipes(user, org):
     facets = defaultdict(Counter)
     for r in recipe_query.all():
         facets['statuses'][r.status] += 1
-        facets['tasks'][r.task.name] += 1
+        facets['sous_chefs'][r.sous_chef.name] += 1
         if r.scheduled:
             facets['schedules']['scheduled'] += 1
         else:

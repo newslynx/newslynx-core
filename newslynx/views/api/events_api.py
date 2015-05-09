@@ -26,7 +26,7 @@ def apply_event_filters(q, **kw):
     """
 
     # filter by org_id
-    q = q.filter(Event.org_id == kw['org'])
+    q = q.filter(Event.org_id == kw['org_id'])
 
     # apply search query
     if kw['search_query']:
@@ -60,7 +60,7 @@ def apply_event_filters(q, **kw):
     # apply tag categories/levels filter
     # TODO don't use multiple queries here.
     if len(kw['include_categories']):
-        tag_ids = db.session.query(Tag.id).filter_by(org_id=kw['org'])\
+        tag_ids = db.session.query(Tag.id).filter_by(org_id=kw['org_id'])\
             .filter(Tag.category.in_(kw['include_categories']))\
             .all()
         tag_ids = [t[0] for t in tag_ids]
@@ -68,7 +68,7 @@ def apply_event_filters(q, **kw):
         q = q.filter(Event.tags.any(Tag.id.in_(tag_ids)))
 
     if len(kw['exclude_categories']):
-        tag_ids = db.session.query(Tag.id).filter_by(org_id=kw['org'])\
+        tag_ids = db.session.query(Tag.id).filter_by(org_id=kw['org_id'])\
             .filter(Tag.category.in_(kw['exclude_categories']))\
             .all()
         tag_ids = [t[0] for t in tag_ids]
@@ -76,7 +76,7 @@ def apply_event_filters(q, **kw):
         q = q.filter(~Event.tags.any(Tag.id.in_(tag_ids)))
 
     if len(kw['include_levels']):
-        tag_ids = db.session.query(Tag.id).filter_by(org_id=kw['org'])\
+        tag_ids = db.session.query(Tag.id).filter_by(org_id=kw['org_id'])\
             .filter(Tag.level.in_(kw['include_levels']))\
             .all()
         tag_ids = [t[0] for t in tag_ids]
@@ -84,7 +84,7 @@ def apply_event_filters(q, **kw):
         q = q.filter(Event.tags.any(Tag.id.in_(tag_ids)))
 
     if len(kw['exclude_levels']):
-        tag_ids = db.session.query(Tag.id).filter_by(org_id=kw['org'])\
+        tag_ids = db.session.query(Tag.id).filter_by(org_id=kw['org_id'])\
             .filter(Tag.level.in_(kw['exclude_levels']))\
             .all()
         tag_ids = [t[0] for t in tag_ids]
@@ -196,7 +196,7 @@ def search_events(user, org):
         include_sous_chefs=include_sous_chefs,
         exclude_sous_chefs=exclude_sous_chefs,
         apikey=user.apikey,
-        org=org.id
+        org_id=org.id
     )
 
     # validate arguments

@@ -27,7 +27,8 @@ SOUS_CHEF_NAMES = [
     'google-analytics-trackbacks',
     'google-analytics-pageviews',
     'some-other-task',
-    'another-task'
+    'another-task',
+    'and-another'
 ]
 
 CREATORS = ['Michael Keller', 'Brian Abelson', 'Merlynne Jones']
