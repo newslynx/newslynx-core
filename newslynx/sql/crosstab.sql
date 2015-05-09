@@ -8,7 +8,7 @@ WITH stats as (
     from crosstab(
         'SELECT 
             thing_id, date_trunc(''hour'', created) AS datetime, name, SUM(value) AS value 
-         FROM metrics 
+         FROM metrics   
          WHERE created IS NOT NULL AND level = ''thing''
          GROUP BY datetime, name, thing_id
          ORDER BY datetime, name ASC', 
