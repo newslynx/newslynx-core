@@ -4,16 +4,15 @@ from newslynx.core import db
 from newslynx.lib import dates
 
 
-class Task(db.Model):
+class SousChef(db.Model):
 
-    __tablename__ = 'tasks'
+    __tablename__ = 'sous_chefs'
 
     id = db.Column(db.Integer, unique=True, index=True, primary_key=True)
     name = db.Column(db.Text)
     description = db.Column(db.Text)
     created = db.Column(db.DateTime(timezone=True))
     config = db.Column(JSON)
-
 
     def __init__(self, **kw):
         self.name = kw.get('name')
@@ -32,4 +31,4 @@ class Task(db.Model):
         }
 
     def __repr__(self):
-        return '<Task %r >' % (self.name)
+        return '<SousChef %r >' % (self.name)

@@ -1,7 +1,7 @@
 from flask import Blueprint, request
 
 from newslynx.core import db
-from newslynx.models import User, Organization, Setting
+from newslynx.models import User, Org, Setting
 from newslynx.lib.serialize import jsonify, json_to_obj
 from newslynx.exc import (
     AuthError, RequestError, ForbiddenError)
@@ -16,7 +16,7 @@ bp = Blueprint('orgs', __name__)
 @bp.route('/api/v1/orgs', methods=['GET'])
 @load_user
 def me_orgs(user):
-    return jsonify(user.organizations)
+    return jsonify(user.orgs)
 
 
 @bp.route('/api/v1/orgs', methods=['POST'])
@@ -27,17 +27,17 @@ def org_create(user):
 
     if not user.admin:
         raise ForbiddenError(
-            'You must be an admin to create or update an organization')
+            'You must be an admin to create or update an Org')
 
-    org = Organization.query.filter_by(name=req_data['name']).first()
+    org = Org.query.filter_by(name=req_data['name']).first()
 
     # if the org doesnt exist, create it.
     if org:
         raise RequestError(
-            "Organization '{}' already exists".format(req_data['name']))
+            "Org '{}' already exists".format(req_data['name']))
 
     # add the requesting user to the org
-    org = Organization(name=request.form['name'])
+    org = Org(name=request.form['name'])
     org.users.append(user)
     db.session.add(org)
     db.session.commit()
@@ -57,17 +57,17 @@ def org(user, org_id_name):
         org_str = True
 
     if org_str:
-        org = Organization.query.filter_by(name=org_id_name).first()
+        org = Org.query.filter_by(name=org_id_name).first()
     else:
-        org = Organization.query.get(org_id_name)
+        org = Org.query.get(org_id_name)
 
     # if it still doesn't exist, raise an error.
     if not org:
-        raise RequestError('This organization does not exist.')
+        raise RequestError('This Org does not exist.')
 
-    # ensure the active user can edit this organization
+    # ensure the active user can edit this Org
     if user.id not in org.user_ids:
-        raise ForbiddenError('You are not allowed to access this organization')
+        raise ForbiddenError('You are not allowed to access this Org')
 
     return jsonify(org)
 
@@ -80,7 +80,7 @@ def org_update(user, org_id_name):
 
     if not user.admin:
         raise ForbiddenError(
-            'You must be an admin to create or update an organization')
+            'You must be an admin to create or update an Org')
 
   # check for int / str
     try:
@@ -90,18 +90,18 @@ def org_update(user, org_id_name):
         org_str = True
 
     if org_str:
-        org = Organization.query.filter_by(name=org_id_name).first()
+        org = Org.query.filter_by(name=org_id_name).first()
     else:
-        org = Organization.query.get(org_id_name)
+        org = Org.query.get(org_id_name)
 
     # if the org doesnt exist, create it.
     if not org:
         raise RequestError(
-            "Organization '{}' Does not exists".format(req_data['name']))
+            "Org '{}' Does not exists".format(req_data['name']))
 
     if user.id not in org.user_ids:
         raise ForbiddenError(
-            "You are not allowed to access this organization.")
+            "You are not allowed to access this Org.")
 
     # update the requesting user to the org
     org.name = req_data['name']
@@ -116,7 +116,7 @@ def org_update(user, org_id_name):
 def org_delete(user, org_id_name):
 
     if not user.admin:
-        raise AuthError('You must be an admin to delete an Organization')
+        raise AuthError('You must be an admin to delete an Org')
 
   # check for int / str
     try:
@@ -126,17 +126,17 @@ def org_delete(user, org_id_name):
         org_str = True
 
     if org_str:
-        org = Organization.query.filter_by(name=org_id_name).first()
+        org = Org.query.filter_by(name=org_id_name).first()
     else:
-        org = Organization.query.get(org_id_name)
+        org = Org.query.get(org_id_name)
 
     # if it still doesn't exist, raise an error.
     if not org:
-        raise RequestError('This organization does not exist.')
+        raise RequestError('This Org does not exist.')
 
-    # ensure the active user can edit this organization
+    # ensure the active user can edit this Org
     if user.id not in org.user_ids:
-        raise ForbiddenError('User "{}" is not allowed to access Organization "{}".'
+        raise ForbiddenError('User "{}" is not allowed to access Org "{}".'
                              .format(user.name, org.name))
 
     db.session.delete(org)
@@ -157,17 +157,17 @@ def org_users(user, org_id_name):
         org_str = True
 
     if org_str:
-        org = Organization.query.filter_by(name=org_id_name).first()
+        org = Org.query.filter_by(name=org_id_name).first()
     else:
-        org = Organization.query.get(org_id_name)
+        org = Org.query.get(org_id_name)
 
     # if it still doesn't exist, raise an error.
     if not org:
-        raise RequestError('This organization does not exist.')
+        raise RequestError('This Org does not exist.')
 
-    # ensure the active user can edit this organization
+    # ensure the active user can edit this Org
     if user.id not in org.user_ids:
-        raise ForbiddenError('User "{}" is not allowed to access Organization "{}".'
+        raise ForbiddenError('User "{}" is not allowed to access Org "{}".'
                              .format(user.email, org.name))
 
     return jsonify(org.users)
@@ -179,7 +179,7 @@ def org_create_user(user, org_id_name):
 
     if not user.admin:
         raise AuthError(
-            'You must be an admin to create a user for an organization.')
+            'You must be an admin to create a user for an Org.')
 
     # get the form.
     req_data = request_data()
@@ -203,18 +203,18 @@ def org_create_user(user, org_id_name):
         org_str = True
 
     if org_str:
-        org = Organization.query.filter_by(name=org_id_name).first()
+        org = Org.query.filter_by(name=org_id_name).first()
     else:
-        org = Organization.query.get(org_id_name)
+        org = Org.query.get(org_id_name)
 
     # if it still doesn't exist, raise an error.
     if not org:
-        raise RequestError('This organization does not exist.')
+        raise RequestError('This Org does not exist.')
 
-    # ensure the active user can edit this organization
+    # ensure the active user can edit this Org
     if user.id not in org.user_ids:
         raise ForbiddenError(
-            "You are not allowed to access this organization.")
+            "You are not allowed to access this Org.")
 
     if User.query.filter_by(email=email).first():
         raise RequestError(
@@ -239,16 +239,16 @@ def org_user(user, org_id_name, user_email):
         org_str = True
 
     if org_str:
-        org = Organization.query.filter_by(name=org_id_name).first()
+        org = Org.query.filter_by(name=org_id_name).first()
     else:
-        org = Organization.query.get(org_id_name)
+        org = Org.query.get(org_id_name)
 
     if not org:
-        raise RequestError('This organization does not exist.')
+        raise RequestError('This Org does not exist.')
 
-    # ensure the active user can edit this organization
+    # ensure the active user can edit this Org
     if user.id not in org.user_ids:
-        raise ForbiddenError('You are not allowed to access this organization')
+        raise ForbiddenError('You are not allowed to access this Org')
 
     # get this new user by id / email
 
@@ -281,7 +281,7 @@ def org_add_user(user, org_id_name, user_email):
 
     if not user.admin:
         raise AuthError(
-            'You must be an admin to add a user to an organization.')
+            'You must be an admin to add a user to an Org.')
 
     # check for int / str
     try:
@@ -291,16 +291,16 @@ def org_add_user(user, org_id_name, user_email):
         org_str = True
 
     if org_str:
-        org = Organization.query.filter_by(name=org_id_name).first()
+        org = Org.query.filter_by(name=org_id_name).first()
     else:
-        org = Organization.query.get(org_id_name)
+        org = Org.query.get(org_id_name)
 
     if not org:
-        raise RequestError('This organization does not exist.')
+        raise RequestError('This Org does not exist.')
 
-    # ensure the active user can edit this organization
+    # ensure the active user can edit this Org
     if user.id not in org.user_ids:
-        raise ForbiddenError('You are not allowed to edit this organization.')
+        raise ForbiddenError('You are not allowed to edit this Org.')
 
     # get this new user by id / email
 
@@ -320,9 +320,9 @@ def org_add_user(user, org_id_name, user_email):
         raise RequestError('User "{}" does not exist'
                            .format(user_email))
 
-    # ensure that user is not already a part of this organization.
+    # ensure that user is not already a part of this Org.
     if new_org_user.id in org.user_ids:
-        raise RequestError('User "{}" is already a part of Organization "{}"'
+        raise RequestError('User "{}" is already a part of Org "{}"'
                            .format(new_org_user.email, org.name))
 
     org.users.append(new_org_user)
@@ -337,7 +337,7 @@ def org_remove_user(user, org_id_name, user_email):
 
     if not user.admin:
         raise AuthError(
-            'You must be an admin to remove a user from an organization.')
+            'You must be an admin to remove a user from an Org.')
 
     # check for int / str
     try:
@@ -347,18 +347,18 @@ def org_remove_user(user, org_id_name, user_email):
         org_str = True
 
     if org_str:
-        org = Organization.query.filter_by(name=org_id_name).first()
+        org = Org.query.filter_by(name=org_id_name).first()
     else:
-        org = Organization.query.get(org_id_name)
+        org = Org.query.get(org_id_name)
 
     # if it still doesn't exist, raise an error.
     if not org:
-        raise RequestError('This organization does not exist.')
+        raise RequestError('This Org does not exist.')
 
-    # ensure the active user can edit this organization
+    # ensure the active user can edit this Org
     if user.id not in org.user_ids:
         raise ForbiddenError(
-            "You are not allowed to access this organization.")
+            "You are not allowed to access this Org.")
 
     # get this new user by id / email
 
@@ -378,9 +378,9 @@ def org_remove_user(user, org_id_name, user_email):
         raise RequestError('User "{}" does not yet exist'
                            .format(user_email))
 
-    # ensure that user is not already a part of this organization.
+    # ensure that user is not already a part of this Org.
     if existing_user.id not in org.user_ids:
-        raise RequestError('User "{}" is not a part of Organization "{}"'
+        raise RequestError('User "{}" is not a part of Org "{}"'
                            .format(existing_user.email, org.name))
 
     org.users.remove(existing_user)
@@ -398,7 +398,7 @@ def org_settings(user, org_id_name):
 
     if not user.admin:
         raise AuthError(
-            'You must be an admin to add a user to an organization.')
+            'You must be an admin to add a user to an Org.')
 
     # check for int / str
     try:
@@ -408,13 +408,13 @@ def org_settings(user, org_id_name):
         org_str = True
 
     if org_str:
-        org = Organization.query.filter_by(name=org_id_name).first()
+        org = Org.query.filter_by(name=org_id_name).first()
     else:
-        org = Organization.query.get(org_id_name)
+        org = Org.query.get(org_id_name)
 
     # if it still doesn't exist, raise an error.
     if not org:
-        raise RequestError('This organization does not exist.')
+        raise RequestError('This Org does not exist.')
 
     return jsonify(org.settings)
 
@@ -425,7 +425,7 @@ def org_add_setting(user, org_id_name):
 
     if not user.admin:
         raise ForbiddenError(
-            'You must be an admin to add a user to an organization.')
+            'You must be an admin to add a user to an Org.')
 
     # check for int / str
     try:
@@ -435,18 +435,18 @@ def org_add_setting(user, org_id_name):
         org_str = True
 
     if org_str:
-        org = Organization.query.filter_by(name=org_id_name).first()
+        org = Org.query.filter_by(name=org_id_name).first()
     else:
-        org = Organization.query.get(org_id_name)
+        org = Org.query.get(org_id_name)
 
     # if it still doesn't exist, raise an error.
     if not org:
-        raise RequestError('This organization does not exist.')
+        raise RequestError('This Org does not exist.')
 
-    # ensure the active user can edit this organization
+    # ensure the active user can edit this Org
     if user.id not in org.user_ids:
         raise ForbiddenError(
-            "You are not allowed to access this organization.")
+            "You are not allowed to access this Org.")
 
     # get the request data
     req_data = request_data()
@@ -469,11 +469,11 @@ def org_add_setting(user, org_id_name):
 
     if id:
         s = Setting.query\
-            .filter_by(organization_id=org.id, id=id)\
+            .filter_by(org_id=org.id, id=id)\
             .first()
     elif name:
         s = Setting.query\
-            .filter_by(organization_id=org.id, name=name)\
+            .filter_by(org_id=org.id, name=name)\
             .first()
     else:
         raise RequestError(
@@ -487,7 +487,7 @@ def org_add_setting(user, org_id_name):
                 "You only passed in: {}".format(", ".join(req_data.keys())))
 
         s = Setting(
-            organization_id=org.id,
+            org_id=org.id,
             name=name,
             value=value,
             json_value=json_value or False)
@@ -520,7 +520,7 @@ def org_setting(user, org_id_name, name):
 
     if not user.admin:
         raise ForbiddenError(
-            'You must be an admin to add a user to an organization.')
+            'You must be an admin to add a user to an Org.')
 
     # check for int / str
     try:
@@ -530,25 +530,25 @@ def org_setting(user, org_id_name, name):
         org_str = True
 
     if org_str:
-        org = Organization.query.filter_by(name=org_id_name).first()
+        org = Org.query.filter_by(name=org_id_name).first()
     else:
-        org = Organization.query.get(org_id_name)
+        org = Org.query.get(org_id_name)
 
     # if it still doesn't exist, raise an error.
     if not org:
-        raise RequestError('This organization does not exist.')
+        raise RequestError('This Org does not exist.')
 
-    # ensure the active user can edit this organization
+    # ensure the active user can edit this Org
     if user.id not in org.user_ids:
         raise ForbiddenError(
-            "You are not allowed to access this organization.")
+            "You are not allowed to access this Org.")
 
     s = Setting.query\
-        .filter_by(organization_id=org.id, name=name)\
+        .filter_by(org_id=org.id, name=name)\
         .first()
 
     if not s:
-        raise RequestError('Setting "{}" does not yet exist for Organization "{}"'
+        raise RequestError('Setting "{}" does not yet exist for Org "{}"'
                            .format(name, org.name))
 
     return jsonify(s)
@@ -560,7 +560,7 @@ def org_delete_setting(user, org_id_name, name):
 
     if not user.admin:
         raise AuthError(
-            'You must be an admin to add a user to an organization.')
+            'You must be an admin to add a user to an Org.')
 
     # check for int / str
     try:
@@ -570,18 +570,18 @@ def org_delete_setting(user, org_id_name, name):
         org_str = True
 
     if org_str:
-        org = Organization.query.filter_by(name=org_id_name).first()
+        org = Org.query.filter_by(name=org_id_name).first()
     else:
-        org = Organization.query.get(org_id_name)
+        org = Org.query.get(org_id_name)
 
     # if it still doesn't exist, raise an error.
     if not org:
-        raise RequestError('This organization does not exist.')
+        raise RequestError('This Org does not exist.')
 
-    # ensure the active user can edit this organization
+    # ensure the active user can edit this Org
     if user.id not in org.user_ids:
         raise ForbiddenError(
-            "You are not allowed to access this organization.")
+            "You are not allowed to access this Org.")
 
     # check for int / str
     try:
@@ -592,15 +592,15 @@ def org_delete_setting(user, org_id_name, name):
 
     if s_str:
         s = Setting.query\
-            .filter_by(organization_id=org.id, name=name)\
+            .filter_by(org_id=org.id, name=name)\
             .first()
     else:
         s = Setting.query\
-            .filter_by(organization_id=org.id, id=name)\
+            .filter_by(org_id=org.id, id=name)\
             .first()
 
     if not s:
-        raise RequestError('Setting "{}" does not yet exist for Organization "{}"'
+        raise RequestError('Setting "{}" does not yet exist for Org "{}"'
                            .format(name, org.name))
 
     db.session.delete(s)

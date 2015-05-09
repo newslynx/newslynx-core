@@ -2,10 +2,10 @@ from .auth import Auth
 from .creator import Creator
 from .event import Event
 from .metric import Metric
-from .organization import Organization
+from .org import Org
 from .recipe import Recipe
 from .setting import Setting
-from .task import Task
+from .sous_chef import SousChef
 from .tag import Tag
 from .thing import Thing
 from .user import User

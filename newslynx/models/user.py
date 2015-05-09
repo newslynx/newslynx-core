@@ -47,7 +47,7 @@ class User(db.Model):
 
     @property
     def org_ids(self):
-        return [o.id for o in self.organizations]
+        return [o.id for o in self.orgs]
 
     def to_dict(self, incl_org=True, incl_apikey=False):
         d = {
@@ -58,8 +58,8 @@ class User(db.Model):
             'created': self.created
         }
         if incl_org:
-            d['organizations'] = [o.to_dict(incl_users=False, incl_settings=False, incl_authorizations=False)
-                                  for o in self.organizations]
+            d['orgs'] = [o.to_dict(incl_users=False, incl_settings=False, incl_authorizations=False)
+                          for o in self.orgs]
         if incl_apikey:
             d['apikey'] = self.apikey
         return d

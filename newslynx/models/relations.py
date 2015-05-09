@@ -48,8 +48,8 @@ def join_table(name, a, b):
                               primary_key=True))
 
 
-# users <=> organizations.
-organizations_users = join_table('organizations_users', 'organization', 'user')
+# users <=> orgs.
+orgs_users = join_table('orgs_users', 'org', 'user')
 
 # things <=> events
 things_events = join_table('things_events', 'thing', 'event')

@@ -9,15 +9,15 @@ class Report(db.Model):
     __tablename__ = 'reports'
 
     id = db.Column(db.Integer, unique=True, index=True, primary_key=True)
-    organization_id = db.Column(
-        db.Integer, db.ForeignKey('organizations.id'), index=True)
+    org_id = db.Column(
+        db.Integer, db.ForeignKey('orgs.id'), index=True)
     name = db.Column(db.Text, index=True)
     created = db.Column(db.DateTime(timezone=True), index=True)
     schema = db.Column(JSON) #dynamically generated.
     value = db.Column(JSON)
 
     def __init__(self, **kw):
-        self.organization_id = kw.get('organization_id')
+        self.org_id = kw.get('org_id')
         self.name = kw.get('name')
         self.created = kw.get('created', dates.now())
         self.schema = kw.get('schema')
@@ -33,4 +33,4 @@ class Report(db.Model):
         }
 
     def __repr__(self):
-        return "<Report %r / %r >" % (self.organization_id, self.name)
+        return "<Report %r / %r >" % (self.org_id, self.name)

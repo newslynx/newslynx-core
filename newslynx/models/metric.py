@@ -20,7 +20,8 @@ class Metric(db.Model):
 
     level:
         - thing
-        - organization
+        - series
+        - org
 
     faceted metrics can be represented with the following naming convention:
     {facet_name}__{facet_value}
@@ -29,8 +30,8 @@ class Metric(db.Model):
     __tablename__ = 'metrics'
 
     id = db.Column(db.Integer, unique=True, primary_key=True, index=True)
-    organization_id = db.Column(
-        db.Integer, db.ForeignKey('organizations.id'), index=True
+    org_id = db.Column(
+        db.Integer, db.ForeignKey('orgs.id'), index=True
     )
     recipe_id = db.Column(db.Integer, db.ForeignKey('recipes.id'), index=True)
     thing_id = db.Column(db.Integer, db.ForeignKey('things.id'), index=True)
@@ -39,18 +40,18 @@ class Metric(db.Model):
     category = db.Column(
         ENUM(*METRIC_CATEGORIES, name='metric_categories_enum'), index=True)
     level = db.Column(
-        ENUM('thing', 'organization', name='metric_levels_enum'), index=True)
+        ENUM('thing', 'org', 'series', name='metric_levels_enum'), index=True)
     cumulative = db.Column(db.Boolean, index=True)
     timeseries = db.Column(db.Boolean, index=True)
     created = db.Column(db.DateTime(timezone=True), index=True)
 
     __table_args__ = (
         db.UniqueConstraint(
-            'thing_id', 'organization_id', 'recipe_id', 'name', 'created'),
+            'thing_id', 'org_id', 'recipe_id', 'name', 'created'),
     )
 
     def __init__(self, **kw):
-        self.organization_id = kw.get('organization_id')
+        self.org_id = kw.get('org_id')
         self.recipe_id = kw.get('recipe_id')
         self.thing_id = kw.get('thing_id')
         self.name = kw.get('name')
@@ -65,7 +66,7 @@ class Metric(db.Model):
     def to_dict(self):
         return {
             'id': self.id,
-            'organization_id': self.organization_id,
+            'org_id': self.org_id,
             'recipe_id': self.recipe_id,
             'thing_id': self.thing_id,
             'name': self.name,

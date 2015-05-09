@@ -1,0 +1,82 @@
+Parameters follow this schema:
+
+6 options for type
+* string => a simple string
+* list => choose multiple from list (define list with "options" key)
+* set => choose one from list (define list with "options" key) 
+* filterstring => One of ">{{value}}", ">={{value}}", "<{{value}}", "<={{value}}", or "=={{value}}}"
+* searchstring => EG: https://support.enigma.io/hc/en-us/articles/201674807-Advanced-Search-Tips
+* querystring => A template for a sql WHERE filter, will be sanitized.
+
+2 additional required parameters:
+* required => true/false, # is this parameter required for the channel
+* example => "newslynx", #
+
+2 optional parameters
+* default => if a param is not required, this value will be filled in if its not present.
+* options => A list of optional values for list and set fields.
+
+
+
+{
+
+    "id": 1,
+    "slug": "twitter-list-to-event",  # a slug unique to this Sous Chef
+    "description": "Create Events From A Twitter List", # a description of the Sous Chef
+    "requires_auths": ["twitter"], # Authentications this Task Requires
+    "requires_tasks": [],  # Tasks this task requires
+    "requires_settings": [], # Settings this task requires
+    "tokens": {},
+    "parameters": {
+        "text": {
+            "type": "searchstring", 
+            "required": false,
+            "example": "^Fracking" # startswith
+        },
+
+        "title": {
+            "type": "searchstring", 
+            "required": false,
+            "example": "~Fracking", # fuzzy
+        },
+
+        "url": {
+            "type": "searchstring", 
+            "required": false,
+            "example": "/.*newslynx.*/", # regex
+        },
+
+        "author": {
+            "type": "searchstring", 
+            "required": false,
+            "example": "john | bob", # OR
+        },
+
+        "created_at": {
+            "type": "filterstring",
+            "required": false,
+            "example": ">=123453223", # GTE
+        },
+
+        "meta": {
+            "type": "querystring", 
+            "required": false,
+            "example" "{{followers}}>1000 AND ({{friends}} > 10000 OR {{tweet_count}} < 50000)",
+        },
+
+        "status": {
+            "type": "set",
+            "required": true,
+            "example": "pending",
+            "options": ["pending", "approved"]
+        },
+        # logic for handling multiple filters
+        "operator":  { 
+            "type": "set", # => checkbox
+            "required": false,
+            "example": "OR",
+            "default": "any",
+            "options": ["any", "all"]
+        }
+    }
+}

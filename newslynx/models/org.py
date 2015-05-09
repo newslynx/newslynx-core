@@ -3,12 +3,12 @@ import copy
 from newslynx.core import db
 from newslynx.lib import dates
 from newslynx.lib.serialize import json_to_obj
-from newslynx.models.relations import organizations_users
+from newslynx.models.relations import orgs_users
 
 
-class Organization(db.Model):
+class Org(db.Model):
 
-    __tablename__ = 'organizations'
+    __tablename__ = 'orgs'
 
     id = db.Column(db.Integer, unique=True, index=True, primary_key=True)
     name = db.Column(db.Text, unique=True, index=True)
@@ -16,15 +16,15 @@ class Organization(db.Model):
 
     # relations
     authorizations = db.relationship('Auth',
-                                     backref=db.backref('organization'),
+                                     backref=db.backref('org'),
                                      lazy='joined',
                                      cascade="all, delete-orphan")
     users = db.relationship('User',
-                            secondary=organizations_users,
-                            backref=db.backref('organizations', lazy='joined'),
+                            secondary=orgs_users,
+                            backref=db.backref('orgs', lazy='joined'),
                             lazy='joined')
     settings = db.relationship('Setting',
-                               backref=db.backref('organization'),
+                               backref=db.backref('org'),
                                lazy='joined',
                                cascade="all, delete-orphan")
     events = db.relationship('Event',

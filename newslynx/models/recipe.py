@@ -9,10 +9,10 @@ class Recipe(db.Model):
     __tablename__ = 'recipes'
 
     id = db.Column(db.Integer, unique=True, index=True, primary_key=True)
-    task_id = db.Column(
-        db.Integer, db.ForeignKey('tasks.id'), index=True)
-    organization_id = db.Column(
-        db.Integer, db.ForeignKey('organizations.id'), index=True)
+    sous_chef_id = db.Column(
+        db.Integer, db.ForeignKey('sous_chefs.id'), index=True)
+    org_id = db.Column(
+        db.Integer, db.ForeignKey('orgs.id'), index=True)
     name = db.Column(db.Text)
     description = db.Column(db.Text)
     config = db.Column(JSON)
@@ -37,12 +37,12 @@ class Recipe(db.Model):
     metrics = db.relationship(
         'Metric', backref=db.backref('recipe', lazy='joined'), lazy='dynamic')
 
-    task = db.relationship(
-        'Task', backref=db.backref('recipes', lazy='joined'), lazy='joined')
+    sous_chef = db.relationship(
+        'SousChef', backref=db.backref('recipes', lazy='joined'), lazy='joined')
 
     def __init__(self, **kw):
-        self.task_id = kw.get('task_id')
-        self.organization_id = kw.get('organization_id')
+        self.sous_chef_id = kw.get('sous_chef_id')
+        self.org_id = kw.get('org_id')
         self.name = kw.get('name')
         self.description = kw.get('description')
         self.config = kw.get('config', {})
@@ -57,9 +57,9 @@ class Recipe(db.Model):
     def to_dict(self):
         return {
             'id': self.id,
-            'task_id': self.task_id,
-            'task_name': self.task.name,
-            'organization_id': self.organization_id,
+            'sous_chef_id': self.sous_chef_id,
+            'sous_chef_name': self.sous_chef.name,
+            'org_id': self.org_id,
             'name': self.name,
             'description': self.description,
             'config': self.config,

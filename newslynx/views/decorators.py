@@ -2,7 +2,7 @@ from functools import wraps
 
 from flask import request
 
-from newslynx.models import User, Organization
+from newslynx.models import User, Org
 from newslynx.exc import (
     AuthError, RequestError, ForbiddenError)
 
@@ -57,18 +57,18 @@ def load_org(f):
         user = kw.get('user')
 
         if org_str:
-            org = Organization.query.filter_by(name=org_id).first()
+            org = Org.query.filter_by(name=org_id).first()
         else:
-            org = Organization.query.get(org_id)
+            org = Org.query.get(org_id)
 
         # if it still doesn't exist, raise an error.
         if not org:
-            raise RequestError('An Organization with ID/Name {} does exist.'
+            raise RequestError('An Org with ID/Name {} does exist.'
                                .format(org_id))
 
-        # otherwise ensure the active user can edit this organization
-        if user.id not in [u.id for u in org.users]:
-            raise ForbiddenError('User "{}" is not allowed to access Organization "{}".'
+        # otherwise ensure the active user can edit this Org
+        if user.id not in org.user_ids:
+            raise ForbiddenError('User "{}" is not allowed to access Org "{}".'
                                  .format(user.name, org.name))
 
         kw['org'] = org

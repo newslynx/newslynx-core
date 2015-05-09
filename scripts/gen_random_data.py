@@ -22,7 +22,7 @@ IMPACT_TAG_NAMES = ['Media pickup', 'Media social share',
                     'Indv. social share', 'Comm. social share']
 SUBJECT_TAG_NAMES = ['Environment', 'Money & politics', 'Government', 'Health']
 
-TASK_NAMES = [
+SOUS_CHEF_NAMES = [
     'twitter-domain-mentions',
     'google-analytics-trackbacks',
     'google-analytics-pageviews',
@@ -78,7 +78,7 @@ METRICS = [
     {
         'name': 'facebook_page_likes',
         'category': 'performance',
-        'level': 'organization',
+        'level': 'org',
         'timeseries': True,
         'cumulative': True
     }
@@ -86,7 +86,9 @@ METRICS = [
 
 
 def random_date(n1, n2):
-    return datetime.utcnow() - timedelta(days=choice(range(n1, n2)))
+    dt = datetime.utcnow() - timedelta(days=choice(range(n1, n2)))
+    dt += timedelta(hours=random_int(0, 24))
+    return dt
 
 
 def random_color():
@@ -173,31 +175,31 @@ def gen_user():
 
 # Org
 def gen_org(users):
-    o = Organization(name=fake.company())
+    o = Org(name=fake.company())
     o.users.extend(users)
     db_session.add(o)
     db_session.commit()
     return o
 
 
-def gen_tasks():
-    tasks = []
-    for t in TASK_NAMES:
-        t = Task(
+def get_sous_chefs():
+    sous_chefs = []
+    for t in SOUS_CHEF_NAMES:
+        t = SousChef(
             name=t,
             description=random_text(20),
             config=random_meta())
         db_session.add(t)
-        tasks.append(t)
-    return tasks
+        sous_chefs.append(t)
+    return sous_chefs
 
 
 # Recipe
-def gen_recipe(org, users, tasks):
-    t = choice(tasks)
+def gen_recipe(org, users, sous_chefs):
+    t = choice(sous_chefs)
     r = Recipe(
-        organization_id=org.id,
-        task_id=t.id,
+        org_id=org.id,
+        sous_chef_id=t.id,
         name=random_text(10),
         description=random_text(20),
         config=random_meta(),
@@ -217,7 +219,7 @@ def gen_impact_tags(org, n_impact_tags):
     impact_tags = []
     for _ in xrange(n_impact_tags):
         t = Tag(
-            organization_id=org.id,
+            org_id=org.id,
             name=random_text(10),
             color=random_color(),
             type='impact',
@@ -234,7 +236,7 @@ def gen_subject_tags(org, n_subject_tags):
     subject_tags = []
     for _ in xrange(n_subject_tags):
         t = Tag(
-            organization_id=org.id,
+            org_id=org.id,
             name=random_text(10),
             color=random_color(),
             type='subject')
@@ -249,7 +251,7 @@ def gen_creators(org):
     creators = []
     for name in CREATORS:
         c = Creator(
-            organization_id=org.id,
+            org_id=org.id,
             name=name,
             created=random_date(100, 200),
             meta=random_meta())
@@ -268,7 +270,7 @@ def gen_events(org, recipes, impact_tags, things, n_events):
         authors = random_authors(4)
 
         e = Event(
-            organization_id=org.id,
+            org_id=org.id,
             recipe_id=r.id,
             source_id=uuid.uuid1(),
             title=random_text(20),
@@ -299,7 +301,7 @@ def gen_thing(org, recipes, subject_tags, creators):
     c = choice(creators)
 
     t = Thing(
-        organization_id=org.id,
+        org_id=org.id,
         recipe_id=r.id,
         url=random_url(),
         type=choice(THING_TYPES),
@@ -332,11 +334,13 @@ def gen_metrics(org, thing, recipe, metric, n=100):
 
         if metric['timeseries']:
             created = datetime.utcnow() - timedelta(days=(n - i))
+            created += timedelta(hours=random_int(0, 48))
+            created += timedelta(minutes=random_int(0, 120))
         else:
             created = None
 
         m = Metric(
-            organization_id=org.id,
+            org_id=org.id,
             recipe_id=recipe.id,
             thing_id=thing.id,
             value=value,
@@ -354,8 +358,8 @@ def main(
         n_subject_tags=10,
         n_impact_tags=10,
         n_events=100,
-        n_metrics_per_thing=20,
-        n_things=10,
+        n_metrics_per_thing=10,
+        n_things=5,
         verbose=True):
 
     # top level things
@@ -365,11 +369,11 @@ def main(
     impact_tags = gen_impact_tags(org, n_subject_tags)
     subject_tags = gen_subject_tags(org, n_impact_tags)
     creators = gen_creators(org)
-    tasks = gen_tasks()
+    sous_chefs = get_sous_chefs()
 
     # generate things + metrics
-    thing_recipes = [gen_recipe(org, users, tasks) for _ in xrange(n_thing_recipes)]
-    metric_recipes = [gen_recipe(org, users, tasks) for _ in range(len(METRICS))]
+    thing_recipes = [gen_recipe(org, users, sous_chefs) for _ in xrange(n_thing_recipes)]
+    metric_recipes = [gen_recipe(org, users, sous_chefs) for _ in range(len(METRICS))]
 
     things = []
     for i in xrange(n_things):
@@ -391,7 +395,7 @@ def main(
         print "generating {} events".format(n_events)
 
     # generate events
-    event_recipes = [gen_recipe(org, users, tasks) for _ in xrange(n_event_recipes)]
+    event_recipes = [gen_recipe(org, users, sous_chefs) for _ in xrange(n_event_recipes)]
     gen_events(org, event_recipes, impact_tags, things, n_events)
 
 

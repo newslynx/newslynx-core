@@ -5,7 +5,7 @@ from sqlalchemy import func, text, desc, asc
 
 from newslynx.core import db
 from newslynx.exc import RequestError
-from newslynx.models import Event, Tag, Task, Recipe, Thing
+from newslynx.models import Event, Tag, SousChef, Recipe, Thing
 from newslynx.models.relations import events_tags, things_events, things_tags
 from newslynx.models.util import get_table_columns
 from newslynx.lib.serialize import jsonify
@@ -27,8 +27,8 @@ def apply_thing_filters(q, **kw):
     Given a base Thing.query, apply all filters.
     """
 
-    # filter by organization_id
-    q = q.filter(Thing.organization_id == kw['org'])
+    # filter by org_id
+    q = q.filter(Thing.org_id == kw['org_id'])
 
     # use this for keeping track of
     # levels/categories events.
@@ -76,7 +76,7 @@ def apply_thing_filters(q, **kw):
     if len(kw['include_categories']):
         event_ids = db.session.query(events_tags.c.event_id)\
             .join(Tag)\
-            .filter_by(organization_id=kw['org'])\
+            .filter_by(org_id=kw['org_id'])\
             .filter(Tag.category.in_(kw['include_categories']))\
             .all()
         event_ids = [e[0] for e in event_ids]
@@ -87,7 +87,7 @@ def apply_thing_filters(q, **kw):
     if len(kw['exclude_categories']):
         event_ids = db.session.query(events_tags.c.event_id)\
             .join(Tag)\
-            .filter_by(organization_id=kw['org'])\
+            .filter_by(org_id=kw['org_id'])\
             .filter(Tag.category.in_(kw['exclude_categories']))\
             .all()
         event_ids = [e[0] for e in event_ids]
@@ -98,7 +98,7 @@ def apply_thing_filters(q, **kw):
     if len(kw['include_levels']):
         event_ids = db.session.query(events_tags.c.event_id)\
             .join(Tag)\
-            .filter_by(organization_id=kw['org'])\
+            .filter_by(org_id=kw['org_id'])\
             .filter(Tag.level.in_(kw['include_levels']))\
             .all()
         event_ids = [e[0] for e in event_ids]
@@ -109,7 +109,7 @@ def apply_thing_filters(q, **kw):
     if len(kw['exclude_levels']):
         event_ids = db.session.query(events_tags.c.event_id)\
             .join(Tag)\
-            .filter_by(organization_id=kw['org'])\
+            .filter_by(org_id=kw['org_id'])\
             .filter(Tag.level.in_(kw['exclude_levels']))\
             .all()
         event_ids = [e[0] for e in event_ids]
@@ -124,20 +124,20 @@ def apply_thing_filters(q, **kw):
     if len(kw['exclude_tags']):
         q = q.filter(~Thing.tags.any(Tag.id.in_(kw['exclude_tags'])))
 
-    # apply tasks filter
+    # apply sous_chefs filter
     # TODO: DONT USE MULTIPLE QUERIES HERE
-    if len(kw['include_tasks']):
-        task_recipes = db.session.query(Recipe.id)\
-            .filter(Recipe.task.has(Task.name.in_(kw['include_tasks'])))\
+    if len(kw['include_sous_chefs']):
+        sous_chef_recipes = db.session.query(Recipe.id)\
+            .filter(Recipe.sous_chef.has(SousChef.name.in_(kw['include_sous_chefs'])))\
             .all()
-        recipe_ids = [r[0] for r in task_recipes]
+        recipe_ids = [r[0] for r in sous_chef_recipes]
         q = q.filter(Thing.recipe_id.in_(recipe_ids))
 
-    if len(kw['exclude_tasks']):
-        task_recipes = db.session.query(Recipe.id)\
-            .filter(Recipe.task.has(Task.name.in_(kw['exclude_tasks'])))\
+    if len(kw['exclude_sous_chefs']):
+        sous_chef_recipes = db.session.query(Recipe.id)\
+            .filter(Recipe.sous_chef.has(SousChef.name.in_(kw['exclude_sous_chefs'])))\
             .all()
-        recipe_ids = [r[0] for r in task_recipes]
+        recipe_ids = [r[0] for r in sous_chef_recipes]
         q = q.filter(~Thing.recipe_id.in_(recipe_ids))
 
     return q, list(all_event_ids)
@@ -170,6 +170,7 @@ def search_things(user, org):
         levels         | a comma-separated list of tag_levels to filter by
         tag_ids        | a comma-separated list of thing_ids to filter by
         recipe_ids     | a comma-separated list of recipes to filter by
+        sous_chefs     | a comma-separated list of sous_chefs to filter by
     """
 
     # parse arguments
@@ -177,7 +178,7 @@ def search_things(user, org):
     # store raw kwargs for generating pagination urls..
     raw_kw = dict(request.args.items())
     raw_kw['apikey'] = user.apikey
-    raw_kw['org'] = org.id
+    raw_kw['org_id'] = org.id
 
     # special arg tuples
     sort_field, direction = \
@@ -186,8 +187,8 @@ def search_things(user, org):
         arg_list('tag_ids', default=[], typ=int, exclusions=True)
     include_recipes, exclude_recipes = \
         arg_list('recipe_ids', default=[], typ=int, exclusions=True)
-    include_tasks, exclude_tasks = \
-        arg_list('tasks', default=[], typ=str, exclusions=True)
+    include_sous_chefs, exclude_sous_chefs = \
+        arg_list('sous_chefs', default=[], typ=str, exclusions=True)
     include_levels, exclude_levels = \
         arg_list('levels', default=[], typ=str, exclusions=True)
     include_categories, exclude_categories = \
@@ -216,8 +217,8 @@ def search_things(user, org):
         exclude_tags=exclude_tags,
         include_recipes=include_recipes,
         exclude_recipes=exclude_recipes,
-        include_tasks=include_tasks,
-        exclude_tasks=exclude_tasks,
+        include_sous_chefs=include_sous_chefs,
+        exclude_sous_chefs=exclude_sous_chefs,
         org=org.id
     )
 
@@ -236,7 +237,7 @@ def search_things(user, org):
     validate_tag_levels(kw['include_levels'])
     validate_tag_levels(kw['exclude_levels'])
     validate_thing_types(kw['type'])
-    validate_event_facets(kw['facets'])
+    validate_thing_facets(kw['facets'])
 
     # base query
     thing_query = Thing.query
@@ -345,15 +346,15 @@ def search_things(user, org):
                                 for c in level_counts]
 
         # things by task
-        if 'tasks' in kw['facets'] or 'all' in kw['facets']:
+        if 'sous_chefs' in kw['facets'] or 'all' in kw['facets']:
             task_counts = db.session\
-                .query(Task.name, func.count(Task.name))\
+                .query(SousChef.name, func.count(SousChef.name))\
                 .outerjoin(Recipe)\
                 .outerjoin(Thing)\
                 .filter(Thing.id.in_(thing_ids))\
-                .order_by(desc(func.count(Task.name)))\
-                .group_by(Task.name).all()
-            facets['tasks'] = [dict(zip(['name', 'count'], c))
+                .order_by(desc(func.count(SousChef.name)))\
+                .group_by(SousChef.name).all()
+            facets['sous_chefs'] = [dict(zip(['name', 'count'], c))
                                for c in task_counts]
 
     # paginate thing_query
@@ -392,7 +393,7 @@ def thing(user, org, thing_id):
     """
     Fetch an individual event.
     """
-    t = thing.query.filter_by(id=thing_id, organization_id=org.id).first()
+    t = thing.query.filter_by(id=thing_id, org_id=org.id).first()
     if not t:
         raise RequestError(
             'An Thing with ID {} does not exist.'.format(event_id))
@@ -406,7 +407,7 @@ def thing(user, org, thing_id):
 #     """
 #     Modify an individual thing.
 #     """
-#     e = thing.query.filter_by(id=thing_id, organization_id=org.id).first()
+#     e = thing.query.filter_by(id=thing_id, org_id=org.id).first()
 #     if not e:
 #         raise RequestError(
 #             'An thing with ID {} does not exist.'.format(thing_id))
@@ -463,8 +464,8 @@ def thing(user, org, thing_id):
 #         setattr(e, k, v)
 
 # ensure no one sneakily/accidentally
-# updates an organization id
-#     e.organization_id = org.id
+# updates an org id
+#     e.org_id = org.id
 
 # if we're approving, add tags + things
 #     if approve:
@@ -500,7 +501,7 @@ def thing(user, org, thing_id):
 #     when polling recipes for new things since we'll be able to ensure
 #     that we do not create duplicate things.
 #     """
-#     e = thing.query.filter_by(id=thing_id, organization_id=org.id).first()
+#     e = thing.query.filter_by(id=thing_id, org_id=org.id).first()
 #     if not e:
 #         raise RequestError(
 #             'An thing with ID {} does not exist.'.format(thing_id))
@@ -533,7 +534,7 @@ def thing(user, org, thing_id):
 #     """
 #     Add a tag to an event.
 #     """
-#     e = Event.query.filter_by(id=event_id, organization_id=org.id).first()
+#     e = Event.query.filter_by(id=event_id, org_id=org.id).first()
 #     if not e:
 #         raise RequestError(
 #             'An Event with ID {} does not exist.'.format(event_id))
@@ -542,7 +543,7 @@ def thing(user, org, thing_id):
 #         raise RequestError(
 #             'You must first approve an Event before adding additional Tags.')
 
-#     tag = Tag.query.filter_by(id=tag_id, organization_id=org.id).first()
+#     tag = Tag.query.filter_by(id=tag_id, org_id=org.id).first()
 #     if not tag:
 #         raise RequestError(
 #             'Tag with ID {} does not exist.'.format(tag_id))
@@ -569,7 +570,7 @@ def thing(user, org, thing_id):
 #     """
 #     Add a tag to an event.
 #     """
-#     e = Event.query.filter_by(id=event_id, organization_id=org.id).first()
+#     e = Event.query.filter_by(id=event_id, org_id=org.id).first()
 #     if not e:
 #         raise RequestError(
 #             'An Event with ID {} does not exist.'.format(event_id))
@@ -598,7 +599,7 @@ def thing(user, org, thing_id):
 #     """
 #     Add a tag to an event.
 #     """
-#     e = Event.query.filter_by(id=event_id, organization_id=org.id).first()
+#     e = Event.query.filter_by(id=event_id, org_id=org.id).first()
 #     if not e:
 #         raise RequestError(
 #             'An Event with ID {} does not exist.'.format(event_id))
@@ -607,7 +608,7 @@ def thing(user, org, thing_id):
 #         raise RequestError(
 #             'You must first approve an Event before adding additional Things.')
 
-#     thing = Thing.query.filter_by(id=thing_id, organization_id=org.id).first()
+#     thing = Thing.query.filter_by(id=thing_id, org_id=org.id).first()
 #     if not thing:
 #         raise RequestError(
 #             'Thing with ID {} does not exist.'.format(thing_id))
@@ -630,7 +631,7 @@ def thing(user, org, thing_id):
 #     """
 #     Add a tag to an event.
 #     """
-#     e = Event.query.filter_by(id=event_id, organization_id=org.id).first()
+#     e = Event.query.filter_by(id=event_id, org_id=org.id).first()
 #     if not e:
 #         raise RequestError(
 #             'An Event with ID {} does not exist.'.format(event_id))

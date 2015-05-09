@@ -5,7 +5,7 @@ from collections import defaultdict, Counter
 
 from newslynx.core import db
 from newslynx.exc import RequestError
-from newslynx.models import Event, Tag, Task, Recipe, Thing
+from newslynx.models import Event, Tag, SousChef, Recipe, Thing
 from newslynx.models.relations import events_tags, things_events
 from newslynx.models.util import get_table_columns
 from newslynx.lib.serialize import jsonify
@@ -23,13 +23,13 @@ bp = Blueprint('recipes', __name__)
 @bp.route('/api/v1/recipes', methods=['GET'])
 @load_user
 @load_org
-def search_events(user, org):
+def search_recipes(user, org):
 
     # optionally filter by type/level/category
     status = arg_str('status', default=None)
     scheduled = arg_bool('scheduled', default=None)
     sort_field, direction = arg_sort('sort', default=None)
-    include_tasks, exclude_tasks = \
+    include_sous_chefs, exclude_sous_chefs = \
         arg_list('tasks', default=[], typ=str, exclusions=True)
 
     # validate sort fields are part of Recipe object.
@@ -37,20 +37,21 @@ def search_events(user, org):
         validate_fields(Recipe, sort_field, 'to sort by')
 
     # base query
-    recipe_query = db.session.query(Recipe)
+    recipe_query = db.session.query(Recipe)\
+        .filter_by(org_id=org.id)
 
-    # apply filters 
+    # apply filters
     if status:
         recipe_query = recipe_query\
             .filter_by(status=status)
 
-    if len(include_tasks):
+    if len(include_sous_chefs):
         recipe_query = recipe_query\
-            .filter(Recipe.task.has(Task.name.in_(include_tasks)))
+            .filter(Recipe.sous_chef.has(SousChef.name.in_(include_sous_chefs)))
 
-    if len(exclude_tasks):
+    if len(exclude_sous_chefs):
         recipe_query = recipe_query\
-            .filter(~Recipe.task.has(Task.name.in_(exclude_tasks)))
+            .filter(~Recipe.sous_chef.has(SousChef.name.in_(exclude_sous_chefs)))
 
     if scheduled is not None:
         recipe_query = recipe_query\

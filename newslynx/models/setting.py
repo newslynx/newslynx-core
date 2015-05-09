@@ -9,14 +9,18 @@ class Setting(db.Model):
     __tablename__ = 'org_settings'
 
     id = db.Column(db.Integer, unique=True, index=True, primary_key=True)
-    organization_id = db.Column(
-        db.Integer, db.ForeignKey('organizations.id'), index=True)
+    org_id = db.Column(
+        db.Integer, db.ForeignKey('orgs.id'), index=True)
     name = db.Column(db.Text, index=True)
     value = db.Column(db.Text)
     json_value = db.Column(db.Boolean)
 
+    __table_args__ = (
+        db.UniqueConstraint('org_id', 'name'),
+    )
+
     def __init__(self, **kw):
-        self.organization_id = kw.get('organization_id')
+        self.org_id = kw.get('org_id')
         self.name = kw.get('name')
         self.json_value = kw.get('json_value', False)
         if self.json_value:

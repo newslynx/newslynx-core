@@ -12,7 +12,7 @@ from newslynx.taxonomy import EVENT_STATUSES
 class Event(db.Model):
 
     """
-    An event is a significant moment in the life of a thing / organization.
+    An event is a significant moment in the life of a thing / org.
     """
 
     query_class = SearchQuery
@@ -22,8 +22,8 @@ class Event(db.Model):
     id = db.Column(db.Integer, unique=True, primary_key=True, index=True)
     # the unique id from the source.
     source_id = db.Column(db.Text, index=True)
-    organization_id = db.Column(
-        db.Integer, db.ForeignKey('organizations.id'), index=True)
+    org_id = db.Column(
+        db.Integer, db.ForeignKey('orgs.id'), index=True)
     recipe_id = db.Column(db.Integer, db.ForeignKey('recipes.id'), index=True)
     status = db.Column(
         ENUM(*EVENT_STATUSES, name='event_status_enum'), index=True)
@@ -51,7 +51,7 @@ class Event(db.Model):
 
     __table_args__ = (
         db.UniqueConstraint(
-            'source_id', 'organization_id', 'recipe_id', name='event_unique_constraint'),
+            'source_id', 'org_id', 'recipe_id', name='event_unique_constraint'),
         Index('events_search_vector_idx',
               'search_vector', postgresql_using='gin')
     )
@@ -59,7 +59,7 @@ class Event(db.Model):
     def __init__(self, **kw):
         self.source_id = str(kw.get('source_id'))
         self.recipe_id = kw.get('recipe_id')
-        self.organization_id = kw.get('organization_id')
+        self.org_id = kw.get('org_id')
         self.status = kw.get('status', 'pending')
         self.url = kw.get('url')
         self.img_url = kw.get('img_url')
@@ -99,7 +99,7 @@ class Event(db.Model):
             'id': self.id,
             'source_id': self.source_id,
             'recipe_id': self.recipe_id,
-            'organization_id': self.organization_id,
+            'org_id': self.org_id,
             'status': self.status,
             'url': self.url,
             'img_url': self.img_url,

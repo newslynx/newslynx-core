@@ -328,6 +328,27 @@ def validate_event_facets(values):
                            .format(', '.join(bad_values), msg, facets))
 
 
+def validate_thing_facets(values):
+    """
+    check a list of values against thing types.
+    """
+    if not isinstance(values, list):
+        values = [values]
+    facets = THING_FACETS + ['all']
+    bad_values = []
+    for value in values:
+        if value not in facets:
+            bad_values.append(value)
+
+    if len(bad_values):
+        if len(bad_values) == 1:
+            msg = 'is not a valid Thing facet.'
+        else:
+            msg = 'are not valid Thing facets.'
+        raise RequestError("'{}' {}. Choose from: {}."
+                           .format(', '.join(bad_values), msg, facets))
+
+
 def validate_hex_code(value):
     """
     check a list of values against thing types.

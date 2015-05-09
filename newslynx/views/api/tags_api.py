@@ -23,18 +23,18 @@ bp = Blueprint('tags', __name__)
 @load_org
 def get_tags(user, org):
     """
-    Get all tags + counts for an organization.
+    Get all tags + counts for an org.
     """
     # base query
 
     # TODO: count number of things that have been assigned events with tags?
     tag_query = db.session\
-        .query(Tag.id, Tag.organization_id, Tag.name, Tag.type,
+        .query(Tag.id, Tag.org_id, Tag.name, Tag.type,
                Tag.level, Tag.category, Tag.color,
                func.count(events_tags.c.event_id), func.count(things_tags.c.thing_id))\
         .outerjoin(events_tags)\
         .outerjoin(things_tags)\
-        .filter(Tag.organization_id == org.id)\
+        .filter(Tag.org_id == org.id)\
         .group_by(Tag.id)
 
     # optionall filter by type/level/category
@@ -54,7 +54,7 @@ def get_tags(user, org):
         validate_tag_categories(category)
         tag_query = tag_query.filter(Tag.category == category)
 
-    tag_cols = ['id', 'organization_id', 'name', 'type', 'level',
+    tag_cols = ['id', 'org_id', 'name', 'type', 'level',
                 'category', 'color', 'event_count', 'thing_count']
     tags = [dict(zip(tag_cols, r)) for r in tag_query.all()]
 
@@ -89,7 +89,7 @@ def get_tags(user, org):
 @load_org
 def create_tag(user, org):
     """
-    Get all tags for an organization.
+    Get all tags for an org.
     """
 
     req_data = request_data()
@@ -116,7 +116,7 @@ def create_tag(user, org):
         validate_tag_levels(tag['level'])
 
     # create the tag
-    tag = Tag(organization_id=org.id, **req_data)
+    tag = Tag(org_id=org.id, **req_data)
 
     db.session.add(tag)
 
@@ -137,7 +137,7 @@ def get_tag(user, org, tag_id):
     GET an individual tag.
     """
     # fetch the tag object
-    tag = Tag.query.filter_by(organization_id=org.id, id=tag_id).first()
+    tag = Tag.query.filter_by(org_id=org.id, id=tag_id).first()
     if not tag:
         raise RequestError('A Tag with ID {} does not exist'.format(tag_id))
 
@@ -152,7 +152,7 @@ def update_tag(user, org, tag_id):
     Update an individual tag.
     """
     # fetch the tag object
-    tag = Tag.query.filter_by(organization_id=org.id, id=tag_id).first()
+    tag = Tag.query.filter_by(org_id=org.id, id=tag_id).first()
     if not tag:
         raise RequestError('A Tag with ID {} does not exist'.format(tag_id))
 
@@ -180,8 +180,8 @@ def update_tag(user, org, tag_id):
             raise RequestError(
                 'Categories and Levels can only be set for Impact Tags')
 
-    # set organization id
-    req_data['organization_id'] = org.id
+    # set org id
+    req_data['org_id'] = org.id
 
     # filter out non-table columns
     columns = get_table_columns(Tag)
@@ -212,7 +212,7 @@ def delete_tag(user, org, tag_id):
     Delete an individual tag.
     """
     # fetch the tag object
-    tag = Tag.query.filter_by(organization_id=org.id, id=tag_id).first()
+    tag = Tag.query.filter_by(org_id=org.id, id=tag_id).first()
     if not tag:
         raise RequestError('A Tag with ID {} does not exist'.format(tag_id))
 

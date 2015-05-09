@@ -27,8 +27,8 @@ class Thing(db.Model):
 
     # the ID is the global bitly hash.
     id = db.Column(db.Integer, unique=True, primary_key=True, index=True)
-    organization_id = db.Column(
-        db.Integer, db.ForeignKey('organizations.id'), index=True)
+    org_id = db.Column(
+        db.Integer, db.ForeignKey('orgs.id'), index=True)
     recipe_id = db.Column(db.Integer, db.ForeignKey('recipes.id'), index=True)
     type = db.Column(ENUM(*THING_TYPES, name='thing_types_enum'))
     url = db.Column(db.Text, index=True, unique=True)
@@ -66,7 +66,7 @@ class Thing(db.Model):
     )
 
     def __init__(self, **kw):
-        self.organization_id = kw.get('organization_id')
+        self.org_id = kw.get('org_id')
         self.recipe_id = kw.get('recipe_id')
         self.url = kw.get('url')
         self.type = kw.get('type')
@@ -83,7 +83,7 @@ class Thing(db.Model):
     def to_dict(self):
         return {
             'id': self.id,
-            'organization_id': self.organization_id,
+            'org_id': self.org_id,
             'recipe_id': self.recipe_id,
             'url': self.url,
             'domain': self.domain,
