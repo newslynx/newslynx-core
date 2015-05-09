@@ -14,19 +14,21 @@ class Org(db.Model):
     name = db.Column(db.Text, unique=True, index=True)
     created = db.Column(db.DateTime(timezone=True))
 
-    # relations
+    # joins
     authorizations = db.relationship('Auth',
                                      backref=db.backref('org'),
                                      lazy='joined',
                                      cascade="all, delete-orphan")
-    users = db.relationship('User',
-                            secondary=orgs_users,
-                            backref=db.backref('orgs', lazy='joined'),
-                            lazy='joined')
     settings = db.relationship('Setting',
                                backref=db.backref('org'),
                                lazy='joined',
                                cascade="all, delete-orphan")
+
+    # dynamic relations
+    users = db.relationship('User',
+                            secondary=orgs_users,
+                            backref=db.backref('orgs', lazy='joined'),
+                            lazy='joined')
     events = db.relationship('Event',
                              lazy='dynamic',
                              cascade='all')
@@ -41,7 +43,7 @@ class Org(db.Model):
                               cascade='all')
     creators = db.relationship('Creator', lazy='dynamic')
 
-    tags = db.relationship('Tag', lazy='dynamic')
+    tags = db.relationship('Tag', lazy='dynamic', cascade='all')
 
     def __init__(self, **kw):
         self.name = kw.get('name')

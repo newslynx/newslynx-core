@@ -15,6 +15,9 @@ from newslynx.views import auth
 
 log = logging.getLogger(__name__)
 
+# register blueprints
+register_blueprints(app, api, admin, auth)
+
 
 @app.errorhandler(401)
 @app.errorhandler(403)
@@ -85,6 +88,3 @@ def end_timing(response):
         log.info('Request to \'%s\' (args: %r) took: %dms',
                  request.path, request.args.items(), duration)
     return response
-
-# register blueprints
-register_blueprints(app, api, admin, auth)

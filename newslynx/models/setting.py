@@ -40,6 +40,7 @@ class Setting(db.Model):
 
         return {
             'id': self.id,
+            'org_id': self.org_id,
             'name': self.name,
             'value': v,
             'json_value': self.json_value
