@@ -192,6 +192,7 @@ def get_sous_chefs():
             config=random_meta())
         db_session.add(t)
         sous_chefs.append(t)
+    db_session.commit()
     return sous_chefs
 
 

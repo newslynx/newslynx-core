@@ -1,12 +1,49 @@
 # newslynx
 
-the API and Data Collection Tasks that Power Newslynx.
+the API and SousChefs that Power Newslynx.
 
-## Questions
 
-- [ ] What are traffic-by-domain metrics? These will be impossible to put in a pivot table.
-- [ ] What are trackbacks?  Should we make a special "Link" class?
-- [ ]
+## (Re)Setting up the dev environment
+
+* Clone this repository and install `newslynx`
+    - preferably do this in a virtual environment.
+
+```
+git clone https://github.com/newslynx/newslynx
+pip install -e newslynx
+```
+
+* (re)create a `postgresql` database
+
+```
+psql >
+username=# drop database newslynx;
+username=# create database newslynx;
+```
+
+* fill out [`sample_config.yaml`](sample_config.yaml) and put it somewhere safe. 
+- MORE DETAILS TK HERE
+
+* set the environment variable `NEWSLYNX_CONFIG_FILE` to point to the absolute path of your config file.
+
+* initialize the database:
+
+```
+newslynx init
+```
+
+* populate with sample data
+
+```
+python scripts/gen_random_data.py
+```
+
+* start the server in debug mode
+
+```
+newslynx runserver -r -d
+```
+
 
 ## TODO 
 
@@ -24,19 +61,19 @@ the API and Data Collection Tasks that Power Newslynx.
     - [x] Implement Postgres-based search
 - [x] Re-implement Tags API
 - [ ] Implement Metrics API:
-    -
-    - [ ] Figure out how to use `tablefunc` for pivot tables.
+    - [x] Figure out how to use `tablefunc` for pivot tables.
 - [ ] Implement Reports API (Are these just metrics?)
     - [ ] Figure out how to use `pypostgresql` for custom postgres functions.
-- [ ] Implement Tasks API 
+- [x] Write out SousChefs JsonSchema
+- [ ] Implement SousChefs API 
 - [ ] Implement Recipes API 
 - [ ] Implement Task Queue (Celery, Redis?)
 - [ ] Implement Thing Creation API
 - [ ] Implement Event Creation API
-- [ ] Implement Modular Tasks
-- [ ] Figure out how best to use OAuth tokens in Tasks. Ideally these should not be exposed to users.
+- [ ] Implement Modular SousChefs
+- [ ] Figure out how best to use OAuth tokens in SousChefs. Ideally these should not be exposed to users.
 - [x] Implement API client
-- [ ] Re-implement Tasks
+- [ ] Re-implement SousChefs
     - [ ] RSS Feeds => Thing
     - [ ] Google Analytics => Metric
     - [ ] Google Alerts => Event
@@ -48,7 +85,7 @@ the API and Data Collection Tasks that Power Newslynx.
     - [ ] Twitter User => Event 
     - [ ] Facebook Page => Event 
     - [ ] 
-- [ ] Implement New Tasks 
+- [ ] Implement New SousChefs 
     - [ ] IFTTT integrations
         - [ ] Wordpress Publish => Thing
         - TK

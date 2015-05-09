@@ -31,10 +31,10 @@ setup(
     include_package_data=True,
     zip_safe=False,
     install_requires=REQUIREMENTS,
+    tests_require=['nose'],
     entry_points={
         'console_scripts': [
             'newslynx = newslynx.cli:run',
         ]
     },
-    tests_require=[]
 )
