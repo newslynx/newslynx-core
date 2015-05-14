@@ -95,6 +95,7 @@ def validate_recipe(sous_chef, recipe, uninitialized=False):
                 recipe[key] = slug
 
     parsed_options = {}
+
     # validate custom options
     for name, value in sous_chef['options'].iteritems():
         if name not in DEFAULT_SOUS_CHEF_OPTIONS.keys():
@@ -131,6 +132,10 @@ def validate_recipe(sous_chef, recipe, uninitialized=False):
 
             # save parsed options
             parsed_options[name] = opt
+
+    # check if recipe has time_of_day and interval
+    if recipe.get('time_of_day') and recipe.get('interval'):
+        raise RecipeSchemaError('A recipe cannot have "time_of_day" and "interval" set.')
 
     return recipe, parsed_options
 
