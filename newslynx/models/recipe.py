@@ -11,118 +11,126 @@ from newslynx.lib.search import SearchString
 from newslynx.exc import RecipeSchemaError, SearchStringError
 from newslynx.constants import RECIPE_STATUSES
 from newslynx.util import gen_hash_id
+from newslynx.models.sous_chef import DEFAULT_SOUS_CHEF_OPTIONS
 
 
-RECIPE_SCHEMA_MAP = {
-    "boolean": bool,
-    "datetime": dates.parse_iso,
-    "searchstring": SearchString,
-    "text": unicode,
-    "number": parse_number,
-    "list": list
-}
+def validate_recipe_opt(name, typ, raw):
+    """
+    Validate a recipe option
+    """
+
+    # custom first:
+    if typ == 'datetime':
+        opt = dates.parse_iso(raw)
+        if not opt:
+            raise RecipeSchemaError(
+                "{} is an {} field but was passed '{}'."
+                .format(name, typ, raw))
+
+    elif typ == 'searchstring':
+        try:
+            opt = SearchString(raw)
+        except SearchStringError as e:
+            raise RecipeSchemaError(e.message)
+
+    elif typ == 'boolean':
+        if isinstance(raw, basestring):
+            opt = raw.lower() in ['y', 'yes', '1', 't', 'true', 'ok']
+        else:
+            try:
+                opt = bool(raw)
+            except:
+                raise RecipeSchemaError(
+                    "{} is an {} field but was passed '{}'."
+                    .format(name, typ, raw))
+
+    elif typ == 'list':
+        if not isinstance(raw, list):
+            raise RecipeSchemaError(
+                "{} is a {} field but was passed '{}'."
+                .format(name, typ, raw))
+        else:
+            opt = raw
+
+    elif typ == 'number':
+        try:
+            opt = parse_number(raw)
+        except:
+            raise RecipeSchemaError(
+                "{} is a {} field but was passed '{}'."
+                .format(name, typ, raw))
+
+    elif typ == 'text':
+        try:
+            opt = raw.decode('utf-8')
+        except:
+            raise RecipeSchemaError(
+                "{} is a {} field but was passed '{}'."
+                .format(name, typ, raw))
+
+    return opt
 
 
 def validate_recipe(sous_chef, recipe, uninitialized=False):
     """
     Given a sous_chef schema, validate one of it's recipes.
     """
-    parsed_options = {}
-    recipe_options = recipe.get('options', {})
-    for name, value in sous_chef['options'].iteritems():
-        opt = recipe_options.get(name, None)
-        raw = copy.copy(opt)
+    # merge default sous chef options into top-level
+    # of recipe
+    for key in DEFAULT_SOUS_CHEF_OPTIONS.keys():
+        typ = DEFAULT_SOUS_CHEF_OPTIONS[key].get('type')
+        if key in recipe['options']:
+            raw = recipe['options'].pop(key)
+            recipe[key] = validate_recipe_opt(key, typ, raw)
 
-        # check for required values:
-        if opt is None:
-            if value.get('required', False):
+        elif key in recipe:
+            raw = recipe.pop(key)
+            recipe[key] = validate_recipe_opt(key, typ, raw)
 
-                # if the recipe is a default, aka unintialized,
-                # simply ignore requirements
-                if uninitialized:
-                    opt = None
-
-                else:
-                    raise RecipeSchemaError(
-                        "Recipes associated with SousChef '{}' require a '{}' option."
-                        .format(sous_chef['name'], name))
-            else:
-                opt = value.get('default', None)
-
-        typ = value['type']
-
-        if opt:
-
-            # check for proper types
-            type_fn = RECIPE_SCHEMA_MAP[typ]
-
-            # custom first:
-            if typ == 'datetime':
-                opt = type_fn(opt)
-                if not opt:
-                    raise RecipeSchemaError(
-                        "{} is an datetime field but was passed '{}'."
-                        .format(name, raw))
-
-            elif typ == 'searchstring':
-                try:
-                    opt = type_fn(opt)
-                except SearchStringError as e:
-                    raise RecipeSchemaError(e.message)
-
-            elif typ == 'boolean':
-                if isinstance(opt, basestring):
-                    opt = opt.lower() in ['y', 'yes', '1', 't', 'true', 'ok']
-                else:
-                    try:
-                        opt = type_fn(opt)
-                    except:
-                        raise RecipeSchemaError(
-                            "{} is an boolean field but was passed '{}'."
-                            .format(name, raw))
-
-            elif typ == 'list':
-                if not isinstance(opt, list):
-                    raise RecipeSchemaError(
-                        "{} is a {} field but was passed '{}'."
-                        .format(name, typ, raw))
-            else:
-                try:
-                    opt = type_fn(opt)
-
-                except:
-                    raise RecipeSchemaError(
-                        "{} is a {} field but was passed '{}'."
-                        .format(name, typ, raw))
-
-        # deal with serialization problems
-        if typ in ['searchstring', 'datetime']:
-            recipe['options'][name] = raw
         else:
-            recipe['options'][name] = opt
-
-        # save parsed options
-        parsed_options[name] = opt
-
-        # get scheduler fields
-        if name in ['time_of_day', 'interval']:
-            recipe[name] = opt
-            recipe['options'][name] = opt
-            parsed_options[name] = opt
-
-    # fallback on sous-chef defaults for recipe's name, slug, and description.
-    for name in ['name', 'description', 'slug']:
-        if name not in recipe or not recipe.get(name):
-            if name != 'slug':
-                recipe[name] = sous_chef[name]
-                recipe['options'][name] = sous_chef[name]
-                parsed_options[name] = sous_chef[name]
-
-            # randomize recipe slug.
+            if key != 'slug':
+                recipe[key] = sous_chef['options'][key].get('default', None)
             else:
-                slug = "{}-{}".format(sous_chef[name], gen_hash_id())
-                recipe['options'][name] = slug
-                recipe[name] = slug
+                slug = "{}-{}".format(sous_chef[key], gen_hash_id())
+                recipe[key] = slug
+
+    parsed_options = {}
+    # validate custom options
+    for name, value in sous_chef['options'].iteritems():
+        if name not in DEFAULT_SOUS_CHEF_OPTIONS.keys():
+
+            opt = recipe['options'].get(name, None)
+            raw = copy.copy(opt)
+
+            # check for required values:
+            if opt is None:
+                if value.get('required', False):
+
+                    # if the recipe is a default, aka unintialized,
+                    # simply ignore requirements
+                    if uninitialized:
+                        opt = None
+
+                    else:
+                        raise RecipeSchemaError(
+                            "Recipes associated with SousChef '{}' require a '{}' option."
+                            .format(sous_chef['name'], name))
+
+                else:
+                    opt = value.get('default', None)
+
+            typ = value['type']
+            if opt:
+                opt = validate_recipe_opt(name, typ, opt)
+
+            # deal with serialization problems
+            if typ in ['searchstring', 'datetime']:
+                recipe['options'][name] = raw
+            else:
+                recipe['options'][name] = opt
+
+            # save parsed options
+            parsed_options[name] = opt
 
     return recipe, parsed_options
 

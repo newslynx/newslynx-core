@@ -29,3 +29,6 @@ class TestSousChefJSONSchema(unittest.TestCase):
         print 'A valid search string should be able to fuzzy match phrases'
         t = SearchString('~fracking OR /.*oil.*/').match('fracking')
         assert t
+
+if __name__ == '__main__':
+    unittest.main()

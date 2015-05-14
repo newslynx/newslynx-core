@@ -167,3 +167,6 @@ class TestSousChefJSONSchema(unittest.TestCase):
             assert True
         else:
             assert False
+
+if __name__ == '__main__':
+    unittest.main()
