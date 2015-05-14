@@ -27,7 +27,7 @@ setup(
     license='MIT',
     packages=find_packages(exclude=['ez_setup', 'examples', 'tests']),
     namespace_packages=['newslynx'],
-    package_data={'newslynx': ['sql/*.sql', 'models/*.json']},
+    package_data={'newslynx': ['sql/*.sql', 'models/*.yaml', 'sc/*/*.yaml']},
     include_package_data=True,
     zip_safe=False,
     install_requires=REQUIREMENTS,

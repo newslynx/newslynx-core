@@ -29,9 +29,6 @@ class User(db.Model):
         self.admin = kw.get('admin', False)
         self.set_apikey(**kw)
 
-    def get_id(self):
-        return self.id
-
     def set_password(self, password):
         self.password = generate_password_hash(password)
 

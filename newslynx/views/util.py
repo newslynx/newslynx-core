@@ -12,7 +12,7 @@ from newslynx.lib import dates
 from newslynx.lib.serialize import json_to_obj
 from newslynx import settings
 from newslynx.models.util import get_table_columns
-from newslynx.taxonomy import *
+from newslynx.constants import *
 
 BOOL_TRUISH = ['true', '1', 'yes', 'y', 't', 'on']
 
@@ -135,7 +135,7 @@ def arg_list(name, default=None, typ=str, exclusions=False):
 
 
 def arg_sort(name, default=None):
-    """ 
+    """
     Fetch a query argument for a sort field,
     checking if we should sort asc / desc, as a float.
     """
@@ -349,6 +349,27 @@ def validate_thing_facets(values):
                            .format(', '.join(bad_values), msg, facets))
 
 
+def validate_sous_chef_creates(values):
+    """
+    check a list of values against thing types.
+    """
+    if not isinstance(values, list):
+        values = [values]
+    facets = SOUS_CHF_CREATES + ['all']
+    bad_values = []
+    for value in values:
+        if value not in facets:
+            bad_values.append(value)
+
+    if len(bad_values):
+        if len(bad_values) == 1:
+            msg = 'is not a valid collection a SousChef creates.'
+        else:
+            msg = 'are not valid Thing facets.'
+        raise RequestError("'{}' {}. Choose from: {}."
+                           .format(', '.join(bad_values), msg, facets))
+
+
 def validate_hex_code(value):
     """
     check a list of values against thing types.
@@ -388,8 +409,8 @@ def urls_for_pagination(handler, total_results, **kw):
 
     return p
 
-# Responses
 
+# Responses
 
 def delete_response():
     """
@@ -407,6 +428,7 @@ def obj_or_404(obj, message):
     """
     if obj is None:
         raise NotFoundError(message)
+
 
 # Blueprints
 

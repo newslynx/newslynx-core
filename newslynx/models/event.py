@@ -6,7 +6,7 @@ from sqlalchemy_utils.types import TSVectorType
 from newslynx.core import db, SearchQuery
 from newslynx.lib import dates
 from newslynx.models import relations
-from newslynx.taxonomy import EVENT_STATUSES
+from newslynx.constants import EVENT_STATUSES, EVENT_TYPES
 
 
 class Event(db.Model):
@@ -27,6 +27,7 @@ class Event(db.Model):
     recipe_id = db.Column(db.Integer, db.ForeignKey('recipes.id'), index=True)
     status = db.Column(
         ENUM(*EVENT_STATUSES, name='event_status_enum'), index=True)
+    type = db.Column(ENUM(*EVENT_TYPES, name='event_types_enum'), index=True)
     url = db.Column(db.Text, index=True)
     img_url = db.Column(db.Text)
     created = db.Column(db.DateTime(timezone=True), index=True)
@@ -61,6 +62,7 @@ class Event(db.Model):
         self.recipe_id = kw.get('recipe_id')
         self.org_id = kw.get('org_id')
         self.status = kw.get('status', 'pending')
+        self.type = kw.get('type', 'alert')
         self.url = kw.get('url')
         self.img_url = kw.get('img_url')
         self.created = kw.get('created', dates.now())
@@ -101,6 +103,7 @@ class Event(db.Model):
             'recipe_id': self.recipe_id,
             'org_id': self.org_id,
             'status': self.status,
+            'type': self.type,
             'url': self.url,
             'img_url': self.img_url,
             'created': self.created,

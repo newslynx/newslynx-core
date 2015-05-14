@@ -62,16 +62,28 @@ newslynx runserver -r -d
 - [ ] Re-implement Things API (aka Articles)
     - [x] Implement Postgres-based search
 - [x] Re-implement Tags API
+- [x] Write out SousChefs JSONSchema
+- [x] Write out initial schemas:
+    - [x] article
+    - [x] twitter-list
+    - [x] twitter-user
+    - [x] facebook-page
+- [ ] Write out default recipes + tags:
+    - [ ] article
+    - [ ] twitter-list
+    - [ ] twitter-user
+    - [ ] facebook-page
+    - [ ] promotion impact tag
+- [ ] Update create org endpoint to generate default recipes + tags.
+- [ ] Implement SousChefs API 
+- [ ] Implement Recipes API 
+- [ ] Implement Thing Creation API
+- [ ] Implement Event Creation API
 - [ ] Implement Metrics API:
     - [x] Figure out how to use `tablefunc` for pivot tables.
 - [ ] Implement Reports API (Are these just metrics?)
     - [ ] Figure out how to use `pypostgresql` for custom postgres functions.
-- [x] Write out SousChefs JsonSchema
-- [ ] Implement SousChefs API 
-- [ ] Implement Recipes API 
 - [ ] Implement Task Queue (Celery, Redis?)
-- [ ] Implement Thing Creation API
-- [ ] Implement Event Creation API
 - [ ] Implement Modular SousChefs
 - [ ] Figure out how best to use OAuth tokens in SousChefs. Ideally these should not be exposed to users.
 - [x] Implement API client
@@ -86,7 +98,8 @@ newslynx runserver -r -d
     - [ ] Twitter List => Event 
     - [ ] Twitter User => Event 
     - [ ] Facebook Page => Event 
-    - [ ] 
+    - [ ] Reddit => Event
+    - [ ] HackerNews => Event
 - [ ] Implement New SousChefs 
     - [ ] IFTTT integrations
         - [ ] Wordpress Publish => Thing

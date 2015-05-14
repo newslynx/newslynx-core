@@ -1,5 +1,7 @@
 import copy
 
+from slugify import slugify
+
 from newslynx.core import db
 from newslynx.lib import dates
 from newslynx.lib.serialize import json_to_obj
@@ -12,13 +14,15 @@ class Org(db.Model):
 
     id = db.Column(db.Integer, unique=True, index=True, primary_key=True)
     name = db.Column(db.Text, unique=True, index=True)
+    slug = db.Column(db.Text, unique=True, index=True)
     created = db.Column(db.DateTime(timezone=True))
+    updated = db.Column(db.DateTime(timezone=True))
 
     # joins
-    authorizations = db.relationship('Auth',
-                                     backref=db.backref('org'),
-                                     lazy='joined',
-                                     cascade="all, delete-orphan")
+    auths = db.relationship('Auth',
+                            backref=db.backref('org'),
+                            lazy='joined',
+                            cascade="all, delete-orphan")
     settings = db.relationship('Setting',
                                backref=db.backref('org'),
                                lazy='joined',
@@ -47,7 +51,9 @@ class Org(db.Model):
 
     def __init__(self, **kw):
         self.name = kw.get('name')
+        self.slug = kw.get('slug', slugify(kw['name']))
         self.created = kw.get('created', dates.now())
+        self.updated = kw.get('updated', dates.now())
 
     @property
     def settings_dict(self):
@@ -64,19 +70,32 @@ class Org(db.Model):
     def user_ids(self):
         return frozenset([u.id for u in self.users])
 
-    def to_dict(self, incl_users=True, incl_settings=True, incl_authorizations=True):
+    def to_dict(self,
+                incl_users=True,
+                incl_settings=True,
+                incl_auths=True,
+                incl_tags=False,
+                settings_as_dict=True):
         d = {
             'id': self.id,
-            'name': self.name
+            'name': self.name,
+            'slug': self.slug,
+            'created': self.created,
+            'updated': self.updated
         }
         if incl_users:
             d['users'] = [
                 u.to_dict(incl_org=False, incl_apikey=False) for u in self.users]
         if incl_settings:
-            d['settings'] = self.settings
-        if incl_authorizations:
-            d['authorizations'] = self.authorizations
+            if settings_as_dict:
+                d['settings'] = self.settings_dict
+            else:
+                d['settings'] = self.settings
+        if incl_auths:
+            d['auths'] = self.auths
+        if incl_tags:
+            d['tags'] = [t.to_dict() for t in self.tags.query.all()]
         return d
 
     def __repr__(self):
-        return "<Organization %s >" % (self.name)
+        return "<Org %s >" % (self.name)

@@ -13,10 +13,10 @@ RET_CODES = [200, 201]
 GOOD_CODES = RET_CODES + [204]
 
 
-class API(object):
+class BaseClient(object):
 
     """
-    A class for interacting with the TenderEngine API.
+    A base client for each endpoint to inherit from.
     """
 
     def __init__(self, **kw):
@@ -28,7 +28,8 @@ class API(object):
         if not self._url.endswith('/'):
             self._url += '/'
 
-        self._org = kw.pop('org', None)
+        self.apikey = kw.get('apikey', os.getenv('NEWSLYNX_API_KEY'))
+        self.org = kw.pop('org', os.getenv('NEWSLYNX_API_ORG_ID'))
         self._version = kw.pop('version', 'v1')
         self._endpoint = self._url + 'api/' + self._version + "/"
 
@@ -36,329 +37,6 @@ class API(object):
         self._session = Session()
 
         # authenticate
-        self._auth(**kw)
-
-    def login(self, **kw):
-        """
-        Authenticate with newslynx.
-        """
-
-        url = self._format_url('login')
-        return self._request('POST', url, data=kw)
-
-    def me(self, **kw):
-        """
-        Fetch your user profile.
-        """
-
-        url = self._format_url('me')
-        return self._request('GET', url, params=kw)
-
-    def me_update(self, **kw):
-        """
-        Update your user profile.
-        """
-        kw, params = self._split_auth_params_from_kw(**kw)
-        url = self._format_url('me')
-        return self._request('PUT', url, data=kw, params=kw)
-
-    def me_orgs(self, **kw):
-        """
-        Get orgs you have access to.
-        """
-        url = self._format_url('orgs')
-        return self._request('GET', url, params=kw)
-
-    def org(self, org=None, **kw):
-        """
-        Get an organization.
-        """
-        if not org:
-            org = copy.copy(self._org)
-            if not org:
-                raise ValueError(
-                    'You must pass in the org ID or name as the first argument.')
-
-        url = self._format_url('orgs', org)
-        return self._request('GET', url, params=kw)
-
-    def org_create(self, **kw):
-        """
-        Create an organization.
-        """
-        kw, params = self._split_auth_params_from_kw(**kw)
-        url = self._format_url('orgs')
-        return self._request('POST', url, data=kw, params=params)
-
-    def org_update(self, org=None, **kw):
-        """
-        Update an organization.
-        """
-        if not org:
-            org = copy.copy(self._org)
-            if not org:
-                raise ValueError(
-                    'You must pass in the org ID or name as the first argument.')
-        kw, params = self._split_auth_params_from_kw(**kw)
-        url = self._format_url('orgs', org)
-        return self._request('PUT', url, data=kw, params=params)
-
-    def org_delete(self, org=None, **kw):
-        """
-        Delete an organization.
-        """
-        if not org:
-            org = copy.copy(self._org)
-            if not org:
-                raise ValueError(
-                    'You must pass in the org ID or name as the first argument.')
-
-        url = self._format_url('orgs', org)
-        return self._request('DELETE', url, params=kw)
-
-    def org_create_user(self, org=None, **kw):
-        """
-        Create a user under an org.
-        """
-        if not org:
-            org = copy.copy(self._org)
-            if not org:
-                raise ValueError(
-                    'You must pass in the org ID or name as the first argument.')
-        kw, params = self._split_auth_params_from_kw(**kw)
-        url = self._format_url('orgs', org, 'users')
-        return self._request('POST', url, data=kw, params=params)
-
-    def org_user(self, org=None, user=None, **kw):
-        """
-        Get a user profile from an organization
-        """
-        if not org:
-            org = copy.copy(self._org)
-            if not org:
-                raise ValueError(
-                    'You must pass in the org ID or name as the first argument.')
-
-        elif not user:
-            raise ValueError(
-                'You must pass in the user id or email as the second argument.')
-
-        url = self._format_url('orgs', org, 'users', user)
-        return self._request('GET', url, params=kw)
-
-    def org_users(self, org=None, **kw):
-        """
-        Get all user profiles under an organization.
-        """
-        if not org:
-            org = copy.copy(self._org)
-            if not org:
-                raise ValueError(
-                    'You must pass in the org ID or name as the first argument.')
-
-        url = self._format_url('orgs', org, 'users')
-        return self._request('GET', url, params=kw)
-
-    def org_add_user(self, org=None, user=None, **kw):
-        """
-        Add an existing user to an organization.
-        """
-        if not org:
-            org = copy.copy(self._org)
-            if not org:
-                raise ValueError(
-                    'You must pass in the org ID or name as the first argument.')
-
-        elif not user:
-            raise ValueError(
-                'You must pass in the user id or email as the second argument.')
-
-        url = self._format_url('orgs', org, 'users', user)
-        return self._request('PUT', url, params=kw)
-
-    def org_remove_user(self, org=None, user=None, **kw):
-        """
-        Remove an existing user from an organization.
-        """
-        if not org:
-            org = copy.copy(self._org)
-            if not org:
-                raise ValueError(
-                    'You must pass in the org ID or name as the first argument.')
-
-        elif not user:
-            raise ValueError(
-                'You must pass in the user id or email as the second argument.')
-
-        url = self._format_url('orgs', org, 'users', user)
-        return self._request('DELETE', url, params=kw)
-
-    def org_add_setting(self, org=None, **kw):
-        """
-        Add/update a setting for an organization.
-        """
-        if not org:
-            org = copy.copy(self._org)
-            if not org:
-                raise ValueError(
-                    'You must pass in the org ID or name as the first argument.')
-
-        # jsonify value
-        if kw.get('json_value', True):
-            if not isinstance(kw.get('value'), basestring):
-                kw['value'] = obj_to_json(kw['value'])
-
-        kw, params = self._split_auth_params_from_kw(**kw)
-
-        url = self._format_url('orgs', org, 'settings')
-        return self._request('POST', url, data=kw, params=params)
-
-    def org_delete_setting(self, org=None, name=None, **kw):
-        """
-        Add/update a setting for an organization.
-        """
-        if not org:
-            org = copy.copy(self._org)
-            if not org:
-                raise ValueError(
-                    'You must pass in the org ID or name as the first argument.')
-
-        elif not name:
-            raise ValueError(
-                'You must pass in the user id or email as the second argument.')
-
-        url = self._format_url('orgs', org, 'settings', name)
-        return self._request('DELETE', url, params=kw)
-
-    def org_setting(self, org=None, name=None, **kw):
-        """
-        Add/update a setting for an organization.
-        """
-        if not org:
-            org = copy.copy(self._org)
-            if not org:
-                raise ValueError(
-                    'You must pass in the org ID or name as the first argument.')
-
-        elif not name:
-            raise ValueError(
-                'You must pass in the user id or email as the second argument.')
-
-        url = self._format_url('orgs', org, 'settings', name)
-        return self._request('GET', url, **kw)
-
-    def org_settings(self, org=None, **kw):
-        """
-        Add/update a setting for an organization.
-        """
-        if not org:
-            org = copy.copy(self._org)
-            if not org:
-                raise ValueError(
-                    'You must pass in the org ID or name as the first argument.')
-
-        url = self._format_url('orgs', org, 'settings')
-        return self._request('GET', url, params=kw)
-
-    def events(self, **kw):
-        """
-        Search events.
-        """
-        if not kw.get('org'):
-            kw['org'] = copy.copy(self._org)
-            if not kw['org']:
-                raise ValueError(
-                    'You must pass in the org ID or name as a keyword argument.')
-
-        url = self._format_url('events')
-        return self._request('GET', url, params=kw)
-
-    def event(self, event_id, **kw):
-        """
-        Get an individual event.
-        """
-        url = self._format_url('events', event_id)
-        return self._request('GET', url, params=kw)
-
-    def event_update(self, event_id, **kw):
-        """
-        Get an individual event.
-        """
-        kw, params = self._split_auth_params_from_kw(**kw)
-        url = self._format_url('events', event_id)
-        return self._request('PUT', url, data=kw, params=params)
-
-    def event_delete(self, event_id, **kw):
-        """
-        Get an individual event.
-        """
-        url = self._format_url('events', event_id)
-        return self._request('DELETE', url, params=kw)
-
-    def event_add_tag(self, event_id, tag_id, **kw):
-        """
-        Get an individual event.
-        """
-        url = self._format_url('events', event_id, 'tags', tag_id)
-        return self._request('PUT', url, params=kw)
-
-    def event_delete_tag(self, event_id, tag_id, **kw):
-        """
-        Get an individual event.
-        """
-        url = self._format_url('events', event_id, 'tags', tag_id)
-        return self._request('DELETE', url, params=kw)
-
-    def event_add_thing(self, event_id, thing_id, **kw):
-        """
-        Get an individual event.
-        """
-        url = self._format_url('events', event_id, 'things', thing_id)
-        return self._request('PUT', url, params=kw)
-
-    def event_delete_thing(self, event_id, thing_id, **kw):
-        """
-        Get an individual event.
-        """
-        url = self._format_url('events', event_id, 'things', thing_id)
-        return self._request('DELETE', url, params=kw)
-
-    def tags(self, **kw):
-        """
-        Get all tags.
-        """
-        url = self._format_url('tags')
-        return self._request('GET', url, params=kw)
-
-    def tag_update(self, tag_id, **kw):
-        """
-        Update a tag
-        """
-        kw, params = self._split_auth_params_from_kw(**kw)
-        url = self._format_url('tags', tag_id)
-        return self._request('PUT', url, data=kw, params=params)
-
-    def tag_delete(self, tag_id, **kw):
-        """
-        Delete a tag
-        """
-        kw, params = self._split_auth_params_from_kw(**kw)
-        url = self._format_url('tags', tag_id)
-        return self._request('DELETE', url, params=kw)
-
-    def _auth(self, **kw):
-        """
-        Authenticate on initalization.
-        """
-        # get key
-        self.apikey = kw.get('apikey', os.getenv('NEWSLYNX_API_KEY'))
-
-        # if no key is provided, login.
-        if not self.apikey:
-            email = kw.get('email', settings.ADMIN_EMAIL)
-            password = kw.get('password', settings.ADMIN_PASSWORD)
-            resp = self.login(email=email, password=password)
-            self.apikey = resp.apikey
 
     def _format_url(self, *args):
         """
@@ -372,18 +50,16 @@ class API(object):
         """
         A wrapper for all request executions.
         """
-
-        # pop internal flags
-        apikey = kw.pop('apikey', self.apikey)
+        if not self.apikey:
+            raise ClientError('You haven\'t set your apikey or logged in yet!')
 
         # add params to kw
         kw.setdefault('params', {})
 
         # add apikey/org when required or set by user.
-        if not url.endswith('/login'):
-            kw['params'].update({'apikey': apikey})
-            if 'org' not in kw['params']:
-                kw['params']['org'] = self._org
+        kw['params'].update({'apikey': self.apikey})
+        if 'org' not in kw['params']:
+            kw['params']['org'] = self.org
 
         # dump json
         if kw.get('data'):
@@ -439,3 +115,364 @@ class API(object):
             return [Dict(d) for d in data]
 
         return Dict(data)
+
+
+class Me(BaseClient):
+
+    def get(self, **kw):
+        """
+        Fetch your user profile.
+        """
+
+        url = self._format_url('me')
+        return self._request('GET', url, params=kw)
+
+    def update(self, **kw):
+        """
+        Update your user profile.
+        """
+        kw, params = self._split_data_from_auth_params(**kw)
+        url = self._format_url('me')
+        return self._request('PUT', url, data=kw, params=kw)
+
+    def orgs(self, **kw):
+        """
+        Get orgs you have access to.
+        """
+        url = self._format_url('orgs')
+        return self._request('GET', url, params=kw)
+
+
+class Orgs(BaseClient):
+
+    def get(self, org=None, **kw):
+        """
+        Get an organization.
+        """
+        if not org:
+            org = copy.copy(self.org)
+            if not org:
+                raise ValueError(
+                    'You must pass in the org ID or name as the first argument.')
+
+        url = self._format_url('orgs', org)
+        return self._request('GET', url, params=kw)
+
+    def create(self, **kw):
+        """
+        Create an organization.
+        """
+        kw, params = self._split_data_from_auth_params(**kw)
+        url = self._format_url('orgs')
+        return self._request('POST', url, data=kw, params=params)
+
+    def update(self, org=None, **kw):
+        """
+        Update an organization.
+        """
+        if not org:
+            org = copy.copy(self.org)
+            if not org:
+                raise ValueError(
+                    'You must pass in the org ID or name as the first argument.')
+        kw, params = self._split_data_from_auth_params(**kw)
+        url = self._format_url('orgs', org)
+        return self._request('PUT', url, data=kw, params=params)
+
+    def delete(self, org=None, **kw):
+        """
+        Delete an organization.
+        """
+        if not org:
+            org = copy.copy(self.org)
+            if not org:
+                raise ValueError(
+                    'You must pass in the org ID or name as the first argument.')
+
+        url = self._format_url('orgs', org)
+        return self._request('DELETE', url, params=kw)
+
+    def get_user(self, org=None, user=None, **kw):
+        """
+        Get a user profile from an organization
+        """
+        if not org:
+            org = copy.copy(self.org)
+            if not org:
+                raise ValueError(
+                    'You must pass in the org ID or name as the first argument.')
+
+        elif not user:
+            raise ValueError(
+                'You must pass in the user id or email as the second argument.')
+
+        url = self._format_url('orgs', org, 'users', user)
+        return self._request('GET', url, params=kw)
+
+    def list_users(self, org=None, **kw):
+        """
+        Get all user profiles under an organization.
+        """
+        if not org:
+            org = copy.copy(self.org)
+            if not org:
+                raise ValueError(
+                    'You must pass in the org ID or name as the first argument.')
+
+        url = self._format_url('orgs', org, 'users')
+        return self._request('GET', url, params=kw)
+
+    def create_user(self, org=None, **kw):
+        """
+        Create a user under an org.
+        """
+        if not org:
+            org = copy.copy(self.org)
+            if not org:
+                raise ValueError(
+                    'You must pass in the org ID or name as the first argument.')
+        kw, params = self._split_data_from_auth_params(**kw)
+        url = self._format_url('orgs', org, 'users')
+        return self._request('POST', url, data=kw, params=params)
+
+    def add_user(self, org=None, user=None, **kw):
+        """
+        Add an existing user to an organization.
+        """
+        if not org:
+            org = copy.copy(self.org)
+            if not org:
+                raise ValueError(
+                    'You must pass in the org ID or name as the first argument.')
+
+        elif not user:
+            raise ValueError(
+                'You must pass in the user id or email as the second argument.')
+
+        url = self._format_url('orgs', org, 'users', user)
+        return self._request('PUT', url, params=kw)
+
+    def remove_user(self, org=None, user=None, **kw):
+        """
+        Remove an existing user from an organization.
+        """
+        if not org:
+            org = copy.copy(self.org)
+            if not org:
+                raise ValueError(
+                    'You must pass in the org ID or name as the first argument.')
+
+        elif not user:
+            raise ValueError(
+                'You must pass in the user id or email as the second argument.')
+
+        url = self._format_url('orgs', org, 'users', user)
+        return self._request('DELETE', url, params=kw)
+
+
+class Settings(BaseClient):
+
+    def list(self, **kw):
+        """
+        Add/update a setting for an organization.
+        """
+
+        url = self._format_url('settings')
+        return self._request('GET', url, params=kw)
+
+    def get(self, name, **kw):
+        """
+        Get a particular setting.
+        """
+
+        url = self._format_url('settings', name)
+        return self._request('GET', url, **kw)
+
+    def create(self, **kw):
+        """
+        Create a setting
+        """
+        # jsonify value
+        if kw.get('json_value', True):
+            if not isinstance(kw.get('value'), basestring):
+                kw['value'] = obj_to_json(kw['value'])
+
+        kw, params = self._split_data_from_auth_params(**kw)
+
+        url = self._format_url('settings')
+        return self._request('POST', url, data=kw, params=params)
+
+    def update(self, name, **kw):
+        """
+        Update a setting
+        """
+        # jsonify value
+        if kw.get('json_value', True):
+            if not isinstance(kw.get('value'), basestring):
+                kw['value'] = obj_to_json(kw['value'])
+
+        kw, params = self._split_data_from_auth_params(**kw)
+
+        url = self._format_url('settings', name)
+        return self._request('PUT', url, data=kw, params=params)
+
+    def delete(self, name, **kw):
+        """
+        Delete a setting.
+        """
+
+        url = self._format_url('settings', name)
+        return self._request('DELETE', url, params=kw)
+
+
+class Tags(BaseClient):
+
+    def list(self, **kw):
+        """
+        Get all tags.
+        """
+        url = self._format_url('tags')
+        return self._request('GET', url, params=kw)
+
+    def update(self, tag_id, **kw):
+        """
+        Update a tag
+        """
+        kw, params = self._split_data_from_auth_params(**kw)
+        url = self._format_url('tags', tag_id)
+        return self._request('PUT', url, data=kw, params=params)
+
+    def delete(self, tag_id, **kw):
+        """
+        Delete a tag
+        """
+        kw, params = self._split_data_from_auth_params(**kw)
+        url = self._format_url('tags', tag_id)
+        return self._request('DELETE', url, params=kw)
+
+
+class Events(BaseClient):
+
+    def search(self, **kw):
+        """
+        Search events.
+        """
+        if not kw.get('org'):
+            kw['org'] = copy.copy(self.org)
+            if not kw['org']:
+                raise ValueError(
+                    'You must pass in the org ID or name as a keyword argument.')
+
+        url = self._format_url('events')
+        return self._request('GET', url, params=kw)
+
+    def get(self, event_id, **kw):
+        """
+        Get an individual event.
+        """
+        url = self._format_url('events', event_id)
+        return self._request('GET', url, params=kw)
+
+    def update(self, event_id, **kw):
+        """
+        Get an individual event.
+        """
+        kw, params = self._split_data_from_auth_params(**kw)
+        url = self._format_url('events', event_id)
+        return self._request('PUT', url, data=kw, params=params)
+
+    def delete(self, event_id, **kw):
+        """
+        Get an individual event.
+        """
+        url = self._format_url('events', event_id)
+        return self._request('DELETE', url, params=kw)
+
+    def add_tag(self, event_id, tag_id, **kw):
+        """
+        Get an individual event.
+        """
+        url = self._format_url('events', event_id, 'tags', tag_id)
+        return self._request('PUT', url, params=kw)
+
+    def remove_tag(self, event_id, tag_id, **kw):
+        """
+        Get an individual event.
+        """
+        url = self._format_url('events', event_id, 'tags', tag_id)
+        return self._request('DELETE', url, params=kw)
+
+    def add_thing(self, event_id, thing_id, **kw):
+        """
+        Get an individual event.
+        """
+        url = self._format_url('events', event_id, 'things', thing_id)
+        return self._request('PUT', url, params=kw)
+
+    def remove_thing(self, event_id, thing_id, **kw):
+        """
+        Get an individual event.
+        """
+        url = self._format_url('events', event_id, 'things', thing_id)
+        return self._request('DELETE', url, params=kw)
+
+
+class SousChefs(BaseClient):
+    pass
+
+
+class Recipes(BaseClient):
+    pass
+
+
+class Things(BaseClient):
+    pass
+
+
+class Metrics(BaseClient):
+    pass
+
+
+class Series(BaseClient):
+    pass
+
+
+class Links(BaseClient):
+    pass
+
+
+class Reports(BaseClient):
+    pass
+
+
+class Creators(BaseClient):
+    pass
+
+
+class API(BaseClient):
+
+    """
+    A class for interacting with the TenderEngine API.
+    """
+    def __init__(self, **kw):
+        self.me = Me(**kw)
+        self.orgs = Orgs(**kw)
+        self.settings = Settings(**kw)
+        self.tags = Tags(**kw)
+        self.sous_chefs = SousChefs(**kw)
+        self.recipes = Recipes(**kw)
+        self.events = Events(**kw)
+        self.things = Things(**kw)
+        self.links = Links(**kw)
+        self.series = Series(**kw)
+        self.metrics = Metrics(**kw)
+        self.reports = Reports(**kw)
+        self.creators = Creators(**kw)
+
+    def login(self, **kw):
+        """
+        Login via email + password.
+        """
+        url = self._format_url('login')
+        resp = self._request('POST', url, params=kw)
+        self.apikey = resp.apikey

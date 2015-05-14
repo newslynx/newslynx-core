@@ -1,0 +1,99 @@
+$schema: "http://json-schema.org/draft-04/schema#"
+title: NewsLynx SousChef Schema
+type: object
+required: 
+    - name
+    - slug
+    - description
+    - runs
+    - creates
+    - options
+
+properties:
+    name:
+       description: The display name of this sous-chef
+       type: string
+
+    slug:
+       description: A slug to display this task in a url.
+       type: string
+
+    description:
+        description: A description of the purpose this sous-chef serves
+        type: string
+    
+    runs:
+        description: >
+            Either an absolute path to an executable script, 
+            or a python module which inherits from core `newslynx.sc.SousChef` class. 
+            If an executable, it must be accessible by the machine that runs the sous chef.
+        type: string
+    
+    creates:
+        description: "What does this sous-chef create? Can be event, thing, tag, metric, series."
+        enum:
+            - event
+            - thing
+            - tag
+            - metric
+            - series
+    options:
+        description: Options this sous-chef accepts
+        additionalProperties: 
+            $ref: "#/definitions/option_item"
+
+definitions:
+    option_item:
+        description: An option for the sous-chef 
+        type: object
+        required: 
+            - type
+        
+        properties:
+            type:
+                description: The type of option.
+                type: string
+                enum:
+                    - boolean
+                    - datetime
+                    - searchstring
+                    - text
+                    - number
+                    - list
+            
+            default:
+                description: The default value for this option.
+                type:
+                    - string
+                    - number
+                    - boolean
+                    - 'null'
+                    - array
+            options:
+                description: "If the option type is list, a list of valid options for the item."
+                type: array
+                minItems: 1
+                uniqueItems: true
+            
+            required:
+                description: Whether or not this option item is required
+                type: boolean
+            
+            help:
+                description: Placehold / help reference for this option.
+                type: object
+                required: 
+                    - placeholder
+                properties:
+                    placeholder:
+                        description: The placeholder/example text for this option.
+                        type:
+                            - string
+                            - number
+                            - boolean
+                    link:
+                        description: A link for more details about this option.
+                        type: string
+                    description:
+                        description: A description of this option to display on form hover.
+                        type: string

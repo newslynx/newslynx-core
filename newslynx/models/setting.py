@@ -29,9 +29,7 @@ class Setting(db.Model):
                 v = obj_to_json(v)
             self.value = v
         else:
-            v = str(kw.get('value'))
-            assert isinstance(v, basestring)
-            self.value = v
+            self.value = str(kw.get('value'))
 
     def to_dict(self):
         v = copy.copy(self.value)

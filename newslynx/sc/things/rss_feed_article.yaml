@@ -1,0 +1,15 @@
+name: Ingest Articles from an RSS Feed.
+slug: article-rss-feed 
+description: Extracts articles from an RSS Feed.
+runs: newslynx.sc.things.rss_feed.Article
+creates: thing
+options:
+    feed_url:
+        type: text
+        required: true
+        help:
+            placeholder: http://propalpatine.org/feed.xml
+    # internal options
+    interval:
+        type: number
+        default: 1800

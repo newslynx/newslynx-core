@@ -28,13 +28,13 @@ def search_recipes(user, org):
     # optionally filter by type/level/category
     status = arg_str('status', default=None)
     scheduled = arg_bool('scheduled', default=None)
-    sort_field, direction = arg_sort('sort', default=None)
+    sort_field, direction = arg_sort('sort', default='-created')
     include_sous_chefs, exclude_sous_chefs = \
         arg_list('sous_chefs', default=[], typ=str, exclusions=True)
 
     # validate sort fields are part of Recipe object.
     if sort_field:
-        validate_fields(Recipe, sort_field, 'to sort by')
+        validate_fields(Recipe, [sort_field], 'to sort by')
 
     # base query
     recipe_query = db.session.query(Recipe)\
@@ -47,11 +47,11 @@ def search_recipes(user, org):
 
     if len(include_sous_chefs):
         recipe_query = recipe_query\
-            .filter(Recipe.sous_chef.has(SousChef.name.in_(include_sous_chefs)))
+            .filter(Recipe.sous_chef.has(SousChef.slug.in_(include_sous_chefs)))
 
     if len(exclude_sous_chefs):
         recipe_query = recipe_query\
-            .filter(~Recipe.sous_chef.has(SousChef.name.in_(exclude_sous_chefs)))
+            .filter(~Recipe.sous_chef.has(SousChef.slug.in_(exclude_sous_chefs)))
 
     if scheduled is not None:
         recipe_query = recipe_query\
@@ -66,7 +66,8 @@ def search_recipes(user, org):
     facets = defaultdict(Counter)
     for r in recipe_query.all():
         facets['statuses'][r.status] += 1
-        facets['sous_chefs'][r.sous_chef.name] += 1
+        facets['sous_chefs'][r.sous_chef.slug] += 1
+        facets['creates'][r.sous_chef.creates] += 1
         if r.scheduled:
             facets['schedules']['scheduled'] += 1
         else:

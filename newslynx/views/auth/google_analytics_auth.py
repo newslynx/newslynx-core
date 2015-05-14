@@ -77,7 +77,7 @@ def ga_auth(user, org):
         raise AuthError(
             'You must provide a "google_analytics_client_id" and '
             '"google_analytics_client_secret in your '
-            'NewsLynx configuration to enable Twitter integration. '
+            'NewsLynx configuration to enable Google Analytics integration. '
             'See https://developers.google.com/analytics/ for details on how to create '
             'an application on Google Analytics.')
 

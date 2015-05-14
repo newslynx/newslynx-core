@@ -1,0 +1,60 @@
+name: Event from twitter list
+slug: event-twitter-list
+description: Extracts events from a twitter list.
+runs: newslynx.sc.events.twitter.List
+creates: event
+options:
+    
+    list_owner_screen_name:
+        type: text
+        required: true
+        help:
+            placeholder: cspan
+    
+    list_slug:
+        type: text
+        required: true
+        help:
+            placeholder: members-of-congress
+    
+    min_folowers:
+        type: number
+        default: null
+        required: false
+        help:
+            placeholder: "Show from people with X followers, e.g. 5000."
+
+    search_query:
+        type: searchstring
+        default: null
+        required: false
+        help:
+            placeholder: "~fracking | drilling"
+
+    set_event_type:
+        type: text
+        default: alert
+        options: 
+            - alert
+            - promotion
+
+    set_event_status:
+        type: text
+        default: pending
+        options:
+            - pending
+            - approved
+
+    tag:
+        type: text
+        default: null
+
+    # internal options
+    interval:
+        type: number
+        default: 900
+
+
+
+
+

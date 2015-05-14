@@ -1,0 +1,5 @@
+sous_chef: article-rss-feed
+name: Ingest Articles from an RSS Feed.
+status: uninitialized
+options:
+    feed_url: ""

@@ -1,0 +1,42 @@
+name: Facebook Page to Event
+slug: event-facebook-page
+description: Extracts events from a facebook page.
+runs: newslynx.sc.events.facebook.Page
+creates: event
+options:
+    
+    page_name:
+        type: text
+        required: true
+        help:
+            placeholder: propalpatine
+
+    search_query:
+        type: searchstring
+        default: null
+        required: false
+        help:
+            placeholder: "~fracking | drilling"
+
+    set_event_type:
+        type: text
+        default: alert
+        options: 
+            - alert
+            - promotion
+
+    set_event_status:
+        type: text
+        default: pending
+        options:
+            - pending
+            - approved
+
+    tag:
+        type: text
+        default: null
+
+    # internal options
+    interval:
+        type: number
+        default: 7200

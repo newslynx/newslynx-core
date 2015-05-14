@@ -169,7 +169,7 @@ Example
 
 .. code-block:: bash
     
-    curl --data "email=merlynne@newslynx.org&password=admin-m3rlynn3" \
+    curl --data "email=merlynne@newslynx.org&password=a-secure-password" \
     $NEWSLYNX_API_URL/api/v1/login
 
 
@@ -675,7 +675,7 @@ Example
 **DELETE** ``/orgs/:org_id/users/:user_id``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Add an existing user to an organization.
+Remove a user from an organization.
 
 **NOTE**:
     - Requires admin privileges. 
@@ -750,24 +750,25 @@ If a setting has been declared as having a ``json_value``, it will be parsed as 
         "json_value": true
     }
 
-.. _endpoints-orgs-settings-list:
+.. _endpoints-settings-list:
 
-**GET** ``/orgs/:org_id/settings``
+**GET** ``/settings``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Get a list of an organization's settings.
 
-**NOTE**:
-    - You can pass in either an organization's ``id`` or it's ``name`` to this endpoint.
-
 Params
 ******
 
-+--------------------+------------------------+------------------+----------------+
-| Parameter          |  Description           |  Default         |  Required      |
-+====================+========================+==================+================+
-| ``apikey``         | Your apikey            |  null            | true           |
-+--------------------+------------------------+------------------+----------------+
++--------------------+--------------------------------+------------------+----------------+
+| Parameter          |  Description                   |  Default         |  Required      |
++====================+================================+==================+================+
+| ``apikey``         | Your apikey                    | null             | true           |
++--------------------+--------------------------------+------------------+----------------+
+| ``org``            | The organization's             | null             | true           |
+|                    | ``id`` or ``name`` you         |                  |                |
+|                    | wish to access.                |                  |                |
++--------------------+--------------------------------+------------------+----------------+
 
 Returns
 *******
@@ -780,39 +781,38 @@ Example
 
 .. code-block:: bash
     
-    curl $NEWSLYNX_API_URL/api/v1/orgs/2/settings\?apikey=$NEWSLYNX_API_KEY
+    curl $NEWSLYNX_API_URL/api/v1/settings\?apikey=$NEWSLYNX_API_KEY\&org=2
 
 
-.. _endpoints-orgs-settings-upsert:
+.. _endpoints-settings-create:
 
-**POST | PUT | PATCH** ``/orgs/:org_id/settings``
+**POST** ``/settings``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Upsert an organization's setting.
-
-TK: I built it this way because i thought it would be easier to build a single form that created / updated, but if you're creating objects for each setting, you may need a normal PUT /settings/:id endpoint.
-
-**NOTE**:
-    - You can pass in either an organization's ``id`` or it's ``name`` to this endpoint.
+Add a setting to an organization.
 
 Params
 ******
 
-+--------------------+------------------------+------------------+----------------+
-| Parameter          |  Description           |  Default         |  Required      |
-+====================+========================+==================+================+
-| ``apikey``         | Your apikey            |  null            | true           |
-+--------------------+------------------------+------------------+----------------+
++--------------------+--------------------------------+------------------+----------------+
+| Parameter          |  Description                   |  Default         |  Required      |
++====================+================================+==================+================+
+| ``apikey``         | Your apikey                    | null             | true           |
++--------------------+--------------------------------+------------------+----------------+
+| ``org``            | The organization's             | null             | true           |
+|                    | ``id`` or ``name`` you         |                  |                |
+|                    | wish to access.                |                  |                |
++--------------------+--------------------------------+------------------+----------------+
 
 Body
 ******
 
-A complete or partial :ref:`endpoints-settings-json` object.
+A :ref:`endpoints-settings-json` object without an ``id``.
 
 Returns
 *******
 
-A newly-created or modified :ref:`endpoints-settings-json` object.
+A newly-created :ref:`endpoints-settings-json` object with an ``id``.
 
 
 Examples
@@ -823,26 +823,19 @@ Create a simple setting.
 .. code-block:: bash
     
     curl --data "name=icon&value=http://example.com/mylogo.png" \
-    $NEWSLYNX_API_URL/api/v1/orgs/1/settings\?apikey=$NEWSLYNX_API_KEY
+    $NEWSLYNX_API_URL/api/v1/settings\?apikey=$NEWSLYNX_API_KEY\&org=2
 
 Create a ``json`` setting.
 
 .. code-block:: bash
     
     curl --data "name=short_urls&value=[\"prplt.in\"]&json_value=true" \
-    $NEWSLYNX_API_URL/api/v1/orgs/1/settings\?apikey=$NEWSLYNX_API_KEY
-
-Update a setting.
-
-.. code-block:: bash
-    
-    curl --data "name=short_urls&value=[\"zzzz.in\"]&json_value=true" \
-    $NEWSLYNX_API_URL/api/v1/orgs/1/settings\?apikey=$NEWSLYNX_API_KEY
+    $NEWSLYNX_API_URL/api/v1/settings\?apikey=$NEWSLYNX_API_KEY\&org=2
 
 
-.. _endpoints-orgs-settings-get:
+.. _endpoints-settings-get:
 
-**GET** ``/orgs/:org_id/settings/:name``
+**GET** ``/settings/:name``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Get an organization's setting by it's name.
@@ -854,11 +847,15 @@ Get an organization's setting by it's name.
 Params
 ******
 
-+--------------------+------------------------+------------------+----------------+
-| Parameter          |  Description           |  Default         |  Required      |
-+====================+========================+==================+================+
-| ``apikey``         | Your apikey            |  null            | true           |
-+--------------------+------------------------+------------------+----------------+
++--------------------+--------------------------------+------------------+----------------+
+| Parameter          |  Description                   |  Default         |  Required      |
++====================+================================+==================+================+
+| ``apikey``         | Your apikey                    | null             | true           |
++--------------------+--------------------------------+------------------+----------------+
+| ``org``            | The organization's             | null             | true           |
+|                    | ``id`` or ``name`` you         |                  |                |
+|                    | wish to access.                |                  |                |
++--------------------+--------------------------------+------------------+----------------+
 
 Returns
 *******
@@ -871,27 +868,75 @@ Example
 
 .. code-block:: bash
     
-    curl $NEWSLYNX_API_URL/api/v1/orgs/1/settings/icon\?apikey=$NEWSLYNX_API_KEY
+    curl $NEWSLYNX_API_URL/api/v1/settings/icon\?apikey=$NEWSLYNX_API_KEY\&org=2
 
-.. _endpoints-orgs-settings-delete:
+.. _endpoints-settings-update:
 
-**DELETE** ``/orgs/:org_id/settings/:name``
+**PUT** | **PATCH** ``/settings/:name``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Delete an organization's setting by it's name.
+Add a setting to an organization.
 
 **NOTE**:
-    - You can pass in either an organization's ``id`` or it's ``name`` to this endpoint.
     - You can pass in either a setting's ``id`` or it's ``name`` to this endpoint.
 
 Params
 ******
 
-+--------------------+------------------------+------------------+----------------+
-| Parameter          |  Description           |  Default         |  Required      |
-+====================+========================+==================+================+
-| ``apikey``         | Your apikey            |  null            | true           |
-+--------------------+------------------------+------------------+----------------+
++--------------------+--------------------------------+------------------+----------------+
+| Parameter          |  Description                   |  Default         |  Required      |
++====================+================================+==================+================+
+| ``apikey``         | Your apikey                    | null             | true           |
++--------------------+--------------------------------+------------------+----------------+
+| ``org``            | The organization's             | null             | true           |
+|                    | ``id`` or ``name`` you         |                  |                |
+|                    | wish to access.                |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+
+Body
+******
+
+A partial or complete :ref:`endpoints-settings-json` object.
+
+Returns
+*******
+
+A modified :ref:`endpoints-settings-json` object.
+
+
+Examples
+********
+
+Update a setting.
+
+.. code-block:: bash
+
+    curl -X PUT -d "value=[\"zzzz.in\"]" -d "json_value=true" \
+    $NEWSLYNX_API_URL/api/v1/settings/short_urls\?apikey=$NEWSLYNX_API_KEY\&org=2
+
+
+.. _endpoints-settings-delete:
+
+**DELETE** ``/settings/:name``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Delete an organization's setting by it's name.
+
+**NOTE**:
+    - You can pass in either a setting's ``id`` or it's ``name`` to this endpoint.
+
+Params
+******
+
++--------------------+--------------------------------+------------------+----------------+
+| Parameter          |  Description                   |  Default         |  Required      |
++====================+================================+==================+================+
+| ``apikey``         | Your apikey                    | null             | true           |
++--------------------+--------------------------------+------------------+----------------+
+| ``org``            | The organization's             | null             | true           |
+|                    | ``id`` or ``name`` you         |                  |                |
+|                    | wish to access.                |                  |                |
++--------------------+--------------------------------+------------------+----------------+
 
 Returns
 *******
@@ -904,7 +949,7 @@ Example
 
 .. code-block:: bash
     
-    curl -X DELETE $NEWSLYNX_API_URL/api/v1/orgs/1/settings/icon\?apikey=$NEWSLYNX_API_KEY
+    curl -X DELETE $NEWSLYNX_API_URL/api/v1/settings/short_urls\?apikey=$NEWSLYNX_API_KEY\&org=2
 
 
 .. _endpoints-tags:

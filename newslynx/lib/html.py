@@ -45,13 +45,13 @@ def strip_tags(htmlstring):
 
 def get_meta(page_html, url):
     """
-    get title, description, favicon, twitter card, 
+    get title, description, favicon, twitter card,
     facebook open graph data
 
     This is taken from https://github.com/nytlabs/pageinfo
 
-    Since every transformation step produce incomplete 
-    versions of the same normalized schema, we 
+    Since every transformation step produce incomplete
+    versions of the same normalized schema, we
     can optimistically try to get lots of things.
     """
     data = {'meta': {}}
@@ -75,6 +75,7 @@ def get_meta(page_html, url):
             icon_rel = soup.find("link", rel="shortcut icon")["href"]
             icon_abs = urljoin(url, icon_rel)
             data['meta']["favicon"] = icon_abs
+
         else:
             domain = '{uri.scheme}://{uri.netloc}/'.format(uri=parsed_uri)
             data['meta']["favicon"] = domain + 'favicon.ico'
@@ -103,7 +104,7 @@ def get_meta(page_html, url):
 
         # make sure canonical exists, use og as backup
         if not data['url'] or len(data['url']) == 0:
-            if data['facebook'].has_key('og:url'):
+            if 'og:url' in data['facebook']:
                 data['url'] = data['facebook']['og:url']
 
         return data

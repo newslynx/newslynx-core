@@ -1,0 +1,6 @@
+- name: Promotion
+  slug: promotion-internal
+  type: impact
+  level: internal
+  category: promotion
+  color: '#fc0'

@@ -5,7 +5,7 @@ from sqlalchemy import Index
 from newslynx.core import db, SearchQuery
 from newslynx.lib import dates
 from newslynx.models import relations
-from newslynx.taxonomy import THING_TYPES
+from newslynx.constants import THING_TYPES
 
 
 class Thing(db.Model):

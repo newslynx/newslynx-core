@@ -7,11 +7,13 @@ from newslynx.core import db
 from newslynx.exc import RequestError
 from newslynx.models import Tag
 from newslynx.models.relations import events_tags, things_tags
+from newslynx.models.util import fetch_by_id_or_field
 from newslynx.lib.serialize import jsonify
 from newslynx.views.decorators import load_user, load_org
 from newslynx.models.util import get_table_columns
+from newslynx.lib import dates
 from newslynx.views.util import *
-from newslynx.taxonomy import (
+from newslynx.constants import (
     IMPACT_TAG_CATEGORIES, IMPACT_TAG_LEVELS)
 
 # blueprint
@@ -29,19 +31,23 @@ def get_tags(user, org):
 
     # TODO: count number of things that have been assigned events with tags?
     tag_query = db.session\
-        .query(Tag.id, Tag.org_id, Tag.name, Tag.type,
-               Tag.level, Tag.category, Tag.color,
+        .query(Tag.id, Tag.org_id, Tag.name, Tag.slug, Tag.type,
+               Tag.level, Tag.category, Tag.color, Tag.created, Tag.updated,
                func.count(events_tags.c.event_id), func.count(things_tags.c.thing_id))\
         .outerjoin(events_tags)\
         .outerjoin(things_tags)\
         .filter(Tag.org_id == org.id)\
         .group_by(Tag.id)
 
-    # optionall filter by type/level/category
+    # optionally filter by type/level/category
     type = arg_str('type', default=None)
     level = arg_str('level', default=None)
     category = arg_str('category', default=None)
 
+    sort_field, direction = \
+        arg_sort('sort', default='-created')
+
+    # filters
     if type:
         validate_tag_types(type)
         tag_query = tag_query.filter(Tag.type == type)
@@ -54,8 +60,14 @@ def get_tags(user, org):
         validate_tag_categories(category)
         tag_query = tag_query.filter(Tag.category == category)
 
-    tag_cols = ['id', 'org_id', 'name', 'type', 'level',
-                'category', 'color', 'event_count', 'thing_count']
+    # sort
+    validate_fields(Tag, [sort_field], 'to sort by')
+    sort_obj = eval('Tag.{}.{}'.format(sort_field, direction))
+    tag_query = tag_query.order_by(sort_obj())
+
+    tag_cols = ['id', 'org_id', 'name', 'slug', 'type', 'level',
+                'category', 'color', 'created', 'updated',
+                'event_count', 'thing_count']
     tags = [dict(zip(tag_cols, r)) for r in tag_query.all()]
 
     # just compute facets via python rather
@@ -79,9 +91,7 @@ def get_tags(user, org):
         clean_tags.append(t)
 
     # format response
-    resp = {'tags': clean_tags, 'facets': c}
-
-    return jsonify(resp)
+    return jsonify({'tags': clean_tags, 'facets': c})
 
 
 @bp.route('/api/v1/tags', methods=['POST'])
@@ -89,7 +99,7 @@ def get_tags(user, org):
 @load_org
 def create_tag(user, org):
     """
-    Get all tags for an org.
+    Create a tag.
     """
 
     req_data = request_data()
@@ -129,7 +139,7 @@ def create_tag(user, org):
     return jsonify(tag)
 
 
-@bp.route('/api/v1/tags/<int:tag_id>', methods=['GET'])
+@bp.route('/api/v1/tags/<tag_id>', methods=['GET'])
 @load_user
 @load_org
 def get_tag(user, org, tag_id):
@@ -137,14 +147,14 @@ def get_tag(user, org, tag_id):
     GET an individual tag.
     """
     # fetch the tag object
-    tag = Tag.query.filter_by(org_id=org.id, id=tag_id).first()
+    tag = fetch_by_id_or_field(Tag, 'slug', tag_id, org_id=org.id)
     if not tag:
         raise RequestError('A Tag with ID {} does not exist'.format(tag_id))
 
     return jsonify(tag)
 
 
-@bp.route('/api/v1/tags/<int:tag_id>', methods=['PUT', 'PATCH'])
+@bp.route('/api/v1/tags/<tag_id>', methods=['PUT', 'PATCH'])
 @load_user
 @load_org
 def update_tag(user, org, tag_id):
@@ -152,7 +162,7 @@ def update_tag(user, org, tag_id):
     Update an individual tag.
     """
     # fetch the tag object
-    tag = Tag.query.filter_by(org_id=org.id, id=tag_id).first()
+    tag = fetch_by_id_or_field(Tag, 'slug', tag_id, org_id=org.id)
     if not tag:
         raise RequestError('A Tag with ID {} does not exist'.format(tag_id))
 
@@ -193,6 +203,8 @@ def update_tag(user, org, tag_id):
     for k, v in req_data.items():
         setattr(tag, k, v)
 
+    tag.updated = dates.now()
+
     db.session.add(tag)
 
     # check for dupes
@@ -204,7 +216,7 @@ def update_tag(user, org, tag_id):
     return jsonify(tag)
 
 
-@bp.route('/api/v1/tags/<int:tag_id>', methods=['DELETE'])
+@bp.route('/api/v1/tags/<tag_id>', methods=['DELETE'])
 @load_user
 @load_org
 def delete_tag(user, org, tag_id):
@@ -212,7 +224,7 @@ def delete_tag(user, org, tag_id):
     Delete an individual tag.
     """
     # fetch the tag object
-    tag = Tag.query.filter_by(org_id=org.id, id=tag_id).first()
+    tag = fetch_by_id_or_field(Tag, 'slug', tag_id, org_id=org.id)
     if not tag:
         raise RequestError('A Tag with ID {} does not exist'.format(tag_id))
 

@@ -62,7 +62,7 @@ def fb_auth(user, org):
     if not FB_ENABLED:
         raise RequestError(
             'You must provide a "facebook_app_id" and "facebook_app_secret" in '
-            'your NewsLynx configuration to enabled facebook integration. '
+            'your NewsLynx configuration to enable facebook integration. '
             'See http://developers.facebook.com for details on how to create '
             'an application on Facebook.')
 

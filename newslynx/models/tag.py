@@ -1,7 +1,9 @@
 from sqlalchemy.dialects.postgresql import ENUM
+from slugify import slugify
 
 from newslynx.core import db
-from newslynx.taxonomy import (
+from newslynx.lib import dates
+from newslynx.constants import (
     IMPACT_TAG_CATEGORIES, IMPACT_TAG_LEVELS, TAG_TYPES)
 
 
@@ -17,7 +19,10 @@ class Tag(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     org_id = db.Column(
         db.Integer, db.ForeignKey('orgs.id'), index=True)
-    name = db.Column(db.Text, index=True)
+    name = db.Column(db.Text)
+    slug = db.Column(db.Text, index=True)
+    created = db.Column(db.DateTime(timezone=True), index=True)
+    updated = db.Column(db.DateTime(timezone=True), index=True)
     color = db.Column(db.Text)
     type = db.Column(ENUM(*TAG_TYPES, name='tag_type_enum'), index=True)
     category = db.Column(ENUM(*IMPACT_TAG_CATEGORIES, name='tag_categories_enum'))
@@ -30,6 +35,9 @@ class Tag(db.Model):
     def __init__(self, **kw):
         self.org_id = kw.get('org_id')
         self.name = kw.get('name')
+        self.slug = slugify(kw.get('slug', kw['name']))
+        self.created = kw.get('created', dates.now())
+        self.updated = kw.get('updated', dates.now())
         self.type = kw.get('type')
         self.color = kw.get('color')
         self.category = kw.get('category')
@@ -41,18 +49,24 @@ class Tag(db.Model):
                 'id': self.id,
                 'org_id': self.org_id,
                 'name': self.name,
+                'slug': self.slug,
                 'type': self.type,
                 'color': self.color.lower(),
                 'category': self.category,
-                'level': self.level
+                'level': self.level,
+                'created': self.created,
+                'updated': self.updated
             }
         else:
             return {
                 'id': self.id,
                 'org_id': self.org_id,
                 'name': self.name,
+                'slug': self.slug,
                 'type': self.type,
                 'color': self.color.lower(),
+                'created': self.created,
+                'updated': self.updated
             }
 
     def __repr__(self):

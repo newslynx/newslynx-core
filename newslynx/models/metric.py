@@ -2,7 +2,7 @@ from sqlalchemy.dialects.postgresql import ENUM
 
 from newslynx.core import db
 from newslynx.lib import dates
-from newslynx.taxonomy import METRIC_CATEGORIES
+from newslynx.constants import METRIC_CATEGORIES
 
 
 class Metric(db.Model):

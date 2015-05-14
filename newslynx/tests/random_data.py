@@ -8,28 +8,23 @@ from random import choice
 from faker import Faker
 
 from newslynx import settings
+from newslynx.init import (
+    load_default_recipes, load_default_tags,
+    load_sous_chefs)
 from newslynx.models import *
 from newslynx.core import db_session
-from newslynx.taxonomy import *
+from newslynx.constants import *
+from newslynx.exc import RecipeSchemaError
 
 
 # fake factory
 fake = Faker()
 
 
-TAG_TYPES = ['subject', 'impact']
 IMPACT_TAG_NAMES = ['Media pickup', 'Media social share',
                     'Indv. social share', 'Comm. social share']
 SUBJECT_TAG_NAMES = ['Environment', 'Money & politics', 'Government', 'Health']
 
-SOUS_CHEF_NAMES = [
-    'twitter-domain-mentions',
-    'google-analytics-trackbacks',
-    'google-analytics-pageviews',
-    'some-other-task',
-    'another-task',
-    'and-another'
-]
 
 CREATORS = ['Michael Keller', 'Brian Abelson', 'Merlynne Jones']
 
@@ -185,44 +180,59 @@ def gen_org(users):
 
 def get_sous_chefs():
     sous_chefs = []
-    for t in SOUS_CHEF_NAMES:
-        t = SousChef(
-            name=t,
-            description=random_text(20),
-            config=random_meta())
-        db_session.add(t)
-        sous_chefs.append(t)
-    db_session.commit()
+    for sc in load_sous_chefs():
+        s = db_session.query(SousChef)\
+            .filter_by(slug=sc['slug'])\
+            .first()
+        if not s:
+            s = SousChef(**sc)
+            db_session.add(s)
+            db_session.commit()
+        sous_chefs.append(s)
     return sous_chefs
 
 
 # Recipe
-def gen_recipe(org, users, sous_chefs):
-    t = choice(sous_chefs)
-    r = Recipe(
-        org_id=org.id,
-        sous_chef_id=t.id,
-        name=random_text(10),
-        description=random_text(20),
-        config=random_meta(),
-        created=random_date(1, 9),
-        scheduled=random_bool(),
-        interval=choice([None, random_int(60, 240)]),
-        backoff=choice([None, random_int(1, 5)]),
-        ttl=choice([None, random_int(400, 600)])
-    )
-    db_session.add(r)
-    db_session.commit()
-    return r
+def gen_built_in_recipes(org):
+    recipes = []
+    u = choice(org.users)
+    # add default recipes
+    for recipe in load_default_recipes():
+        recipe['user_id'] = u.id
+        recipe['org_id'] = org.id
+        recipe['status'] = 'uninitialized'
+        sous_chef_slug = recipe.pop('sous_chef')
+        if not sous_chef_slug:
+            raise RecipeSchemaError(
+                'Default recipe "{}" is missing a "sous_chef" slug.'
+                .format(recipe.get('name', '')))
+
+        sc = SousChef.query.filter_by(slug=sous_chef_slug).first()
+        if not sc:
+            raise RecipeSchemaError(
+                '"{}" is not a valid SousChef slug or the SousChef does not yet exist.'
+                .format(recipe['name']))
+        r = db_session.query(Recipe)\
+            .filter_by(org_id=org.id, name=recipe['name'])\
+            .first()
+        if not r:
+
+            r = Recipe(sc, **recipe)
+            db_session.add(r)
+            db_session.commit()
+        recipes.append(r)
+    return recipes
 
 
 # Tags
 def gen_impact_tags(org, n_impact_tags):
+
+    # random
     impact_tags = []
     for _ in xrange(n_impact_tags):
         t = Tag(
             org_id=org.id,
-            name=random_text(10),
+            name=random_text(20) + str(random_int(1, 100)),
             color=random_color(),
             type='impact',
             category=choice(IMPACT_TAG_CATEGORIES),
@@ -230,6 +240,18 @@ def gen_impact_tags(org, n_impact_tags):
         db_session.add(t)
         db_session.commit()
         impact_tags.append(t)
+
+    # default
+    for tag in load_default_tags():
+        if tag['type'] == 'impact':
+            tag['org_id'] = org.id
+            t = db_session.query(Tag)\
+                .filter_by(org_id=org.id, name=tag['name'])\
+                .first()
+            if not t:
+                t = Tag(**tag)
+                db_session.add(t)
+                db_session.commit()
     return impact_tags
 
 
@@ -239,12 +261,25 @@ def gen_subject_tags(org, n_subject_tags):
     for _ in xrange(n_subject_tags):
         t = Tag(
             org_id=org.id,
-            name=random_text(10),
+            name=random_text(20) + str(random_int(1, 100)),
             color=random_color(),
             type='subject')
         db_session.add(t)
         db_session.commit()
         subject_tags.append(t)
+
+    # default
+    for tag in load_default_tags():
+        if tag['type'] == 'subject':
+            tag['org_id'] = org.id
+            t = db_session.query(Tag)\
+                .filter_by(org_id=org.id, name=tag['name'])\
+                .first()
+            if not t:
+                t = Tag(**tag)
+                db_session.add(t)
+                db_session.commit()
+            impact_tags.append(t)
     return subject_tags
 
 
@@ -372,17 +407,16 @@ def main(
     subject_tags = gen_subject_tags(org, n_impact_tags)
     creators = gen_creators(org)
     sous_chefs = get_sous_chefs()
+    recipes = gen_built_in_recipes(org)
 
     # generate things + metrics
-    thing_recipes = [gen_recipe(org, users, sous_chefs) for _ in xrange(n_thing_recipes)]
-    metric_recipes = [gen_recipe(org, users, sous_chefs) for _ in range(len(METRICS))]
-
     things = []
     for i in xrange(n_things):
 
-        thing = gen_thing(org, thing_recipes, subject_tags, creators)
+        thing = gen_thing(org, recipes, subject_tags, creators)
         things.append(thing)
-        for metric, recipe in zip(METRICS, metric_recipes):
+        for metric in METRICS:
+            recipe = choice(recipes)
             if not metric['timeseries']:
                 n_metrics = 1
             else:
@@ -397,15 +431,15 @@ def main(
         print "generating {} events".format(n_events)
 
     # generate events
-    event_recipes = [gen_recipe(org, users, sous_chefs) for _ in xrange(n_event_recipes)]
-    gen_events(org, event_recipes, impact_tags, things, n_events)
+    gen_events(org, recipes, impact_tags, things, n_events)
 
 
-if __name__ == '__main__':
-    import sys
-    if len(sys.argv) > 1:
-        if sys.argv[1].startswith('v'):
-            verbose = True
-    else:
-        verbose = False
-    main(verbose=verbose)
+def run(**kw):
+    """
+    A wrapper for random data generator which rollsback on error.
+    """
+    # try:
+    main(**kw)
+    # except Exception as e:
+    #     db_session.rollback()
+    #     raise e

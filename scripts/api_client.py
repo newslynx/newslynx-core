@@ -4,18 +4,16 @@ from newslynx.client import API
 from newslynx import settings
 from newslynx.exc import ClientError
 
-# login to the api w/ username and password
-api = API(apikey='b37c259d33cee964e870a9296e45b63d', org=1)
-
-#login to the api with an apikey
+#login to the api without an apikey
+api = API(org=1)
 print ">>> api.login"
 res = api.login(email=settings.ADMIN_EMAIL, password=settings.ADMIN_PASSWORD)
 pprint(res)
 print
 
 # get your user account
-print ">>> api.me"
-me = api.me()
+print ">>> api.me.get()"
+me = api.me.get()
 pprint(me)
 print
 

@@ -1,39 +1,24 @@
 import unittest
 
-from newslynx.models import SOUS_CHEF_JSON_SCHEMA
-from newslynx.lib.serialize import json_to_obj
-from jsonschema import Draft4Validator
-
-# setup validator
-validator = Draft4Validator(SOUS_CHEF_JSON_SCHEMA)
-
-
-def validate_sous_chef_schema(schema):
-    return sorted(validator.iter_errors(schema), key=lambda e: e.path)
+from newslynx.exc import SousChefSchemaError
+from newslynx.models import validate_sous_chef
 
 
 class TestSousChefJSONSchema(unittest.TestCase):
 
     def test_good_schema(self):
-        print 'A valid sous chef schema has a name, descritpion, rungs, creates, and options fields.'
+        print 'A valid sous chef schema has a name, slug, descritpion, runs, creates, and options fields.'
         example = {
             "name": "Twitter List",
+            "slug": "twitter-list",
             "description": "Extracts events from a twitter list.",
-            "runs": "newslynx.sc.TwitterList",
+            "runs": "newslynx.sc.events.twitter.List",
             "creates": "thing",
             "options": {
                 "requires_approval": {
                     "type": "boolean",
                     "default": True,
                     "required": False
-                },
-                "name": {
-                    "type": "text",
-                    "required": True,
-                    "help": {
-                        "placeholder": "Empire funding discussion",
-                        "link": "http://twitter.com/what-is-a-list-or-something"
-                    }
                 },
                 "owner_screen_name": {
                     "type": "text",
@@ -49,18 +34,20 @@ class TestSousChefJSONSchema(unittest.TestCase):
                 }
             }
         }
-        errors = validate_sous_chef_schema(example)
-        if len(errors):
-            for e in errors:
-                print e.message, e.path
-            raise
+        try:
+            validate_sous_chef(example)
+        except SousChefSchemaError:
+            assert False
+        else:
+            assert True
 
     def test_missing_type(self):
         print 'All sous chef schema options should have types.'
         example = {
             "name": "Twitter List",
+            "slug": "twitter-list",
             "description": "Extracts events from a twitter list.",
-            "runs": "newslynx.sc.TwitterList",
+            "runs": "newslynx.sc.events.twitter.List",
             "creates": "thing",
             "options": {
                 "requires_approval": {
@@ -89,17 +76,20 @@ class TestSousChefJSONSchema(unittest.TestCase):
                 }
             }
         }
-        errors = validate_sous_chef_schema(example)
-        assert len(errors)
-        for e in errors:
-            assert "type" in e.message
+        try:
+            validate_sous_chef(example)
+        except SousChefSchemaError:
+            assert True
+        else:
+            assert False
 
     def test_missing_help_placeholder(self):
         print 'If a sous-chef option has a help field, it needs a placeholder.'
         example = {
             "name": "Twitter List",
+            "slug": "twitter-list",
             "description": "Extracts events from a twitter list.",
-            "runs": "newslynx.sc.TwitterList",
+            "runs": "newslynx.sc.events.twitter.List",
             "creates": "thing",
             "options": {
                 "requires_approval": {
@@ -128,18 +118,20 @@ class TestSousChefJSONSchema(unittest.TestCase):
                 }
             }
         }
-        errors = validate_sous_chef_schema(example)
-        assert len(errors)
-        for e in errors:
-            print e.message
-            assert "placeholder" in e.message
+        try:
+            validate_sous_chef(example)
+        except SousChefSchemaError:
+            assert True
+        else:
+            assert False
 
     def test_bad_option_type(self):
         print 'If a sous-chef option has a help field, it needs a placeholder.'
         example = {
             "name": "Twitter List",
+            "slug": "twitter-list",
             "description": "Extracts events from a twitter list.",
-            "runs": "newslynx.sc.TwitterList",
+            "runs": "newslynx.sc.events.twitter.List",
             "creates": "thing",
             "options": {
                 "requires_approval": {
@@ -169,8 +161,9 @@ class TestSousChefJSONSchema(unittest.TestCase):
                 }
             }
         }
-        errors = validate_sous_chef_schema(example)
-        assert len(errors)
-        for e in errors:
-            print e.message
-            assert "bad-option" in e.message
+        try:
+            validate_sous_chef(example)
+        except SousChefSchemaError:
+            assert True
+        else:
+            assert False

@@ -1,13 +1,16 @@
 from flask import Blueprint, request
 
 from newslynx.core import db
-from newslynx.models import User, Org, Setting
-from newslynx.lib.serialize import jsonify, json_to_obj
+from newslynx.models import User, Org, SousChef, Recipe, Tag
+from newslynx.models.util import fetch_by_id_or_field
+from newslynx.lib.serialize import jsonify
 from newslynx.exc import (
     AuthError, RequestError, ForbiddenError)
 from newslynx.views.decorators import load_user
 from newslynx.views.util import (
     request_data, BOOL_TRUISH, delete_response, arg_bool)
+from newslynx.init import load_default_tags, load_default_recipes
+from newslynx.exc import RecipeSchemaError
 
 # bp
 bp = Blueprint('orgs', __name__)
@@ -40,6 +43,31 @@ def org_create(user):
     org = Org(name=request.form['name'])
     org.users.append(user)
     db.session.add(org)
+
+    # add default tags
+    for tag in load_default_tags():
+        tag['org_id'] = org.id
+        t = Tag(**tag)
+        db.session.add(t)
+
+    # add default recipes
+    for recipe in load_default_recipes():
+        recipe['user_id'] = user.id
+        recipe['status'] = 'uninitialized'
+        sous_chef_slug = recipe.pop('sous_chef')
+        if not sous_chef_slug:
+            raise RecipeSchemaError(
+                'Default recipe "{}" is missing a "sous_chef" slug.'
+                .format(recipe.get('name', '')))
+
+        sc = SousChef.query.filter_by(slug=sous_chef_slug).first()
+        if not sc:
+            raise RecipeSchemaError(
+                '"{}" is not a valid SousChef slug or the SousChef does not yet exist.'
+                .format(recipe['name']))
+        r = Recipe(sc, **recipe)
+        db.session.add(r)
+
     db.session.commit()
 
     return jsonify(org)
@@ -49,17 +77,8 @@ def org_create(user):
 @load_user
 def org(user, org_id_name):
 
-  # check for int / str
-    try:
-        org_id_name = int(org_id_name)
-        org_str = False
-    except:
-        org_str = True
-
-    if org_str:
-        org = Org.query.filter_by(name=org_id_name).first()
-    else:
-        org = Org.query.get(org_id_name)
+    # fetch org
+    org = fetch_by_id_or_field(Org, 'name', org_id_name)
 
     # if it still doesn't exist, raise an error.
     if not org:
@@ -82,17 +101,8 @@ def org_update(user, org_id_name):
         raise ForbiddenError(
             'You must be an admin to create or update an Org')
 
-  # check for int / str
-    try:
-        org_id_name = int(org_id_name)
-        org_str = False
-    except:
-        org_str = True
-
-    if org_str:
-        org = Org.query.filter_by(name=org_id_name).first()
-    else:
-        org = Org.query.get(org_id_name)
+    # fetch org
+    org = fetch_by_id_or_field(Org, 'name', org_id_name)
 
     # if the org doesnt exist, create it.
     if not org:
@@ -104,7 +114,10 @@ def org_update(user, org_id_name):
             "You are not allowed to access this Org.")
 
     # update the requesting user to the org
-    org.name = req_data['name']
+    if 'name' in req_data:
+        org.name = req_data['name']
+    if 'slug' in req_data:
+        org.slug = req_data['slug']
     db.session.add(org)
     db.session.commit()
 
@@ -118,17 +131,8 @@ def org_delete(user, org_id_name):
     if not user.admin:
         raise AuthError('You must be an admin to delete an Org')
 
-  # check for int / str
-    try:
-        org_id_name = int(org_id_name)
-        org_str = False
-    except:
-        org_str = True
-
-    if org_str:
-        org = Org.query.filter_by(name=org_id_name).first()
-    else:
-        org = Org.query.get(org_id_name)
+    # fetch org
+    org = fetch_by_id_or_field(Org, 'name', org_id_name)
 
     # if it still doesn't exist, raise an error.
     if not org:
@@ -149,17 +153,8 @@ def org_delete(user, org_id_name):
 @load_user
 def org_users(user, org_id_name):
 
-    # check for int / str
-    try:
-        org_id_name = int(org_id_name)
-        org_str = False
-    except:
-        org_str = True
-
-    if org_str:
-        org = Org.query.filter_by(name=org_id_name).first()
-    else:
-        org = Org.query.get(org_id_name)
+    # fetch org
+    org = fetch_by_id_or_field(Org, 'name', org_id_name)
 
     # if it still doesn't exist, raise an error.
     if not org:
@@ -195,17 +190,8 @@ def org_create_user(user, org_id_name):
         raise RequestError(
             'An email, password, and name are required to create a User.')
 
-    # check for int / str
-    try:
-        org_id_name = int(org_id_name)
-        org_str = False
-    except:
-        org_str = True
-
-    if org_str:
-        org = Org.query.filter_by(name=org_id_name).first()
-    else:
-        org = Org.query.get(org_id_name)
+    # fetch org
+    org = fetch_by_id_or_field(Org, 'name', org_id_name)
 
     # if it still doesn't exist, raise an error.
     if not org:
@@ -231,17 +217,8 @@ def org_create_user(user, org_id_name):
 @load_user
 def org_user(user, org_id_name, user_email):
 
-    # check for int / str
-    try:
-        org_id_name = int(org_id_name)
-        org_str = False
-    except:
-        org_str = True
-
-    if org_str:
-        org = Org.query.filter_by(name=org_id_name).first()
-    else:
-        org = Org.query.get(org_id_name)
+    # fetch org
+    org = fetch_by_id_or_field(Org, 'name', org_id_name)
 
     if not org:
         raise RequestError('This Org does not exist.')
@@ -251,18 +228,7 @@ def org_user(user, org_id_name, user_email):
         raise ForbiddenError('You are not allowed to access this Org')
 
     # get this new user by id / email
-
-    # check for int / str
-    try:
-        user_email = int(user_email)
-        user_str = False
-    except:
-        user_str = True
-
-    if user_str:
-        org_user = User.query.filter_by(email=user_email).first()
-    else:
-        org_user = User.query.get(user_email)
+    org_user = fetch_by_id_or_field(User, 'email', user_email)
 
     if not org_user:
         raise RequestError('This user does not yet exist')
@@ -283,17 +249,8 @@ def org_add_user(user, org_id_name, user_email):
         raise AuthError(
             'You must be an admin to add a user to an Org.')
 
-    # check for int / str
-    try:
-        org_id_name = int(org_id_name)
-        org_str = False
-    except:
-        org_str = True
-
-    if org_str:
-        org = Org.query.filter_by(name=org_id_name).first()
-    else:
-        org = Org.query.get(org_id_name)
+    # fetch org
+    org = fetch_by_id_or_field(Org, 'name', org_id_name)
 
     if not org:
         raise RequestError('This Org does not exist.')
@@ -303,18 +260,7 @@ def org_add_user(user, org_id_name, user_email):
         raise ForbiddenError('You are not allowed to edit this Org.')
 
     # get this new user by id / email
-
-    # check for int / str
-    try:
-        user_email = int(user_email)
-        user_str = False
-    except:
-        user_str = True
-
-    if user_str:
-        new_org_user = User.query.filter_by(email=user_email).first()
-    else:
-        new_org_user = User.query.get(user_email)
+    new_org_user = fetch_by_id_or_field(User, 'email', user_email)
 
     if not new_org_user:
         raise RequestError('User "{}" does not exist'
@@ -339,17 +285,8 @@ def org_remove_user(user, org_id_name, user_email):
         raise AuthError(
             'You must be an admin to remove a user from an Org.')
 
-    # check for int / str
-    try:
-        org_id_name = int(org_id_name)
-        org_str = False
-    except:
-        org_str = True
-
-    if org_str:
-        org = Org.query.filter_by(name=org_id_name).first()
-    else:
-        org = Org.query.get(org_id_name)
+    # fetch org
+    org = fetch_by_id_or_field(Org, 'name', org_id_name)
 
     # if it still doesn't exist, raise an error.
     if not org:
@@ -360,19 +297,8 @@ def org_remove_user(user, org_id_name, user_email):
         raise ForbiddenError(
             "You are not allowed to access this Org.")
 
-    # get this new user by id / email
-
-    # check for int / str
-    try:
-        user_email = int(user_email)
-        user_str = False
-    except:
-        user_str = True
-
-    if user_str:
-        existing_user = User.query.filter_by(email=user_email).first()
-    else:
-        existing_user = User.query.get(user_email)
+    # get this existing user by id / email
+    existing_user = fetch_by_id_or_field(User, 'email', user_email)
 
     if not existing_user:
         raise RequestError('User "{}" does not yet exist'
@@ -388,222 +314,6 @@ def org_remove_user(user, org_id_name, user_email):
     if arg_bool('force', False):
         if len(user.org_ids) == 1:
             db.session.delete(user)
-    db.session.commit()
-    return delete_response()
-
-
-@bp.route('/api/v1/orgs/<org_id_name>/settings', methods=['GET'])
-@load_user
-def org_settings(user, org_id_name):
-
-    if not user.admin:
-        raise AuthError(
-            'You must be an admin to add a user to an Org.')
-
-    # check for int / str
-    try:
-        org_id_name = int(org_id_name)
-        org_str = False
-    except:
-        org_str = True
-
-    if org_str:
-        org = Org.query.filter_by(name=org_id_name).first()
-    else:
-        org = Org.query.get(org_id_name)
-
-    # if it still doesn't exist, raise an error.
-    if not org:
-        raise RequestError('This Org does not exist.')
-
-    return jsonify(org.settings)
-
-
-@bp.route('/api/v1/orgs/<org_id_name>/settings', methods=['POST', 'PUT', 'PATCH'])
-@load_user
-def org_add_setting(user, org_id_name):
-
-    if not user.admin:
-        raise ForbiddenError(
-            'You must be an admin to add a user to an Org.')
-
-    # check for int / str
-    try:
-        org_id_name = int(org_id_name)
-        org_str = False
-    except:
-        org_str = True
-
-    if org_str:
-        org = Org.query.filter_by(name=org_id_name).first()
-    else:
-        org = Org.query.get(org_id_name)
-
-    # if it still doesn't exist, raise an error.
-    if not org:
-        raise RequestError('This Org does not exist.')
-
-    # ensure the active user can edit this Org
-    if user.id not in org.user_ids:
-        raise ForbiddenError(
-            "You are not allowed to access this Org.")
-
-    # get the request data
-    req_data = request_data()
-
-    id = req_data.get('id')
-    name = req_data.get('name')
-    value = req_data.get('value')
-    json_value = req_data.get('json_value')
-
-    # if it's a json_value check whether we can parse it as such
-    if json_value:
-        if isinstance(value, basestring):
-            try:
-                json_to_obj(value)
-            except:
-                raise RequestError(
-                    "Setting '{}' with value '{}' was declared as a "
-                    "'json_value' but could not be parsed as such."
-                    .format(name, value))
-
-    if id:
-        s = Setting.query\
-            .filter_by(org_id=org.id, id=id)\
-            .first()
-    elif name:
-        s = Setting.query\
-            .filter_by(org_id=org.id, name=name)\
-            .first()
-    else:
-        raise RequestError(
-            "You must pass in a setting 'id' or 'name' to upsert it. "
-            "You only passed in: {}".format(", ".join(req_data.keys())))
-
-    if not s:
-        if not name or not value:
-            raise RequestError(
-                "You must pass in a 'name' and 'value' to create a setting. "
-                "You only passed in: {}".format(", ".join(req_data.keys())))
-
-        s = Setting(
-            org_id=org.id,
-            name=name,
-            value=value,
-            json_value=json_value or False)
-
-    else:
-        # upsert / patch values.
-        if name:
-            s.name = name
-
-        if value:
-            s.value = value
-
-        if json_value:
-            if not isinstance(json_value, bool):
-                if str(json_value) in BOOL_TRUISH:
-                    json_value = True
-                else:
-                    json_value = False
-            s.json_value = json_value
-
-    db.session.add(s)
-    db.session.commit()
-
-    return jsonify(s)
-
-
-@bp.route('/api/v1/orgs/<org_id_name>/settings/<name>', methods=['GET'])
-@load_user
-def org_setting(user, org_id_name, name):
-
-    if not user.admin:
-        raise ForbiddenError(
-            'You must be an admin to add a user to an Org.')
-
-    # check for int / str
-    try:
-        org_id_name = int(org_id_name)
-        org_str = False
-    except:
-        org_str = True
-
-    if org_str:
-        org = Org.query.filter_by(name=org_id_name).first()
-    else:
-        org = Org.query.get(org_id_name)
-
-    # if it still doesn't exist, raise an error.
-    if not org:
-        raise RequestError('This Org does not exist.')
-
-    # ensure the active user can edit this Org
-    if user.id not in org.user_ids:
-        raise ForbiddenError(
-            "You are not allowed to access this Org.")
-
-    s = Setting.query\
-        .filter_by(org_id=org.id, name=name)\
-        .first()
-
-    if not s:
-        raise RequestError('Setting "{}" does not yet exist for Org "{}"'
-                           .format(name, org.name))
-
-    return jsonify(s)
-
-
-@bp.route('/api/v1/orgs/<org_id_name>/settings/<name>', methods=['DELETE'])
-@load_user
-def org_delete_setting(user, org_id_name, name):
-
-    if not user.admin:
-        raise AuthError(
-            'You must be an admin to add a user to an Org.')
-
-    # check for int / str
-    try:
-        org_id_name = int(org_id_name)
-        org_str = False
-    except:
-        org_str = True
-
-    if org_str:
-        org = Org.query.filter_by(name=org_id_name).first()
-    else:
-        org = Org.query.get(org_id_name)
-
-    # if it still doesn't exist, raise an error.
-    if not org:
-        raise RequestError('This Org does not exist.')
-
-    # ensure the active user can edit this Org
-    if user.id not in org.user_ids:
-        raise ForbiddenError(
-            "You are not allowed to access this Org.")
-
-    # check for int / str
-    try:
-        name = int(name)
-        s_str = False
-    except:
-        s_str = True
-
-    if s_str:
-        s = Setting.query\
-            .filter_by(org_id=org.id, name=name)\
-            .first()
-    else:
-        s = Setting.query\
-            .filter_by(org_id=org.id, id=name)\
-            .first()
-
-    if not s:
-        raise RequestError('Setting "{}" does not yet exist for Org "{}"'
-                           .format(name, org.name))
-
-    db.session.delete(s)
     db.session.commit()
 
     return delete_response()

@@ -1,0 +1,11 @@
+sous_chef: event-twitter-list
+name: Twitter List to Promotion Event
+slug: event-twitter-list-promotion
+status: uninitialized
+options:
+    list_owner_screen_name: " "
+    list_slug: " "
+    set_event_type: promotion
+    set_event_status: approved
+    tag: promotion-internal
+    interval: 900

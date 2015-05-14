@@ -107,12 +107,12 @@ def apply_event_filters(q, **kw):
     # TODO: DONT USE MULTIPLE QUERIES HERE
     if len(kw['include_sous_chefs']):
         sous_chef_recipes = db.session.query(Recipe.id)\
-            .filter(Recipe.task.has(Task.name.in_(kw['include_sous_chefs'])))
+            .filter(Recipe.sous_chef.has(SousChef.id.in_(kw['include_sous_chefs'])))
         q = q.filter(Event.recipe_id.in_([r[0] for r in sous_chef_recipes.all()]))
 
     if len(kw['exclude_sous_chefs']):
         sous_chef_recipes = db.session.query(Recipe.id)\
-            .filter(Recipe.task.has(SousChef.name.in_(kw['exclude_sous_chefs'])))\
+            .filter(Recipe.sous_chef.has(SousChef.id.in_(kw['exclude_sous_chefs'])))\
             .all()
         q = q.filter(~Event.recipe_id.in_([r[0] for r in sous_chef_recipes]))
 
@@ -145,6 +145,7 @@ def search_events(user, org):
         tag_ids        | a comma-separated list of thing_ids to filter by
         thing_ids      | a comma-separated list of thing_ids to filter by
         recipe_ids     | a comma-separated list of recipes to filter by
+        sous_chef_ids  | a comma-separated list of sous_chefs to filter by
     """
 
     # parse arguments
@@ -164,7 +165,7 @@ def search_events(user, org):
     include_recipes, exclude_recipes = \
         arg_list('recipe_ids', default=[], typ=int, exclusions=True)
     include_sous_chefs, exclude_sous_chefs = \
-        arg_list('sous_chefs', default=[], typ=str, exclusions=True)
+        arg_list('sous_chef_ids', default=[], typ=int, exclusions=True)
     include_levels, exclude_levels = \
         arg_list('levels', default=[], typ=str, exclusions=True)
     include_categories, exclude_categories = \
@@ -237,8 +238,7 @@ def search_events(user, org):
         facets = {}
 
         # get all event ids for computing counts
-        filter_entities = event_query.with_entities(Event.id).all()
-        event_ids = [f[0] for f in filter_entities]
+        event_ids = [e[0] for e in event_query.with_entities(Event.id).all()]
 
         # excecute count queries
         # TODO: INTEGRATE WITH CELERY
@@ -291,13 +291,13 @@ def search_events(user, org):
         # events by SousChef
         if 'sous_chefs' in kw['facets'] or 'all' in kw['facets']:
             sous_chef_counts = db.session\
-                .query(SousChef.name, func.count(SousChef.name))\
+                .query(SousChef.id, SousChef.slug, func.count(SousChef.slug))\
                 .join(Recipe)\
                 .join(Event)\
                 .filter(Event.id.in_(event_ids))\
-                .order_by(desc(func.count(SousChef.name)))\
-                .group_by(SousChef.name)
-            facets['sous_chefs'] = [dict(zip(['name', 'count'], c))
+                .order_by(desc(func.count(SousChef.slug)))\
+                .group_by(SousChef.id, SousChef.slug)
+            facets['sous_chefs'] = [dict(zip(['id', 'slug', 'count'], c))
                                     for c in sous_chef_counts.all()]
 
         # events by things
@@ -310,15 +310,25 @@ def search_events(user, org):
             facets['things'] = [dict(zip(['id', 'url', 'title', 'count'], c))
                                 for c in thing_counts]
 
-        # events by things
+        # events by statuses
         if 'statuses' in kw['facets'] or 'all' in kw['facets']:
             status_counts = db.session\
                 .query(Event.status, func.count(Event.status))\
                 .filter(Event.id.in_(event_ids))\
                 .order_by(desc(func.count(Event.status)))\
                 .group_by(Event.status).all()
-            facets['statuses'] = [dict(zip(['id', 'url', 'title', 'count'], c))
+            facets['statuses'] = [dict(zip(['status', 'count'], c))
                                   for c in status_counts]
+
+        # events by statuses
+        if 'types' in kw['facets'] or 'all' in kw['facets']:
+            status_counts = db.session\
+                .query(Event.type, func.count(Event.type))\
+                .filter(Event.id.in_(event_ids))\
+                .order_by(desc(func.count(Event.type)))\
+                .group_by(Event.type).all()
+            facets['types'] = [dict(zip(['type', 'count'], c))
+                               for c in status_counts]
 
     # paginate event_query
     events = event_query\
@@ -419,7 +429,7 @@ def event_update(user, org, event_id):
     if approve:
         req_data['status'] = 'approved'
 
-    # add "updated" dat
+    # add "updated" date
     req_data['updated'] = dates.now()
 
     # update fields
@@ -531,7 +541,7 @@ def event_add_tag(user, org, event_id, tag_id):
 @load_org
 def event_delete_tag(user, org, event_id, tag_id):
     """
-    Add a tag to an event.
+    Remove a tag from an event.
     """
     e = Event.query.filter_by(id=event_id, org_id=org.id).first()
     if not e:
@@ -560,7 +570,7 @@ def event_delete_tag(user, org, event_id, tag_id):
 @load_org
 def event_add_thing(user, org, event_id, thing_id):
     """
-    Add a tag to an event.
+    Add a thing to an event.
     """
     e = Event.query.filter_by(id=event_id, org_id=org.id).first()
     if not e:
@@ -592,7 +602,7 @@ def event_add_thing(user, org, event_id, thing_id):
 @load_org
 def event_delete_thing(user, org, event_id, thing_id):
     """
-    Add a tag to an event.
+    Remove a thing from an event.
     """
     e = Event.query.filter_by(id=event_id, org_id=org.id).first()
     if not e:

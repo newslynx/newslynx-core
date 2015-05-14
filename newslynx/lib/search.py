@@ -1,0 +1,226 @@
+"""
+A search string for a task can have the following formats:
+
+term => match on a term
+~term => fuzzy match on a term using jaro_winkler distance
+/.*term.*/ => apply a regex
+"term1 term2" => match on a phrase
+~"term1 term2" => fuzzy match on a phrase
+
+search strings can be chained with the following operators
+
+AND => must match both searchstrings
+& => must match both searchstrings
+OR => can match either term
+| => can match either term
+
+TK: chained search strings can be grouped with parentheses and subsequently chained, IE:
+
+(~term OR /.*term.*/) AND (/.*term.*/ AND "term1 term2")
+
+you cannot use punctuation in terms.
+
+"""
+import os
+import re
+import string
+
+import jellyfish
+from unidecode import unidecode
+
+from newslynx.exc import SearchStringError
+
+# sets for text cleaning.
+punct = frozenset(string.punctuation)
+digits = frozenset(string.digits)
+re_whitespace = re.compile(r'\s+')
+
+# operators
+ops = ['|', 'OR', 'AND', '&', '||', '&&']
+ops_map = {
+    '|': 'OR',
+    '&': 'AND',
+    '&&': 'AND',
+    '||': 'OR',
+    'AND': 'AND',
+    'OR': 'OR'
+}
+ops_fx_map = {
+    'OR': any,
+    'AND': all
+}
+re_ops = re.compile(
+    r'\s+?((?<!\\)[\&]{1,2})\s+?|\s+?(AND)\s+?|\s+?((?<!\\)[\&]{1,2})\s+?|\s+?(OR)\s+?')
+
+MAX_OPS = 1
+
+
+def linter(s):
+    """
+    Iterate through terms and determine
+    types, parenthetical groups and operator groups
+    """
+
+    # split ops
+    raw_terms = re_ops.split(s)
+
+    # filter nulls
+    raw_terms = [t for t in raw_terms if t]
+
+    # init items
+    op = None
+    terms = []
+    num_ops = 0
+    for term in raw_terms:
+        td = {}
+        td['is_regex'] = False
+        td['is_fuzzy'] = False
+
+        if term in ops:
+            op = ops_map[term]
+            num_ops += 1
+
+            if num_ops > MAX_OPS:
+                raise SearchStringError(
+                    'You are only allowed to use {} operator(s) in a search string.'
+                    .format(MAX_OPS))
+        else:
+            term = term.lower().decode('utf-8')
+
+            if term.startswith('/') and term.endswith('/'):
+                term = re.compile(term[1:-1])
+                td['is_regex'] = True
+
+            elif term.startswith('~'):
+                td['is_fuzzy'] = True
+
+            elif (term.startswith('"') or term.startswith("'")) and \
+                    (term.endswith('"') or term.endswith("'")):
+                term = term[1:-1]
+
+            td['term'] = term
+
+            terms.append(td)
+
+    return op, terms
+
+
+def ngrams(text, n):
+    """
+    split ngrams
+    """
+    input_list = text.split()
+    return zip(*[input_list[i:] for i in range(n)])
+
+
+def phrase_grams(term):
+    """
+    Determine number of ngrams to split by from the term.
+    """
+    return len(term.split())
+
+
+# ngram tokenizer
+def tokenizer(text, n=1):
+    """
+    Tokenize text.
+    """
+    grams = ngrams(text, n)
+    return [" ".join(gram).decode('utf-8') for gram in grams]
+
+
+class SearchString(object):
+
+    """
+    A class for simplifiying text searches in recipes.
+    """
+
+    # explicitly set the module so we can pickle it:
+    # from http://stefaanlippens.net/pickleproblem
+
+    __module__ = 'newslynx.lib.search'
+
+    def __init__(self, raw, fuzzy_threshold=0.88):
+        # store raw
+        self.raw = raw
+        self.fuzzy_threshold = fuzzy_threshold
+
+        try:
+            op, terms = linter(raw)
+        except Exception as e:
+            raise SearchStringError(e.message)
+
+        if op:
+            self.operator = ops_fx_map[op]
+        else:
+            self.operator = any
+
+        self.terms = terms
+
+    def match(self, text, **kw):
+        """
+        Apply searchstring logic to text.
+        """
+        if not text:
+            return False
+
+        text = self._process_text(text, **kw)
+        tests = []
+
+        for term in self.terms:
+
+            if term['is_regex']:
+                tests.append(self._regex_match(term['term'], text))
+
+            elif term['is_fuzzy']:
+                tests.append(self._fuzzy_match(term['term'], text))
+
+            else:
+                tests.append(self._simple_match(term['term'], text))
+
+        return self.operator(tests)
+
+    def _simple_match(self, term, text):
+        """
+        just check for a term or phrase.
+        """
+        return term in text
+
+    def _fuzzy_match(self, term, text):
+        """
+        Fuzzy match on phrases.
+        """
+        n = phrase_grams(term)
+        for gram in tokenizer(text, n):
+            d = jellyfish.jaro_distance(term, gram)
+            if d >= self.fuzzy_threshold:
+                return True
+        return False
+
+    def _regex_match(self, term, text):
+        """
+        Apply a regex
+        """
+        return term.search(text) is not None
+
+    def _process_text(self, text, **kw):
+        """
+        Preprocess text.
+        """
+        # always lower case + unidecode
+        text = unicode(
+            unidecode(text.lower().decode('utf-8')), errors='ignore')
+
+        # optionally remove punctuation
+        if kw.get('remove_punct', True):
+            text = "".join(map(lambda x: x if x not in punct else " ", text))
+
+        # optionally remove digits
+        if kw.get('remove_digits', True):
+            text = "".join(map(lambda x: x if x not in digits else " ", text))
+
+        # optionally remove whitespace
+        if kw.get('remove_whitespace', True):
+            text = re_whitespace.sub(" ", text).strip()
+
+        return text

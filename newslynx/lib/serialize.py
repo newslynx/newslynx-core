@@ -16,6 +16,8 @@ from collections import OrderedDict
 import yaml
 from flask import Response, request
 
+from newslynx.lib.search import SearchString
+
 
 def string_to_gz(s):
     """
@@ -100,7 +102,7 @@ def yaml_stream_to_obj(stream, Loader=yaml.SafeLoader, object_pairs_hook=Ordered
 class JSONEncoder(json.JSONEncoder):
 
     """ This encoder will serialize all entities that have a to_dict
-    method by calling that method and serializing the result. 
+    method by calling that method and serializing the result.
     Taken from: https://github.com/pudo/apikit
     """
 
@@ -129,6 +131,8 @@ class JSONEncoder(json.JSONEncoder):
             return obj.to_dict()
         if hasattr(obj, 'to_json'):
             return obj.to_json()
+        if isinstance(obj, SearchString):
+            return obj.raw
         try:
             from sqlalchemy.orm import Query
             from sqlalchemy.ext.associationproxy import _AssociationList

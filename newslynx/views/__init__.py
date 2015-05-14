@@ -6,7 +6,8 @@ from werkzeug.exceptions import HTTPException
 
 from newslynx.core import app
 from newslynx.exc import (
-    AuthError, RequestError, ForbiddenError, NotFoundError)
+    AuthError, RequestError, ForbiddenError, NotFoundError,
+    SousChefSchemaError, ConfigError, SearchStringError)
 from newslynx.lib.serialize import jsonify
 from newslynx.views.util import register_blueprints
 from newslynx.views import api
@@ -72,6 +73,42 @@ def handle_forbidden_error(error):
 @app.errorhandler(NotFoundError)
 def handle_not_found_error(error):
     response = jsonify(error)
+    response.status_code = error.status_code
+    return response
+
+
+@app.errorhandler(SousChefSchemaError)
+def handle_sous_chef_schema_error(error):
+    resp = {
+        "error": 'SousChefSchemaError',
+        "message": error.message,
+        "status_code": error.status_code
+    }
+    response = jsonify(resp)
+    response.status_code = error.status_code
+    return response
+
+
+@app.errorhandler(ConfigError)
+def handle_config_error(error):
+    resp = {
+        "error": 'ConfigError',
+        "message": error.message,
+        "status_code": error.status_code
+    }
+    response = jsonify(resp)
+    response.status_code = error.status_code
+    return response
+
+
+@app.errorhandler(SearchStringError)
+def handle_search_string_error(error):
+    resp = {
+        "error": 'SearchStringError',
+        "message": error.message,
+        "status_code": error.status_code
+    }
+    response = jsonify(resp)
     response.status_code = error.status_code
     return response
 
