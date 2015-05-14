@@ -149,7 +149,7 @@ class SearchString(object):
             op, terms = linter(raw)
         except Exception as e:
             raise SearchStringError(e.message)
-
+        self.op = op
         if op:
             self.operator = ops_fx_map[op]
         else:
@@ -179,6 +179,12 @@ class SearchString(object):
                 tests.append(self._simple_match(term['term'], text))
 
         return self.operator(tests)
+
+    def to_dict(self):
+        return {
+            "operator": self.op,
+            "terms": self.terms
+        }
 
     def _simple_match(self, term, text):
         """
