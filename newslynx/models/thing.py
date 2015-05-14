@@ -40,7 +40,6 @@ class Thing(db.Model):
     title = db.Column(db.Text, index=True)
     description = db.Column(db.Text, index=True)
     text = db.Column(db.Text, index=True)
-    source_html = db.Column(db.Text)
     meta = db.Column(JSON)
 
     # our search vector

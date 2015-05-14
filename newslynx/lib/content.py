@@ -229,7 +229,7 @@ def via_newspaper(u):
 
 
 def via_readability(page_source):
-    """	
+    """
     Readbility is good at article + title.
     """
 
