@@ -4,6 +4,7 @@ All things related to image processing / archiving.
 
 from newslynx.lib import html
 from newslynx.lib import urls
+from urlparse import urljoin
 
 
 def from_html(htmlstring, domain=None, dedupe=True):
@@ -20,7 +21,7 @@ def from_html(htmlstring, domain=None, dedupe=True):
         if src:
             if not urls.is_abs(src):
                 if domain:
-                    src = prepare(urljoin(domain, src))
+                    src = urls.prepare(urljoin(domain, src))
 
             final_urls.append(src)
 

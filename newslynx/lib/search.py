@@ -21,7 +21,6 @@ TK: chained search strings can be grouped with parentheses and subsequently chai
 you cannot use punctuation in terms.
 
 """
-import os
 import re
 import string
 
@@ -126,7 +125,7 @@ def tokenizer(text, n=1):
     Tokenize text.
     """
     grams = ngrams(text, n)
-    return [" ".join(gram).decode('utf-8') for gram in grams]
+    return list(set([" ".join(gram).decode('utf-8') for gram in grams]))
 
 
 class SearchString(object):

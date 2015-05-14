@@ -8,7 +8,7 @@ from newslynx.lib.serialize import yaml_to_obj
 from newslynx.exc import ConfigError
 from newslynx import settings
 from newslynx.models import validate_sous_chef
-from newslynx.util import is_config_file, recursive_listdir, here
+from newslynx.util import recursive_listdir, here
 
 
 # directory of built-in sous chefs
@@ -26,6 +26,13 @@ def _load_config_file(fp):
                           .format(fp))
 
 
+def _is_config_file(fp):
+    """
+    Check if a file can be parsed as yaml.
+    """
+    return fp.endswith('json') or fp.endswith('yaml') or fp.endswith('yml')
+
+
 def load_sous_chef(fp):
     """
     Load and validate a sous chef config file.
@@ -41,7 +48,7 @@ def load_sous_chefs():
 
     # internal sous chefs
     for fp in recursive_listdir(SOUS_CHEF_DIR):
-        if is_config_file(fp):
+        if _is_config_file(fp):
             yield load_sous_chef(fp)
 
     # user-generated sous-chefs.
@@ -49,11 +56,12 @@ def load_sous_chefs():
         user_sous_chefs = settings.SOUS_CHEF_DIR
 
     else:
-        user_sous_chefs = os.path.expanduser('~/.newslynx/sous-chefs/')
+        user_sous_chefs = os.path.expanduser(
+            '~/.newslynx/sous-chefs/')
 
     if os.path.exists(user_sous_chefs):
         for fp in recursive_listdir(user_sous_chefs):
-            if is_config_file(fp):
+            if _is_config_file(fp):
                 yield load_sous_chef(fp)
 
 
@@ -66,11 +74,12 @@ def load_default_tags():
         default_tags_dir = settings.SOUS_CHEF_DIR
 
     else:
-        default_tags_dir = os.path.expanduser('~/.newslynx/defaults/tags/')
+        default_tags_dir = os.path.expanduser(
+            '~/.newslynx/defaults/tags/')
 
     if os.path.exists(default_tags_dir):
         for fp in recursive_listdir(default_tags_dir):
-            if is_config_file(fp):
+            if _is_config_file(fp):
                 tag = _load_config_file(fp)
                 if isinstance(tag, list):
                     for t in tag:
@@ -88,11 +97,12 @@ def load_default_recipes():
         default_recipes_dir = settings.DEFAULT_RECIPES_DIR
 
     else:
-        default_recipes_dir = os.path.expanduser('~/.newslynx/defaults/recipes/')
+        default_recipes_dir = os.path.expanduser(
+            '~/.newslynx/defaults/recipes/')
 
     if os.path.exists(default_recipes_dir):
         for fp in recursive_listdir(default_recipes_dir):
-            if is_config_file(fp):
+            if _is_config_file(fp):
                 recipe = _load_config_file(fp)
                 if isinstance(recipe, list):
                     for r in recipe:

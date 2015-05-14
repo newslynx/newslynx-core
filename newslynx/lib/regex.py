@@ -1,5 +1,5 @@
 """
-All utilities related to regexes and 
+All utilities related to regexes and
 a big ugly library of them.
 
 """
@@ -31,7 +31,7 @@ re_prefix_suffix = re.compile(r"""
   (^[SsJj][Rr](\.)?$)|                 # SR / JR
   (^[Mm](iss)?([RrSs])?([Ss])?(\.)?$)| # Mr / Ms. / Mrs / Miss
   (^P(\.)?[Hh][Dd](\.)?)|              # PHD
-  (^I(\.)?I(\.)?I(\.)?$)|              # III 
+  (^I(\.)?I(\.)?I(\.)?$)|              # III
   (^I(\.)?V(\.)?$)|                    # IV
   (^V(\.)?$)                            # V
 """, re.VERBOSE)

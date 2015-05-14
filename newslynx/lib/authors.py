@@ -65,7 +65,7 @@ def from_string(search_str):
     # tokenize
     name_tokens = [s.strip() for s in re_name_token.split(search_str)]
 
-    _authors, authors = [], []
+    _authors = []
     curname = []  # List of first, last name tokens
 
     for token in name_tokens:
@@ -110,11 +110,7 @@ def _format_authors(_authors):
     uniq = list(set([a.lower().replace('.', '') for a in _authors if a != '']))
 
     for name in uniq:
-        tokens = [
-            w.upper() if re_initial.search(w) else w.title()
-            for w in name.split(' ')
-        ]
-        authors.append(' '.join(tokens))
+        authors.append(name.upper())
 
     return authors
 
