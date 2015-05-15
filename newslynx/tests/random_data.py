@@ -394,9 +394,9 @@ def main(
         n_thing_recipes=10,
         n_subject_tags=10,
         n_impact_tags=10,
-        n_events=100,
+        n_events=1000,
         n_metrics_per_thing=10,
-        n_things=5,
+        n_things=200,
         verbose=True):
 
     # top level things

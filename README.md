@@ -102,7 +102,7 @@ newslynx runserver -r -d
     - [ ] Search Things => Tag 
     - [ ] Meltwater Emails => Event
     - [ ] Newsletter Email Promotions => Metric
-- [ ] Implement Recipe scheduler
+- [x] Implement Recipe scheduler
 - [ ] Implement Admin Panel
 - [ ] Migrate Core Beta Users (Lauren, Lindsay, Blair)
 - [ ] Automate Deployment

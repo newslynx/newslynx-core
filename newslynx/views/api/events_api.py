@@ -1,5 +1,5 @@
 from flask import Blueprint
-from sqlalchemy import func, desc, asc
+from sqlalchemy import func, desc
 from pprint import pprint
 
 from newslynx.core import db
@@ -11,7 +11,7 @@ from newslynx.lib.serialize import jsonify
 from newslynx.lib import dates
 from newslynx.views.decorators import load_user, load_org
 from newslynx.views.util import *
-
+from newslynx.tasks import facet
 
 # blueprint
 bp = Blueprint('events', __name__)
@@ -45,7 +45,7 @@ def apply_event_filters(q, **kw):
         q = q.filter(Event.created >= kw['created_after'])
     if kw['created_before']:
         q = q.filter(Event.created <= kw['created_before'])
-    
+
     if kw['updated_after']:
         q = q.filter(Event.updated >= kw['updated_after'])
     if kw['updated_before']:
@@ -108,7 +108,8 @@ def apply_event_filters(q, **kw):
     if len(kw['include_sous_chefs']):
         sous_chef_recipes = db.session.query(Recipe.id)\
             .filter(Recipe.sous_chef.has(SousChef.id.in_(kw['include_sous_chefs'])))
-        q = q.filter(Event.recipe_id.in_([r[0] for r in sous_chef_recipes.all()]))
+        q = q.filter(
+            Event.recipe_id.in_([r[0] for r in sous_chef_recipes.all()]))
 
     if len(kw['exclude_sous_chefs']):
         sous_chef_recipes = db.session.query(Recipe.id)\
@@ -234,7 +235,11 @@ def search_events(user, org):
         event_query = event_query.order_by(sort_obj())
 
     if len(kw['facets']):
-
+        
+        # test for all facets here.
+        all_facets = 'all' in kw['facets']
+        
+        # dict of results
         facets = {}
 
         # get all event ids for computing counts
@@ -244,91 +249,38 @@ def search_events(user, org):
         # TODO: INTEGRATE WITH CELERY
 
         # events by recipes
-        if 'recipes' in kw['facets'] or 'all' in kw['facets']:
-            recipe_counts = db.session\
-                .query(Event.recipe_id, Recipe.name, func.count(Recipe.id))\
-                .join(Recipe)\
-                .filter(Event.id.in_(event_ids))\
-                .order_by(desc(func.count(Recipe.id)))\
-                .group_by(Event.recipe_id, Recipe.name).all()
-            facets['recipes'] = [dict(zip(['id', 'name', 'count'], r))
-                                 for r in recipe_counts]
+        if 'recipes' in kw['facets'] or all_facets:
+            facets['recipes'] = facet.events_by_recipes.delay(event_ids)
 
         # events by tag
-        if 'tags' in kw['facets'] or 'all' in kw['facets']:
-            tag_counts = db.session\
-                .query(Tag.id, Tag.name, Tag.type, Tag.level, Tag.category, Tag.color, func.count(Tag.id))\
-                .outerjoin(events_tags)\
-                .filter(events_tags.c.event_id.in_(event_ids))\
-                .order_by(desc(func.count(Tag.id)))\
-                .group_by(Tag.id, Tag.name, Tag.type, Tag.level, Tag.category, Tag.color)\
-                .all()
-            facets['tags'] = [dict(zip(['id', 'name', 'type', 'level', 'category', 'color', 'count'], c))
-                              for c in tag_counts]
+        if 'tags' in kw['facets'] or all_facets:
+            facets['tags'] = facet.events_by_tags.delay(event_ids)
 
         # events by tag category
-        if 'categories' in kw['facets'] or 'all' in kw['facets']:
-            category_counts = db.session\
-                .query(Tag.category, func.count(Tag.category))\
-                .outerjoin(events_tags)\
-                .filter(events_tags.c.event_id.in_(event_ids))\
-                .order_by(desc(func.count(Tag.category)))\
-                .group_by(Tag.category).all()
-            facets['categories'] = [dict(zip(['category', 'count'], c))
-                                    for c in category_counts]
+        if 'categories' in kw['facets'] or all_facets:
+            facets['tag_categories'] = \
+                facet.events_by_tag_categories.delay(event_ids)
 
         # events by level
-        if 'levels' in kw['facets'] or 'all' in kw['facets']:
-            level_counts = db.session\
-                .query(Tag.level, func.count(Tag.level))\
-                .outerjoin(events_tags)\
-                .filter(events_tags.c.event_id.in_(event_ids))\
-                .order_by(desc(func.count(Tag.level)))\
-                .group_by(Tag.level).all()
-            facets['levels'] = [dict(zip(['level', 'count'], c))
-                                for c in level_counts]
+        if 'levels' in kw['facets'] or all_facets:
+            facets['tag_levels'] = \
+                facet.events_by_tag_levels.delay(event_ids)
 
         # events by SousChef
-        if 'sous_chefs' in kw['facets'] or 'all' in kw['facets']:
-            sous_chef_counts = db.session\
-                .query(SousChef.id, SousChef.slug, func.count(SousChef.slug))\
-                .join(Recipe)\
-                .join(Event)\
-                .filter(Event.id.in_(event_ids))\
-                .order_by(desc(func.count(SousChef.slug)))\
-                .group_by(SousChef.id, SousChef.slug)
-            facets['sous_chefs'] = [dict(zip(['id', 'slug', 'count'], c))
-                                    for c in sous_chef_counts.all()]
+        if 'sous_chefs' in kw['facets'] or all_facets:
+            facets['sous_chefs'] = facet.events_by_sous_chefs.delay(event_ids)
 
         # events by things
-        if 'things' in kw['facets'] or 'all' in kw['facets']:
-            thing_counts = db.session\
-                .query(Thing.id, Thing.url, Thing.title, func.count(Thing.id))\
-                .filter(Thing.events.any(Event.id.in_(event_ids)))\
-                .order_by(desc(func.count(Thing.id)))\
-                .group_by(Thing.id, Thing.url, Thing.title).all()
-            facets['things'] = [dict(zip(['id', 'url', 'title', 'count'], c))
-                                for c in thing_counts]
+        if 'things' in kw['facets'] or all_facets:
+            facets['things'] = facet.events_by_things.delay(event_ids)
 
         # events by statuses
-        if 'statuses' in kw['facets'] or 'all' in kw['facets']:
-            status_counts = db.session\
-                .query(Event.status, func.count(Event.status))\
-                .filter(Event.id.in_(event_ids))\
-                .order_by(desc(func.count(Event.status)))\
-                .group_by(Event.status).all()
-            facets['statuses'] = [dict(zip(['status', 'count'], c))
-                                  for c in status_counts]
+        if 'statuses' in kw['facets'] or all_facets:
+            facets['statuses'] = facet.events_by_statuses.delay(event_ids)
 
         # events by statuses
-        if 'types' in kw['facets'] or 'all' in kw['facets']:
-            status_counts = db.session\
-                .query(Event.type, func.count(Event.type))\
-                .filter(Event.id.in_(event_ids))\
-                .order_by(desc(func.count(Event.type)))\
-                .group_by(Event.type).all()
-            facets['types'] = [dict(zip(['type', 'count'], c))
-                               for c in status_counts]
+        if 'types' in kw['facets'] or all_facets:
+            facets['types'] = facet.events_by_types.delay(event_ids)
 
     # paginate event_query
     events = event_query\
@@ -348,7 +300,7 @@ def search_events(user, org):
         events = events.items
 
     resp = {
-        'results': events,
+        'events': events,
         'pagination': pagination,
         'total': total
     }

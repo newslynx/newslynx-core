@@ -8,10 +8,10 @@ from flask.ext.migrate import Migrate
 from flask.ext.compress import Compress
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
-# from werkzeug.contrib.cache import RedisCache
+from werkzeug.contrib.cache import RedisCache
+from celery import Celery
 from embedly import Embedly
 import bitly_api
-# import s3plz
 
 from newslynx import settings
 
@@ -20,9 +20,13 @@ app = Flask(__name__)
 
 app.config.from_object(settings)
 
+app.user_options = {'preload': False}
+# Initialize Celery
+celery = Celery()
+celery = celery.config_from_object(app.config)
+
+
 # search
-
-
 class SearchQuery(BaseQuery, SearchQueryMixin):
 
     """
@@ -55,14 +59,6 @@ db = SQLAlchemy(app, session_options={'query_cls': SearchQuery})
 engine = create_engine(settings.SQLALCHEMY_DATABASE_URI)
 db_session = scoped_session(sessionmaker(bind=engine))
 
-# # read-only seession
-# # from https://writeonly.wordpress.com/2009/07/16/simple-read-only-sqlalchemy-sessions/
-# _Session = sessionmaker(bind=engine, autoflush=False, autocommit=False)
-# db_session_read_only = _Session()
-# def _read_only(*args, **kw):
-#     return
-# db_session_read_only.flush = _read_only()
-
 # migrations
 migrate = Migrate(app, db)
 
@@ -81,9 +77,3 @@ bitly_api = bitly_api.Connection(
 
 # Embedly
 embedly_api = Embedly(settings.EMBEDLY_API_KEY)
-
-# s3
-# s3 = s3plz.connect(
-#     settings.S3_BUCKET,
-#     key=settings.AWS_ACCESS_KEY_ID,
-#     secret=settings.AWS_SECRET_ACCESS_KEY)
