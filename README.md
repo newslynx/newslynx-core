@@ -124,6 +124,8 @@ newslynx runserver -r -d
 ### fetching column names from table
 * [http://www.postgresql.org/message-id/AANLkTilsjTAXyN5DghR3M2U4c8w48UVxhov4-8igMpd1@mail.gmail.com](http://www.postgresql.org/message-id/AANLkTilsjTAXyN5DghR3M2U4c8w48UVxhov4-8igMpd1@mail.gmail.com)
 
-
 ### timeseries tips
 * [http://no0p.github.io/postgresql/2014/05/08/timeseries-tips-pg.html](http://no0p.github.io/postgresql/2014/05/08/timeseries-tips-pg.html)
+
+### Getting bigger with flask (+ dynamic subdomains):
+* [http://maximebf.com/blog/2012/11/getting-bigger-with-flask/#.VVYvUZNVhBc](http://maximebf.com/blog/2012/11/getting-bigger-with-flask/#.VVYvUZNVhBc)
