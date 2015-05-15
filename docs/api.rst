@@ -1023,6 +1023,10 @@ Params
 | ``level``          | An :ref:`taxonomy-tag-level`   | null             | false          |
 |                    | to filter by.                  |                  |                |
 +--------------------+--------------------------------+------------------+----------------+
+| ``sort``           | Sort results by a tag    field.| -created         |                |
+|                    | preface with **-** to sort     |                  | false          |
+|                    | descending                     |                  |                |
++--------------------+--------------------------------+------------------+----------------+
 
 Returns
 *******
@@ -1719,13 +1723,13 @@ Params
 |                    | not they are scheduled         |                  | false          |
 +--------------------+--------------------------------+------------------+----------------+
 | ``sort``           | Sort results by a recipe field.| -created         |                |
-|                    | preface with `-` to sort       |                  | false          |
+|                    | preface with **-** to sort     |                  | false          |
 |                    | descending                     |                  |                |
 +--------------------+--------------------------------+------------------+----------------+
 | ``sous_chefs``     | A comma-separated list of sous-| null             |                |
 |                    | chefs that recipes belong to.  |                  | false          |
 |                    | Each element can be prefaced by|                  |                |
-|                    | with `-` to exclude a recipe.  |                  |                |
+|                    | with **-** to exclude it.      |                  |                |
 +--------------------+--------------------------------+------------------+----------------+
 
 Returns
@@ -1793,7 +1797,7 @@ Params
 |                    | ``id`` or ``name`` you         |                  |                |
 |                    | wish to access.                |                  |                |
 +--------------------+--------------------------------+------------------+----------------+
-| ``sous_chef``      | The sous-chef this recipe runs.| null             |                |
+| ``sous_chef``      | The SousChef this recipe runs. | null             |                |
 |                    | While not required as a param, |                  | false          |
 |                    | you must either pass this in   |                  |                |
 |                    | here or in the request body    |                  |                |
