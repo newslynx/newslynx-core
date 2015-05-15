@@ -1,4 +1,3 @@
 include LICENSE requirements.txt VERSION README.md
-recursive-include example_config *
-recursive-include migrations *
+recursive-include newslynx *.yaml
 global-exclude *.pyc
