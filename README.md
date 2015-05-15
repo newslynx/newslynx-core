@@ -17,16 +17,13 @@ pip install -e newslynx
 * (re)create a `postgresql` database
 
 ```
-psql >
-username=# drop database newslynx;
-username=# create database newslynx;
+dropdb newslynx 
+createdb newslynx
 ```
 
-* fill out [`sample_config.yaml`](sample_config.yaml) and put it somewhere safe. 
+* fill out [`example_config/config.yaml`](config.yaml) and move it to `~/.newslynx/config.yaml` 
     
-    - MORE DETAILS TK HERE
-
-* set the environment variable `NEWSLYNX_CONFIG_FILE` to point to the absolute path of your config file.
+* modify default recipes and tags in [`example_config/defaults/recipes/`](example_config/defaults/recipes/) and [`example_config/defaults/tags/`](example_config/defaults/tags/), respectively. These tags and recipes will be created everytime a new organization is added.
 
 * initialize the database:
 
@@ -37,7 +34,7 @@ newslynx init
 * populate with sample data
 
 ```
-python scripts/gen_random_data.py
+newslynx gen_random_data
 ```
 
 * start the server in debug mode
@@ -59,7 +56,7 @@ newslynx runserver -r -d
 - [x] Re-implement Settings API
 - [x] Re-implement Events API
     - [x] Implement Postgres-based search
-- [ ] Re-implement Things API (aka Articles)
+- [x] Re-implement Things API (aka Articles)
     - [x] Implement Postgres-based search
 - [x] Re-implement Tags API
 - [x] Write out SousChefs JSONSchema
@@ -68,15 +65,15 @@ newslynx runserver -r -d
     - [x] twitter-list
     - [x] twitter-user
     - [x] facebook-page
-- [ ] Write out default recipes + tags:
-    - [ ] article
-    - [ ] twitter-list
-    - [ ] twitter-user
-    - [ ] facebook-page
-    - [ ] promotion impact tag
-- [ ] Update create org endpoint to generate default recipes + tags.
-- [ ] Implement SousChefs API 
-- [ ] Implement Recipes API 
+- [x] Write out default recipes + tags:
+    - [x] article
+    - [x] twitter-list
+    - [x] twitter-user
+    - [x] facebook-page
+    - [x] promotion impact tag
+- [x] Update create org endpoint to generate default recipes + tags.
+- [x] Implement SousChefs API 
+- [x] Implement Recipes API 
 - [ ] Implement Thing Creation API
 - [ ] Implement Event Creation API
 - [ ] Implement Metrics API:
@@ -85,7 +82,7 @@ newslynx runserver -r -d
     - [ ] Figure out how to use `pypostgresql` for custom postgres functions.
 - [ ] Implement Task Queue (Celery, Redis?)
 - [ ] Implement Modular SousChefs
-- [ ] Figure out how best to use OAuth tokens in SousChefs. Ideally these should not be exposed to users.
+- [x] Figure out how best to use OAuth tokens in SousChefs. Ideally these should not be exposed to users.
 - [x] Implement API client
 - [ ] Re-implement SousChefs
     - [ ] RSS Feeds => Thing
