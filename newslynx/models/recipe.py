@@ -71,12 +71,10 @@ def validate_recipe_opt(name, typ, raw):
     return opt
 
 
-def validate_recipe(sous_chef, recipe, uninitialized=False):
+def validate_recipe_sous_chef_defaults(recipe, sous_chef):
+    """"
+    Merge in sous-chef defaults with recipe.
     """
-    Given a sous_chef schema, validate one of it's recipes.
-    """
-    # merge default sous chef options into top-level
-    # of recipe
     for key in DEFAULT_SOUS_CHEF_OPTIONS.keys():
         typ = DEFAULT_SOUS_CHEF_OPTIONS[key].get('type')
         if key in recipe['options']:
@@ -93,6 +91,37 @@ def validate_recipe(sous_chef, recipe, uninitialized=False):
             else:
                 slug = "{}-{}".format(sous_chef[key], gen_hash_id())
                 recipe[key] = slug
+
+    return recipe
+
+
+def validate_recipe_schedule(recipe, uninitialized=False):
+    """
+    Validate recipe schedule options.
+    """
+    # check if recipe has time_of_day and interval
+    if recipe.get('time_of_day') and recipe.get('interval'):
+        raise RecipeSchemaError(
+            'A recipe cannot have "time_of_day" and "interval" set.')
+
+    # check if a recipe should be scheduled.
+    if not (recipe.get('time_of_day') or recipe.get('interval')) \
+            or uninitialized:
+        recipe['scheduled'] = False
+
+    else:
+        recipe['scheduled'] = True
+
+    return recipe
+
+
+def validate_recipe(sous_chef, recipe, uninitialized=False):
+    """
+    Given a sous_chef schema, validate one of it's recipes.
+    """
+    # merge default sous chef options into top-level
+    # of recipe
+    recipe = validate_recipe_sous_chef_defaults(recipe, sous_chef)
 
     parsed_options = {}
 
@@ -133,9 +162,7 @@ def validate_recipe(sous_chef, recipe, uninitialized=False):
             # save parsed options
             parsed_options[name] = opt
 
-    # check if recipe has time_of_day and interval
-    if recipe.get('time_of_day') and recipe.get('interval'):
-        raise RecipeSchemaError('A recipe cannot have "time_of_day" and "interval" set.')
+    recipe = validate_recipe_schedule(recipe, uninitialized)
 
     return recipe, parsed_options
 
@@ -200,38 +227,36 @@ class Recipe(db.Model):
         kw, parsed_options = validate_recipe(
             sc, recipe, status == 'uninitialized')
 
-        self.sous_chef_id = sous_chef.id
-        self.user_id = kw.get('user_id')
-        self.org_id = kw.get('org_id')
+        # core fields
         self.name = kw.get('name')
         self.slug = slugify(kw.get('slug', kw['name']))
         self.description = kw.get('description')
-        self.created = kw.get('created', dates.now())
-        self.updated = kw.get('updated', dates.now())
-        self.last_run = kw.get('last_run', None)
-
-        if not (kw.get('time_of_day') or kw.get('interval')) \
-                or status == 'uninitialized':
-            sched = False
-        else:
-            sched = True
-
-        self.scheduled = kw.get('scheduled', sched)
         self.time_of_day = kw.get('time_of_day')
         self.interval = kw.get('interval')
-        self.status = kw.get('status')
-        self.last_job = kw.get('last_job', {})
         self.options = kw.get('options', {})
+
+        # internal fields
+        self.sous_chef_id = sous_chef.id
+        self.user_id = kw.get('user_id')
+        self.org_id = kw.get('org_id')
+        self.created = kw.get('created', dates.now())
+        self.updated = kw.get('updated', dates.now())
+        self.scheduled = kw.get('scheduled')
+        self.last_run = kw.get('last_run', None)
+        self.last_job = kw.get('last_job', {})
+        self.status = kw.get('status')
 
         # keep internally parsed options
         self.pickle_opts = pickle.dumps(parsed_options)
+
+    def set_pickle_opts(self, opts):
+        self.pickle_opts = pickle.dumps(opts)
 
     def to_dict(self, incl_sous_chef=False):
         return {
             'id': self.id,
             'org_id': self.org_id,
-            'sous_chef_id': self.sous_chef.id,
-            'sous_chef_slug': self.sous_chef.slug,
+            'sous_chef': self.sous_chef.slug,
             'name': self.name,
             'slug': self.slug,
             'description': self.description,

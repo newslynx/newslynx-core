@@ -19,9 +19,9 @@ def fetch_by_id_or_field(model, field, value, org_id=None):
 
     if is_int:
         if not org_id:
-            return model.query.get(value)
+            return model.query.filter_by(id=value).first()
         else:
-            return model.query.filter_by(id=value, org_id=org_id)
+            return model.query.filter_by(id=value, org_id=org_id).first()
     else:
         f = getattr(model, field)
         if not org_id:

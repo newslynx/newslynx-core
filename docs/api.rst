@@ -1273,3 +1273,672 @@ Example
 .. code-block:: bash
     
     curl $NEWSLYNX_API_URL/api/v1/tags/levels
+
+.. _endpoints-sous-chefs:
+
+**SousChefs**
+++++++++++++++++++
+
+The **SousChefs** API enables the listing / creating / updating / deleting of modules for ingesting and modifying data in NewsLynx. Refer to the :ref:`SousChef docs <sous-chefs>` for more details. 
+
+.. _endpoints-sous-chefs-json:
+
+Sous Chef JSON
+~~~~~~~~~~~~~~~~~
+
+All methods, unless otherwise specified, will return one or many sous chef objects of the following ``json`` schema:
+
+.. code-block:: javascript
+
+    {
+      "id": 3,
+      "name": "Event from twitter user.",
+      "slug": "event-twitter-user",
+      "description": "Extracts events from a twitter user's timeline.",
+      "runs": "newslynx.sc.events.twitter.User",
+      "creates": "event",
+      "is_command": false,
+      "options": {
+        "screen_name": {
+          "required": true,
+          "type": "text",
+          "help": {
+            "placeholder": "cspan"
+          }
+        },
+        "search_query": {
+          "default": null,
+          "required": false,
+          "type": "searchstring",
+          "help": {
+            "placeholder": "~fracking | drilling"
+          }
+        },
+        "description": {
+          "required": false,
+          "type": "text",
+          "help": {
+            "placeholder": "A description of what this recipe does."
+          }
+        },
+        "interval": {
+          "default": 900,
+          "type": "number",
+          "help": {
+            "placeholder": "3600",
+            "description": "The frequency (in seconds) with which this recipe should run."
+          }
+        },
+        "set_event_type": {
+          "default": "alert",
+          "type": "text",
+          "options": [
+            "alert",
+            "promotion"
+          ]
+        },
+        "time_of_day": {
+          "default": null,
+          "type": "text",
+          "help": {
+            "placeholder": "12:00 AM",
+            "description": "The time of day at which this recipe should run daily."
+          },
+          "options": [
+            "12:00 AM",
+            "12:30 AM",
+            "1:00 AM",
+            "1:30 AM",
+            "2:00 AM",
+            "2:30 AM",
+            "3:00 AM",
+            "3:30 AM",
+            "4:00 AM",
+            "4:30 AM",
+            "5:00 AM",
+            "5:30 AM",
+            "6:00 AM",
+            "6:30 AM",
+            "7:00 AM",
+            "7:30 AM",
+            "8:00 AM",
+            "8:30 AM",
+            "9:00 AM",
+            "9:30 AM",
+            "10:00 AM",
+            "10:30 AM",
+            "11:00 AM",
+            "11:30 AM",
+            "12:00 PM",
+            "12:30 PM",
+            "1:00 PM",
+            "1:30 PM",
+            "2:00 PM",
+            "2:30 PM",
+            "3:00 PM",
+            "3:30 PM",
+            "4:00 PM",
+            "4:30 PM",
+            "5:00 PM",
+            "5:30 PM",
+            "6:00 PM",
+            "6:30 PM",
+            "7:00 PM",
+            "7:30 PM",
+            "8:00 PM",
+            "8:30 PM",
+            "9:00 PM",
+            "9:30 PM",
+            "10:00 PM",
+            "10:30 PM",
+            "11:00 PM",
+            "11:30 PM"
+          ]
+        },
+        "tag": {
+          "default": null,
+          "type": "text"
+        },
+        "set_event_status": {
+          "default": "pending",
+          "type": "text",
+          "options": [
+            "pending",
+            "approved"
+          ]
+        },
+        "slug": {
+          "required": true,
+          "type": "text",
+          "help": {
+            "placeholder": "A slug for viewing the recipe in a url."
+          }
+        },
+        "name": {
+          "required": true,
+          "type": "text",
+          "help": {
+            "placeholder": "The name of the Recipe."
+          }
+        }
+      }
+    }
+
+
+.. _endpoints-sous-chefs-list:
+
+**GET** ``/sous-chefs``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+List all SousChefs, as well as helpful faceted counts.
+
+Params
+******
+
++--------------------+--------------------------------+------------------+----------------+
+| Parameter          |  Description                   |  Default         |  Required      |
++====================+================================+==================+================+
+| ``apikey``         | Your apikey                    | null             | true           |
++--------------------+--------------------------------+------------------+----------------+
+| ``org``            | The organization's             | null             | true           |
+|                    | ``id`` or ``name`` you         |                  |                |
+|                    | wish to access.                |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+| ``is_command``     | Whether this is runs a         |                  |                |
+|                    | non-python script              | null             | false          |
+|                    | See :ref:`sous-chefs-runners`  |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+| ``creates``        | The collection this SousChef   | all              | false          |
+|                    |  creates.                      |                  |                |
+|                    |  See :ref:`sous-chefs-creates` |                  |                |
+|                    |                                |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+
+Returns
+*******
+
+.. code-block:: javascript
+
+    {
+      "facets": {
+        "creates": {
+          "thing": 1,
+          "event": 3
+        },
+        "runners": {
+          "python": 4
+        }
+      },
+      "sous_chefs": [
+        ...
+      ]
+    }
+
+
+Example
+********
+
+Fetch all SousChefs:
+
+.. code-block:: bash
+    
+    curl $NEWSLYNX_API_URL/api/v1/sous-chefs\?apikey=$NEWSLYNX_API_KEY\&org=1
+
+Fetch all SousChefs that create ``events``:
+
+.. code-block:: bash
+    
+    curl $NEWSLYNX_API_URL/api/v1/sous-chefs\?apikey=$NEWSLYNX_API_KEY\&org=1\&creates=event
+
+.. _endpoints-sous-chefs-create:
+
+**POST** ``/sous-chefs``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Create individual SousChef.
+
+Params
+******
+
++--------------------+--------------------------------+------------------+----------------+
+| Parameter          |  Description                   |  Default         |  Required      |
++====================+================================+==================+================+
+| ``apikey``         | Your apikey                    | null             | true           |
++--------------------+--------------------------------+------------------+----------------+
+| ``org``            | The organization's             | null             | true           |
+|                    | ``id`` or ``name`` you         |                  |                |
+|                    | wish to access.                |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+
+Body
+*******
+
+A valid :ref:`endpoints-sous-chefs-json` object.
+
+Returns
+*******
+
+A newly-created :ref:`endpoints-sous-chefs-json` object.
+
+
+Example
+********
+
+Create a file like this and save it as ``sous-chef.json``:
+
+.. code-block:: javascript
+
+    {
+        "slug": "event-twitter-user-2", 
+        "name": "Event from twitter user 2.",
+        "runs": "newslynx.sc.events.twitter.User", 
+        "description": "Extracts events from a twitter user's timeline.", 
+        "creates": "event", 
+        "options": {
+            "screen_name": {"required": true, 
+            "type": "text", 
+            "help": {"placeholder": "cspan"}} 
+        }
+    } 
+
+Now run this command:
+
+.. code-block:: bash
+    
+  curl -X POST \
+       -H 'Content-Type:application/json' \
+       --data-binary @sous-chef.json \
+       $NEWSLYNX_API_URL/api/v1/sous-chefs\?apikey=$NEWSLYNX_API_KEY\&org=1
+
+
+
+.. _endpoints-sous-chefs-get:
+
+**GET** ``/sous-chefs/:sous-chef-id``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Fetch an individual SousChef.
+
+**NOTE**
+  - This endpoint can accept either a sous-chef ``id`` or ``slug``.
+
+Params
+******
+
++--------------------+--------------------------------+------------------+----------------+
+| Parameter          |  Description                   |  Default         |  Required      |
++====================+================================+==================+================+
+| ``apikey``         | Your apikey                    | null             | true           |
++--------------------+--------------------------------+------------------+----------------+
+| ``org``            | The organization's             | null             | true           |
+|                    | ``id`` or ``name`` you         |                  |                |
+|                    | wish to access.                |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+
+Returns
+*******
+
+A :ref:`endpoints-sous-chefs-json` object.
+
+
+Example
+********
+
+Fetch a SousChef
+
+.. code-block:: bash
+    
+    curl $NEWSLYNX_API_URL/api/v1/sous-chefs/event-twitter-user\?apikey=$NEWSLYNX_API_KEY\&org=1
+
+
+.. _endpoints-sous-chefs-update:
+
+
+**PUT** ``/sous-chefs/:sous-chef-id``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Update an individual SousChef.
+
+**NOTE**
+  - This endpoint can accept either a sous-chef ``id`` or ``slug``.
+
+Params
+******
+
++--------------------+--------------------------------+------------------+----------------+
+| Parameter          |  Description                   |  Default         |  Required      |
++====================+================================+==================+================+
+| ``apikey``         | Your apikey                    | null             | true           |
++--------------------+--------------------------------+------------------+----------------+
+| ``org``            | The organization's             | null             | true           |
+|                    | ``id`` or ``name`` you         |                  |                |
+|                    | wish to access.                |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+
+Body
+*******
+
+A complete :ref:`endpoints-sous-chefs-json` object. Since a ``sous-chef`` can only run properly if all of it's options
+are properly validated, the API does not allow partial updates for now. TK: Allow for partial updates while sanitizing input.
+
+Returns
+*******
+
+A newly-updated :ref:`endpoints-sous-chefs-json` object.
+
+
+Example
+********
+
+Create a file like this and save it as ``sous-chef.json``:
+
+.. code-block:: javascript
+
+    {
+        "slug": "event-twitter-thing", 
+        "name": "Event from twitter user",
+        "runs": "newslynx.sc.events.twitter.User", 
+        "description": "Extracts events from a twitter user's timeline.", 
+        "creates": "thing", 
+        "options": {
+            "screen_name": {"required": false, 
+            "type": "text", 
+            "help": {"placeholder": "cspan"}} 
+        }
+    } 
+
+Now run this command:
+
+.. code-block:: bash
+    
+  curl -X PUT \
+       -H 'Content-Type:application/json' \
+       --data-binary @sous-chef.json \
+       $NEWSLYNX_API_URL/api/v1/sous-chefs/event-twitter-user\?apikey=$NEWSLYNX_API_KEY\&org=1
+
+
+.. _endpoints-recipes:
+
+**Recipes**
+++++++++++++++++++
+
+The **Recipes** API enables the configuration of SousChefs to be scheduled at regular intervals. Refer to the :ref:`Recipes docs <sous-chefs-recipes>` for more details. 
+
+.. _endpoints-recipes-json:
+
+Recipe JSON
+~~~~~~~~~~~~~~~~~
+
+All methods, unless otherwise specified, will return one or many Recipe objects of the following ``json`` schema:
+
+.. code-block:: javascript
+
+    {
+      "scheduled": false,
+      "status": "uninitialized",
+      "updated": "2015-05-14T19:58:07.853583-04:00",
+      "description": null,
+      "last_job": {},
+      "id": 1,
+      "sous_chef": "article-rss-feed",
+      "name": "Ingest Articles from an RSS Feed.",
+      "created": "2015-05-14T19:58:07.853557-04:00",
+      "interval": 1800,
+      "org_id": 1,
+      "slug": "article-rss-feed-k8wyx",
+      "options": {
+        "feed_url": null
+      }
+    }
+
+
+.. _endpoints-recipes-list:
+
+**GET** ``/recipes``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+List all Recipes, as well as helpful faceted counts.
+
+Params
+******
+
++--------------------+--------------------------------+------------------+----------------+
+| Parameter          |  Description                   |  Default         |  Required      |
++====================+================================+==================+================+
+| ``apikey``         | Your apikey                    | null             | true           |
++--------------------+--------------------------------+------------------+----------------+
+| ``org``            | The organization's             | null             | true           |
+|                    | ``id`` or ``name`` you         |                  |                |
+|                    | wish to access.                |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+| ``status``         | Filter recipes by their status.|                  |                |
+|                    | Either running, error, stable, | null             | false          |
+|                    | or uninitialized               |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+| ``scheduled``      | Filter recipes by whether or   | null             |                |
+|                    | not they are scheduled         |                  | false          |
++--------------------+--------------------------------+------------------+----------------+
+| ``sort``           | Sort results by a recipe field.| -created         |                |
+|                    | preface with `-` to sort       |                  | false          |
+|                    | descending                     |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+| ``sous_chefs``     | A comma-separated list of sous-| null             |                |
+|                    | chefs that recipes belong to.  |                  | false          |
+|                    | Each element can be prefaced by|                  |                |
+|                    | with `-` to exclude a recipe.  |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+
+Returns
+*******
+
+.. code-block:: javascript
+
+    {
+      "facets": {
+        "creates": {
+          "thing": 2,
+          "event": 2
+        },
+        "sous_chefs": {
+          "event-facebook-page": 1,
+          "event-twitter-list": 1,
+          "article-rss-feed": 1,
+          "event-twitter-thing": 1
+        },
+        "statuses": {
+          "uninitialized": 4
+        },
+        "schedules": {
+          "unscheduled": 4
+        }
+      },
+      "recipes": [
+
+      ]
+    }
+
+
+Example
+********
+
+Fetch all Recipes:
+
+.. code-block:: bash
+    
+    curl $NEWSLYNX_API_URL/api/v1/recipes\?apikey=$NEWSLYNX_API_KEY\&org=1
+
+Fetch all Recipes that are not instances of ``article-rss-feed`` SousChefs:
+
+.. code-block:: bash
+    
+    curl $NEWSLYNX_API_URL/api/v1/recipes\?apikey=$NEWSLYNX_API_KEY\&org=1\&sous_chefs=-article-rss-feed
+
+
+.. _endpoints-recipes-create:
+
+**POST** ``/recipes``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Create a Recipe.
+
+Params
+******
+
++--------------------+--------------------------------+------------------+----------------+
+| Parameter          |  Description                   |  Default         |  Required      |
++====================+================================+==================+================+
+| ``apikey``         | Your apikey                    | null             | true           |
++--------------------+--------------------------------+------------------+----------------+
+| ``org``            | The organization's             | null             | true           |
+|                    | ``id`` or ``name`` you         |                  |                |
+|                    | wish to access.                |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+| ``sous_chef``      | The sous-chef this recipe runs.| null             |                |
+|                    | While not required as a param, |                  | false          |
+|                    | you must either pass this in   |                  |                |
+|                    | here or in the request body    |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+
+Body
+*******
+
+A valid :ref:`endpoints-recipes-json` object.
+
+Returns
+*******
+
+A newly-created :ref:`endpoints-recipes-json` object.
+
+
+Example
+********
+
+Create a file like this and save it as ``recipe.json``:
+
+.. code-block:: javascript
+
+    {
+      "sous_chef": "article-rss-feed",
+      "name": "Ingest Articles from an RSS Feed.",
+      "slug": "article-rss-feed-k8w2",
+      "options": {
+        "feed_url": "http://nytimes.cat/feed.xml"
+      }
+    }
+
+
+Now run this command:
+
+.. code-block:: bash
+    
+  curl -X POST \
+       -H 'Content-Type:application/json' \
+       --data-binary @recipe.json \
+       $NEWSLYNX_API_URL/api/v1/recipes\?apikey=$NEWSLYNX_API_KEY\&org=1
+
+
+
+.. _endpoints-recipes-get:
+
+**GET** ``/recipes/:recipe-id``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Fetch an individual Recipe.
+
+**NOTE**
+  - This endpoint can accept either a recipe ``id`` or ``slug``.
+
+Params
+******
+
++--------------------+--------------------------------+------------------+----------------+
+| Parameter          |  Description                   |  Default         |  Required      |
++====================+================================+==================+================+
+| ``apikey``         | Your apikey                    | null             | true           |
++--------------------+--------------------------------+------------------+----------------+
+| ``org``            | The organization's             | null             | true           |
+|                    | ``id`` or ``name`` you         |                  |                |
+|                    | wish to access.                |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+
+Returns
+*******
+
+A :ref:`endpoints-sous-chefs-json` object.
+
+
+Example
+********
+
+Fetch a Recipe
+
+.. code-block:: bash
+    
+    curl $NEWSLYNX_API_URL/api/v1/recipes/1\?apikey=$NEWSLYNX_API_KEY\&org=1
+
+.. _endpoints-sous-chefs-get:
+
+**PUT** ``/recipes/:recipe-id``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Update an individual Recipe.
+
+**NOTE**
+  - This endpoint can accept either a recipe ``id`` or ``slug``.
+
+Params
+******
+
++--------------------+--------------------------------+------------------+----------------+
+| Parameter          |  Description                   |  Default         |  Required      |
++====================+================================+==================+================+
+| ``apikey``         | Your apikey                    | null             | true           |
++--------------------+--------------------------------+------------------+----------------+
+| ``org``            | The organization's             | null             | true           |
+|                    | ``id`` or ``name`` you         |                  |                |
+|                    | wish to access.                |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+| ``sous_chef``      | The sous-chef this recipe runs.| null             |                |
+|                    | While not required as a param, |                  | false          |
+|                    | you must either pass this in   |                  |                |
+|                    | here or in the request body    |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+
+Body
+*******
+
+A complete :ref:`endpoints-recipes-json` object. Since a Recipe can only run properly if all of it's options
+are properly validated, the API does not allow partial updates for now. TK: Allow for partial updates while sanitizing input.
+
+Returns
+*******
+
+A newly-updated :ref:`endpoints-recipes-json` object.
+
+
+Example
+********
+
+Create a file like this and save it as ``recipe.json``:
+
+.. code-block:: javascript
+
+    {
+      "sous_chef": "article-rss-feed",
+      "name": "Ingest Articles from an RSS Feed.",
+      "slug": "article-rss-feed-k8w2",
+      "options": {
+        "feed_url": "http://nytimes.cat/rss.xml"
+      }
+    }
+
+
+Now run this command:
+
+.. code-block:: bash
+    
+  curl -X PUT \
+       -H 'Content-Type:application/json' \
+       --data-binary @recipe.json \
+       $NEWSLYNX_API_URL/api/v1/recipes/1\?apikey=$NEWSLYNX_API_KEY\&org=1
+
