@@ -1,0 +1,57 @@
+# app configurations #
+api_url: 
+api_port: 
+
+# dev configuration
+debug_timing:
+
+# security
+secret_key: 
+admin_user: 
+admin_password:
+admin_email:
+super_user_password:
+
+# database config
+sqlalchemy_database_uri: 
+sqlalchemy_pool_size: 
+sqlalchemy_pool_max_overflow:
+sqlalchemy_pool_timeout: 
+sqlalchemy_echo: 
+
+# task queue
+celery_broker_url: 
+celery_result_backend: 
+scheduler_interval:
+
+# new relic 
+new_relic_config_file: 
+
+# twitter (for event creation + metrics)
+twitter_api_key: 
+twitter_api_secret: 
+
+# google analytics (for metrics)
+google_analytics_client_id: 
+google_analytics_client_secret: 
+
+# facebook (for event creation)
+facebook_app_id: 
+facebook_app_secret: 
+
+# embedly (for content extraction)
+embedly_api_key: 
+
+# bitly (for url normalization + click stats)
+bitly_api_key: 
+
+
+# email #
+
+mail_username: 
+mail_password: 
+mail_server: 
+smtp_port: 
+imap_port: 
+
+
