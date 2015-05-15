@@ -1,0 +1,4 @@
+include LICENSE requirements.txt VERSION README.md
+recursive-include example_config *
+recursive-include migrations *
+global-exclude *.pyc
