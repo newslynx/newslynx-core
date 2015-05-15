@@ -48,3 +48,4 @@ jsonschema==2.4.0
 python-slugify==1.0.2
 Unidecode==0.04.17
 jellyfish==0.5.0
+hashids==1.1.0
