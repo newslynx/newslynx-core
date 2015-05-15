@@ -5,9 +5,7 @@ the API and SousChefs that Power Newslynx.
 
 ## (Re)Setting up the dev environment
 
-* Clone this repository and install `newslynx`
-    
-    - preferably do this in a virtual environment.
+* Install `newslynx`, prefrerably in a virtual environment.
 
 ```
 pip install newslynx
@@ -72,7 +70,7 @@ newslynx runserver -r -d
     - [x] promotion impact tag
 - [x] Update create org endpoint to generate default recipes + tags.
 - [x] Implement SousChefs API 
-- [x] Implement Recipes API 
+- [x] Implement Recipes API
 - [ ] Implement Thing Creation API
 - [ ] Implement Event Creation API
 - [ ] Implement Metrics API:
