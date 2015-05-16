@@ -8,8 +8,7 @@ from flask.ext.migrate import Migrate
 from flask.ext.compress import Compress
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
-from werkzeug.contrib.cache import RedisCache
-from celery import Celery
+# from werkzeug.contrib.cache import RedisCache
 from embedly import Embedly
 import bitly_api
 
@@ -19,11 +18,6 @@ from newslynx import settings
 app = Flask(__name__)
 
 app.config.from_object(settings)
-
-app.user_options = {'preload': False}
-# Initialize Celery
-celery = Celery()
-celery = celery.config_from_object(app.config)
 
 
 # search
