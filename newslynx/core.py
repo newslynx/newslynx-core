@@ -62,7 +62,7 @@ engine = create_engine(settings.SQLALCHEMY_DATABASE_URI)
 db_session = scoped_session(sessionmaker(bind=engine))
 
 # redis connection
-rds = redis.from_url(settings.REDIS_URL)
+# rds = redis.from_url(settings.REDIS_URL)
 
 # migrations
 migrate = Migrate(app, db)
