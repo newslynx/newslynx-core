@@ -20,7 +20,7 @@ def create_mat_view(name, sql):
     db_session.commit()
 
 
-def thing_timeseries(unit='1 hour'):
+def thing_timeseries():
     """
     Take the long metrics table and crosstab
     it into a filled-in timeseries.
@@ -96,7 +96,7 @@ def thing_timeseries(unit='1 hour'):
     return create_mat_view(THING_TIMESERIES_MAT_VIEW, sql)
 
 
-def org_timeseries(unit='1 hour'):
+def org_timeseries():
     """
     Take the long metrics table and crosstab
     it into a filled-in timeseries.
@@ -134,19 +134,24 @@ def org_timeseries(unit='1 hour'):
                 {coalesce}
             from crosstab(
                 'SELECT
-                    date_trunc_by_hours(1, created) AS datetime, org_id, name, SUM(value) AS value
+                    date_trunc_by_hours(1, created)::text || org_id::text as temp_id,
+                    date_trunc_by_hours(1, created) AS datetime,
+                    org_id,
+                    name,
+                    SUM(value) AS value
                  FROM metrics
                  WHERE created IS NOT NULL AND level = ''org''
                  GROUP BY datetime, name, org_id
                  ORDER BY datetime, name ASC',
                 'SELECT
-                    distinct(name)
+                 distinct(name)
                  FROM metrics
                  WHERE created IS NOT NULL
                  AND level = ''org''
                  ORDER BY name ASC'
             ) as
                 ct(
+                    temp_id text,
                     datetime timestamp with time zone,
                     org_id int,
                     {schema}

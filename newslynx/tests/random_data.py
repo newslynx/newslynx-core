@@ -76,14 +76,14 @@ METRICS = [
         'category': 'performance',
         'level': 'org',
         'timeseries': True,
-        'cumulative': True
+        'cumulative': False
     },
     {
         'name': 'twitter_followers',
         'category': 'performance',
         'level': 'org',
         'timeseries': True,
-        'cumulative': True
+        'cumulative': False
     }
 ]
 
