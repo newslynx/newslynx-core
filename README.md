@@ -37,7 +37,7 @@ newslynx gen_random_data
 * start the server in debug mode
 
 ```
-newslynx runserver -r -d
+newslynx runserver -d
 ```
 
 
