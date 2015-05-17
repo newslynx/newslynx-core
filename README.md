@@ -18,7 +18,7 @@ dropdb newslynx
 createdb newslynx
 ```
 
-* fill out [`example_config/config.yaml`](config.yaml) and move it to `~/.newslynx/config.yaml` 
+* fill out [`example_config/config.yaml`](example_config/config.yaml) and move it to `~/.newslynx/config.yaml` 
     
 * modify default recipes and tags in [`example_config/defaults/recipes/`](example_config/defaults/recipes/) and [`example_config/defaults/tags/`](example_config/defaults/tags/), respectively. These tags and recipes will be created everytime a new organization is added.
 
