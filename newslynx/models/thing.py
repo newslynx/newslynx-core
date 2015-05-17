@@ -79,6 +79,10 @@ class Thing(db.Model):
         self.text = kw.get('text')
         self.meta = kw.get('meta', {})
 
+    @property
+    def simple_creators(self):
+        return [{"id":c.id, "name":c.name} for c in self.creators]
+
     def to_dict(self):
         return {
             'id': self.id,
@@ -90,11 +94,10 @@ class Thing(db.Model):
             'created': self.created,
             'updated': self.updated,
             'img_url': self.img_url,
-            'creators': [c.to_dict() for c in self.creators],
+            'creators': self.simple_creators,
             'title': self.title,
             'description': self.description,
             'text': self.text,
-            'source_html': self.source_html,
             'meta': self.meta
         }
 

@@ -73,7 +73,7 @@ class RecipeScheduler:
         """
         recipes = db_session.query(Recipe)\
             .filter_by(scheduled=True)\
-            .filter_by(~Recipe.id.in_(['running', 'uninitialized']))
+            .filter_by(status != 'uninitialized')\
         d = {}
         for r in recipes.all():
             d[r.id] = r

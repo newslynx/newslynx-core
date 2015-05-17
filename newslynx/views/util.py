@@ -75,7 +75,7 @@ def arg_date(name, default=None):
     return v
 
 
-def arg_limit(name='per_page', default=50):
+def arg_limit(name='per_page', default=25):
     """ Get a limit argument. """
     return max(0, min(1000, arg_int(name, default=default)))
 

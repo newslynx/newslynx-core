@@ -1,7 +1,6 @@
 """
 Utilities for initializing NewsLynx
 """
-
 import os
 
 from newslynx.lib.serialize import yaml_to_obj
@@ -13,6 +12,9 @@ from newslynx.util import recursive_listdir, here
 
 # directory of built-in sous chefs
 SOUS_CHEF_DIR = here(__file__, 'sc')
+
+# directory of built-in sql functions
+SQL_DIR = here(__file__, 'sql')
 
 
 def _load_config_file(fp):
@@ -109,3 +111,12 @@ def load_default_recipes():
                         yield r
                 else:
                     yield recipe
+
+
+def load_sql():
+    """
+    Get all sql files.
+    """
+    for fp in recursive_listdir(SQL_DIR):
+        if fp.endswith('sql'):
+            yield open(fp).read()

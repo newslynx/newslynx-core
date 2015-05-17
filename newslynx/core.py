@@ -1,3 +1,8 @@
+from gevent.monkey import patch_all
+patch_all()
+from psycogreen.gevent import patch_psycopg
+patch_psycopg()
+
 from sqlalchemy import func, cast
 from sqlalchemy_searchable import vectorizer
 from sqlalchemy.dialects.postgresql import ARRAY, JSON, TEXT, ENUM
@@ -9,6 +14,7 @@ from flask.ext.compress import Compress
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
 # from werkzeug.contrib.cache import RedisCache
+import redis
 from embedly import Embedly
 import bitly_api
 
@@ -43,15 +49,20 @@ def json_vectorizer(column):
 def enum_vectorizer(column):
     return cast(column, TEXT)
 
+
 # make the db searchable
 make_searchable()
 
 # Database
 db = SQLAlchemy(app, session_options={'query_cls': SearchQuery})
+db.engine.pool._use_threadlocal = True
 
 # session for interactions outside of app context.
 engine = create_engine(settings.SQLALCHEMY_DATABASE_URI)
 db_session = scoped_session(sessionmaker(bind=engine))
+
+# redis connection
+rds = redis.from_url(settings.REDIS_URL)
 
 # migrations
 migrate = Migrate(app, db)

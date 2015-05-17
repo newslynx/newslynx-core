@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-
 import logging
 import pkg_resources
 import sys
@@ -14,6 +13,8 @@ from newslynx.init import load_sous_chefs
 from newslynx.lib.serialize import obj_to_json
 from newslynx import settings
 from newslynx.tests import random_data
+from newslynx.init import load_sql
+
 
 log = logging.getLogger('newslynx')
 
@@ -43,6 +44,11 @@ def init():
     # create the database
     db.configure_mappers()
     db.create_all()
+
+    # load sql extensions + functions
+    for sql in load_sql():
+        db_session.execute(sql)
+    db_session.commit()
 
 
 @manager.command

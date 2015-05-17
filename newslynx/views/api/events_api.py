@@ -1,15 +1,17 @@
+import gevent
+
 from flask import Blueprint
 from sqlalchemy import func, desc
 from pprint import pprint
 
 from newslynx.core import db
-from newslynx.exc import RequestError
+from newslynx.exc import RequestError, NotFoundError
 from newslynx.models import Event, Tag, SousChef, Recipe, Thing
 from newslynx.models.relations import events_tags, things_events
 from newslynx.models.util import get_table_columns
 from newslynx.lib.serialize import jsonify
 from newslynx.lib import dates
-from newslynx.views.decorators import load_user, load_org
+from newslynx.views.decorators import load_user, load_org, gzipped
 from newslynx.views.util import *
 from newslynx.tasks import facet
 
@@ -43,17 +45,20 @@ def apply_event_filters(q, **kw):
     # apply date filters
     if kw['created_after']:
         q = q.filter(Event.created >= kw['created_after'])
+
     if kw['created_before']:
         q = q.filter(Event.created <= kw['created_before'])
 
     if kw['updated_after']:
         q = q.filter(Event.updated >= kw['updated_after'])
+
     if kw['updated_before']:
         q = q.filter(Event.updated <= kw['updated_before'])
 
     # apply recipe filter
     if len(kw['include_recipes']):
         q = q.filter(Event.recipe_id.in_(kw['include_recipes']))
+
     if len(kw['exclude_recipes']):
         q = q.filter(~Event.recipe_id.in_(kw['exclude_recipes']))
 
@@ -94,12 +99,14 @@ def apply_event_filters(q, **kw):
     # apply tags filter
     if len(kw['include_tags']):
         q = q.filter(Event.tags.any(Tag.id.in_(kw['include_tags'])))
+
     if len(kw['exclude_tags']):
         q = q.filter(~Event.tags.any(Tag.id.in_(kw['exclude_tags'])))
 
     # apply things filter
     if len(kw['include_things']):
         q = q.filter(Event.things.any(Thing.id.in_(kw['include_things'])))
+
     if len(kw['exclude_things']):
         q = q.filter(~Event.things.any(Thing.id.in_(kw['exclude_things'])))
 
@@ -159,16 +166,22 @@ def search_events(user, org):
     # special arg tuples
     sort_field, direction = \
         arg_sort('sort', default='-created')
+
     include_tags, exclude_tags = \
         arg_list('tag_ids', default=[], typ=int, exclusions=True)
+
     include_things, exclude_things = \
         arg_list('thing_ids', default=[], typ=int, exclusions=True)
+
     include_recipes, exclude_recipes = \
         arg_list('recipe_ids', default=[], typ=int, exclusions=True)
+
     include_sous_chefs, exclude_sous_chefs = \
         arg_list('sous_chef_ids', default=[], typ=int, exclusions=True)
+
     include_levels, exclude_levels = \
         arg_list('levels', default=[], typ=str, exclusions=True)
+
     include_categories, exclude_categories = \
         arg_list('categories', default=[], typ=str, exclusions=True)
 
@@ -235,10 +248,10 @@ def search_events(user, org):
         event_query = event_query.order_by(sort_obj())
 
     if len(kw['facets']):
-        
+
         # test for all facets here.
         all_facets = 'all' in kw['facets']
-        
+
         # dict of results
         facets = {}
 
@@ -246,41 +259,63 @@ def search_events(user, org):
         event_ids = [e[0] for e in event_query.with_entities(Event.id).all()]
 
         # excecute count queries
-        # TODO: INTEGRATE WITH CELERY
+        queries = []
 
         # events by recipes
         if 'recipes' in kw['facets'] or all_facets:
-            facets['recipes'] = facet.events_by_recipes.delay(event_ids)
+            def q_recipes():
+                facets['recipes'] = facet.events_by_recipes(event_ids)
+            queries.append(gevent.spawn(q_recipes))
 
         # events by tag
         if 'tags' in kw['facets'] or all_facets:
-            facets['tags'] = facet.events_by_tags.delay(event_ids)
+            def q_tags():
+                facets['tags'] = facet.events_by_tags(event_ids)
+            queries.append(gevent.spawn(q_tags))
 
         # events by tag category
         if 'categories' in kw['facets'] or all_facets:
-            facets['tag_categories'] = \
-                facet.events_by_tag_categories.delay(event_ids)
+            def q_tag_categories():
+                facets['categories'] = \
+                    facet.events_by_tag_categories(event_ids)
+            queries.append(gevent.spawn(q_tag_categories))
 
         # events by level
         if 'levels' in kw['facets'] or all_facets:
-            facets['tag_levels'] = \
-                facet.events_by_tag_levels.delay(event_ids)
+            def q_tag_levels():
+                facets['levels'] = \
+                    facet.events_by_tag_levels(event_ids)
+            queries.append(gevent.spawn(q_tag_levels))
 
         # events by SousChef
         if 'sous_chefs' in kw['facets'] or all_facets:
-            facets['sous_chefs'] = facet.events_by_sous_chefs.delay(event_ids)
+            def q_sous_chefs():
+                facets['sous_chefs'] = \
+                    facet.events_by_sous_chefs(event_ids)
+            queries.append(gevent.spawn(q_sous_chefs))
 
         # events by things
         if 'things' in kw['facets'] or all_facets:
-            facets['things'] = facet.events_by_things.delay(event_ids)
+            def q_things():
+                facets['things'] = \
+                    facet.events_by_things(event_ids)
+            queries.append(gevent.spawn(q_things))
 
         # events by statuses
         if 'statuses' in kw['facets'] or all_facets:
-            facets['statuses'] = facet.events_by_statuses.delay(event_ids)
+            def q_statuses():
+                facets['statuses'] = \
+                    facet.events_by_statuses(event_ids)
+            queries.append(gevent.spawn(q_statuses))
 
         # events by statuses
         if 'types' in kw['facets'] or all_facets:
-            facets['types'] = facet.events_by_types.delay(event_ids)
+            def q_types():
+                facets['types'] = \
+                    facet.events_by_types(event_ids)
+            queries.append(gevent.spawn(q_types))
+
+        gevent.joinall(queries)
 
     # paginate event_query
     events = event_query\
@@ -320,7 +355,7 @@ def event(user, org, event_id):
     """
     e = Event.query.filter_by(id=event_id, org_id=org.id).first()
     if not e:
-        raise RequestError(
+        raise NotFoundError(
             'An Event with ID {} does not exist.'.format(event_id))
     return jsonify(e)
 
@@ -334,7 +369,7 @@ def event_update(user, org, event_id):
     """
     e = Event.query.filter_by(id=event_id, org_id=org.id).first()
     if not e:
-        raise RequestError(
+        raise NotFoundError(
             'An Event with ID {} does not exist.'.format(event_id))
 
     # get request data
@@ -428,7 +463,7 @@ def event_delete(user, org, event_id):
     """
     e = Event.query.filter_by(id=event_id, org_id=org.id).first()
     if not e:
-        raise RequestError(
+        raise NotFoundError(
             'An Event with ID {} does not exist.'.format(event_id))
 
     # remove associations
@@ -461,7 +496,7 @@ def event_add_tag(user, org, event_id, tag_id):
     """
     e = Event.query.filter_by(id=event_id, org_id=org.id).first()
     if not e:
-        raise RequestError(
+        raise NotFoundError(
             'An Event with ID {} does not exist.'.format(event_id))
 
     if not e.status == 'approved':
@@ -497,7 +532,7 @@ def event_delete_tag(user, org, event_id, tag_id):
     """
     e = Event.query.filter_by(id=event_id, org_id=org.id).first()
     if not e:
-        raise RequestError(
+        raise NotFoundError(
             'An Event with ID {} does not exist.'.format(event_id))
 
     if tag_id not in e.tag_ids:
@@ -526,7 +561,7 @@ def event_add_thing(user, org, event_id, thing_id):
     """
     e = Event.query.filter_by(id=event_id, org_id=org.id).first()
     if not e:
-        raise RequestError(
+        raise NotFoundError(
             'An Event with ID {} does not exist.'.format(event_id))
 
     if not e.status == 'approved':
@@ -558,7 +593,7 @@ def event_delete_thing(user, org, event_id, thing_id):
     """
     e = Event.query.filter_by(id=event_id, org_id=org.id).first()
     if not e:
-        raise RequestError(
+        raise NotFoundError(
             'An Event with ID {} does not exist.'.format(event_id))
 
     if thing_id not in e.thing_ids:

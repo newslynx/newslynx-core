@@ -81,23 +81,10 @@ def get_sous_chef(user, org, sous_chef):
 
     sc = fetch_by_id_or_field(SousChef, 'slug', sous_chef)
     if not sc:
-        raise RequestError(
+        raise NotFoundError(
             'A SousChef does not exist with ID/slug {}'.format(sous_chef))
 
     return jsonify(sc)
-
-
-@bp.route('/api/v1/sous-chefs/<sous_chef>', methods=['OPTIONS'])
-@load_user
-@load_org
-def get_sous_chef_options(user, org, sous_chef):
-
-    sc = fetch_by_id_or_field(SousChef, 'slug', sous_chef)
-    if not sc:
-        raise RequestError(
-            'A SousChef does not exist with ID/slug {}'.format(sous_chef))
-
-    return jsonify({'id': sc.id, 'slug': sc.slug, 'options': sc.options})
 
 
 @bp.route('/api/v1/sous-chefs/<sous_chef>', methods=['PUT'])
@@ -107,7 +94,7 @@ def update_sous_chef(user, org, sous_chef):
 
     sc = fetch_by_id_or_field(SousChef, 'slug', sous_chef)
     if not sc:
-        raise RequestError(
+        raise NotFoundError(
             'A SousChef does not exist with ID/slug {}'.format(sous_chef))
 
     req_data = request_data()

@@ -27,7 +27,8 @@ class TestSousChefJSONSchema(unittest.TestCase):
 
     def test_another_good_phrase_search(self):
         print 'A valid search string should be able to fuzzy match phrases'
-        t = SearchString('~fracking OR /.*oil.*/').match('fracking')
+        t = SearchString(
+            'fracking AND /.*oil.*/').match('fracking is fun when you get lots of oils')
         assert t
 
 if __name__ == '__main__':

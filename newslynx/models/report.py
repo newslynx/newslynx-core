@@ -13,7 +13,7 @@ class Report(db.Model):
         db.Integer, db.ForeignKey('orgs.id'), index=True)
     name = db.Column(db.Text, index=True)
     created = db.Column(db.DateTime(timezone=True), index=True)
-    schema = db.Column(JSON) #dynamically generated.
+    schema = db.Column(JSON) # dynamically generated.
     value = db.Column(JSON)
 
     def __init__(self, **kw):

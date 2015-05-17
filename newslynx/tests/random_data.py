@@ -15,7 +15,7 @@ from newslynx.models import *
 from newslynx.core import db_session
 from newslynx.constants import *
 from newslynx.exc import RecipeSchemaError
-
+from newslynx.tasks import view
 
 # fake factory
 fake = Faker()
@@ -73,6 +73,13 @@ METRICS = [
     },
     {
         'name': 'facebook_page_likes',
+        'category': 'performance',
+        'level': 'org',
+        'timeseries': True,
+        'cumulative': True
+    },
+    {
+        'name': 'twitter_followers',
         'category': 'performance',
         'level': 'org',
         'timeseries': True,
@@ -394,7 +401,7 @@ def main(
         n_thing_recipes=10,
         n_subject_tags=10,
         n_impact_tags=10,
-        n_events=1000,
+        n_events=500,
         n_metrics_per_thing=10,
         n_things=200,
         verbose=True):
@@ -432,6 +439,12 @@ def main(
 
     # generate events
     gen_events(org, recipes, impact_tags, things, n_events)
+
+    if verbose:
+        print "generating views."
+    # generate views
+    view.thing_timeseries()
+    view.org_timeseries()
 
 
 def run(**kw):

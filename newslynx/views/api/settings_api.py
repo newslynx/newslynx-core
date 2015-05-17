@@ -4,7 +4,7 @@ from newslynx.core import db
 from newslynx.models import Setting
 from newslynx.models.util import fetch_by_id_or_field
 from newslynx.lib.serialize import jsonify, json_to_obj
-from newslynx.exc import RequestError
+from newslynx.exc import RequestError, NotFoundError
 from newslynx.views.decorators import load_user, load_org
 from newslynx.views.util import (
     request_data, BOOL_TRUISH, delete_response)
@@ -73,8 +73,8 @@ def get_setting(user, org, name):
 
     s = fetch_by_id_or_field(Setting, 'name', name, org_id=org.id)
     if not s:
-        raise RequestError('Setting "{}" does not yet exist for Org "{}"'
-                           .format(name, org.name))
+        raise NotFoundError('Setting "{}" does not yet exist for Org "{}"'
+                            .format(name, org.name))
     return jsonify(s)
 
 
@@ -86,8 +86,8 @@ def update_setting(user, org, name):
     s = fetch_by_id_or_field(Setting, 'name', name, org_id=org.id)
 
     if not s:
-        raise RequestError('Setting "{}" does not yet exist for Org "{}"'
-                           .format(name, org.name))
+        raise NotFoundError('Setting "{}" does not yet exist for Org "{}"'
+                            .format(name, org.name))
 
     # get the request data
     req_data = request_data()
@@ -136,8 +136,8 @@ def delete_setting(user, org, name):
     s = fetch_by_id_or_field(Setting, 'name', name, org_id=org.id)
 
     if not s:
-        raise RequestError('Setting "{}" does not yet exist for Org "{}"'
-                           .format(name, org.name))
+        raise NotFoundError('Setting "{}" does not yet exist for Org "{}"'
+                            .format(name, org.name))
 
     db.session.delete(s)
     db.session.commit()

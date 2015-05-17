@@ -129,3 +129,6 @@ newslynx runserver -r -d
 
 ### Getting bigger with flask (+ dynamic subdomains):
 * [http://maximebf.com/blog/2012/11/getting-bigger-with-flask/#.VVYvUZNVhBc](http://maximebf.com/blog/2012/11/getting-bigger-with-flask/#.VVYvUZNVhBc)
+
+### Nonblocking with flask, gevent, + psycopg2
+* [https://github.com/kljensen/async-flask-sqlalchemy-example](https://github.com/kljensen/async-flask-sqlalchemy-example)

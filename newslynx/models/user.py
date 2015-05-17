@@ -55,7 +55,7 @@ class User(db.Model):
             'created': self.created
         }
         if incl_org:
-            d['orgs'] = [o.to_dict(incl_users=False, incl_settings=False, incl_authorizations=False)
+            d['orgs'] = [o.to_dict(incl_users=False, incl_settings=False, incl_auths=False)
                           for o in self.orgs]
         if incl_apikey:
             d['apikey'] = self.apikey

@@ -1,10 +1,10 @@
-from pprint import pprint
+import gevent
 
 from flask import Blueprint
 from sqlalchemy import func, text, desc, asc
 
 from newslynx.core import db
-from newslynx.exc import RequestError
+from newslynx.exc import RequestError, NotFoundError
 from newslynx.models import Event, Tag, SousChef, Recipe, Thing
 from newslynx.models.relations import events_tags, things_events, things_tags
 from newslynx.models.util import get_table_columns
@@ -12,7 +12,7 @@ from newslynx.lib.serialize import jsonify
 from newslynx.lib import dates
 from newslynx.views.decorators import load_user, load_org
 from newslynx.views.util import *
-
+from newslynx.tasks import facet
 
 # blueprint
 bp = Blueprint('things', __name__)
@@ -243,7 +243,7 @@ def search_things(user, org):
     thing_query = Thing.query
 
     # apply filters
-    thing_query, all_event_ids = \
+    thing_query, event_ids = \
         apply_thing_filters(thing_query, **kw)
 
     # select event fields
@@ -259,103 +259,69 @@ def search_things(user, org):
     # facets
     if kw['facets']:
 
-        # TODO
+        # test for all facets here.
+        all_facets = 'all' in kw['facets']
+
         facets = {}
 
-        # get all thing ids / recipe ids for computing counts
+        # get all thing ids for computing counts
         filter_entities = thing_query.with_entities(Thing.id).all()
         thing_ids = [f[0] for f in filter_entities]
 
         # if we havent yet retrieved a list of event ids
-        if not len(all_event_ids):
-            all_event_ids = db.session.query(things_events.c.event_id)\
+        if not len(event_ids):
+            event_ids = db.session.query(things_events.c.event_id)\
                 .filter(things_events.c.thing_id.in_(thing_ids))\
                 .group_by(things_events.c.event_id)\
                 .all()
-            all_event_ids = [e[0] for e in all_event_ids]
+            event_ids = [e[0] for e in event_ids]
 
         # number of events associated with these things.
-        facets['events'] = len(all_event_ids)
+        facets['events'] = len(event_ids)
 
-        # excecute count queries
-        # TODO: INTEGRATE WITH CELERY
-        # thing by type
+        queries = []
 
-        if 'types' in kw['facets'] or 'all' in kw['facets']:
-            type_counts = db.session\
-                .query(Thing.type, func.count(Thing.type))\
-                .filter(Thing.id.in_(thing_ids))\
-                .group_by(Thing.type)\
-                .order_by(desc(func.count(Thing.type)))\
-                .all()
-            facets['types'] = [dict(zip(['type', 'count'], r))
-                               for r in type_counts]
+        if 'types' in kw['facets'] or all_facets:
+            def q_types():
+                facets['types'] = facet.things_by_types(thing_ids)
+            queries.append(gevent.spawn(q_types))
 
-        if 'domains' in kw['facets'] or 'all' in kw['facets']:
-            type_counts = db.session\
-                .query(Thing.domain, func.count(Thing.domain))\
-                .filter(Thing.id.in_(thing_ids))\
-                .group_by(Thing.domain)\
-                .order_by(desc(func.count(Thing.domain)))\
-                .all()
-            facets['domains'] = [dict(zip(['domain', 'count'], r))
-                                 for r in type_counts]
+        if 'domains' in kw['facets'] or all_facets:
+            def q_domains():
+                facets['domains'] = facet.things_by_domains(thing_ids)
+            queries.append(gevent.spawn(q_domains))
 
         # things by recipes
-        if 'recipes' in kw['facets'] or 'all' in kw['facets']:
-            recipe_counts = db.session\
-                .query(Recipe.id, Recipe.name, func.count(Recipe.id))\
-                .join(Thing)\
-                .filter(Thing.id.in_(thing_ids))\
-                .order_by(desc(func.count(Recipe.id)))\
-                .group_by(Recipe.id, Recipe.name).all()
-            facets['recipes'] = [dict(zip(['id', 'name', 'count'], r))
-                                 for r in recipe_counts]
+        if 'recipes' in kw['facets'] or all_facets:
+            def q_recipes():
+                facets['recipes'] = facet.things_by_recipes(thing_ids)
+            queries.append(gevent.spawn(q_recipes))
 
         # things by tag
-        if 'tags' in kw['facets'] or 'all' in kw['facets']:
-            tag_counts = db.session\
-                .query(Tag.id, Tag.name, Tag.type, Tag.level, Tag.category, Tag.color, func.count(Tag.id))\
-                .outerjoin(things_tags)\
-                .filter(things_tags.c.thing_id.in_(thing_ids))\
-                .filter(Tag.type == 'subject')\
-                .group_by(Tag.id, Tag.name, Tag.type, Tag.level, Tag.category, Tag.color)\
-                .order_by(desc(func.count(Tag.id)))\
-                .all()
-            facets['tags'] = [dict(zip(['id', 'name', 'type', 'level', 'category', 'color', 'count'], c))
-                              for c in tag_counts]
+        if 'tags' in kw['facets'] or all_facets:
+            def q_tags():
+                facets['tags'] = facet.things_by_tags(thing_ids)
+            queries.append(gevent.spawn(q_tags))
 
         # events by tag category
-        if 'categories' in kw['facets'] or 'all' in kw['facets']:
-            category_counts = db.session\
-                .query(Tag.category, func.count(Tag.category))\
-                .outerjoin(events_tags)\
-                .filter(events_tags.c.event_id.in_(all_event_ids))\
-                .group_by(Tag.category).all()
-            facets['categories'] = [dict(zip(['category', 'count'], c))
-                                    for c in category_counts]
+        if 'categories' in kw['facets'] or all_facets:
+            def q_categories():
+                facets['categories'] = facet.events_by_tag_categories(event_ids)
+            queries.append(gevent.spawn(q_categories))
 
         # events by level
-        if 'levels' in kw['facets'] or 'all' in kw['facets']:
-            level_counts = db.session\
-                .query(Tag.level, func.count(Tag.level))\
-                .outerjoin(events_tags)\
-                .filter(events_tags.c.event_id.in_(all_event_ids))\
-                .group_by(Tag.level).all()
-            facets['levels'] = [dict(zip(['level', 'count'], c))
-                                for c in level_counts]
+        if 'levels' in kw['facets'] or all_facets:
+            def q_levels():
+                facets['levels'] = facet.events_by_tag_categories(event_ids)
+            queries.append(gevent.spawn(q_levels))
 
         # things by task
-        if 'sous_chefs' in kw['facets'] or 'all' in kw['facets']:
-            task_counts = db.session\
-                .query(SousChef.name, func.count(SousChef.name))\
-                .outerjoin(Recipe)\
-                .outerjoin(Thing)\
-                .filter(Thing.id.in_(thing_ids))\
-                .order_by(desc(func.count(SousChef.name)))\
-                .group_by(SousChef.name).all()
-            facets['sous_chefs'] = [dict(zip(['name', 'count'], c))
-                               for c in task_counts]
+        if 'sous_chefs' in kw['facets'] or all_facets:
+            def q_sous_chefs():
+                facets['sous_chefs'] = facet.things_by_sous_chefs(thing_ids)
+            queries.append(gevent.spawn(q_sous_chefs))
+
+        gevent.joinall(queries)
 
     # paginate thing_query
     things = thing_query\
@@ -395,7 +361,7 @@ def thing(user, org, thing_id):
     """
     t = thing.query.filter_by(id=thing_id, org_id=org.id).first()
     if not t:
-        raise RequestError(
+        raise NotFoundError(
             'An Thing with ID {} does not exist.'.format(event_id))
     return jsonify(t)
 

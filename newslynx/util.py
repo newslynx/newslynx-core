@@ -1,7 +1,6 @@
 """
 Utilities used throughout the module.
 """
-
 import os
 import collections
 import random

@@ -56,7 +56,7 @@ class Metric(db.Model):
         self.thing_id = kw.get('thing_id')
         self.name = kw.get('name')
         self.value = kw.get('value')
-        self.created = kw.get('created', dates.now())
+        self.created = kw.get('created')
         self.category = kw.get('category')
         self.level = kw.get('level')
         self.cumulative = kw.get('cumulative')

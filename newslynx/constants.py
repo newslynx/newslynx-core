@@ -21,7 +21,7 @@ EVENT_TYPES = [
 EVENT_FACETS = [
     'tags', 'things', 'levels',
     'categories', 'sous_chefs',
-    'recipes', 'statuses'
+    'recipes', 'statuses', 'types'
 ]
 
 
@@ -66,3 +66,8 @@ IMPACT_TAG_LEVELS = [
     'instituion', 'media',
     'community', 'individual', 'internal'
 ]
+
+# Views
+
+THING_TIMESERIES_MAT_VIEW = 'thing_timeseries'
+ORG_TIMESERIES_MAT_VIEW = 'org_timeseries'

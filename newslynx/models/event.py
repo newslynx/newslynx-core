@@ -99,9 +99,7 @@ class Event(db.Model):
     def to_dict(self):
         return {
             'id': self.id,
-            'source_id': self.source_id,
             'recipe_id': self.recipe_id,
-            'org_id': self.org_id,
             'status': self.status,
             'type': self.type,
             'url': self.url,
@@ -110,12 +108,11 @@ class Event(db.Model):
             'updated': self.updated,
             'title': self.title,
             'description': self.description,
-            'text': self.text,
             'authors': self.authors,
             'meta': self.meta,
-            'tags': self.tags,
+            'text': self.text,
+            'tag_ids': self.tag_ids,
             'things': self.simple_things,
-            'task': self.recipe.task.name
         }
 
     def __repr__(self):

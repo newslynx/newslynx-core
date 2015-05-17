@@ -1,29 +1,6 @@
 from newslynx.core import db
 
 
-class ThingThing(db.Model):
-
-    """
-    A relationship of a thing to another thing (ie a link)
-    """
-    __tablename__ = 'things_things'
-
-    id = db.Column(db.Integer, unique=True, primary_key=True, index=True)
-    from_thing_id = db.Column(
-        db.Integer, db.ForeignKey('things.id'), index=True)
-    to_thing_id = db.Column(db.Integer, db.ForeignKey('things.id'), index=True)
-    # whether this is an external link.
-    external = db.Column(db.Boolean, index=True)
-
-    def __init__(self, from_thing_id, to_thing_id, **kw):
-        self.from_thing_id = from_thing_id
-        self.to_thing_id = to_thing_id
-        self.external = kw.get('external', True)
-
-    def get_id(self):
-        return self.id
-
-
 # join table utils.
 def join_table(name, a, b):
     """

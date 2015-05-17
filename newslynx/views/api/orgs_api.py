@@ -5,7 +5,7 @@ from newslynx.models import User, Org, SousChef, Recipe, Tag
 from newslynx.models.util import fetch_by_id_or_field
 from newslynx.lib.serialize import jsonify
 from newslynx.exc import (
-    AuthError, RequestError, ForbiddenError)
+    AuthError, RequestError, ForbiddenError, NotFoundError)
 from newslynx.views.decorators import load_user
 from newslynx.views.util import (
     request_data, BOOL_TRUISH, delete_response, arg_bool)
@@ -82,7 +82,7 @@ def org(user, org_id_name):
 
     # if it still doesn't exist, raise an error.
     if not org:
-        raise RequestError('This Org does not exist.')
+        raise NotFoundError('This Org does not exist.')
 
     # ensure the active user can edit this Org
     if user.id not in org.user_ids:
@@ -106,8 +106,7 @@ def org_update(user, org_id_name):
 
     # if the org doesnt exist, create it.
     if not org:
-        raise RequestError(
-            "Org '{}' Does not exists".format(req_data['name']))
+        raise NotFoundError('This Org does not exist.')
 
     if user.id not in org.user_ids:
         raise ForbiddenError(
@@ -136,7 +135,7 @@ def org_delete(user, org_id_name):
 
     # if it still doesn't exist, raise an error.
     if not org:
-        raise RequestError('This Org does not exist.')
+        raise NotFoundError('This Org does not exist.')
 
     # ensure the active user can edit this Org
     if user.id not in org.user_ids:
@@ -158,7 +157,7 @@ def org_users(user, org_id_name):
 
     # if it still doesn't exist, raise an error.
     if not org:
-        raise RequestError('This Org does not exist.')
+        raise NotFoundError('This Org does not exist.')
 
     # ensure the active user can edit this Org
     if user.id not in org.user_ids:
@@ -195,7 +194,7 @@ def org_create_user(user, org_id_name):
 
     # if it still doesn't exist, raise an error.
     if not org:
-        raise RequestError('This Org does not exist.')
+        raise NotFoundError('This Org does not exist.')
 
     # ensure the active user can edit this Org
     if user.id not in org.user_ids:
@@ -221,7 +220,7 @@ def org_user(user, org_id_name, user_email):
     org = fetch_by_id_or_field(Org, 'name', org_id_name)
 
     if not org:
-        raise RequestError('This Org does not exist.')
+        raise NotFoundError('This Org does not exist.')
 
     # ensure the active user can edit this Org
     if user.id not in org.user_ids:
@@ -253,7 +252,7 @@ def org_add_user(user, org_id_name, user_email):
     org = fetch_by_id_or_field(Org, 'name', org_id_name)
 
     if not org:
-        raise RequestError('This Org does not exist.')
+        raise NotFoundError('This Org does not exist.')
 
     # ensure the active user can edit this Org
     if user.id not in org.user_ids:
@@ -290,7 +289,7 @@ def org_remove_user(user, org_id_name, user_email):
 
     # if it still doesn't exist, raise an error.
     if not org:
-        raise RequestError('This Org does not exist.')
+        raise NotFoundError('This Org does not exist.')
 
     # ensure the active user can edit this Org
     if user.id not in org.user_ids:
