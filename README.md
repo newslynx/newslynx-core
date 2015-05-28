@@ -8,7 +8,9 @@ the API and SousChefs that Power Newslynx.
 * Install `newslynx`, prefrerably in a virtual environment.
 
 ```
-pip install newslynx
+git clone https://github.com/newslynx/newslynx.git
+cd newslynx
+python setup.py install
 ```
 
 * (re)create a `postgresql` database

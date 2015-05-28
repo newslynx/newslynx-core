@@ -116,6 +116,14 @@ class BaseClient(object):
 
         return Dict(data)
 
+    def login(self, **kw):
+        """
+        Login via email + password.
+        """
+        url = self._format_url('login')
+        resp = self._request('POST', url, params=kw)
+        self.apikey = resp.apikey
+
 
 class Me(BaseClient):
 
@@ -329,10 +337,25 @@ class Tags(BaseClient):
 
     def list(self, **kw):
         """
-        Get all tags.
+        Get all tags
         """
         url = self._format_url('tags')
         return self._request('GET', url, params=kw)
+
+    def create(self, **kw):
+        """
+        Create a tag
+        """
+        kw, params = self._split_data_from_auth_params(**kw)
+        url = self._format_url('tags')
+        return self._request('PUT', url, data=kw, params=params)
+
+    def get(self, tag_id, **kw):
+        """
+        Get a tag
+        """
+        url = self._format_url('tags', tag_id)
+        return self._request('GET', url, data=kw, params=kw)
 
     def update(self, tag_id, **kw):
         """
@@ -468,11 +491,3 @@ class API(BaseClient):
         self.metrics = Metrics(**kw)
         self.reports = Reports(**kw)
         self.creators = Creators(**kw)
-
-    def login(self, **kw):
-        """
-        Login via email + password.
-        """
-        url = self._format_url('login')
-        resp = self._request('POST', url, params=kw)
-        self.apikey = resp.apikey
