@@ -4,7 +4,7 @@ from sqlalchemy import func
 from flask import Blueprint
 
 from newslynx.core import db
-from newslynx.exc import RequestError
+from newslynx.exc import RequestError, NotFoundError
 from newslynx.models import Tag
 from newslynx.models.relations import events_tags, things_tags
 from newslynx.models.util import fetch_by_id_or_field
@@ -149,7 +149,7 @@ def get_tag(user, org, tag_id):
     # fetch the tag object
     tag = fetch_by_id_or_field(Tag, 'slug', tag_id, org_id=org.id)
     if not tag:
-        raise RequestError('A Tag with ID {} does not exist'.format(tag_id))
+        raise NotFoundError('A Tag with ID {} does not exist'.format(tag_id))
 
     return jsonify(tag)
 
@@ -164,7 +164,7 @@ def update_tag(user, org, tag_id):
     # fetch the tag object
     tag = fetch_by_id_or_field(Tag, 'slug', tag_id, org_id=org.id)
     if not tag:
-        raise RequestError('A Tag with ID {} does not exist'.format(tag_id))
+        raise NotFoundError'A Tag with ID {} does not exist'.format(tag_id))
 
     # fetch the request data.
     req_data = request_data()
@@ -226,7 +226,7 @@ def delete_tag(user, org, tag_id):
     # fetch the tag object
     tag = fetch_by_id_or_field(Tag, 'slug', tag_id, org_id=org.id)
     if not tag:
-        raise RequestError('A Tag with ID {} does not exist'.format(tag_id))
+        raise NotFoundError('A Tag with ID {} does not exist'.format(tag_id))
 
     db.session.delete(tag)
     db.session.commit()
