@@ -122,8 +122,8 @@ def create_tag(user, org):
                 raise RequestError(
                     'An Impact Tag requires a "level" and "category"')
 
-        validate_tag_categories(tag['category'])
-        validate_tag_levels(tag['level'])
+        validate_tag_categories(req_data['category'])
+        validate_tag_levels(req_data['level'])
 
     # create the tag
     tag = Tag(org_id=org.id, **req_data)
