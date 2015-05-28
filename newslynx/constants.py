@@ -63,7 +63,7 @@ IMPACT_TAG_CATEGORIES = [
 ]
 
 IMPACT_TAG_LEVELS = [
-    'instituion', 'media',
+    'institution', 'media',
     'community', 'individual', 'internal'
 ]
 

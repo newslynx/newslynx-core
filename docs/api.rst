@@ -1036,7 +1036,7 @@ Returns
     {
         "facets": {
             "levels": {
-                "instituion": 2,
+                "institution": 2,
                 "media": 3,
                 "individual": 1,
                 "internal": 2,
