@@ -27,7 +27,7 @@ def me_orgs(user):
 def org_create(user):
 
     req_data = request_data()
-    print req_data
+
     if not user.admin:
         raise ForbiddenError(
             'You must be an admin to create or update an Org')
