@@ -31,7 +31,7 @@ def login():
     # check user's existence
     user = User.query.filter_by(email=email).first()
     if user is None:
-        raise RequestError('A user with email "{}" does not exist.'
+        raise AuthError('A user with email "{}" does not exist.'
                            .format(email))
 
     # check the supplied password

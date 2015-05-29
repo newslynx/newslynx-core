@@ -415,7 +415,7 @@ Example
 Fetch an organization object.
 
 **NOTE**: 
-    - You can pass in either an organization's ``id`` or it's ``name`` to this endpoint.
+    - You can pass in either an organization's ``id`` or it's ``slug`` to this endpoint.
 
 Params
 ******
@@ -492,7 +492,7 @@ Delete an organization and all of it's associated collections.
 
 **NOTE**: 
     - Requires admin privileges.
-    - You can pass in either an organization's ``id`` or it's ``name`` to this endpoint.
+    - You can pass in either an organization's ``id`` or it's ``slug`` to this endpoint.
 
 **WARNING**:
     - This method will delete all data associated with this organization, except for users.
@@ -528,7 +528,7 @@ Example
 Fetch all users associated with an organization.
 
 **NOTE**: 
-    - You can pass in either an organization's ``id`` or it's ``name`` to this endpoint.
+    - You can pass in either an organization's ``id`` or it's ``slug`` to this endpoint.
 
 Params
 ******
@@ -562,7 +562,7 @@ Create a new user under an organization.
 
 **NOTE**: 
     - Requires admin privileges.
-    - You can pass in either an organization's ``id`` or it's ``name`` to this endpoint.
+    - You can pass in either an organization's ``id`` or it's ``slug`` to this endpoint.
 
 Params
 ******
@@ -609,7 +609,7 @@ Example
 Fetch a user that belongs to a given organization.
 
 **NOTE**: 
-    - You can pass in either an organization's ``id`` or it's ``name`` to this endpoint.
+    - You can pass in either an organization's ``id`` or it's ``slug`` to this endpoint.
     - You can pass in either an user's ``id`` or his/her ``email`` to this endpoint.
 
 Params
@@ -644,7 +644,7 @@ Add an existing user to an organization.
 
 **NOTE**:
     - Requires admin privileges. 
-    - You can pass in either an organization's ``id`` or it's ``name`` to this endpoint.
+    - You can pass in either an organization's ``id`` or it's ``slug`` to this endpoint.
     - You can pass in either an user's ``id`` or his/her ``email`` to this endpoint.
 
 Params
@@ -679,7 +679,7 @@ Remove a user from an organization.
 
 **NOTE**:
     - Requires admin privileges. 
-    - You can pass in either an organization's ``id`` or it's ``name`` to this endpoint.
+    - You can pass in either an organization's ``id`` or it's ``slug`` to this endpoint.
     - You can pass in either an user's ``id`` or his/her ``email`` to this endpoint.
 
 Params
@@ -841,7 +841,6 @@ Create a ``json`` setting.
 Get an organization's setting by it's name.
 
 **NOTE**:
-    - You can pass in either an organization's ``id`` or it's ``name`` to this endpoint.
     - You can pass in either a setting's ``id`` or it's ``name`` to this endpoint.
 
 Params
