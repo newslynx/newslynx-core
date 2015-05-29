@@ -141,10 +141,10 @@ def search_events(user, org):
         page           | page number
         per_page       | number of items per page.
         sort           | variable to order by, preface with '-' to sort desc.
-        created_after  | isodate variable to filter results after
-        created_before | isodate variable to filter results before
-        updated_after  | isodate variable to filter results after
-        updated_before | isodate variable to filter results before
+        created_after  | isodate to filter results after
+        created_before | isodate to filter results before
+        updated_after  | isodate to filter results after
+        updated_before | isodate to filter results before
         status         | ['pending', 'approved', 'deleted']
         facets         | a comma-separated list of facets to include, default=all
         tag            | a comma-separated list of tags to filter by
@@ -315,6 +315,7 @@ def search_events(user, org):
                     facet.events_by_types(event_ids)
             queries.append(gevent.spawn(q_types))
 
+        # execute facets
         gevent.joinall(queries)
 
     # paginate event_query
@@ -349,7 +350,7 @@ def search_events(user, org):
 @bp.route('/api/v1/events/<int:event_id>', methods=['GET'])
 @load_user
 @load_org
-def event(user, org, event_id):
+def get_event(user, org, event_id):
     """
     Fetch an individual event.
     """

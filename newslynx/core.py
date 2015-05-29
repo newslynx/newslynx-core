@@ -14,7 +14,7 @@ from flask.ext.compress import Compress
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
 # from werkzeug.contrib.cache import RedisCache
-import redis
+# import redis
 from embedly import Embedly
 import bitly_api
 
@@ -60,6 +60,7 @@ db.engine.pool._use_threadlocal = True
 # session for interactions outside of app context.
 engine = create_engine(settings.SQLALCHEMY_DATABASE_URI)
 db_session = scoped_session(sessionmaker(bind=engine))
+db_session.execute('SET TIMEZONE TO UTC')
 
 # redis connection
 # rds = redis.from_url(settings.REDIS_URL)

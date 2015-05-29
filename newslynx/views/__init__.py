@@ -4,7 +4,7 @@ import logging
 from flask import request
 from werkzeug.exceptions import HTTPException
 
-from newslynx.core import app
+from newslynx.core import app, db
 from newslynx.exc import (
     AuthError, RequestError, ForbiddenError, NotFoundError,
     SousChefSchemaError, ConfigError, SearchStringError)
@@ -111,6 +111,11 @@ def handle_search_string_error(error):
     response = jsonify(resp)
     response.status_code = error.status_code
     return response
+
+
+@app.before_request
+def set_timezone_to_utc():
+    db.session.execute('SET TIMEZONE TO UTC')
 
 
 @app.before_request
