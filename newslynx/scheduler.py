@@ -68,12 +68,11 @@ class RecipeScheduler:
     def get_scheduled_recipes(self):
         """
         Get stored schedules from the Database.
-        We only run recipes whose status is not
-        'running' or 'uninitialized'.
+        We only run recipes whose status is not 'uninitialized'.
         """
         recipes = db_session.query(Recipe)\
             .filter_by(scheduled=True)\
-            .filter_by(status!='uninitialized')
+            .filter_by(status != 'uninitialized')
         d = {}
         for r in recipes.all():
             d[r.id] = r
@@ -130,7 +129,7 @@ class RecipeScheduler:
         """
         Endlessly run scheduled recipes.
         """
-        while 1:
+        while True:
             self.update_scheduled_recipes()
             self.run_scheduled_recipes()
             time.sleep(settings.SCHEDULER_INTERVAL)
