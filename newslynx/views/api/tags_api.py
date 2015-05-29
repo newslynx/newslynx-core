@@ -164,7 +164,7 @@ def update_tag(user, org, tag_id):
     # fetch the tag object
     tag = fetch_by_id_or_field(Tag, 'slug', tag_id, org_id=org.id)
     if not tag:
-        raise NotFoundError'A Tag with ID {} does not exist'.format(tag_id))
+        raise NotFoundError('A Tag with ID {} does not exist'.format(tag_id))
 
     # fetch the request data.
     req_data = request_data()
