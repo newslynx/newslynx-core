@@ -164,3 +164,19 @@ def update_recipe(user, org, recipe_id):
     db.session.commit()
 
     return jsonify(r)
+
+
+@bp.route('/api/v1/recipes/<recipe_id>', methods=['DELETE'])
+@load_user
+@load_org
+def delete_recipe(user, org, recipe_id):
+
+    r = fetch_by_id_or_field(Recipe, 'slug', recipe_id, org_id=org.id)
+    if not r:
+        raise RequestError('Recipe with id/slug {} does not exist.'
+                           .format(recipe_id))
+
+    db.session.delete(r)
+    db.session.commit()
+
+    return delete_response()
