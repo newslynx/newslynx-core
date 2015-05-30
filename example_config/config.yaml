@@ -30,32 +30,34 @@ url_cache_ttl: 259200 # 3 days
 # browser
 browser_user_agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10; rv:33.0) Gecko/20100101 Firefox/33.0
 browser_timeout: 10
+browser_wait: 1
+browser_backoff: 2
 browser_max_retries: 5
 
 # twitter (for event creation + metrics)
-twitter_api_key: slkdfjaslkfjadlskfjalsfa
-twitter_api_secret: slkdfjaslkfjadlskfjalsfa
+twitter_api_key: 
+twitter_api_secret: 
 
 # google analytics (for metrics)
-google_analytics_client_id: slkdfjaslkfjadlskfjalsfa
-google_analytics_client_secret: slkdfjaslkfjadlskfjalsfa
+google_analytics_client_id:
+google_analytics_client_secret: 
 
 # facebook (for event creation)
-facebook_app_id: 321431431242314213
-facebook_app_secret: slkdfjaslkfjadlskfjalsfa
+facebook_app_id: 
+facebook_app_secret: 
 
 # embedly (for content extraction)
-embedly_api_key: slkdfjaslkfjadlskfjalsfa
+embedly_api_key: 
 
 # bitly (for url normalization + click stats)
-bitly_api_key: slkdfjaslkfjadlskfjalsfa
+bitly_api_key: 
 
 
 # email #
 
 # for sending emails
 mail_username: merlynne@example.com
-mail_password: super-secret-password
+mail_password: 3143214234
 mail_server: mail.example.com
 smtp_port: 587
 imap_port: 993

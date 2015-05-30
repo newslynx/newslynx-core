@@ -1,5 +1,4 @@
 from functools import wraps
-from http.cookiejar import CookieJar as cj
 import logging
 import time
 
@@ -16,7 +15,6 @@ def get_request_kwargs(timeout, useragent):
     """
     return {
         'headers': {'User-Agent': useragent},
-        'cookies': cj(),
         'timeout': timeout,
         'allow_redirects': True
     }
@@ -58,7 +56,7 @@ def get_html(url, config=None, response=None):
 def retry(*dargs, **dkwargs):
     """A decorator for performing http requests and catching all concievable errors.
        Useful for including in scrapers for unreliable webservers.
-       @retry_request(attempts=3)
+       @retry(attempts=3)
        def buggy_request():
            return requests.get('http://www.gooooooooooooogle.com')
        buggy_request()

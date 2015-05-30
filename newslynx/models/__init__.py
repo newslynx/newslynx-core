@@ -9,3 +9,4 @@ from .tag import Tag
 from .thing import Thing
 from .user import User
 from .sous_chef import SousChef, validate_sous_chef
+from .url import url_cache

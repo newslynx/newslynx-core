@@ -5,26 +5,25 @@ name:
         placeholder: The name of the Recipe.
 
 slug:
-    type: text
+    type: [text, null]
     required: true
     help:
         placeholder: A slug for viewing the recipe in a url.
 
 description: 
-    type: text
-    required: false
+    type: [text, null]
     help: 
         placeholder: A description of what this recipe does.
 
 interval:
-    type: number
+    type: [number, null]
     default: null
     help:
         placeholder: '3600'
         description: The frequency (in seconds) with which this recipe should run.
 
 time_of_day:
-    type: text
+    type: [text, null]
     default: null
     help:
         placeholder: '12:00 AM'

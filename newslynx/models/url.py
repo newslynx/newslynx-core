@@ -1,9 +1,7 @@
 
-from newslynx.core import rdb
+from newslynx.core import rds
 from newslynx import settings
-from newslynx.lib import url
-from newslynx.lib.serialize import (
-    obj_to_json, json_to_obj)
+from newslynx.lib.url import prepare
 
 
 class URLCache(object):
@@ -13,27 +11,33 @@ class URLCache(object):
     """
 
     def __init__(self, **kw):
-        self.key_prefix = kw.get('key_prefix', settings.URL_CACHE_KEY_PREFIX)
+        self.key_prefix = kw.get('key_prefix', settings.URL_CACHE_PREFIX)
         self.ttl = kw.get('ttl', settings.URL_CACHE_TTL)
-        self.rdb = rdb
+        self.rds = rds
 
-    def get_cache(self, raw_url):
+    def _format_key(self, raw_url):
+        return self.key_prefix + ":" + raw_url
+
+    def get(self, raw_url):
         """
         Standardize + cache a raw url
         returning it's standardized url + global bitly url.
         """
         key = self._format_key(raw_url)
-        url = self.rdb.get(key)
+        url = self.rds.get(key)
 
         if not url:
 
             # standradize the url
-            url = url.prepare(raw_url)
+            url = prepare(raw_url)
 
             # don't fail.
             if not url:
                 url = raw_url
 
-            self.rdb.set(key, url, ex=self.ttl)
+            # shorten
+            self.rds.set(key, url, ex=self.ttl)
 
         return url
+
+url_cache = URLCache()

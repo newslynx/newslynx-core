@@ -18,6 +18,7 @@ from urlparse import (
 )
 import logging
 
+import requests
 from requests.exceptions import HTTPError
 import tldextract
 
@@ -61,6 +62,12 @@ def prepare(raw_url, source=None, keep_params=('id')):
 
     All urls that enter `merlynne` are first treated with this function.
     """
+
+    if not is_abs(raw_url):
+        domain = get_domain(raw_url)
+        path = get_path(raw_url)
+        raw_url = 'http://{}{}'.format(domain, path)
+
     # check short urls
     if is_short_url(raw_url):
         url = unshorten(raw_url, attempts=2)
@@ -92,7 +99,6 @@ def prepare(raw_url, source=None, keep_params=('id')):
     return url
 
 
-@network.retry(attempts=2)
 def unshorten(short_url, **kw):
 
     # set vars
@@ -108,7 +114,7 @@ def unshorten(short_url, **kw):
     if not short_url.startswith('http://'):
         short_url = "http://" + short_url
 
-    url = copy(short_url)
+    url = copy.copy(short_url)
 
     # recursively unshorten
     while attempts < max_attempts:
@@ -132,7 +138,6 @@ def unshorten(short_url, **kw):
             return short_url
 
 
-@network.retry(attempts=2)
 def shorten(url):
     """
     Shorten a url on bitly, return it's new short url
@@ -145,7 +150,6 @@ def shorten(url):
     }
 
 
-@network.retry(attempts=3)
 def canonicalize(url):
     """
     Fetch the canonical url from a page.
@@ -513,7 +517,6 @@ def _is_valid(url):
     return len(url) > 11 and 'localhost' not in url
 
 
-@network.retry(attempts=2)
 def _get_location(url):
     """
     most efficient yet error prone method for unshortening a url.
@@ -533,7 +536,6 @@ def _get_location(url):
         return url
 
 
-@network.retry(attempts=2)
 def _long_url(url):
     """
     hit long url's api to unshorten a url
@@ -554,7 +556,6 @@ def _long_url(url):
     return url
 
 
-@network.retry(attempts=2)
 def _bypass_bitly_warning(url):
     """
     Sometime bitly blocks unshorten attempts, this bypasses that.
@@ -568,7 +569,6 @@ def _bypass_bitly_warning(url):
     return url
 
 
-@network.retry(attempts=2)
 def _unshorten(url, pattern=None):
     """
     quad-method approach to unshortening a url
@@ -589,17 +589,6 @@ def _unshorten(url, pattern=None):
     url = _long_url(url)
     if not is_short_url(url, pattern=pattern):
         return url
-
-    # method 3, use requests
-    try:
-        r = requests.get(url)
-    except ConnectionError:
-        return url
-    else:
-        if r.status_code == 200:
-            url = r.url
-            if not is_short_url(url, pattern=pattern):
-                return url
 
     # return whatever we have
     return url
