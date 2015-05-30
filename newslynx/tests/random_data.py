@@ -402,8 +402,8 @@ def main(
         n_subject_tags=10,
         n_impact_tags=10,
         n_events=500,
-        n_metrics_per_thing=10,
-        n_things=200,
+        n_metrics_per_thing=5,
+        n_things=100,
         verbose=True):
 
     # top level things
@@ -443,8 +443,8 @@ def main(
     if verbose:
         print "generating views."
     # generate views
-    view.thing_timeseries()
-    view.org_timeseries()
+    # view.thing_timeseries()
+    # view.org_timeseries()
 
 
 def run(**kw):

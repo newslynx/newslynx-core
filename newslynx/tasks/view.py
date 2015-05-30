@@ -27,8 +27,8 @@ def thing_timeseries():
 
     # fetch all timeseries metrics.
     metrics = db_session.query(func.distinct(Metric.name))\
-        .filter(Metric.thing_id != None)\
-        .filter(Metric.created != None)\
+        .filter(Metric.thing_id is not None)\
+        .filter(Metric.created is not None)\
         .filter_by(level='thing')\
         .order_by(Metric.name.asc())\
         .all()
@@ -58,7 +58,10 @@ def thing_timeseries():
                 {coalesce}
             from crosstab(
                 'SELECT
-                    thing_id, date_trunc_by_hours(1, created) AS datetime, name, SUM(value) AS value
+                    thing_id,
+                    date_trunc_by_hours(1, created) AS datetime,
+                    name,
+                    SUM(value) AS value
                  FROM metrics
                  WHERE created IS NOT NULL AND level = ''thing''
                  GROUP BY datetime, name, thing_id
@@ -103,7 +106,7 @@ def org_timeseries():
 
     # fetch all timeseries metrics.
     metrics = db_session.query(func.distinct(Metric.name))\
-        .filter(Metric.created != None)\
+        .filter(Metric.created is not None)\
         .filter_by(level='org')\
         .all()
     metric_names = [m[0] for m in metrics]

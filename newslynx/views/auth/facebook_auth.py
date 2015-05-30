@@ -124,7 +124,7 @@ def fb_callback():
 def fb_revoke(user, org):
 
     fb_token = Auth.query\
-        .filter_by(name='facebook', organization_id=org.id)\
+        .filter_by(name='facebook', org_id=org.id)\
         .first()
 
     obj_or_404(fb_token, 'You have not authenticated yet with Facebook.')

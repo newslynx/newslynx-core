@@ -83,9 +83,11 @@ def load_default_tags():
         for fp in recursive_listdir(default_tags_dir):
             if _is_config_file(fp):
                 tag = _load_config_file(fp)
+      
                 if isinstance(tag, list):
                     for t in tag:
                         yield t
+         
                 else:
                     yield tag
 

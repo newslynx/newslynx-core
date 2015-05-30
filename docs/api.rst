@@ -329,7 +329,7 @@ All methods, unless otherwise specified, will return one or many organization ob
       }
     ],
     "settings": [...],
-    "authorizations": [...],
+    "auths": [...],
     "id": 1,
     "name": "liveqa"
   }

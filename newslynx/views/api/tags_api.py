@@ -45,7 +45,7 @@ def get_tags(user, org):
     category = arg_str('category', default=None)
 
     sort_field, direction = \
-        arg_sort('sort', default='-created')
+        arg_sort('sort', default='created')
 
     # filters
     if type:
