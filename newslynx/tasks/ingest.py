@@ -29,10 +29,9 @@ def extract_urls(obj, fields):
                     yield u
 
 
-def ingest_event(
-        raw_obj,
-        url_fields=['title', 'text', 'description'],
-        requires=['source_id', 'org_id', 'url', 'title', 'text']):
+def event(raw_obj,
+          url_fields=['title', 'text', 'description'],
+          requires=['source_id', 'org_id', 'url', 'title', 'text']):
 
         # get event columns.
     cols = [c for c in get_table_columns(Event) if c != 'meta']
@@ -47,6 +46,14 @@ def ingest_event(
     raw_obj = split_meta(raw_obj, cols)
 
     # extract urls in pool
-    urls = extract_urls(raw_obj, fields=[])
-    for url in url_extract_pool.imap_unordered(url_cache.get, urls):
-        print url
+    raw_urls = extract_urls(raw_obj, fields=url_fields)
+    clean_urls = []
+
+    for u in url_extract_pool.imap_unordered(url_cache.get, raw_urls):
+        clean_urls.append(u)
+
+    # Detect Things
+    if len(clean_urls):
+        pass
+
+        

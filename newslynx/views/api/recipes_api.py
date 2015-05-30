@@ -148,7 +148,7 @@ def update_recipe(user, org, recipe_id):
             setattr(r, name, value)
 
     # initialize default recipes
-    if r.status == 'unititialized':
+    if r.status == 'uninitialized':
         r.status = 'stable'
 
     # set updated time.
