@@ -86,7 +86,7 @@ def validate_recipe_sous_chef_defaults(recipe, sous_chef):
             recipe[key] = validate_recipe_opt(key, typ, raw)
 
         else:
-            if key != 'slug':
+            if key not in ['slug']:
                 recipe[key] = sous_chef['options'][key].get('default', None)
             else:
                 slug = "{}-{}".format(sous_chef[key], gen_hash_id())

@@ -36,8 +36,6 @@ class BaseClient(object):
         # establish session
         self._session = Session()
 
-        # authenticate
-
     def _format_url(self, *args):
         """
         Add segments to endpoint to form a URL.
@@ -50,7 +48,7 @@ class BaseClient(object):
         """
         A wrapper for all request executions.
         """
-        if not self.apikey:
+        if not url.endswith('login') and not self.apikey:
             raise ClientError('You haven\'t set your apikey or logged in yet!')
 
         # add params to kw
@@ -60,6 +58,10 @@ class BaseClient(object):
         kw['params'].update({'apikey': self.apikey})
         if 'org' not in kw['params']:
             kw['params']['org'] = self.org
+
+        # orgs endpoint doesn't require org
+        if url.startswith(self._format_url('orgs')):
+            kw['params'].pop('org')
 
         # dump json
         if kw.get('data'):
@@ -121,8 +123,8 @@ class BaseClient(object):
         Login via email + password.
         """
         url = self._format_url('login')
-        resp = self._request('POST', url, params=kw)
-        self.apikey = resp.apikey
+        resp = self._request('POST', url, data=kw)
+        return resp
 
 
 class Me(BaseClient):
@@ -139,7 +141,12 @@ class Me(BaseClient):
         """
         Update your user profile.
         """
-        kw, params = self._split_data_from_auth_params(**kw)
+        kw, params = self._split_auth_params_from_kw(**kw)
+
+        # special case for this parameter
+        if 'refresh_apikey' in kw:
+            params['refresh_apikey'] = kw.pop('refresh_apikey')
+
         url = self._format_url('me')
         return self._request('PUT', url, data=kw, params=kw)
 
@@ -152,6 +159,13 @@ class Me(BaseClient):
 
 
 class Orgs(BaseClient):
+
+    def list(self, **kw):
+        """
+        List organizations you have access to.
+        """
+        url = self._format_url('orgs')
+        return self._request('GET', url, params=kw)
 
     def get(self, org=None, **kw):
         """
@@ -170,7 +184,7 @@ class Orgs(BaseClient):
         """
         Create an organization.
         """
-        kw, params = self._split_data_from_auth_params(**kw)
+        kw, params = self._split_auth_params_from_kw(**kw)
         url = self._format_url('orgs')
         return self._request('POST', url, data=kw, params=params)
 
@@ -183,7 +197,7 @@ class Orgs(BaseClient):
             if not org:
                 raise ValueError(
                     'You must pass in the org ID or name as the first argument.')
-        kw, params = self._split_data_from_auth_params(**kw)
+        kw, params = self._split_auth_params_from_kw(**kw)
         url = self._format_url('orgs', org)
         return self._request('PUT', url, data=kw, params=params)
 
@@ -239,7 +253,7 @@ class Orgs(BaseClient):
             if not org:
                 raise ValueError(
                     'You must pass in the org ID or name as the first argument.')
-        kw, params = self._split_data_from_auth_params(**kw)
+        kw, params = self._split_auth_params_from_kw(**kw)
         url = self._format_url('orgs', org, 'users')
         return self._request('POST', url, data=kw, params=params)
 
@@ -288,12 +302,12 @@ class Settings(BaseClient):
         url = self._format_url('settings')
         return self._request('GET', url, params=kw)
 
-    def get(self, name, **kw):
+    def get(self, name_id, **kw):
         """
         Get a particular setting.
         """
 
-        url = self._format_url('settings', name)
+        url = self._format_url('settings', name_id)
         return self._request('GET', url, **kw)
 
     def create(self, **kw):
@@ -305,12 +319,12 @@ class Settings(BaseClient):
             if not isinstance(kw.get('value'), basestring):
                 kw['value'] = obj_to_json(kw['value'])
 
-        kw, params = self._split_data_from_auth_params(**kw)
+        kw, params = self._split_auth_params_from_kw(**kw)
 
         url = self._format_url('settings')
         return self._request('POST', url, data=kw, params=params)
 
-    def update(self, name, **kw):
+    def update(self, name_id, **kw):
         """
         Update a setting
         """
@@ -319,17 +333,17 @@ class Settings(BaseClient):
             if not isinstance(kw.get('value'), basestring):
                 kw['value'] = obj_to_json(kw['value'])
 
-        kw, params = self._split_data_from_auth_params(**kw)
+        kw, params = self._split_auth_params_from_kw(**kw)
 
-        url = self._format_url('settings', name)
+        url = self._format_url('settings', name_id)
         return self._request('PUT', url, data=kw, params=params)
 
-    def delete(self, name, **kw):
+    def delete(self, name_id, **kw):
         """
         Delete a setting.
         """
 
-        url = self._format_url('settings', name)
+        url = self._format_url('settings', name_id)
         return self._request('DELETE', url, params=kw)
 
 
@@ -346,9 +360,9 @@ class Tags(BaseClient):
         """
         Create a tag
         """
-        kw, params = self._split_data_from_auth_params(**kw)
+        kw, params = self._split_auth_params_from_kw(**kw)
         url = self._format_url('tags')
-        return self._request('PUT', url, data=kw, params=params)
+        return self._request('POST', url, data=kw, params=params)
 
     def get(self, tag_id, **kw):
         """
@@ -361,7 +375,7 @@ class Tags(BaseClient):
         """
         Update a tag
         """
-        kw, params = self._split_data_from_auth_params(**kw)
+        kw, params = self._split_auth_params_from_kw(**kw)
         url = self._format_url('tags', tag_id)
         return self._request('PUT', url, data=kw, params=params)
 
@@ -369,7 +383,7 @@ class Tags(BaseClient):
         """
         Delete a tag
         """
-        kw, params = self._split_data_from_auth_params(**kw)
+        kw, params = self._split_auth_params_from_kw(**kw)
         url = self._format_url('tags', tag_id)
         return self._request('DELETE', url, params=kw)
 
@@ -400,7 +414,7 @@ class Events(BaseClient):
         """
         Get an individual event.
         """
-        kw, params = self._split_data_from_auth_params(**kw)
+        kw, params = self._split_auth_params_from_kw(**kw)
         url = self._format_url('events', event_id)
         return self._request('PUT', url, data=kw, params=params)
 
@@ -478,6 +492,7 @@ class API(BaseClient):
     A class for interacting with the TenderEngine API.
     """
     def __init__(self, **kw):
+        BaseClient.__init__(self, **kw)
         self.me = Me(**kw)
         self.orgs = Orgs(**kw)
         self.settings = Settings(**kw)

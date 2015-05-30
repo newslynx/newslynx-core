@@ -1,4 +1,4 @@
-from flask import Blueprint, request
+from flask import Blueprint
 
 from newslynx.core import db
 from newslynx.models import User, Org, SousChef, Recipe, Tag
@@ -40,9 +40,10 @@ def org_create(user):
             "Org '{}' already exists".format(req_data['name']))
 
     # add the requesting user to the org
-    org = Org(name=request.form['name'])
+    org = Org(name=req_data['name'])
     org.users.append(user)
     db.session.add(org)
+    db.session.commit()
 
     # add default tags
     for tag in load_default_tags():
@@ -53,6 +54,7 @@ def org_create(user):
     # add default recipes
     for recipe in load_default_recipes():
         recipe['user_id'] = user.id
+        recipe['org_id'] = org.id
         recipe['status'] = 'uninitialized'
         sous_chef_slug = recipe.pop('sous_chef')
         if not sous_chef_slug:
@@ -69,16 +71,15 @@ def org_create(user):
         db.session.add(r)
 
     db.session.commit()
-
     return jsonify(org)
 
 
-@bp.route('/api/v1/orgs/<org_id_name>', methods=['GET'])
+@bp.route('/api/v1/orgs/<org_id_slug>', methods=['GET'])
 @load_user
-def org(user, org_id_name):
+def org(user, org_id_slug):
 
     # fetch org
-    org = fetch_by_id_or_field(Org, 'name', org_id_name)
+    org = fetch_by_id_or_field(Org, 'slug', org_id_slug)
 
     # if it still doesn't exist, raise an error.
     if not org:
@@ -91,9 +92,9 @@ def org(user, org_id_name):
     return jsonify(org)
 
 
-@bp.route('/api/v1/orgs/<org_id_name>', methods=['PUT', 'PATCH'])
+@bp.route('/api/v1/orgs/<org_id_slug>', methods=['PUT', 'PATCH'])
 @load_user
-def org_update(user, org_id_name):
+def org_update(user, org_id_slug):
 
     req_data = request_data()
 
@@ -102,7 +103,7 @@ def org_update(user, org_id_name):
             'You must be an admin to create or update an Org')
 
     # fetch org
-    org = fetch_by_id_or_field(Org, 'name', org_id_name)
+    org = fetch_by_id_or_field(Org, 'slug', org_id_slug)
 
     # if the org doesnt exist, create it.
     if not org:
@@ -123,15 +124,15 @@ def org_update(user, org_id_name):
     return jsonify(org)
 
 
-@bp.route('/api/v1/orgs/<org_id_name>', methods=['DELETE'])
+@bp.route('/api/v1/orgs/<org_id_slug>', methods=['DELETE'])
 @load_user
-def org_delete(user, org_id_name):
+def org_delete(user, org_id_slug):
 
     if not user.admin:
         raise AuthError('You must be an admin to delete an Org')
 
     # fetch org
-    org = fetch_by_id_or_field(Org, 'name', org_id_name)
+    org = fetch_by_id_or_field(Org, 'slug', org_id_slug)
 
     # if it still doesn't exist, raise an error.
     if not org:
@@ -148,12 +149,12 @@ def org_delete(user, org_id_name):
     return delete_response()
 
 
-@bp.route('/api/v1/orgs/<org_id_name>/users',  methods=['GET'])
+@bp.route('/api/v1/orgs/<org_id_slug>/users',  methods=['GET'])
 @load_user
-def org_users(user, org_id_name):
+def org_users(user, org_id_slug):
 
     # fetch org
-    org = fetch_by_id_or_field(Org, 'name', org_id_name)
+    org = fetch_by_id_or_field(Org, 'slug', org_id_slug)
 
     # if it still doesn't exist, raise an error.
     if not org:
@@ -167,9 +168,9 @@ def org_users(user, org_id_name):
     return jsonify(org.users)
 
 
-@bp.route('/api/v1/orgs/<org_id_name>/users',  methods=['POST'])
+@bp.route('/api/v1/orgs/<org_id_slug>/users',  methods=['POST'])
 @load_user
-def org_create_user(user, org_id_name):
+def org_create_user(user, org_id_slug):
 
     if not user.admin:
         raise AuthError(
@@ -190,7 +191,7 @@ def org_create_user(user, org_id_name):
             'An email, password, and name are required to create a User.')
 
     # fetch org
-    org = fetch_by_id_or_field(Org, 'name', org_id_name)
+    org = fetch_by_id_or_field(Org, 'slug', org_id_slug)
 
     # if it still doesn't exist, raise an error.
     if not org:
@@ -212,12 +213,12 @@ def org_create_user(user, org_id_name):
     return jsonify(new_org_user)
 
 
-@bp.route('/api/v1/orgs/<org_id_name>/users/<user_email>',  methods=['GET'])
+@bp.route('/api/v1/orgs/<org_id_slug>/users/<user_email>',  methods=['GET'])
 @load_user
-def org_user(user, org_id_name, user_email):
+def org_user(user, org_id_slug, user_email):
 
     # fetch org
-    org = fetch_by_id_or_field(Org, 'name', org_id_name)
+    org = fetch_by_id_or_field(Org, 'slug', org_id_slug)
 
     if not org:
         raise NotFoundError('This Org does not exist.')
@@ -240,16 +241,16 @@ def org_user(user, org_id_name, user_email):
     return jsonify(org_user)
 
 
-@bp.route('/api/v1/orgs/<org_id_name>/users/<user_email>', methods=['PUT', 'PATCH'])
+@bp.route('/api/v1/orgs/<org_id_slug>/users/<user_email>', methods=['PUT', 'PATCH'])
 @load_user
-def org_add_user(user, org_id_name, user_email):
+def org_add_user(user, org_id_slug, user_email):
 
     if not user.admin:
         raise AuthError(
             'You must be an admin to add a user to an Org.')
 
     # fetch org
-    org = fetch_by_id_or_field(Org, 'name', org_id_name)
+    org = fetch_by_id_or_field(Org, 'slug', org_id_slug)
 
     if not org:
         raise NotFoundError('This Org does not exist.')
@@ -276,16 +277,16 @@ def org_add_user(user, org_id_name, user_email):
     return jsonify(new_org_user)
 
 
-@bp.route('/api/v1/orgs/<org_id_name>/users/<user_email>', methods=['DELETE'])
+@bp.route('/api/v1/orgs/<org_id_slug>/users/<user_email>', methods=['DELETE'])
 @load_user
-def org_remove_user(user, org_id_name, user_email):
+def org_remove_user(user, org_id_slug, user_email):
 
     if not user.admin:
         raise AuthError(
             'You must be an admin to remove a user from an Org.')
 
     # fetch org
-    org = fetch_by_id_or_field(Org, 'name', org_id_name)
+    org = fetch_by_id_or_field(Org, 'slug', org_id_slug)
 
     # if it still doesn't exist, raise an error.
     if not org:

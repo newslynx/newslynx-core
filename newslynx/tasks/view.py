@@ -12,7 +12,6 @@ def create_mat_view(name, sql):
     Create/replace a materialized view.
     """
     q = """
-        CREATE EXTENSION IF NOT EXISTS tablefunc;
         DROP MATERIALIZED VIEW IF EXISTS {0};
         CREATE MATERIALIZED VIEW {0} AS\n{1}
         """.format(name, sql)

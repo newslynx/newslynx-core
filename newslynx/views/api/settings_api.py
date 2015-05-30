@@ -66,28 +66,28 @@ def create_setting(user, org):
     return jsonify(s)
 
 
-@bp.route('/api/v1/settings/<name>', methods=['GET'])
+@bp.route('/api/v1/settings/<name_id>', methods=['GET'])
 @load_user
 @load_org
-def get_setting(user, org, name):
+def get_setting(user, org, name_id):
 
-    s = fetch_by_id_or_field(Setting, 'name', name, org_id=org.id)
+    s = fetch_by_id_or_field(Setting, 'name', name_id, org_id=org.id)
     if not s:
         raise NotFoundError('Setting "{}" does not yet exist for Org "{}"'
-                            .format(name, org.name))
+                            .format(name_id, org.name))
     return jsonify(s)
 
 
-@bp.route('/api/v1/settings/<name>', methods=['PUT', 'PATCH'])
+@bp.route('/api/v1/settings/<name_id>', methods=['PUT', 'PATCH'])
 @load_user
 @load_org
-def update_setting(user, org, name):
+def update_setting(user, org, name_id):
 
-    s = fetch_by_id_or_field(Setting, 'name', name, org_id=org.id)
+    s = fetch_by_id_or_field(Setting, 'name', name_id, org_id=org.id)
 
     if not s:
         raise NotFoundError('Setting "{}" does not yet exist for Org "{}"'
-                            .format(name, org.name))
+                            .format(name_id, org.name))
 
     # get the request data
     req_data = request_data()
@@ -105,7 +105,7 @@ def update_setting(user, org, name):
                 raise RequestError(
                     "Setting '{}' with value '{}' was declared as a "
                     "'json_value' but could not be parsed as such."
-                    .format(name, value))
+                    .format(name_id, value))
 
     # upsert / patch values.
     if name:
@@ -128,16 +128,16 @@ def update_setting(user, org, name):
     return jsonify(s)
 
 
-@bp.route('/api/v1/settings/<name>', methods=['DELETE'])
+@bp.route('/api/v1/settings/<name_id>', methods=['DELETE'])
 @load_user
 @load_org
-def delete_setting(user, org, name):
+def delete_setting(user, org, name_id):
 
-    s = fetch_by_id_or_field(Setting, 'name', name, org_id=org.id)
+    s = fetch_by_id_or_field(Setting, 'name', name_id, org_id=org.id)
 
     if not s:
         raise NotFoundError('Setting "{}" does not yet exist for Org "{}"'
-                            .format(name, org.name))
+                            .format(name_id, org.name))
 
     db.session.delete(s)
     db.session.commit()
