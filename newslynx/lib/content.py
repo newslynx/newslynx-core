@@ -90,15 +90,15 @@ class _Extract:
         thing['url'] = kw.get('url')
 
         thing['source_domain'] = kw.get('source_domain',
-                                        urls.get_domain(thing['url']))
+                                        url.get_domain(thing['url']))
 
-        thing['url'] = urls.prepare(thing['url'],
+        thing['url'] = url.prepare(thing['url'],
                                     source=thing['source_domain'])
 
         thing['short_url'], thing['hash'] = \
-            urls.shorten(thing['url'])
+            url.shorten(thing['url'])
 
-        thing['slug'] = urls.get_slug(thing['url'])
+        thing['slug'] = url.get_slug(thing['url'])
 
         # check if we've already parsed this.
         if s3j.exists(self.jsonc, **thing):
@@ -141,7 +141,7 @@ class _Extract:
 
         # make sure we record links
         if not thing.get('links'):
-            thing['links'] = urls.from_html(
+            thing['links'] = url.from_html(
                 thing.get('article_html', page_source)
             )
 
@@ -193,7 +193,7 @@ def via_embedly(u):
             'title': e.get('title'),
             'embed': embed,
             'text': html.strip_tags(embed),
-            'links': urls.from_html(embed),
+            'links': url.from_html(embed),
             'authors': authors,
             'meta': {
                 'keywords': keywords,
@@ -218,7 +218,7 @@ def via_newspaper(u):
         'img_url': np.top_img,
         'embed': np.article_html,
         'text': html.strip_tags(np.article_html),
-        'links': urls.from_html(np.article_html),
+        'links': url.from_html(np.article_html),
         'summary': np.summary if not np.meta_description else np.meta_description,
         'meta': {
             'keywords': np.keywords,
@@ -240,7 +240,7 @@ def via_readability(page_source):
             'embed': embed,
             'text': html.strip_tags(embed),
             'title': obj.short_title(),
-            'links': urls.from_html(embed)
+            'links': url.from_html(embed)
         }
     else:
         return {}

@@ -3,7 +3,7 @@ All things related to image processing / archiving.
 """
 
 from newslynx.lib import html
-from newslynx.lib import urls
+from newslynx.lib import url
 from urlparse import urljoin
 
 
@@ -19,9 +19,9 @@ def from_html(htmlstring, domain=None, dedupe=True):
     for i in soup.find_all('img'):
         src = i.attrs.get('src', None)
         if src:
-            if not urls.is_abs(src):
+            if not url.is_abs(src):
                 if domain:
-                    src = urls.prepare(urljoin(domain, src))
+                    src = url.prepare(urljoin(domain, src))
 
             final_urls.append(src)
 
