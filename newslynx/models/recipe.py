@@ -18,6 +18,9 @@ def validate_recipe_opt(name, typ, raw):
     """
     Validate a recipe option
     """
+    # passthrough nulls
+    if not raw:
+        return None
 
     # custom first:
     if typ == 'datetime':
