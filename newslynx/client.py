@@ -148,7 +148,7 @@ class Me(BaseClient):
             params['refresh_apikey'] = kw.pop('refresh_apikey')
 
         url = self._format_url('me')
-        return self._request('PUT', url, data=kw, params=kw)
+        return self._request('PUT', url, data=kw, params=params)
 
     def orgs(self, **kw):
         """

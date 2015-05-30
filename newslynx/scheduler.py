@@ -8,7 +8,7 @@ import copy
 from newslynx.client import API
 from newslynx.models import Recipe
 from newslynx.lib import dates
-from newxlynx.core import db_session
+from newslynx.core import db_session
 from newslynx import settings
 
 
@@ -62,7 +62,7 @@ class RecipeScheduler:
         while 1:
             print 'Running: {} at {}'.format(recipe, dates.now())
             api = API(apikey=recipe.user.apikey, org=recipe.org_id)
-            api.recipe.run(recipe.id)
+            # api.recipe.run(recipe.id)
             time.sleep(interval)
 
     def get_scheduled_recipes(self):
@@ -70,9 +70,9 @@ class RecipeScheduler:
         Get stored schedules from the Database.
         We only run recipes whose status is not 'uninitialized'.
         """
-        recipes = db_session.query(Recipe)\
-            .filter_by(scheduled=True)\
-            .filter_by(status != 'uninitialized')
+        recipes = db_session.query(Recipe)
+            # .filter(Recipe.scheduled)\
+            # .filter(Recipe.status != 'uninitialized')
         d = {}
         for r in recipes.all():
             d[r.id] = r
@@ -132,4 +132,7 @@ class RecipeScheduler:
         while True:
             self.update_scheduled_recipes()
             self.run_scheduled_recipes()
-            time.sleep(settings.SCHEDULER_INTERVAL)
+            time.sleep(settings.SCHEDULER_REFRESH_INTERVAL)
+
+if __name__ == '__main__':
+    run()

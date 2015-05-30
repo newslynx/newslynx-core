@@ -1,7 +1,10 @@
 import logging
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 
+# suppress tld logging
+tld_log = logging.getLogger('tldextract')
+tld_log.setLevel(logging.CRITICAL)
 
 # shut up useless SA warning:
 import warnings

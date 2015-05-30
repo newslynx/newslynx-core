@@ -149,7 +149,7 @@ def ga_callback():
 def ga_revoke(user, org):
 
     ga_token = Auth.query\
-        .filter_by(organization_id=org.id, name='google_analytics')\
+        .filter_by(org_id=org.id, name='google_analytics')\
         .first()
 
     obj_or_404(ga_token,

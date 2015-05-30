@@ -133,7 +133,7 @@ def twt_callback():
 def twt_revoke(user, org):
 
     twt_token = Auth.query\
-        .filter_by(name='twitter', organization_id=org.id)\
+        .filter_by(name='twitter', org_id=org.id)\
         .first()
 
     obj_or_404(twt_token, 'You have not authenticated yet with Twitter.')

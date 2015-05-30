@@ -18,17 +18,14 @@ from urlparse import (
 )
 import logging
 
-import requests
-from requests import ConnectionError
+from requests.exceptions import HTTPError
 import tldextract
 
 from newslynx.core import bitly_api
 from newslynx.lib import html
 from newslynx.lib.regex import *
+from newslynx.lib import network
 
-# suppress tld logging
-tld_log = logging.getLogger('tldextract')
-tld_log.setLevel(logging.CRITICAL)
 
 # url chunks
 ALLOWED_TYPES = [
@@ -54,14 +51,12 @@ BAD_DOMAINS = [
     'facebook'
 ]
 
-# @network.retry(attempts=2)
-
 
 def prepare(raw_url, source=None, keep_params=('id')):
     """
     Operations that unshorten a url, reconcile embeds,
     resolves redirects, strip parameters (with optional
-    ones to keep), and then attempts to canonicalize the url 
+    ones to keep), and then attempts to canonicalize the url
     by checking the page source's metadata.
 
     All urls that enter `merlynne` are first treated with this function.
@@ -75,7 +70,7 @@ def prepare(raw_url, source=None, keep_params=('id')):
 
     # check for redirects / non absolute urls
     if source:
-        source_domain = urlparse(source).netloc
+        source_domain = get_domain(source)
         url = urljoin(source, url)
         url = _redirect_back(url, source_domain)
 
@@ -87,15 +82,17 @@ def prepare(raw_url, source=None, keep_params=('id')):
     # remove arguments w/ optional parameters to keep.
     url = _remove_args(url, keep_params)
 
-    # oh, well, lets just remove `index.html`
-    # and call it a day.
+    # remove index.html
     url = re_index_html.sub('', url)
 
+    # check for a filetype, otherwise ensure trailing slash
+    if not get_filetype(url):
+        if not url.endswith('/'):
+            url += '/'
     return url
 
-# @network.retry(attempts=2)
 
-
+@network.retry(attempts=2)
 def unshorten(short_url, **kw):
 
     # set vars
@@ -134,6 +131,8 @@ def unshorten(short_url, **kw):
         else:
             return short_url
 
+
+@network.retry(attempts=2)
 def shorten(url):
     """
     Shorten a url on bitly, return it's new short url
@@ -145,25 +144,27 @@ def shorten(url):
         'global_hash': d.get('global_hash')
     }
 
+
+@network.retry(attempts=3)
 def canonicalize(url):
     """
     Fetch the canonical url from a page.
     """
     canonical_url = False
-    response = requests.get(url)
+    content = network.get_html(url)
+    if not content:
+        raise HTTPError('No content extracted from {}'.format(url))
+    soup = html.make_soup(content)
+    canonical = soup.find("link", rel="canonical")
 
-    if response.status_code == 200:
-        soup = html.make_soup(response.text)
-        canonical = soup.find("link", rel="canonical")
+    if canonical:
+        canonical_url = canonical['href']
 
-        if canonical:
-            canonical_url = canonical['href']
+    else:
+        og_url = soup.find("meta", property="og:url")
 
-        else:
-            og_url = soup.find("meta", property="og:url")
-
-            if og_url:
-                canonical_url = og_url.get('content')
+        if og_url:
+            canonical_url = og_url.get('content')
 
     return canonical_url
 
@@ -182,10 +183,8 @@ def get_simple_domain(url):
     """
     Returns a standardized domain
     i.e.:
-    ``` 
-    > get_simple_domain('http://publiceditor.blogs.nytimes.com/')
-    > 'nytimes'
-    ```
+    get_simple_domain('http://publiceditor.blogs.nytimes.com/')
+    >>> 'nytimes'
     """
     domain = get_domain(url)
     tld_dat = tldextract.extract(domain)
@@ -255,7 +254,7 @@ def get_filetype(url):
     'http://blahblah/images/car.jpg' -> 'jpg'
     'http://yahoo.com'               -> None
     """
-    path = urlparse(url).path
+    path = get_path(url)
     # Eliminate the trailing '/', we are extracting the file
     if path.endswith('/'):
         path = path[:-1]
@@ -447,7 +446,7 @@ def from_html(htmlstring, domain=None, dedupe=True):
         if href:
             if not is_abs(href):
                 if domain:
-                    href = prepare(urljoin(domain, href))
+                    href = urljoin(domain, href)
 
             final_urls.append(href)
 
@@ -514,6 +513,7 @@ def _is_valid(url):
     return len(url) > 11 and 'localhost' not in url
 
 
+@network.retry(attempts=2)
 def _get_location(url):
     """
     most efficient yet error prone method for unshortening a url.
@@ -532,30 +532,29 @@ def _get_location(url):
     except:
         return url
 
+
+@network.retry(attempts=2)
 def _long_url(url):
     """
     hit long url's api to unshorten a url
     """
 
-    try:
-        r = requests.get(
-            'http://api.longurl.org/v2/expand',
-            params={
-                'url':  url,
-                'format': 'json'
-            }
-        )
+    r = requests.get(
+        'http://api.longurl.org/v2/expand',
+        params={
+            'url':  url,
+            'format': 'json'
+        }
+    )
 
-    except ConnectionError:
-        return url
-
-    else:
-        if r.status_code == 200:
-            return r.json().get('long-url', url)
+    if r.status_code == 200:
+        return r.json().get('long-url', url)
 
     # DONT FAIL
     return url
 
+
+@network.retry(attempts=2)
 def _bypass_bitly_warning(url):
     """
     Sometime bitly blocks unshorten attempts, this bypasses that.
@@ -569,6 +568,7 @@ def _bypass_bitly_warning(url):
     return url
 
 
+@network.retry(attempts=2)
 def _unshorten(url, pattern=None):
     """
     quad-method approach to unshortening a url
