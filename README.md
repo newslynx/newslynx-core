@@ -30,6 +30,12 @@ createdb newslynx
 newslynx init
 ```
 
+You can ignore the following error if you see it
+
+````
+Exception KeyError: KeyError(4384375024,) in <module 'threading' from '/System/Library/Frameworks/Python.framework/Versions/2.7/lib/python2.7/threading.pyc'> ignored
+````
+
 * populate with sample data
 
 ```
