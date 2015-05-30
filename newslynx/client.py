@@ -394,12 +394,11 @@ class Events(BaseClient):
         """
         Search events.
         """
-        if not kw.get('org'):
-            kw['org'] = copy.copy(self.org)
-            if not kw['org']:
-                raise ValueError(
-                    'You must pass in the org ID or name as a keyword argument.')
+        url = self._format_url('events')
+        return self._request('GET', url, params=kw)
 
+    def create(self, **kw):
+        kw, params = self._split_auth_params_from_kw(**kw)
         url = self._format_url('events')
         return self._request('GET', url, params=kw)
 

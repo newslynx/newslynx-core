@@ -100,7 +100,10 @@ def create_recipe(user, org):
         raise RequestError(
             'A SousChef does not exist with ID/slug {}'.format(sous_chef))
 
-    r = Recipe(sc, user_id=user.id, **req_data)
+    if not 'status' not in req_data:
+        req_data['status'] = 'stable'
+
+    r = Recipe(sc, user_id=user.id, org_id=org.id, **req_data)
     db.session.add(r)
     db.session.commit()
 

@@ -14,6 +14,7 @@ from newslynx.lib import dates
 from newslynx.views.decorators import load_user, load_org
 from newslynx.views.util import *
 from newslynx.tasks import facet
+from newslynx.tasks import ingest 
 
 # blueprint
 bp = Blueprint('events', __name__)
@@ -345,6 +346,19 @@ def search_events(user, org):
         resp['facets'] = facets
 
     return jsonify(resp)
+
+
+@bp.route('/api/v1/events', methods=['POST'])
+@load_user
+@load_org
+def create_event(user, org):
+    """
+    Create an event.
+    """
+    req_data = request_data()
+    req_data['org_id'] = org.id
+    e = ingest.event(req_data)
+    return jsonify(e)
 
 
 @bp.route('/api/v1/events/<int:event_id>', methods=['GET'])

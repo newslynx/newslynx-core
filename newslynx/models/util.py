@@ -38,8 +38,8 @@ def split_meta(obj, cols):
     Split out meta fields from core columns.
     """
     meta = obj.pop('meta', {})
-    for c in cols:
-        if c not in cols:
-            meta[c] = obj.pop(c)
+    for k in obj.keys():
+        if k not in cols:
+            meta[k] = obj.pop(k)
     obj['meta'] = meta
     return obj
