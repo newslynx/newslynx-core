@@ -1,6 +1,21 @@
 import logging
 
-logging.basicConfig(level=logging.INFO)
+from newslynx import settings
+
+LOG_LEVELS = {
+    'DEBUG': logging.DEBUG,
+    'INFO': logging.INFO,
+    'WARNING': logging.WARNING,
+    'ERROR': logging.ERROR,
+    'CRITICAL': logging.CRITICAL
+}
+
+log = logging.getLogger(__name__)
+log.addHandler(logging.basicConfig(
+    format='%(levelname)s - %(asctime)s (%(name)s) %(message)s',
+    level=LOG_LEVELS[getattr(settings, 'LOG_LEVEL', 'INFO').upper()],
+    datefmt='%Y-%m-%d %H:%M:%S'
+    ))
 
 # suppress tld logging
 tld_log = logging.getLogger('tldextract')
@@ -15,6 +30,7 @@ warnings.filterwarnings('ignore', category=SAWarning)
 
 # specific loggers
 requests_log = logging.getLogger("requests")
-requests_log.setLevel(logging.WARNING)
+requests_log.setLevel(logging.ERROR)
 
 urllib3_log = logging.getLogger("urllib3")
+urllib3_log.setLevel(logging.ERROR)

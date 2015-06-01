@@ -61,7 +61,7 @@ def get_tags(user, org):
         tag_query = tag_query.filter(Tag.category == category)
 
     # sort
-    validate_fields(Tag, [sort_field], 'to sort by')
+    validate_fields(Tag, fields=[sort_field], suffix='to sort by')
     sort_obj = eval('Tag.{}.{}'.format(sort_field, direction))
     tag_query = tag_query.order_by(sort_obj())
 

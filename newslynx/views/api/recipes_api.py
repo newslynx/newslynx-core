@@ -33,7 +33,7 @@ def list_recipes(user, org):
 
     # validate sort fields are part of Recipe object.
     if sort_field:
-        validate_fields(Recipe, [sort_field], 'to sort by')
+        validate_fields(Recipe, fields=[sort_field], suffix='to sort by')
 
     # base query
     recipe_query = db.session.query(Recipe)\

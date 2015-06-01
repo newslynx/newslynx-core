@@ -2,14 +2,12 @@
 All utilities related to dates, times, and timezones.
 """
 from datetime import datetime, time
-import re
 
+from dateutil import parser
 import pytz
 import iso8601
 
-# a regex for parsing time of day (IE 12:00 AM, 12:00PM)
-# to a datetime.time object
-re_time = re.compile(r'([0-9]{1,2}):([0-9]{1,2}) (AM|PM)')
+from newslynx.lib.regex import re_time
 
 
 def now(ts=False):
@@ -23,19 +21,11 @@ def now(ts=False):
     return dt
 
 
-def ts(ts):
-    """
-    Get a datetime object from a timestamp.
-    """
-    dt = datetime.utcfromtimestamp(ts)
-    dt = dt.replace(tzinfo=pytz.utc)
-    return dt
-
-
-def parse_iso(ds, default_tz=pytz.utc):
+def parse_iso(ds):
     """
     parse an isodate/datetime string with or without
-    a datestring. Return None if there's an error.
+    a datestring.  Convert timzeone aware datestrings
+    to UTC.
     """
 
     try:
@@ -45,17 +35,70 @@ def parse_iso(ds, default_tz=pytz.utc):
 
     tz = getattr(dt, 'tzinfo', None)
     if tz:
-        if tz:
-            return datetime(
-                year=dt.year,
-                month=dt.month,
-                day=dt.day,
-                hour=getattr(dt, 'hour', 0),
-                minute=getattr(dt, 'minute',  0,),
-                second=getattr(dt, 'second', 0),
-                tzinfo=tz
-            )
+        dt = force_datetime(dt, tz=tz)
+        return convert_to_utc(dt)
 
+    return force_datetime(dt, tz=pytz.utc)
+
+
+def parse_ts(ts):
+    """
+    Get a datetime object from a utctimestamp.
+    """
+    # validate
+    if not len(str(ts)) >= 10 and str(ts).startswith('1'):
+        return
+    if not isinstance(ts, float):
+        try:
+            ts = float(ts)
+        except ValueError:
+            return
+    dt = datetime.utcfromtimestamp(ts)
+    dt = dt.replace(tzinfo=pytz.utc)
+    return dt
+
+
+def parse_any(ds):
+    """
+    Check for isoformat, timestamp, fallback to dateutil.
+    """
+    if not ds or not str(ds).strip():
+        return
+
+    dt = parse_iso(ds)
+    if dt:
+        return dt
+
+    dt = parse_ts(ds)
+    if dt:
+        return dt
+    try:
+        dt = parser.parse(ds)
+    except ValueError:
+        return
+
+    # convert to UTC
+    tz = getattr(dt, 'tzinfo', None)
+    if tz:
+        dt = force_datetime(dt, tz=tz)
+        return convert_to_utc(dt)
+
+    return force_datetime(dt, tz=pytz.utc)
+
+
+def convert_to_utc(dt):
+    """
+    Convert a timzeone-aware datetime object to UTC.
+    """
+    dt = dt.astimezone(pytz.utc)
+    dt = dt.replace(tzinfo=pytz.utc)
+    return dt
+
+
+def force_datetime(dt, tz):
+    """
+    Force a datetime.date into a datetime obj
+    """
     return datetime(
         year=dt.year,
         month=dt.month,
@@ -63,7 +106,7 @@ def parse_iso(ds, default_tz=pytz.utc):
         hour=getattr(dt, 'hour', 0),
         minute=getattr(dt, 'minute',  0,),
         second=getattr(dt, 'second', 0),
-        tzinfo=default_tz
+        tzinfo=tz
     )
 
 

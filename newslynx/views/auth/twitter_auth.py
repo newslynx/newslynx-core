@@ -16,15 +16,7 @@ from newslynx.views.util import obj_or_404, delete_response
 bp = Blueprint('auth_twitter', __name__)
 
 # check for necessary credentials
-try:
-    getattr(settings, 'TWITTER_API_KEY')
-    getattr(settings, 'TWITTER_API_SECRET')
-    TWT_ENABLED = True
-except:
-    TWT_ENABLED = False
-
-# auth flow
-if TWT_ENABLED:
+if settings.TWT_ENABLED:
 
     twt_oauth = OAuth1Service(
         name='twitter',
@@ -43,7 +35,7 @@ if TWT_ENABLED:
 def twt_auth(user, org):
 
     # raise error when configurations are not provided.
-    if not TWT_ENABLED:
+    if not settings.TWT_ENABLED:
         raise AuthError(
             'You must provide a "twitter_api_key" and "twitter_api_secret" in '
             'your NewsLynx configuration to enable Twitter integration. '

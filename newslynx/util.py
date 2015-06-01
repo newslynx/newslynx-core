@@ -4,6 +4,8 @@ Utilities used throughout the module.
 import os
 import collections
 import random
+from uuid import uuid4
+from hashlib import md5
 
 from hashids import Hashids
 
@@ -45,5 +47,27 @@ def gen_hash_id(n=None):
     Generate a short hash id.
     """
     if not n:
-        n = random.choice(range(1, 1000000))
+        n = random.choice(range(1, 10000))
     return hashids.encode(n)
+
+
+def gen_uuid():
+    """
+    Generate a UUID.
+    """
+    s = str(uuid4())
+    return md5(s).hexdigest()
+
+
+def check_plugin(m, *plugins):
+    """"
+    Check if a plugin has been activated.
+    """
+    tests = []
+    for p in plugins:
+        # check for optional plugins
+        if hasattr(m, p) and getattr(m, p, None):
+            tests.append(True)
+        else:
+            tests.append(False)
+    return all(tests)

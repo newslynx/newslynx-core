@@ -1,34 +1,60 @@
 """
-All things related to author parsing.
+Parsing Authors from html meta-tags and strings
 This module was adapted from newspaper: http://github.com/codelucas/newspaper
 """
-from newslynx.lib.regex import *
-from newslynx.lib import html
+from bs4 import BeautifulSoup
 
-# settings
+from newslynx.lib import html
+from newslynx.lib.regex import (
+    re_by, re_name_token, re_digits,
+    re_initial, re_prefix_suffix
+)
+
 MIN_NAME_TOKENS = 2  # how short can a name be?
 MAX_NAME_TOKENS = 5  # how long can a name be?
 DELIM = ['and', '|', '&']
-ATTRS = ['name', 'rel', 'itemprop', 'class', 'id']
-VALS = ['author', 'byline', 'byl']
+
+PESSIMISTIC_TAGS = ['meta']
+OPTIMISTIC_TAGS = [
+    'a', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'span', 'p', 'meta', 'div'
+]
+TAG_ATTRS = [
+    'name', 'rel', 'itemprop', 'class', 'id'
+]
+TAG_VALS = [
+    'author', 'byline', 'byl', 'byline-author', 'post-byline',
+    'parsely-author'
+]
+
+# tokens indicative of non-authors (usually photographers)
+BAD_TOKENS = [
+    'getty', 'images', 'photo'
+]
 
 
-def from_html(h):
+def extract(
+        soup,
+        tags=PESSIMISTIC_TAGS,
+        attrs=TAG_ATTRS,
+        vals=TAG_VALS):
     """
-    Extract author attributes from meta tags.
+    Extract author attrs from meta tags.
     Only works for english articles.
     """
+
+    # soupify
+    if not isinstance(soup, BeautifulSoup):
+        soup = BeautifulSoup(soup)
 
     # Search popular author tags for authors
 
     matches = []
     _authors = []
-    soup = html.make_soup(h)
-
-    for attr in ATTRS:
-        for val in VALS:
-            found = soup.find_all('meta', {attr: val})
-            matches.extend(found)
+    for tag in tags:
+        for attr in attrs:
+            for val in vals:
+                found = soup.find_all(tag, {attr: val})
+                matches.extend(found)
 
     for match in matches:
         content = u''
@@ -41,12 +67,12 @@ def from_html(h):
             content = match.text or u''  # text_content()
 
         if len(content) > 0:
-            _authors.extend(from_string(content))
+            _authors.extend(parse(content))
 
-    return _format_authors(_authors)
+    return _format(_authors)
 
 
-def from_string(search_str):
+def parse(search_str):
     """
     Takes a candidate string and
     extracts out the name(s) in list form
@@ -73,7 +99,6 @@ def from_string(search_str):
         # check if the length of the name
         # and the token suggest an initial
         if _is_initial(curname, token):
-
             # upper case initial & increment
             token = token.upper()
             initial_count += 1
@@ -83,7 +108,9 @@ def from_string(search_str):
 
             # check valid name based on initial count
             if _end_name(curname, initial_count):
-                _authors.append(' '.join(curname))
+                name = ' '.join(curname)
+                if not any([t in name.lower() for t in BAD_TOKENS]):
+                    _authors.append(name)
 
                 # reset
                 initial_count = 0
@@ -96,23 +123,31 @@ def from_string(search_str):
     # One last check at end
     valid_name = (len(curname) >= MIN_NAME_TOKENS)
     if valid_name:
-        _authors.append(' '.join(curname))
+        name = ' '.join(curname)
+        if not any([t in name.lower() for t in BAD_TOKENS]):
+            _authors.append(name)
 
-    return _format_authors(_authors)
+    return _format(_authors)
 
 
 # format parsed authors
-def _format_authors(_authors):
+def _format(authors):
     """
-    Final formatting steps to parsed authors.
+    Final formatting / deduping steps to parsed authors.
     """
-    authors = []
-    uniq = list(set([a.lower().replace('.', '') for a in _authors if a != '']))
+    _authors = []
+    uniq = list(set([a.lower().replace('.', '')
+                     for a in authors if a != '']))
+    seen = []
+    for name in sorted(uniq, key=len):
 
-    for name in uniq:
-        authors.append(name.upper())
+        # dedupe multiple html tags with same
+        # author info
+        if not any([n in name for n in seen]):
+            seen.append(name)
+            _authors.append(name.upper())
 
-    return authors
+    return _authors
 
 
 def _match_initial(token):

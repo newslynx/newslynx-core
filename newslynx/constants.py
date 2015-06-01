@@ -18,10 +18,12 @@ EVENT_TYPES = [
     'promotion', 'alert', 'manual'
 ]
 
+EVENT_PROVENANCES = ['manual', 'recipe']
+
 EVENT_FACETS = [
     'tags', 'things', 'levels',
     'categories', 'sous_chefs',
-    'recipes', 'statuses', 'types'
+    'recipes', 'statuses', 'provenances'
 ]
 
 
@@ -33,11 +35,18 @@ THING_TYPES = [
     'interactive', 'podcast'
 ]
 
-THING_FACETS = [
-    'tags', 'events', 'levels',
-    'categories', 'sous_chefs',
-    'recipes', 'types', 'domains']
+THING_EVENT_FACETS = [
+    'events', 'categories', 'levels',
+    'event_statuses'
+]
 
+THING_FACETS = [
+    'tags', 'provenances',
+    'sous_chefs', 'recipes',
+    'types', 'domains'
+    ] + THING_EVENT_FACETS
+
+THING_PROVENANCES = ['manual', 'recipe']
 
 # SOUS CHEFS
 

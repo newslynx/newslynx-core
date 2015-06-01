@@ -83,9 +83,58 @@ newslynx runserver -d
 - [ ] Implement Event Creation API
 - [ ] Implement Metrics API:
     - [x] Figure out how to use `tablefunc` for pivot tables.
+    - [ ] Create metrics table which contains information
+          on each metric (name, timeseries agg method,
+          summary agg method, cumulative, metric 
+          category, level, etc)
+    - [ ] Faceted metrics only need to declare the facet 
+          name, not all their potential facet values.
+    - [ ] Sous Chefs that create metrics must declare
+          which metrics they create.
+    - [ ] When a recipe is created for a sous chef that 
+          creates metrics, these metrics should be created for the associated organization
+    - [ ] When an org adds/modifies a calculated metric 
+          these metrics must be immediately created and 
+          all of their views / reports must be immediately refreshed. This will obviously 
+          happen in a background task.
+    - [ ] Upon subsequent view refreshes, calculated
+          metrics must be included.
+    - [ ] Timeseries Metrics for things will only be   
+          collected 30 days after publication. After 
+          this period an article moves into an "archived"
+          state. 
+    - [ ] Each Organization should have the following 
+          views/apis with these respective 
+          functionalites:
+          - [ ] Timeseries Aggregations
+             - [ ] Thing level 
+                - [ ] By hour + day
+             - [ ] Tag Level (subsequent aggregations of things)
+                - [ ] By hour + day, month
+             - [ ] Org Level (This should include 
+                   summaries of thing-level statistics,
+                   tag-level statistics, and event-level 
+                   statistics)
+                - [ ] By hour + day, month
+             - [ ] optionally return cumulative sums when
+                   appropriate
+          - [ ] Summary Stats
+            - [ ] Thing Level
+            - [ ] Tag Level
+            - [ ] Organization Level
+
 - [ ] Implement Reports API (Are these just metrics?)
-    - [ ] Figure out how to use `pypostgresql` for custom postgres functions.
-- [ ] Implement Task Queue (Celery, Redis?)
+    - [ ] reports are json objects
+    - [ ] reports can be rendered with html templates
+    - [ ] reports can be rendered as pdfs 
+        * see: https://pypi.python.org/pypi/pdfkit or
+         http://stackoverflow.com/questions/23359083/how-to-convert-webpage-into-pdf-by-using-python 
+         or just force user s to "save as pdf"
+    - [ ] reports can be saved + archived up to X days.
+    - [ ] reports can o
+- [ ] Implement Redis Task Queue For Recipe Running
+    - [ ] Create gevent worker class to avoid reliance on
+          os.fork
 - [ ] Implement Modular SousChefs
 - [x] Figure out how best to use OAuth tokens in SousChefs. Ideally these should not be exposed to users.
 - [x] Implement API client

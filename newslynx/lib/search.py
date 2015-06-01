@@ -28,11 +28,11 @@ import jellyfish
 from unidecode import unidecode
 
 from newslynx.exc import SearchStringError
+from newslynx.lib.regex import re_whitespace
 
 # sets for text cleaning.
 punct = frozenset(string.punctuation)
 digits = frozenset(string.digits)
-re_whitespace = re.compile(r'\s+')
 
 # operators
 ops = ['|', 'OR', 'AND', '&', '||', '&&']

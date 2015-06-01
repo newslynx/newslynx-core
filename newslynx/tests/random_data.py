@@ -123,7 +123,8 @@ def random_url(scheme="http", ext=None):
     u = "{}://example.com/{}".format(scheme, uuid.uuid1())
     if ext:
         return "{}.{}".format(u, ext)
-    return u
+    else:
+        return u + '/'
 
 
 def random_email():
@@ -310,6 +311,7 @@ def gen_events(org, recipes, impact_tags, things, n_events):
     events = []
     for i in xrange(n_events):
         status = choice(EVENT_STATUSES)
+        provenance = choice(EVENT_PROVENANCES)
         r = choice(recipes)
         authors = random_authors(4)
 
@@ -320,17 +322,22 @@ def gen_events(org, recipes, impact_tags, things, n_events):
             title=random_text(20),
             description=random_text(100),
             url=random_url(),
-            img_url=random_url(ext='.jpg'),
-            text=random_text(500),
+            img_url=random_url(ext='pg'),
+            content=random_text(500),
             created=random_date(10, 100),
             updated=random_date(1, 9),
             authors=authors,
             status=status,
+            provenance=provenance,
             meta=random_meta())
 
         if status == 'approved':
             e.tags.append(choice(impact_tags))
             e.things.append(choice(things))
+
+        if provenance == 'manual':
+            e.recipe_id = None
+
         db_session.add(e)
         events.append(e)
     db_session.commit()
@@ -343,21 +350,26 @@ def gen_thing(org, recipes, subject_tags, creators):
     r = choice(recipes)
     st = choice(subject_tags)
     c = choice(creators)
+    provenance = choice(THING_PROVENANCES)
 
     t = Thing(
         org_id=org.id,
         recipe_id=r.id,
         url=random_url(),
         type=choice(THING_TYPES),
+        provenance=provenance,
         created=random_date(10, 100),
         updated=random_date(1, 9),
         domain='example.com',
         title=random_text(20),
         byline='By {}'.format(c.name),
         description=random_text(100),
-        text=random_text(500),
-        img_url=random_url(ext='.jpg'),
+        content=random_text(500),
+        img_url=random_url(ext='jpg'),
         meta=random_meta())
+
+    if provenance == 'manual':
+        t.recipe_id = None
 
     t.tags.append(st)
     t.creators.append(c)
@@ -437,8 +449,16 @@ def main(
     if verbose:
         print "generating {} events".format(n_events)
 
+    # generate links
+    if verbose:
+        print "generating in/out links"
+    for thing in things:
+        t = choice(things)
+        thing.out_links.append(t)
+
     # generate events
     gen_events(org, recipes, impact_tags, things, n_events)
+    db_session.commit()
 
     if verbose:
         print "generating views."

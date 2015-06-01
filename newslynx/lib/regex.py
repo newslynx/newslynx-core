@@ -1,22 +1,10 @@
 """
-All utilities related to regexes and
-a big ugly library of them.
-
+A big ugly library of regexes
 """
 import re
 
-# hack to check for regex type
-RE_TYPE = type(re.compile(r''))
-
-
-def compile_regex(r, flags=None):
-    """
-    a helper for building a regex or not.
-    """
-    if isinstance(r, RE_TYPE):
-        return r
-    else:
-        return re.compile(r, flags=flags)
+# ETC #
+re_whitespace = re.compile(r'\n|\t|\r|\s+')
 
 # NAMES #
 
@@ -36,6 +24,11 @@ re_prefix_suffix = re.compile(r"""
   (^V(\.)?$)                            # V
 """, re.VERBOSE)
 
+# DATES
+
+# a regex for parsing time of day (IE 12:00 AM, 12:00PM)
+# to a datetime.time object
+re_time = re.compile(r'([0-9]{1,2}):([0-9]{1,2}) (AM|PM)')
 
 # URLS #
 
@@ -59,7 +52,7 @@ re_url_date = re.compile(r"""
 """, flags=re.VERBOSE)
 
 # match a bitly-ish shorturl
-re_short_url = re.compile(r"""                   
+re_short_url = re.compile(r"""
   ^(                      # start group
     (https?://)?          # optional scheme
     ([a-z1-9]+\.)?        # optional sub domain
@@ -69,7 +62,7 @@ re_short_url = re.compile(r"""
 """, re.VERBOSE | re.IGNORECASE)
 
 # match a bitly-ish shorturl in text
-re_short_url_text = re.compile(r"""                   
+re_short_url_text = re.compile(r"""
    (                      # start group
     (https?://)           # scheme
     ([a-z1-9]+\.)?        # optional sub domain
@@ -82,7 +75,7 @@ re_short_url_text = re.compile(r"""
 re_http = re.compile(r'^http(s)?')
 re_html = re.compile(r'(index\.)?htm(l)?$')
 re_index_html = re.compile(r'index\.htm(l)?$')
-re_www = re.compile(r'^www\.')
+re_www = re.compile(r'www\.')
 re_slug = re.compile(r'[^\sA-Za-z0-9]+')
 re_slug_end = re.compile(r'(^[\-]+)|([\-]+)$')
 re_url = re.compile(r'https?://[^\s\'\"]+')

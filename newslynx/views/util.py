@@ -198,11 +198,11 @@ def listify_data_arg(name):
 # Validation
 
 
-def validate_fields(obj, fields=[], suffix='to select by'):
+def validate_fields(obj, fields=[], incl=[], suffix='to select by'):
     """
     check a list of fields against column names.
     """
-    columns = get_table_columns(obj)
+    columns = get_table_columns(obj, incl)
     bad_fields = []
     for field in fields:
         if field not in columns:
@@ -297,14 +297,36 @@ def validate_thing_types(values):
                            .format(', '.join(bad_values), msg, THING_TYPES))
 
 
+def validate_thing_provenances(value):
+    """
+    check a list of values against Thing provenances.
+    """
+    if not value:
+        return
+    if value not in THING_PROVENANCES:
+        raise RequestError("'{}' is not a valid Thing provenance. Choose from {}."
+                           .format(value, provenances))
+
+
 def validate_event_status(value):
     """
-    check a list of values against thing types.
+    check a list of values against event statuses.
     """
     statuses = EVENT_STATUSES + ['all']
     if value not in statuses:
-        raise RequestError("'{}' is not a valid event status. Choose from {}."
+        raise RequestError("'{}' is not a valid Event status. Choose from {}."
                            .format(value, statuses))
+
+
+def validate_event_provenances(value):
+    """
+    check a list of values against event provenances.
+    """
+    if not value:
+        return
+    if value not in EVENT_PROVENANCES:
+        raise RequestError("'{}' is not a valid Event provenance. Choose from {}."
+                           .format(value, provenances))
 
 
 def validate_event_facets(values):

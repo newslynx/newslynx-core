@@ -1,12 +1,5 @@
 """
-All things related to url parsing normalization.
-"""
-
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
-"""
-Most of the code here was extracted from newspaper's module for cleaning urls.
+Most of the code here was modified from newspaper's module for cleaning urls.
 From: https://github.com/codelucas/newspaper/blob/master/newspaper/urls.py
 """
 
@@ -16,17 +9,13 @@ import httplib
 from urlparse import (
     urlparse, urljoin, urlsplit, urlunsplit, parse_qs
 )
-import logging
 
 import requests
-from requests.exceptions import HTTPError
 import tldextract
+from bs4 import BeautifulSoup
 
-from newslynx.core import bitly_api
-from newslynx.lib import html
 from newslynx.lib.regex import *
 from newslynx.lib import network
-
 
 # url chunks
 ALLOWED_TYPES = [
@@ -49,11 +38,11 @@ BAD_CHUNKS = [
 
 BAD_DOMAINS = [
     'amazon', 'doubleclick', 'twitter',
-    'facebook'
+    'facebook', 'pinterest', 'google',
 ]
 
 
-def prepare(raw_url, source=None, keep_params=('id')):
+def prepare(raw_url, source=None, canonicalize=True, keep_params=('id', 'p', 'v')):
     """
     Operations that unshorten a url, reconcile embeds,
     resolves redirects, strip parameters (with optional
@@ -63,42 +52,41 @@ def prepare(raw_url, source=None, keep_params=('id')):
     All urls that enter `merlynne` are first treated with this function.
     """
 
-    if not is_abs(raw_url):
-        domain = get_domain(raw_url)
-        path = get_path(raw_url)
-        raw_url = 'http://{}{}'.format(domain, path)
-
-    # check short urls
-    if is_short_url(raw_url):
-        url = unshorten(raw_url, attempts=2)
-
-    # reconcile embeds:
-    url = _reconcile_embed(raw_url)
-
     # check for redirects / non absolute urls
     if source:
         source_domain = get_domain(source)
         url = urljoin(source, url)
-        url = _redirect_back(url, source_domain)
+        url = redirect_back(url, source_domain)
 
-    # try to first get the canonical url
-    canonical = canonicalize(url)
-    if canonical is not False:
-        return canonical
+    # reconcile embeds:
+    url = reconcile_embed(raw_url)
+
+    # check short urls
+    if is_shortened(url):
+        url = unshorten(url, attempts=1)
+
+    # canonicalize
+    if try_canonical:
+        page_html = network.get_html(url)
+        if page_html:
+            soup = BeautifulSoup(page_html)
+            canonical = meta.canonical_url(soup)
+            if canonical:
+                return canonical
 
     # remove arguments w/ optional parameters to keep.
-    url = _remove_args(url, keep_params)
+    url = remove_args(url, keep_params)
 
     # remove index.html
     url = re_index_html.sub('', url)
 
-    # check for a filetype, otherwise ensure trailing slash
-    if not get_filetype(url):
-        if not url.endswith('/'):
-            url += '/'
+    # always remove trailing slash
+    if url.endswith('/'):
+        url = url[:-1]
     return url
 
 
+@network.retry(attempts=2)
 def unshorten(short_url, **kw):
 
     # set vars
@@ -120,7 +108,7 @@ def unshorten(short_url, **kw):
     while attempts < max_attempts:
         url = _unshorten(url, pattern=pattern)
         attempts += 1
-        if not is_short_url(url, pattern=pattern) and _is_valid(url):
+        if not is_shortened(url, pattern=pattern) and _is_valid(url):
             success = True
             break
         interval *= factor
@@ -138,11 +126,13 @@ def unshorten(short_url, **kw):
             return short_url
 
 
+@network.retry(attempts=2)
 def shorten(url):
     """
     Shorten a url on bitly, return it's new short url
     and global hash.
     """
+    from newslynx.core import bitly_api
     d = bitly_api.shorten(url)
     return {
         'short_url': d.get('url'),
@@ -150,37 +140,14 @@ def shorten(url):
     }
 
 
-def canonicalize(url):
-    """
-    Fetch the canonical url from a page.
-    """
-    canonical_url = False
-    content = network.get_html(url)
-    if not content:
-        raise HTTPError('No content extracted from {}'.format(url))
-    soup = html.make_soup(content)
-    canonical = soup.find("link", rel="canonical")
-
-    if canonical:
-        canonical_url = canonical['href']
-
-    else:
-        og_url = soup.find("meta", property="og:url")
-
-        if og_url:
-            canonical_url = og_url.get('content')
-
-    return canonical_url
-
-
-def get_domain(url, **kw):
+def get_domain(url):
     """
     Returns a url's domain, this method exists to
     encapsulate all url code into this file
     """
-    if url is None:
-        return None
-    return urlparse(url, **kw).netloc
+    domain = urlparse(url).netloc
+    domain = re_www.sub('', domain)
+    return domain
 
 
 def get_simple_domain(url):
@@ -217,7 +184,7 @@ def get_path(url, **kw):
 
 def get_slug(url):
     """
-    turn a url into a slug, removing (index).html 
+    turn a url into a slug, removing (index).html
     """
     url = get_path(url.decode('utf-8', 'ignore'))
     url = re_html.sub('', url).strip().lower()
@@ -392,7 +359,7 @@ def is_article(url, pattern=None):
 # SHORT DOMAINS #
 
 
-def is_short_url(url, pattern=None):
+def is_shortened(url, pattern=None):
     """
     test url for short links, allow str / list / retype's and passing in custom urls
     """
@@ -423,35 +390,42 @@ def is_abs(url):
     return re_abs_url.search(url.lower()) is not None
 
 
-def from_string(string, dedupe=True):
+def from_string(string, dedupe=True, source=None):
     """
     get urls from input string
     """
     urls = re_url.findall(string)
-    short_urls = [g[0] for g in re_short_url_text.findall(string)]
-    final_urls = urls + short_urls
+    urls += [g[0] for g in re_short_url_text.findall(string)]
+    final_urls = []
+    if source:
+        for url in urls:
+            if not is_abs(url):
+                url = urljoin(source, url)
+            final_urls.append(url)
+    else:
+        final_urls = urls
+
     if dedupe:
         return list(set(final_urls))
     else:
         return final_urls
 
 
-def from_html(htmlstring, domain=None, dedupe=True):
+def from_html(htmlstring, source=None, dedupe=True):
     """
     Extract urls from htmlstring, optionally reconciling
     relative urls
     """
     final_urls = []
 
-    soup = html.make_soup(htmlstring)
+    soup = BeautifulSoup(htmlstring)
 
     for a in soup.find_all('a'):
         href = a.attrs.get('href', None)
         if href:
             if not is_abs(href):
-                if domain:
-                    href = urljoin(domain, href)
-
+                if source:
+                    href = urljoin(source, href)
             final_urls.append(href)
 
     if dedupe:
@@ -460,7 +434,7 @@ def from_html(htmlstring, domain=None, dedupe=True):
         return final_urls
 
 
-def _remove_args(url, keep_params=(), frags=False):
+def remove_args(url, keep_params=('id', 'p'), frags=False):
     """
     Remove all param arguments from a url.
     """
@@ -477,7 +451,7 @@ def _remove_args(url, keep_params=(), frags=False):
     return urlunsplit(parsed[:3] + (filtered_query,) + frag)
 
 
-def _redirect_back(url, source_domain=None):
+def redirect_back(url, source_domain=None):
     """
     Some sites like Pinterest have api's that cause news
     args to direct to their site with the real news url as a
@@ -499,7 +473,7 @@ def _redirect_back(url, source_domain=None):
     return url
 
 
-def _reconcile_embed(url):
+def reconcile_embed(url):
     """
     make an embedded movie url like this:
     //www.youtube.com/embed/vYNnPx8fZBs
@@ -562,32 +536,33 @@ def _bypass_bitly_warning(url):
     """
     r = requests.get(url)
     if r.status_code == 200:
-        soup = html.make_soup(r.content)
+        soup = BeautifulSoup(r.content)
         a = soup.find('a', {'id': 'clickthrough'})
         return a.attrs.get('href')
 
     return url
 
 
+@network.retry(attempts=2)
 def _unshorten(url, pattern=None):
     """
-    quad-method approach to unshortening a url
+    dual-method approach to unshortening a url
     """
 
     # method 1, get location
     url = _get_location(url)
-    if not is_short_url(url, pattern=pattern):
+    if not is_shortened(url, pattern=pattern):
         return url
 
     # check if there's a bitly warning.
     if re_bitly_warning.search(url):
         url = _bypass_bitly_warning(url)
-        if not is_short_url(url, pattern=pattern):
+        if not is_shortened(url, pattern=pattern):
             return url
 
     # method 2, use longurl.com
     url = _long_url(url)
-    if not is_short_url(url, pattern=pattern):
+    if not is_shortened(url, pattern=pattern):
         return url
 
     # return whatever we have

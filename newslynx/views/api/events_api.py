@@ -1,7 +1,9 @@
-import gevent
+from gevent.pool import Pool
+
+import copy
+import logging
 
 from flask import Blueprint
-from sqlalchemy import func, desc
 from pprint import pprint
 
 from newslynx.core import db
@@ -14,13 +16,16 @@ from newslynx.lib import dates
 from newslynx.views.decorators import load_user, load_org
 from newslynx.views.util import *
 from newslynx.tasks import facet
-from newslynx.tasks import ingest 
+from newslynx.tasks import ingest
+from newslynx.constants import EVENT_FACETS
 
 # blueprint
 bp = Blueprint('events', __name__)
 
+log = logging.getLogger(__name__)
 
 # utils
+event_facet_pool = Pool(len(EVENT_FACETS))
 
 
 def apply_event_filters(q, **kw):
@@ -42,6 +47,9 @@ def apply_event_filters(q, **kw):
     # apply status filter
     if kw['status'] != 'all':
         q = q.filter(Event.status == kw['status'])
+
+    if kw['provenance']:
+        q = q.filter(Event.provenance == kw['provenance'])
 
     # apply date filters
     if kw['created_after']:
@@ -147,6 +155,7 @@ def search_events(user, org):
         updated_after  | isodate to filter results after
         updated_before | isodate to filter results before
         status         | ['pending', 'approved', 'deleted']
+        provenance     | ['recipe', 'manual']
         facets         | a comma-separated list of facets to include, default=all
         tag            | a comma-separated list of tags to filter by
         categories     | a comma-separated list of tag_categories to filter by
@@ -159,7 +168,7 @@ def search_events(user, org):
 
     # parse arguments
 
-    # store raw kwargs for generating pagination urls..
+    # store raw kwargs for generating pagination urls
     raw_kw = dict(request.args.items())
     raw_kw['apikey'] = user.apikey
     raw_kw['org'] = org.id
@@ -198,6 +207,7 @@ def search_events(user, org):
         updated_after=arg_date('updated_after', default=None),
         updated_before=arg_date('updated_before', default=None),
         status=arg_str('status', default='all'),
+        provenance=arg_str('provenance', default=None),
         facets=arg_list('facets', default=[], typ=str),
         include_categories=include_categories,
         exclude_categories=exclude_categories,
@@ -219,18 +229,18 @@ def search_events(user, org):
 
     # validate sort fields are part of Event object.
     if kw['sort_field'] and kw['sort_field'] != 'relevance':
-        validate_fields(Event, [kw['sort_field']], 'to sort by')
+        validate_fields(Event, fields=[kw['sort_field']], suffix='to sort by')
 
     # validate select fields.
     if kw['fields']:
-        validate_fields(Event, kw['fields'], 'to select by')
+        validate_fields(Event, fields=kw['fields'], suffix='to select by')
 
     validate_tag_categories(kw['include_categories'])
     validate_tag_categories(kw['exclude_categories'])
     validate_tag_levels(kw['include_levels'])
     validate_tag_levels(kw['exclude_levels'])
     validate_event_status(kw['status'])
-    validate_event_facets(kw['facets'])
+    validate_event_provenances(kw['provenance'])
 
     # base query
     event_query = Event.query
@@ -248,76 +258,25 @@ def search_events(user, org):
         sort_obj = eval('Event.{sort_field}.{direction}'.format(**kw))
         event_query = event_query.order_by(sort_obj())
 
+    # facets
+    validate_event_facets(kw['facets'])
+
     if len(kw['facets']):
 
-        # test for all facets here.
-        all_facets = 'all' in kw['facets']
-
-        # dict of results
-        facets = {}
+        if 'all' in kw['facets']:
+            kw['facets'] = copy.copy(EVENT_FACETS)
 
         # get all event ids for computing counts
         event_ids = [e[0] for e in event_query.with_entities(Event.id).all()]
 
-        # excecute count queries
-        queries = []
+        # pooled facet function
+        def fx(by):
+            return by, facet.events(by, event_ids)
 
-        # events by recipes
-        if 'recipes' in kw['facets'] or all_facets:
-            def q_recipes():
-                facets['recipes'] = facet.events_by_recipes(event_ids)
-            queries.append(gevent.spawn(q_recipes))
-
-        # events by tag
-        if 'tags' in kw['facets'] or all_facets:
-            def q_tags():
-                facets['tags'] = facet.events_by_tags(event_ids)
-            queries.append(gevent.spawn(q_tags))
-
-        # events by tag category
-        if 'categories' in kw['facets'] or all_facets:
-            def q_tag_categories():
-                facets['categories'] = \
-                    facet.events_by_tag_categories(event_ids)
-            queries.append(gevent.spawn(q_tag_categories))
-
-        # events by level
-        if 'levels' in kw['facets'] or all_facets:
-            def q_tag_levels():
-                facets['levels'] = \
-                    facet.events_by_tag_levels(event_ids)
-            queries.append(gevent.spawn(q_tag_levels))
-
-        # events by SousChef
-        if 'sous_chefs' in kw['facets'] or all_facets:
-            def q_sous_chefs():
-                facets['sous_chefs'] = \
-                    facet.events_by_sous_chefs(event_ids)
-            queries.append(gevent.spawn(q_sous_chefs))
-
-        # events by things
-        if 'things' in kw['facets'] or all_facets:
-            def q_things():
-                facets['things'] = \
-                    facet.events_by_things(event_ids)
-            queries.append(gevent.spawn(q_things))
-
-        # events by statuses
-        if 'statuses' in kw['facets'] or all_facets:
-            def q_statuses():
-                facets['statuses'] = \
-                    facet.events_by_statuses(event_ids)
-            queries.append(gevent.spawn(q_statuses))
-
-        # events by statuses
-        if 'types' in kw['facets'] or all_facets:
-            def q_types():
-                facets['types'] = \
-                    facet.events_by_types(event_ids)
-            queries.append(gevent.spawn(q_types))
-
-        # execute facets
-        gevent.joinall(queries)
+        # dict of results
+        facets = {}
+        for by, result in event_facet_pool.imap_unordered(fx, kw['facets']):
+            facets[by] = result
 
     # paginate event_query
     events = event_query\

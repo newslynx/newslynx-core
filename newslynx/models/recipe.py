@@ -213,7 +213,7 @@ class Recipe(db.Model):
     metrics = db.relationship(
         'Metric', backref=db.backref('recipe', lazy='joined'), lazy='dynamic')
     sous_chef = db.relationship(
-        'SousChef', backref=db.backref('recipes', lazy='joined'), lazy='joined')
+        'SousChef', backref=db.backref('recipes', lazy='joined', cascade="all, delete-orphan"), lazy='joined')
     user = db.relationship(
         'User', backref=db.backref('recipes', lazy='dynamic'), lazy='joined')
 
@@ -225,7 +225,7 @@ class Recipe(db.Model):
         """
         A recipe must be initialized with an existing sous chef.
         """
-        status = recipe.get('status')
+        status = recipe.get('status', 'stable')
         sc = sous_chef.to_dict()
         kw, parsed_options = validate_recipe(
             sc, recipe, status == 'uninitialized')

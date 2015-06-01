@@ -1,3 +1,7 @@
+# gevent patching
+import sys
+if 'threading' in sys.modules:
+    sys.modules.pop('threading')
 from gevent.monkey import patch_all
 patch_all()
 from psycogreen.gevent import patch_psycopg
@@ -16,9 +20,12 @@ from sqlalchemy.orm import scoped_session, sessionmaker
 # from werkzeug.contrib.cache import RedisCache
 import redis
 from embedly import Embedly
-import bitly_api
+import bitly_api as bitly
 
 from newslynx import settings
+
+# import logs module to set handler
+from newslynx import logs
 
 # Flask Application
 app = Flask(__name__)
@@ -77,9 +84,11 @@ migrate = Migrate(app, db)
 # gzip compression
 Compress(app)
 
-# Bitly
-bitly_api = bitly_api.Connection(
-    access_token=settings.BITLY_API_KEY)
+# optional bitly api for shortening
+if settings.BITLY_ENABLED:
+    bitly_api = bitly.Connection(
+        access_token=settings.BITLY_API_KEY)
 
-# Embedly
-embedly_api = Embedly(settings.EMBEDLY_API_KEY)
+# optional embedly api for shortening
+if settings.EMBEDLY_ENABLED:
+    embedly_api = Embedly(settings.EMBEDLY_API_KEY)

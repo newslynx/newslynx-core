@@ -4,7 +4,7 @@ import logging
 from flask import request
 from werkzeug.exceptions import HTTPException
 
-from newslynx.core import app, db
+from newslynx.core import app, db, db_session
 from newslynx.exc import (
     AuthError, RequestError, ForbiddenError, NotFoundError,
     SousChefSchemaError, ConfigError, SearchStringError)
@@ -130,3 +130,8 @@ def end_timing(response):
         log.info('Request to \'%s\' (args: %r) took: %dms',
                  request.path, request.args.items(), duration)
     return response
+
+
+@app.teardown_appcontext
+def shutdown_sessions(exception=None):
+    db_session.remove()

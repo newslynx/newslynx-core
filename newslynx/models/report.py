@@ -1,5 +1,7 @@
 from sqlalchemy.dialects.postgresql import JSON
 
+from jinja2 import Template
+
 from newslynx.core import db
 from newslynx.lib import dates
 
@@ -13,24 +15,32 @@ class Report(db.Model):
         db.Integer, db.ForeignKey('orgs.id'), index=True)
     name = db.Column(db.Text, index=True)
     created = db.Column(db.DateTime(timezone=True), index=True)
-    schema = db.Column(JSON) # dynamically generated.
-    value = db.Column(JSON)
+    template = db.Column(db.Text)
+    data = db.Column(JSON)
 
     def __init__(self, **kw):
         self.org_id = kw.get('org_id')
         self.name = kw.get('name')
         self.created = kw.get('created', dates.now())
-        self.schema = kw.get('schema')
-        self.value = kw.get('value')
+        self.template = kw.get('template', None)
+        self.data = kw.get('data')
 
     def to_dict(self):
         return {
             'id': self.id,
+            'org_id': self.org_id,
             'name': self.name,
             'created': self.created,
-            'schema': self.schema,
-            'value': self.value
+            'has_template': self.template is not None,
+            'data': self.data
         }
+
+    def render(self):
+        """
+        Render the data as html.
+        """
+        t = Template(self.template)
+        return t.render(data=self.data)
 
     def __repr__(self):
         return "<Report %r / %r >" % (self.org_id, self.name)

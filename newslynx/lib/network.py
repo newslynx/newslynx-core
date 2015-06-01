@@ -1,3 +1,6 @@
+"""
+All things related to requests
+"""
 from functools import wraps
 import logging
 import time
@@ -7,50 +10,6 @@ import requests
 from newslynx import settings
 
 log = logging.getLogger(__name__)
-
-
-def get_request_kwargs(timeout, useragent):
-    """This Wrapper method exists b/c some values in req_kwargs dict
-    are methods which need to be called every time we make a request
-    """
-    return {
-        'headers': {'User-Agent': useragent},
-        'timeout': timeout,
-        'allow_redirects': True
-    }
-
-
-def get_html(url, config=None, response=None):
-    """Retrieves the html for either a url or a response object. All html
-    extractions MUST come from this method due to some intricies in the
-    requests module. To get the encoding, requests only uses the HTTP header
-    encoding declaration requests.utils.get_encoding_from_headers() and reverts
-    to ISO-8859-1 if it doesn't find one. This results in incorrect character
-    encoding in a lot of cases.
-    """
-    FAIL_ENCODING = 'ISO-8859-1'
-    useragent = settings.BROWSER_USER_AGENT
-    timeout = settings.BROWSER_TIMEOUT
-
-    if response is not None:
-        if response.encoding != FAIL_ENCODING:
-            return response.text
-        return response.content
-
-    try:
-        html = None
-        response = requests.get(
-            url=url, **get_request_kwargs(timeout, useragent))
-        if response.encoding != FAIL_ENCODING:
-            html = response.text
-        else:
-            html = response.content
-        if html is None:
-            html = ''
-        return html
-    except Exception as e:
-        log.debug('%s on %s' % (e, url))
-        return ''
 
 
 def retry(*dargs, **dkwargs):
@@ -127,8 +86,49 @@ def retry(*dargs, **dkwargs):
                 elif not err:
                     break
 
-                return r
+            return r
 
-            return wrapped_func
+        return wrapped_func
 
-        return wrapper
+    return wrapper
+
+
+def get_request_kwargs(timeout, useragent):
+    """This Wrapper method exists b/c some values in req_kwargs dict
+    are methods which need to be called every time we make a request
+    """
+    return {
+        'headers': {'User-Agent': useragent},
+        'timeout': timeout,
+        'allow_redirects': True
+    }
+
+
+@retry(attempts=3)
+def get_html(url, config=None, response=None):
+    """Retrieves the html for either a url or a response object. All html
+    extractions MUST come from this method due to some intricies in the
+    requests module. To get the encoding, requests only uses the HTTP header
+    encoding declaration requests.utils.get_encoding_from_headers() and reverts
+    to ISO-8859-1 if it doesn't find one. This results in incorrect character
+    encoding in a lot of cases.
+    """
+    FAIL_ENCODING = 'ISO-8859-1'
+    useragent = settings.BROWSER_USER_AGENT
+    timeout = settings.BROWSER_TIMEOUT
+
+    if response is not None:
+        if response.encoding != FAIL_ENCODING:
+            return response.text
+        return response.content
+
+    html = None
+    response = requests.get(
+        url=url, **get_request_kwargs(timeout, useragent))
+    if response.encoding != FAIL_ENCODING:
+        html = response.text
+    else:
+        html = response.content
+    if html is None:
+        html = ''
+    return html

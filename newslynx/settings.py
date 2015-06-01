@@ -7,6 +7,7 @@ import os
 
 from newslynx.exc import ConfigError
 from newslynx.lib.serialize import yaml_stream_to_obj
+from newslynx.util import check_plugin
 
 
 def load_config():
@@ -23,9 +24,9 @@ def load_config():
             'No NewsLynx Config could be found at {}'.format(config_file))
     try:
         config = yaml_stream_to_obj(open(config_file))
-    except Exception:
-        raise ConfigError('There was an error loding config: {}'
-                          .format(config_file))
+    except Exception as e:
+        raise ConfigError('There was an error loaing config "{}":\n{}'
+                          .format(config_file, e.message))
 
     # update with environment variables
     for name, value in sorted(os.environ.items()):
@@ -38,8 +39,15 @@ def load_config():
 # load config for file / environment
 config = load_config()
 
-
 # setting configurations as globals
 m = sys.modules[__name__]
 for name, value in config.items():
     setattr(m, name.upper(), value)
+
+# check for optional plugins
+FB_ENABLED = check_plugin(m, 'FACEBOOK_APP_ID', 'FACEBOOK_APP_SECRET')
+TWT_ENABLED = check_plugin(m, 'TWITTER_API_KEY', 'TWITTER_API_SECRET')
+GA_ENABLED = check_plugin(
+    m, 'GOOGLE_ANALYTICS_CLIENT_ID', 'GOOGLE_ANALYTICS_CLIENT_SECRET')
+EMBEDLY_ENABLED = check_plugin(m, 'EMBEDLY_API_KEY')
+BITLY_ENABLED = check_plugin(m, 'BITLY_API_KEY')

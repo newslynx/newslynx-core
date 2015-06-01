@@ -17,16 +17,9 @@ from newslynx.views.util import obj_or_404, delete_response
 # blueprint
 bp = Blueprint('auth_facebook', __name__)
 
-# check for necessary credentials
-try:
-    getattr(settings, 'FACEBOOK_APP_ID')
-    getattr(settings, 'FACEBOOK_APP_SECRET')
-    FB_ENABLED = True
-except:
-    FB_ENABLED = False
 
 # auth flow
-if FB_ENABLED:
+if settings.FB_ENABLED:
     _graph_url = 'https://graph.facebook.com/'
     fb_oauth = OAuth2Service(name='facebook',
                              authorize_url='https://www.facebook.com/dialog/oauth',
@@ -59,7 +52,7 @@ def fb_extend_oauth_token(temp_access_token):
 def fb_auth(user, org):
 
     # raise error when configurations are not provided.
-    if not FB_ENABLED:
+    if not settings.FB_ENABLED:
         raise RequestError(
             'You must provide a "facebook_app_id" and "facebook_app_secret" in '
             'your NewsLynx configuration to enable facebook integration. '

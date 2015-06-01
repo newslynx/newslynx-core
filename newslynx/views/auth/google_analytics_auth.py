@@ -19,15 +19,7 @@ from newslynx.views.util import obj_or_404, delete_response
 # blueprint
 bp = Blueprint('auth_google_analytics', __name__)
 
-# check for necessary credentials
-try:
-    getattr(settings, 'GOOGLE_ANALYTICS_CLIENT_ID')
-    getattr(settings, 'GOOGLE_ANALYTICS_CLIENT_SECRET')
-    GA_ENABLED = True
-except:
-    GA_ENABLED = False
-
-if GA_ENABLED:
+if settings.GA_ENABLED:
     # auth flow #
     ga_oauth = googleanalytics.auth.Flow(
         settings.GOOGLE_ANALYTICS_CLIENT_ID,
@@ -73,7 +65,7 @@ def ga_properties(tokens):
 def ga_auth(user, org):
 
     # raise error when configurations are not provided.
-    if not GA_ENABLED:
+    if not settings.GA_ENABLED:
         raise AuthError(
             'You must provide a "google_analytics_client_id" and '
             '"google_analytics_client_secret in your '
@@ -119,14 +111,14 @@ def ga_callback():
 
     # upsert Auths
     ga_token = Auth.query\
-        .filter_by(name='google_analytics', organization_id=org_id)\
+        .filter_by(name='google_analytics', org_id=org_id)\
         .first()
 
     if not ga_token:
 
         # create settings object
         ga_token = Auth(
-            organization_id=org_id,
+            org_id=org_id,
             name='google_analytics',
             value=tokens)
 

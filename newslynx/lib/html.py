@@ -3,13 +3,13 @@ All things related to html parsing.
 """
 
 from HTMLParser import HTMLParser
-from HTMLParser import HTMLParseError
-import re
-from bs4 import BeautifulSoup
-from urlparse import urlparse
 from urlparse import urljoin
 
-# html stripping
+import lxml
+import lxml.html.clean as clean
+from bs4 import BeautifulSoup
+
+from newslynx.lib import text
 
 
 class MLStripper(HTMLParser):
@@ -25,13 +25,6 @@ class MLStripper(HTMLParser):
         return ''.join(self.fed)
 
 
-def make_soup(htmlstring):
-    """
-    Helper.
-    """
-    return BeautifulSoup(htmlstring)
-
-
 def strip_tags(htmlstring):
     """
     string tags and clean text from html.
@@ -39,75 +32,60 @@ def strip_tags(htmlstring):
     s = MLStripper()
     s.feed(htmlstring)
     raw_text = s.get_data()
-    raw_text = re.sub(r'\n|\t|\r', ' ', raw_text)
-    return re.sub('\s+', ' ', raw_text).strip()
+    return text.prepare(raw_text)
 
 
-def get_meta(page_html, url):
+def is_html(htmlstring):
     """
-    get title, description, favicon, twitter card,
-    facebook open graph data
-
-    This is taken from https://github.com/nytlabs/pageinfo
-
-    Since every transformation step produce incomplete
-    versions of the same normalized schema, we
-    can optimistically try to get lots of things.
+    Detect whether a string is html or not.
     """
-    data = {'meta': {}}
-    data['url'] = url
-    data['title'] = None
-    data["summary"] = None
-    data['meta']["favicon"] = None
-    data['meta']["facebook"] = {}
-    data['meta']["twitter"] = {}
+    return lxml.html.fromstring(htmlstring).find('.//*') is not None
 
-    try:
-        soup = make_soup(page_html)
 
-        # get title
-        if soup.title.string:
-            data['title'] = soup.title.string
+def prepare(htmlstring, source_url, safe_attrs=['src', 'href']):
+    """
+    Cleanse an htmlstring of it's attributes,
+    absolutify images and links, ascii-dammify it,
+    and clean whitespace.
+    """
+    if not htmlstring:
+        return None
+    cleaner = clean.Cleaner(
+        safe_attrs_only=True, safe_attrs=frozenset(safe_attrs))
+    cleansed = cleaner.clean_html(htmlstring)
+    soup = make_abs(cleansed, source_url)
+    cleansed = get_inner(soup)
+    return text.prepare(cleansed)
 
-        # get favicon
-        parsed_uri = urlparse(url)
-        if soup.find("link", rel="shortcut icon"):
-            icon_rel = soup.find("link", rel="shortcut icon")["href"]
-            icon_abs = urljoin(url, icon_rel)
-            data['meta']["favicon"] = icon_abs
 
-        else:
-            domain = '{uri.scheme}://{uri.netloc}/'.format(uri=parsed_uri)
-            data['meta']["favicon"] = domain + 'favicon.ico'
+def make_abs(htmlstring, source_url):
+    """
+    Make "src" and "href" attributes absolute and format inner text
+    """
+    soup = BeautifulSoup(htmlstring)
 
-        # get description
-        if soup.find('meta', attrs={'name': 'description'}):
-            data["summary"] = soup.find(
-                'meta', attrs={'name': 'description'})["content"]
+    # links
+    for a in soup.find_all('a'):
+        href = a.attrs.get('href')
+        if href:
+            if href.startswith('/'):
+                a['href'] = urljoin(source_url, href)
+            elif href.startswith('#'):
+                a.attrs.pop('href')
 
-        # get facebook open graph data
-        if soup.find_all('meta', {"property": re.compile("^og")}):
-            for tag in soup.find_all('meta', {"property": re.compile("^og")}):
-                tag_type = tag['property']
-                data['meta']["facebook"][tag_type] = tag['content']
-                if tag_type == "og:description" and data["summary"] is None:
-                    data["summary"] = tag["content"]
+    # images
+    for img in soup.find_all('img'):
+        src = img.attrs.get('src')
+        if src and src.startswith('/'):
+            img['src'] = urljoin(source_url, src)
+    return soup
 
-        # get twitter card data
-        if soup.find_all('meta', attrs={'name': re.compile("^twitter")}):
-            for tag in soup.find_all('meta', attrs={'name': re.compile("^twitter")}):
-                tag_type = tag['name']
-                if 'content' in tag.attrs:
-                    data['meta']["twitter"][tag_type] = tag['content']
-                    if tag_type == "twitter:description" and data["summary"] is None:
-                        data["summary"] = tag["content"]
 
-        # make sure canonical exists, use og as backup
-        if not data['url'] or len(data['url']) == 0:
-            if 'og:url' in data['facebook']:
-                data['url'] = data['facebook']['og:url']
-
-        return data
-
-    except HTMLParseError:
-        return {"canonical": url, "error": "Error parsing page data"}
+def get_inner(soup_element):
+    """
+    Get the innerhtml from a BeautifulSoup element
+    """
+    # check if its an entire html or has been parsed by beautiful soup
+    if soup_element.find('body'):
+        soup_element = soup_element.find('body')
+    return u"".join([str(x).decode('utf-8', errors='ignore') for x in soup_element.contents])

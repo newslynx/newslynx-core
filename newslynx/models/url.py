@@ -1,7 +1,7 @@
 
 from newslynx.core import rds
 from newslynx import settings
-from newslynx.lib.url import prepare
+from newslynx.lib.url import prepare, is_abs
 
 
 class URLCache(object):
@@ -29,7 +29,11 @@ class URLCache(object):
         if not url:
 
             # standradize the url
-            url = prepare(raw_url)
+            if is_abs(raw_url):
+                source = raw_url
+            else:
+                source = None
+            url = prepare(raw_url, source=source)
 
             # don't fail.
             if not url:

@@ -1,8 +1,9 @@
 
 
-def get_table_columns(obj):
+def get_table_columns(obj, incl=[]):
     """ Get the column names for a Table object"""
-    return [str(c).split('.')[-1] for c in obj.__table__.columns]
+    cols = [str(c).split('.')[-1] for c in obj.__table__.columns]
+    return cols + incl
 
 
 def fetch_by_id_or_field(model, field, value, org_id=None):

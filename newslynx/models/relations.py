@@ -39,3 +39,18 @@ events_tags = join_table('events_tags', 'event', 'tag')
 
 # things <=> creators.
 things_creators = join_table('things_creators', 'thing', 'creator')
+
+# things <=> things.
+things_things = db.Table(
+    'things_things',
+    db.Column(
+        'from_thing_id',
+        db.Integer,
+        db.ForeignKey('things.id', onupdate='CASCADE'),
+        primary_key=True),
+    db.Column(
+        'to_thing_id',
+        db.Integer,
+        db.ForeignKey('things.id', onupdate='CASCADE'),
+        primary_key=True)
+    )

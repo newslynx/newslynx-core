@@ -1,7 +1,9 @@
-import gevent
+from gevent.pool import Pool
+
+from copy import copy
 
 from flask import Blueprint
-from sqlalchemy import func, text, desc, asc
+from sqlalchemy import func, text, desc, asc, distinct
 
 from newslynx.core import db
 from newslynx.exc import RequestError, NotFoundError
@@ -19,6 +21,7 @@ bp = Blueprint('things', __name__)
 
 
 # utils
+thing_facet_pool = Pool(len(THING_FACETS))
 
 
 # TODO: Generalize this with `apply_event_filters`
@@ -178,7 +181,7 @@ def search_things(user, org):
     # store raw kwargs for generating pagination urls..
     raw_kw = dict(request.args.items())
     raw_kw['apikey'] = user.apikey
-    raw_kw['org_id'] = org.id
+    raw_kw['org'] = org.id
 
     # special arg tuples
     sort_field, direction = \
@@ -208,6 +211,8 @@ def search_things(user, org):
         updated_after=arg_date('updated_after', default=None),
         updated_before=arg_date('updated_before', default=None),
         type=arg_str('type', default='all'),
+        provenance=arg_str('provenance', default=None),
+        incl_links=arg_bool('incl_links', default=False),
         facets=arg_list('facets', default=[], typ=str),
         include_categories=include_categories,
         exclude_categories=exclude_categories,
@@ -226,18 +231,18 @@ def search_things(user, org):
 
     # validate sort fields are part of Event object.
     if kw['sort_field'] and kw['sort_field'] != 'relevance':
-        validate_fields(Thing, [kw['sort_field']], 'to sort by')
+        validate_fields(Thing, fields=[kw['sort_field']], suffix='to sort by')
 
     # validate select fields.
     if kw['fields']:
-        validate_fields(Thing, kw['fields'], 'to select by')
+        validate_fields(Thing, fields=kw['fields'], suffix='to select by')
 
     validate_tag_categories(kw['include_categories'])
     validate_tag_categories(kw['exclude_categories'])
     validate_tag_levels(kw['include_levels'])
     validate_tag_levels(kw['exclude_levels'])
     validate_thing_types(kw['type'])
-    validate_thing_facets(kw['facets'])
+    validate_thing_provenances(kw['provenance'])
 
     # base query
     thing_query = Thing.query
@@ -257,71 +262,42 @@ def search_things(user, org):
         thing_query = thing_query.order_by(sort_obj())
 
     # facets
+    validate_thing_facets(kw['facets'])
     if kw['facets']:
 
-        # test for all facets here.
-        all_facets = 'all' in kw['facets']
-
-        facets = {}
+        # set all facets
+        if 'all' in kw['facets']:
+            kw['facets'] = copy(THING_FACETS)
 
         # get all thing ids for computing counts
-        filter_entities = thing_query.with_entities(Thing.id).all()
-        thing_ids = [f[0] for f in filter_entities]
+        thing_ids = thing_query.with_entities(Thing.id).all()
+        thing_ids = [t[0] for t in thing_ids]
 
-        # if we havent yet retrieved a list of event ids
+        # if we havent yet retrieved a list of event ids,
+        # fetch this list only if the facets that require them
+        # are included
         if not len(event_ids):
-            event_ids = db.session.query(things_events.c.event_id)\
-                .filter(things_events.c.thing_id.in_(thing_ids))\
-                .group_by(things_events.c.event_id)\
-                .all()
-            event_ids = [e[0] for e in event_ids]
+            if any([f in kw['facets'] for f in THING_EVENT_FACETS]):
+                event_ids = db.session.query(distinct(things_events.c.event_id))\
+                    .filter(things_events.c.thing_id.in_(thing_ids))\
+                    .group_by(things_events.c.event_id)\
+                    .all()
+                event_ids = [e[0] for e in event_ids]
 
-        # number of events associated with these things.
-        facets['events'] = len(event_ids)
+        # pooled facet function
+        def fx(by):
+            if by in THING_EVENT_FACETS:
+                if by == 'event_statuses':
+                    return 'event_statuses', facet.events('statuses', event_ids)
+                elif by == 'events':
+                    return by, len(event_ids)
+                return by, facet.events(by, event_ids)
+            return by, facet.things(by, thing_ids)
 
-        queries = []
-
-        if 'types' in kw['facets'] or all_facets:
-            def q_types():
-                facets['types'] = facet.things_by_types(thing_ids)
-            queries.append(gevent.spawn(q_types))
-
-        if 'domains' in kw['facets'] or all_facets:
-            def q_domains():
-                facets['domains'] = facet.things_by_domains(thing_ids)
-            queries.append(gevent.spawn(q_domains))
-
-        # things by recipes
-        if 'recipes' in kw['facets'] or all_facets:
-            def q_recipes():
-                facets['recipes'] = facet.things_by_recipes(thing_ids)
-            queries.append(gevent.spawn(q_recipes))
-
-        # things by tag
-        if 'tags' in kw['facets'] or all_facets:
-            def q_tags():
-                facets['tags'] = facet.things_by_tags(thing_ids)
-            queries.append(gevent.spawn(q_tags))
-
-        # events by tag category
-        if 'categories' in kw['facets'] or all_facets:
-            def q_categories():
-                facets['categories'] = facet.events_by_tag_categories(event_ids)
-            queries.append(gevent.spawn(q_categories))
-
-        # events by level
-        if 'levels' in kw['facets'] or all_facets:
-            def q_levels():
-                facets['levels'] = facet.events_by_tag_categories(event_ids)
-            queries.append(gevent.spawn(q_levels))
-
-        # things by task
-        if 'sous_chefs' in kw['facets'] or all_facets:
-            def q_sous_chefs():
-                facets['sous_chefs'] = facet.things_by_sous_chefs(thing_ids)
-            queries.append(gevent.spawn(q_sous_chefs))
-
-        gevent.joinall(queries)
+        # dict of results
+        facets = {}
+        for by, result in thing_facet_pool.imap_unordered(fx, kw['facets']):
+            facets[by] = result
 
     # paginate thing_query
     things = thing_query\
@@ -338,10 +314,10 @@ def search_things(user, org):
     if kw['fields']:
         things = [dict(zip(kw['fields'], r)) for r in things.items]
     else:
-        things = things.items
+        things = [t.to_dict(incl_links=kw['incl_links']) for t in things.items]
 
     resp = {
-        'results': things,
+        'things': things,
         'pagination': pagination,
         'total': total
     }
