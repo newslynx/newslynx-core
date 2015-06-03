@@ -1025,7 +1025,7 @@ location with the added query string parameter ``auth_success`` to indicate whet
 Revokes an organization's Google Analytics authorization.
 
 Params
-******
+********
 
 +--------------------+--------------------------------+------------------+----------------+
 | Parameter          |  Description                   |  Default         |  Required      |
@@ -1050,7 +1050,7 @@ Returns
 Authorizes Newslynx to access an organization's Twitter profile.
 
 Params
-******#
+*********
 
 +--------------------+--------------------------------+------------------+----------------+
 | Parameter          |  Description                   |  Default         |  Required      |
@@ -1067,7 +1067,7 @@ Params
 +--------------------+--------------------------------+------------------+----------------+
 
 Returns
-******
+********
 
 A :ref:`endpoints-auth-json` object or, if a ``redirect_uri`` is provided, a redirection to that 
 location with the added query string parameter ``auth_success`` to indicate whether or not the authorization request was successful.
@@ -1080,7 +1080,7 @@ location with the added query string parameter ``auth_success`` to indicate whet
 Revokes an organization's Twitter authorization.
 
 Params
-******
+********
 
 +--------------------+--------------------------------+------------------+----------------+
 | Parameter          |  Description                   |  Default         |  Required      |
@@ -1093,7 +1093,7 @@ Params
 +--------------------+--------------------------------+------------------+----------------+
 
 Returns
-******
+********
 
 ``STATUS_CODE`` - ``204``
 
@@ -1105,7 +1105,7 @@ Returns
 Authorizes Newslynx to access an organization's Facebook profile.
 
 Params
-******
+********
 
 +--------------------+--------------------------------+------------------+----------------+
 | Parameter          |  Description                   |  Default         |  Required      |
@@ -1122,10 +1122,10 @@ Params
 +--------------------+--------------------------------+------------------+----------------+
 
 Returns
-******
+********
 
 A :ref:`endpoints-auth-json` object or, if a ``redirect_uri`` is provided, a redirection to that 
-location with the added query string parameter ``auth_auth_success`` to indicate whether or not the authorization request was successful.
+location with the added query string parameter ``auth_success`` to indicate whether or not the authorization request was successful.
 
 .. _endpoints-auth-twitter-revoke:
 
@@ -1148,7 +1148,7 @@ Params
 +--------------------+--------------------------------+------------------+----------------+
 
 Returns
-******
+********
 
 ``STATUS_CODE`` - ``204``
 
@@ -1158,7 +1158,7 @@ Returns
 **Tags**
 ++++++++++++++++++
 
-The **Tags** API enables the listing / creating / updating / deleting of tags.
+The **Tags** API enables the listing, creating, updating, and deleting of tags.
 
 .. _endpoints-tags-json:
 
