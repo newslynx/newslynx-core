@@ -95,7 +95,7 @@ def convert_to_utc(dt):
     return dt
 
 
-def force_datetime(dt, tz):
+def force_datetime(dt, tz=None):
     """
     Force a datetime.date into a datetime obj
     """

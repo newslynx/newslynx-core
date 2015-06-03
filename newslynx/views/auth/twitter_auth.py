@@ -11,6 +11,7 @@ from newslynx.exc import AuthError, RequestError
 from newslynx.lib.serialize import jsonify
 from newslynx.views.decorators import load_user, load_org
 from newslynx.views.util import obj_or_404, delete_response
+from newslynx.lib import url
 
 # blueprint
 bp = Blueprint('auth_twitter', __name__)
@@ -43,7 +44,7 @@ def twt_auth(user, org):
             'an application on Twitter.')
 
     # get callback url
-    oauth_callback = url_for('oauth_twitter.twt_callback', _external=True)
+    oauth_callback = url_for('auth_twitter.twt_callback', _external=True)
     params = {'oauth_callback': oauth_callback}
 
     # make initial authentication request
@@ -58,23 +59,33 @@ def twt_auth(user, org):
     session['redirect_uri'] = request.args.get('redirect_uri')
 
     # redirect the user to the auth url.
-    return redirect(twt_oauth.get_authorize_url(data['oauth_token'], **params))
+    auth_url = twt_oauth.get_authorize_url(data['oauth_token'], **params)
+    return redirect(auth_url)
 
 
 @bp.route('/api/v1/auth/twitter/callback')
 def twt_callback():
 
+    # get redirect uri
+    redirect_uri = session.pop('redirect_uri')
+
     if 'twitter_oauth' not in session:
+        if redirect_uri:
+            uri = url.add_query_params(redirect_uri, auth_success='false')
+            return redirect(uri)
         raise RequestError(
             'An unkonwn error occurred during the twitter authentication process.')
 
     # get the request tokens from the session
     request_token, request_token_secret = session.pop('twitter_oauth')
     org_id = session.pop('org_id')
-    redirect_uri = session.pop('redirect_uri')
 
     # check to make sure the user authorized the request
     if not 'oauth_token' in request.args:
+        if redirect_uri:
+            uri = url.add_query_params(redirect_uri, auth_success='false')
+            return redirect(uri)
+
         raise RequestError(
             'An unkonwn error occurred during the twitter authentication process.')
 
@@ -95,14 +106,14 @@ def twt_callback():
 
     # upsert settings
     twt_token = Auth.query\
-        .filter_by(name='twitter', organization_id=org_id)\
+        .filter_by(name='twitter', org_id=org_id)\
         .first()
 
     if not twt_token:
 
         # create settings object
         twt_token = Auth(
-            organization_id=org_id,
+            org_id=org_id,
             name='twitter',
             value=tokens)
 
@@ -114,12 +125,13 @@ def twt_callback():
 
     # redirect to app
     if redirect_uri:
-        return redirect(redirect_uri)
+        uri = url.add_query_params(redirect_uri, auth_success='true')
+        return redirect(uri)
 
     return jsonify(twt_token)
 
 
-@bp.route('/api/v1/auth/twitter/revoke', methods=['GET'])
+@bp.route('/api/v1/auth/twitter/revoke', methods=['GET', 'DELETE'])
 @load_user
 @load_org
 def twt_revoke(user, org):
@@ -135,8 +147,4 @@ def twt_revoke(user, org):
     db.session.commit()
 
     # redirect to app
-    redirect_uri = request.args.get('redirect_uri')
-    if redirect_uri:
-        return redirect(redirect_uri)
-
     return delete_response()

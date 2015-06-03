@@ -61,7 +61,7 @@ def extract(source_url):
     if settings.EMBEDLY_ENABLED:
         data['content'] = content_via_embedly(canonical_url)
 
-    if data['content'] is None:
+    if not data['content']:
         data['content'] = content_via_readability(page_html, canonical_url)
 
     # extract content from article tag

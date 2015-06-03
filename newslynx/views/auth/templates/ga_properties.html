@@ -1,0 +1,26 @@
+<html>
+    <body>
+        <h2> Select which Google Analytics Profiles you'd like to track </h1>
+        <form id='properties'
+              method='post'
+              action={{postback_url}}
+              enctype='multipart/form-data'>
+            
+            {% for prop in properties %}
+                <h2>Profiles for: {{prop.property}}</h2>
+                <ul>
+                {% for profile in prop.profiles %}
+                    <li>
+                      <!-- We're hacking the form to accept grouped inputs
+                           By separating the property and profile with '||' -->
+                        <input type="checkbox"
+                           name='{{prop.property}}||{{profile}}'
+                           value="{{profile}}">{{profile}}</input>
+                    </li>
+                {% endfor %}
+                </ul>
+            {% endfor %}
+            <button type="submit" form="properties" value="Submit">Submit</button>
+        </form>
+    </body>
+</html>

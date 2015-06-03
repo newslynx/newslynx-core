@@ -27,7 +27,7 @@ class MLStripper(HTMLParser):
 
 def strip_tags(htmlstring):
     """
-    string tags and clean text from html.
+    String tags and clean text from html.
     """
     s = MLStripper()
     s.feed(htmlstring)
@@ -81,11 +81,11 @@ def make_abs(htmlstring, source_url):
     return soup
 
 
-def get_inner(soup_element):
+def get_inner(node):
     """
     Get the innerhtml from a BeautifulSoup element
     """
     # check if its an entire html or has been parsed by beautiful soup
-    if soup_element.find('body'):
-        soup_element = soup_element.find('body')
-    return u"".join([str(x).decode('utf-8', errors='ignore') for x in soup_element.contents])
+    if node.find('body'):
+        node = node.find('body')
+    return u"".join([str(x).decode('utf-8', errors='ignore') for x in node.contents])

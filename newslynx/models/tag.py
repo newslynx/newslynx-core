@@ -21,15 +21,15 @@ class Tag(db.Model):
         db.Integer, db.ForeignKey('orgs.id'), index=True)
     name = db.Column(db.Text)
     slug = db.Column(db.Text, index=True)
-    created = db.Column(db.DateTime(timezone=True), index=True)
-    updated = db.Column(db.DateTime(timezone=True), index=True)
+    created = db.Column(db.DateTime(timezone=True))
+    updated = db.Column(db.DateTime(timezone=True))
     color = db.Column(db.Text)
-    type = db.Column(ENUM(*TAG_TYPES, name='tag_type_enum'), index=True)
+    type = db.Column(ENUM(*TAG_TYPES, name='tag_type_enum'))
     category = db.Column(ENUM(*IMPACT_TAG_CATEGORIES, name='tag_categories_enum'))
     level = db.Column(ENUM(*IMPACT_TAG_LEVELS, name='tag_levels_enum'))
 
     __table_args__ = (
-        db.UniqueConstraint('org_id', 'name'),
+        db.UniqueConstraint('org_id', 'slug', 'type'),
     )
 
     def __init__(self, **kw):

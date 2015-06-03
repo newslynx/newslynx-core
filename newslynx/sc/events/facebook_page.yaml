@@ -1,5 +1,5 @@
 name: Facebook Page to Event
-slug: event-facebook-page
+slug: facebook-page-to-event
 description: Extracts events from a facebook page.
 runs: newslynx.sc.events.facebook.Page
 creates: event

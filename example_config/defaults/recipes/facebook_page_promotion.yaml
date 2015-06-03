@@ -1,6 +1,6 @@
-sous_chef: event-facebook-page
+sous_chef: facebook-page-to-event
 name: Facebook Page to Promotion Event
-slug: event-facebook-page-promotion
+slug: facebook-page-to-event-promotion
 status: uninitialized
 options:
     page_name: null

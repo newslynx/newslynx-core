@@ -13,6 +13,7 @@ from newslynx.views.util import register_blueprints
 from newslynx.views import api
 from newslynx.views import admin
 from newslynx.views import auth
+from newslynx import settings
 
 log = logging.getLogger(__name__)
 
@@ -125,7 +126,7 @@ def begin_timing():
 
 @app.after_request
 def end_timing(response):
-    if app.config.get('DEBUG_TIMING'):
+    if getattr(settings, 'LOG_TIMING', False):
         duration = (time() - request._begin_time) * 1000
         log.info('Request to \'%s\' (args: %r) took: %dms',
                  request.path, request.args.items(), duration)

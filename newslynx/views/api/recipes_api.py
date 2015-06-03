@@ -130,6 +130,11 @@ def update_recipe(user, org, recipe_id):
     if not r:
         raise RequestError('Recipe with id/slug {} does not exist.'
                            .format(recipe_id))
+    print "START"
+    print r.to_dict()
+
+    print "REQ DATA RAW"
+    print req_data
 
     req_data = request_data()
 
@@ -141,6 +146,9 @@ def update_recipe(user, org, recipe_id):
     ]
     for k in non_schema:
         req_data.pop(k, None)
+
+    print "REQ DATA CLEAN"
+    print req_data
 
     recipe, parsed_options = validate_recipe(
         r.sous_chef.to_dict(), req_data)
@@ -159,6 +167,9 @@ def update_recipe(user, org, recipe_id):
 
     # update pickled options
     r.set_pickle_opts(parsed_options)
+
+    print "END"
+    print r.to_dict()
 
     db.session.add(r)
     db.session.commit()

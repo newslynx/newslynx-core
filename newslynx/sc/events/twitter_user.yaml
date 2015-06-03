@@ -1,5 +1,5 @@
 name: Event from twitter user.
-slug: event-twitter-user
+slug: twitter-user-to-event
 description: Extracts events from a twitter user's timeline.
 runs: newslynx.sc.events.twitter.User
 creates: event

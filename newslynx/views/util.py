@@ -422,12 +422,20 @@ def urls_for_pagination(handler, total_results, **kw):
     else:
         kw['page'] = page + 1
         p['next'] = urljoin(settings.API_URL, url_for(handler, **kw))
+
         kw['page'] = page - 1
         p['prev'] = urljoin(settings.API_URL, url_for(handler, **kw))
 
     # if we're on the final page,
     if page >= total_pages:
         p.pop('next')
+
+    # always include first and last pages
+    kw['page'] = 1
+    p['first'] = urljoin(settings.API_URL, url_for(handler, **kw))
+
+    kw['page'] = total_pages
+    p['last'] = urljoin(settings.API_URL, url_for(handler, **kw))
 
     return p
 
@@ -464,7 +472,10 @@ def register_blueprints(app, *mods):
         package_name = mod.__name__
         package_path = mod.__path__[0]
         for fp in os.listdir(package_path):
-            if not fp.endswith('.pyc') and '__init__' not in fp:
+            if (not fp.endswith('.pyc') and
+                    '__init__' not in fp and
+                    'templates' not in fp):
+
                 name = fp.replace('.py', '')
                 m = importlib.import_module(
                     '%s.%s' % (package_name, name))

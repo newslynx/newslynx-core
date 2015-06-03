@@ -1,5 +1,5 @@
-name: Event from twitter list
-slug: event-twitter-list
+name: Twitter List To Event
+slug: twitter-list-to-event
 description: Extracts events from a twitter list.
 runs: newslynx.sc.events.twitter.List
 creates: event
@@ -30,13 +30,6 @@ options:
         required: false
         help:
             placeholder: "~fracking | drilling"
-
-    set_event_type:
-        type: text
-        default: alert
-        options: 
-            - alert
-            - promotion
 
     set_event_status:
         type: text

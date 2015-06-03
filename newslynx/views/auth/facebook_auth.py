@@ -13,6 +13,8 @@ from newslynx.lib.serialize import jsonify
 from newslynx.lib import dates
 from newslynx.views.decorators import load_user, load_org
 from newslynx.views.util import obj_or_404, delete_response
+from newslynx.lib import url
+
 
 # blueprint
 bp = Blueprint('auth_facebook', __name__)
@@ -41,7 +43,7 @@ def fb_extend_oauth_token(temp_access_token):
     }
     r = requests.get(url=url, params=params)
     token = parse_utf8_qsl(r.content)
-    token['expires'] = dates.ts(
+    token['expires'] = dates.parse_ts(
         dates.now(ts=True) + int(token['expires'])).isoformat()
     return token
 
@@ -59,7 +61,7 @@ def fb_auth(user, org):
             'See http://developers.facebook.com for details on how to create '
             'an application on Facebook.')
 
-    oauth_callback = url_for('oauth_facebook.fb_callback', _external=True)
+    oauth_callback = url_for('auth_facebook.fb_callback', _external=True)
     params = {'redirect_uri': oauth_callback}
 
     # set user creds on session
@@ -71,15 +73,20 @@ def fb_auth(user, org):
 
 @bp.route('/api/v1/auth/facebook/callback')
 def fb_callback():
-    # check to make sure the user authorized the request
-    if not 'code' in request.args:
-        raise AuthError('You did not authorize the request to facebook.')
 
     org_id = session.pop('org_id')
     redirect_uri = session.pop('redirect_uri')
 
+    # check to make sure the user authorized the request
+    if not 'code' in request.args:
+        if not redirect_uri:
+            raise AuthError('You did not authorize the request to facebook.')
+
+        uri = url.add_query_params(redirect_uri, auth_success='false')
+        return redirect(uri)
+
     # make a request for the access token credentials using code
-    authorize_uri = url_for('auth.fb_callback', _external=True)
+    authorize_uri = url_for('auth_facebook.fb_callback', _external=True)
     data = dict(code=request.args['code'], redirect_uri=authorize_uri)
 
     # get a temporary access token
@@ -88,14 +95,14 @@ def fb_callback():
 
     # upsert settings
     facebook_settings = Auth.query\
-        .filter_by(name='facebook', organization_id=org_id)\
+        .filter_by(name='facebook', org_id=org_id)\
         .first()
 
     if not facebook_settings:
 
         # create settings object
         facebook_settings = Auth(
-            organization_id=org_id,
+            org_id=org_id,
             name='facebook',
             value=tokens)
 
@@ -106,12 +113,13 @@ def fb_callback():
     db.session.commit()
 
     if redirect_uri:
-        return redirect(redirect_uri)
+        uri = url.add_query_params(redirect_uri, auth_success='true')
+        return redirect(uri)
 
     return jsonify(facebook_settings)
 
 
-@bp.route('/api/v1/auth/facebook/revoke', methods=['GET'])
+@bp.route('/api/v1/auth/facebook/revoke', methods=['GET', 'DELETE'])
 @load_user
 @load_org
 def fb_revoke(user, org):

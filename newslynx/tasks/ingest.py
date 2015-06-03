@@ -18,13 +18,127 @@ from newslynx.lib import dates
 from newslynx.lib import url
 from newslynx.lib import text
 from newslynx.lib import html
+from newslynx.lib import article
 
 
 # a pool to multithread url_cache.
 url_extract_pool = Pool(settings.URL_CACHE_POOL_SIZE)
 
+EXTRACTORS = {
+    'article': article.extract
+}
 
-def extract_urls(obj, fields, source=None):
+
+def event(o,
+          url_fields=['title', 'content', 'description'],
+          requires=['org_id', 'title', 'content'],
+          only_things=False):
+    """
+    Ingest an Event.
+    """
+
+    # check required fields
+    _check_requires(o, requires, type='Event')
+
+    # keep track if we detected things
+    has_things = False
+
+    # get org_id
+    org_id = o.get('org_id')
+
+    # validate status
+    if 'status' in o:
+        validate_event_status(o['status'])
+
+    # normalize the url
+    o['url'] = _prepare_url(o['url'])
+
+    # sanitize creation date
+    o['created'] = _prepare_date(o, 'created')
+
+    # sanitize text/html fields
+    o['title'] = _prepare_str(o, 'title')
+    o['description'] = _prepare_str(o, 'description')
+    o['content'] - _prepare_str(o, 'content')
+
+    # split out tags_ids + thing_ids
+    tag_ids = o.pop('tag_ids', [])
+    thing_ids = o.pop('thing_ids', [])
+
+    # determine event provenance
+    o = _event_provenance(o, org_id)
+
+    # split out meta fields
+    o = split_meta(o, get_table_columns(Event))
+
+    # see if the event already exists.
+    e = Event.query\
+        .filter_by(org_id=org_id)\
+        .filter_by(source_id=o['source_id'])\
+        .first()
+
+    # if not, create it
+    if not e:
+
+        # create event
+        e = Event(**o)
+
+    # else, update it
+    else:
+        for k, v in o.items():
+            setattr(e, k, v)
+        e.updated = dates.now()
+
+    # extract urls asynchronously.
+    urls = _extract_urls(o, url_fields, source=o.get('url'))
+
+    # detect things
+    if len(urls):
+
+        things = Thing.query\
+            .filter(or_(Thing.url.in_(urls), Thing.id.in_(thing_ids)))\
+            .filter(Thing.org_id == org_id)\
+            .all()
+
+        if len(things):
+            has_things = True
+
+            # upsert things.
+            for t in things:
+                if t.id not in e.thing_ids:
+                    e.things.append(t)
+
+    # associate tags
+    if len(tag_ids):
+        for tid in tag_ids:
+            tag = fetch_by_id_or_field(Tag, 'slug', tid, org_id)
+            if not tag:
+                raise RequestError(
+                    'Tag with id/slug {} does not exist.'.format(tid))
+            if tag:
+                if tag.type != 'impact':
+                    raise RequestError(
+                        'Only impact tags can be associated with Events. '
+                        'Tag {} is of type {}'.format(tag.id, tag.type))
+
+            # if there are tags, the status is approved
+            e.status = 'approved'
+
+            # upsert
+            if tag.id not in e.tag_ids:
+                e.tags.append(tag)
+
+    # dont commit event if we're only looking
+    # for events that link to things
+    if not has_things and only_things:
+        return
+
+    db.session.add(e)
+    db.session.commit()
+    return e
+
+
+def _extract_urls(obj, fields, source=None):
     """
     Extract, normalize, and dedupe urls from
     text/html fields in an object.
@@ -47,255 +161,94 @@ def extract_urls(obj, fields, source=None):
     return list(clean_urls)
 
 
-def event(raw_obj,
-          url_fields=['title', 'content', 'description'],
-          requires=['org_id', 'title', 'content'],
-          only_things=False):
+def _prepare_str(o, field):
     """
-    Ingest an Event.
+    Prepare text/html fi_streld
     """
+    if field not in o:
+        return None
+    if o[field] is None:
+        return None
+    if html.is_html(o[field]):
+        return html.prepare(o[field])
+    return text.prepare(o[field])
 
-    # keep track if we detected things
-    has_things = False
 
-    # get event columns.
-    cols = [
-        c for c in get_table_columns(Event)
-        if c not in ['meta']
-    ]
+def _prepare_date(o, field):
+    """
+    Prepare a date
+    """
+    if field not in o:
+        return None
+    if o[field] is None:
+        return None
+    dt = dates.parse_any(o[field])
+    if not dt:
+        raise RequestError(' {}: {} is an invalid date.'
+                           .format(field, o[field]))
+    return dt
 
+
+def _prepare_url(o, field):
+    """
+    Prepare a url
+    """
+    if field not in o:
+        return None
+    if o[field] is None:
+        return None
+    return url_cache.get(o[field])
+
+
+def _check_requires(o, requires, type='Event'):
+    """
+    Check for presence of required fields.
+    """
     # check required fields
     for k in requires:
-        if k not in raw_obj:
+        if k not in o:
             raise RequestError(
-                "Missing '{}'. An Event Requires {}".format(k, requires))
-
-    # get org_id
-    org_id = raw_obj.get('org_id')
-
-    # check for tags_ids + thing_ids
-    tag_ids = raw_obj.pop('tag_ids', [])
-    thing_ids = raw_obj.pop('thing_ids', [])
-
-    # validate status
-    if 'status' in raw_obj:
-        validate_event_status(raw_obj['status'])
-
-    # if there are tags, the status is "approved"
-    if len(tag_ids):
-        raw_obj['status'] = 'approved'
-
-    # normalize the url
-    if raw_obj.get('url'):
-        raw_obj['url'] = url_cache.get(raw_obj['url'])
-
-    # check dates
-    if 'created' in raw_obj:
-        dt = dates.parse_any(raw_obj['created'])
-        if not dt:
-            raise RequestError('{} is an invalid date.'
-                               .format(raw_obj['created']))
-        raw_obj['created'] = dt
-
-    # sanitize text/html fields
-    raw_obj['title'] = text.prepare(raw_obj['title'])
+                "Missing '{}'. An {} Requires {}".format(k, type, requires))
 
 
-    # if there's not a recipe_id set a random source id +
-    # set the recipe_id as "-1" and preface the source_id
-    # as "manual"
-    if 'recipe_id' not in raw_obj:
-        raw_obj['source_id'] = "manual-{}".format(gen_uuid())
-        raw_obj['provenance'] = 'manual'
+def _event_provenance(o, org_id):
+    """
+    if there's not a recipe_id set a random source id +
+    set the recipe_id as "None" and preface the source_id
+    as "manual".
 
-    # if there is recipe_id, add in the
-    # sous-chef-name to ensure that there
-    # aren't duplicate events generated by
-    # multiple child recipes of the same
-    # sous-chef
+    if there is recipe_id, add in the
+    sous-chef-name to ensure that there
+    aren't duplicate events generated by
+    multiple child recipes of the same
+    sous-chef
+    """
+    if 'recipe_id' not in o:
+        o['source_id'] = "manual:{}".format(gen_uuid())
+        o['provenance'] = 'manual'
+        o['recipe_id'] = None
+
     else:
         # recipe-generated events must pass in a source id
-        if 'source_id' not in raw_obj:
+        if 'source_id' not in o:
             raise RequestError(
                 'Recipe-generated events must include a source_id.')
 
         # fetch the associated recipe
         r = Recipe.query\
-            .filter_by(id=raw_obj['recipe_id'])\
+            .filter_by(id=o['recipe_id'])\
             .filter_by(org_id=org_id)\
             .first()
 
         if not r:
             raise RequestError('Recipe id "{recipe_id}" does not exist.'
-                               .format(**raw_obj))
+                               .format(**o))
 
         # reformant source id.
-        raw_obj['source_id'] = "{}-{}"\
-            .format(r.sous_chef.slug, str(raw_obj['source_id']))
+        o['source_id'] = "{}:{}"\
+            .format(r.sous_chef.slug, str(o['source_id']))
 
         # set this event as non-manual
-        raw_obj['provenance'] = 'recipe'
+        o['provenance'] = 'recipe'
 
-    # split out meta fields
-    raw_obj = split_meta(raw_obj, cols)
-
-    # see if the event already exists.
-    e = Event.query\
-        .filter_by(org_id=org_id)\
-        .filter_by(source_id=raw_obj['source_id'])\
-        .first()
-
-    # if not, create it
-    if not e:
-
-        # create event
-        e = Event(**raw_obj)
-
-    # else, update it
-    else:
-        for k, v in raw_obj.items():
-            setattr(e, k, v)
-        e.updated = dates.now()
-
-    # extract urls asynchronously.
-    urls = extract_urls(raw_obj, url_fields, source=raw_obj.get('url'))
-
-    # detect things
-    if len(urls):
-
-        things = Thing.query\
-            .filter(or_(Thing.url.in_(urls), Thing.id.in_(thing_ids)))\
-            .filter(Thing.org_id == org_id)\
-            .all()
-
-        if len(things):
-            has_things = True
-
-            # upsert things.
-            for t in things:
-                if t.id not in e.thing_ids:
-                    e.things.append(t)
-
-    # upsert tags
-    if len(tag_ids):
-        for tid in tag_ids:
-            tag = fetch_by_id_or_field(Tag, 'slug', tid, org_id)
-            if tag:
-                if tag.type != 'impact':
-                    raise RequestError(
-                        'Only impact tags can be associated with Events.')
-                if tag.id not in e.tag_ids:
-                    e.tags.append(tag)
-
-    # dont commit event if we're only looking
-    # for events that link to things
-    if not has_things and only_things:
-        return
-
-    db.session.add(e)
-    db.session.commit()
-    return e
-
-
-def thing(raw_obj,
-          url_fields=['title', 'text', 'description'],
-          requires=['org_id', 'url', 'type']):
-
-    # get event columns.
-    cols = [
-        c for c in get_table_columns(Thing)
-        if c not in ['meta']
-    ]
-
-    # check required fields
-    for k in requires:
-        if k not in raw_obj:
-            raise RequestError(
-                "Missing '{}'. An Thing Requires {}".format(k, requires))
-
-    # get org_id
-    org_id = raw_obj.get('org_id')
-
-    # check for tags_ids + creators
-    tag_ids = raw_obj.pop('tag_ids', [])
-    creator_ids = raw_obj.pop('creator_ids', [])
-
-    # normalize the url
-    raw_obj['url'] = url_cache.get(raw_obj['url'])
-
-    # check dates
-    if 'created' in raw_obj:
-        dt = dates.parse_iso(raw_obj['created'])
-        if not dt:
-            raise RequestError('{} is an invalid isodate.'
-                               .format(raw_obj['created']))
-        raw_obj['created'] = dt
-
-    # remove updated
-    raw_obj.pop('updated')
-
-    # if there's not a recipe_id set the provenance
-    # as "manual"
-    if 'recipe_id' not in raw_obj:
-        raw_obj['provenance'] = 'manual'
-
-    # otherwise it's a recipe
-    else:
-        raw_obj['provenance'] = 'recipe'
-
-    # see if the event already exists.
-    e = Event.query\
-        .filter_by(org_id=org_id)\
-        .filter_by(source_id=raw_obj['source_id'])\
-        .first()
-
-    # if not, create it
-    if not e:
-
-        # create event
-        e = Event(**raw_obj)
-
-    # else, update it
-    else:
-        for k, v in raw_obj.items():
-            setattr(e, k, v)
-        e.updated = dates.now()
-
-    # extract urls asynchronously.
-    urls = extract_urls(raw_obj, fields=url_fields)
-
-    # detect things
-    if len(urls):
-
-        things = Thing.query\
-            .filter(or_(Thing.url.in_(urls), Thing.id.in_(thing_ids)))\
-            .filter(Thing.org_id == org_id)\
-            .all()
-
-        if len(things):
-            has_things = True
-
-            # upsert things.
-            for t in things:
-                if t.id not in e.thing_ids:
-                    e.things.append(t)
-
-    # upsert tags
-    if len(tag_ids):
-        for tid in tag_ids:
-            tag = fetch_by_id_or_field(Tag, 'slug', tid, org_id)
-            if tag:
-                if tag.type != 'impact':
-                    raise RequestError(
-                        'Only impact tags can be associated with Events.')
-                if tag.id not in e.tag_ids:
-                    e.tags.append(tag)
-
-    # dont commit event if we're only looking
-    # for events that link to things
-    if not has_things and only_things:
-        return
-
-    db.session.add(e)
-    db.session.commit()
-    return e
+    return o

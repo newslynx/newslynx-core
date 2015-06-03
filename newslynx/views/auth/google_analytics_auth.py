@@ -1,20 +1,28 @@
 from urlparse import urljoin
 
-from flask import (
-    Blueprint, request, session, redirect
-)
-
-## TODO: remove reliance on this library for oauth
+# TODO: remove reliance on this library for oauth
 import googleanalytics
 from googleanalytics.auth import Credentials
+from jinja2 import Template
+from flask import (
+    Blueprint, request, session, redirect, url_for
+)
 
 from newslynx import settings
 from newslynx.core import db
 from newslynx.models import Auth
-from newslynx.exc import AuthError, RequestError
+from newslynx.exc import AuthError, InternalServerError
 from newslynx.lib.serialize import jsonify
 from newslynx.views.decorators import load_user, load_org
-from newslynx.views.util import obj_or_404, delete_response
+from newslynx.views.util import (
+    obj_or_404, delete_response, request_data)
+from newslynx.lib import url
+from newslynx.util import here
+
+# TODO: Figure out how to properly implement templates in flask blueprints.
+# This may be a #wontfix since we only need this page.
+templ_file = here(__file__, 'templates/ga_properties.html')
+GA_PROP_TMPL = Template(open(templ_file).read())
 
 # blueprint
 bp = Blueprint('auth_google_analytics', __name__)
@@ -29,7 +37,6 @@ if settings.GA_ENABLED:
 
 
 # oauth utilities #
-
 
 def ga_revoke_access(tokens):
     """
@@ -51,7 +58,7 @@ def ga_properties(tokens):
         for prop in account.webproperties:
             website_url = prop.url
             if website_url:
-                property = {'web_property': website_url, 'profiles': []}
+                property = {'property': website_url, 'profiles': []}
                 for profile in prop.profiles:
                     property['profiles'].append(profile.name)
                 properties.append(property)
@@ -73,12 +80,13 @@ def ga_auth(user, org):
             'See https://developers.google.com/analytics/ for details on how to create '
             'an application on Google Analytics.')
 
-    # Get Auth Url
-    authorize_url = ga_oauth.step1_get_authorize_url()
-
     # store the user / apikey in the session:
+    session['apikey'] = user.apikey
     session['org_id'] = org.id
     session['redirect_uri'] = request.args.get('redirect_uri')
+
+    # Get Auth Url
+    authorize_url = ga_oauth.step1_get_authorize_url()
 
     # Send the user to the auth URL.
     return redirect(authorize_url)
@@ -88,38 +96,99 @@ def ga_auth(user, org):
 @bp.route('/api/v1/auth/google-analytics/callback')
 def ga_callback():
 
-    # pop session
-    org_id = session.pop('org_id')
-    redirect_uri = session.pop('redirect_uri')
+    # get session vars
+    apikey = session.get('apikey')
+    org_id = session.get('org_id')
+    redirect_uri = session.get('redirect_uri')
 
     # get tokens
     tokens = ga_oauth.step2_exchange(request.args['code']).serialize()
 
-    # if we got a refresh token, store it.
-    # Otherwise it means the user is already authenticated
-    if 'refresh_token' not in tokens or not tokens['refresh_token']:
-        # TK: Figure out how to notify APP that user is already registered?
-        raise RequestError(
-            "You've already authenticated with google-analytics!")
+    # if we got didn't get refresh token,
+    # it means the user is already authenticated
+    # instead of just throwing an error, we'll revoke these
+    # tokens if we have them and continue with the auth process.
 
-    # fetch properties
-    tokens['properties'] = ga_properties(tokens)
+    # a helper to prevent unnecessary db transactions
+
+    if 'refresh_token' not in tokens or not tokens['refresh_token']:
+
+        # get current auth
+        ga_token = Auth.query\
+            .filter_by(name='google-analytics', org_id=org_id)\
+            .first()
+
+        # if it doesn't exist, something has gone wrong, most likely on our
+        # end.
+        if not ga_token:
+            if not redirect_uri:
+                raise InternalServerError(
+                    "It seems as if you've authenticated with google-analytics already, "
+                    "but we don't have a record of it. Try manually revoking your "
+                    "permissions at https://security.google.com/settings/security/permissions "
+                    "and re-authenticating.")
+            uri = url.add_query_params(redirect_uri, auth_success='false')
+            return redirect(uri)
+
+        # if it does exist proceed with simulation of a normal auth flow and assume
+        # we're simply updating a organization's property settings.
+        tokens = ga_token.value
+        tokens.update({
+            'client_id': settings.GOOGLE_ANALYTICS_CLIENT_ID,
+            'client_secret': settings.GOOGLE_ANALYTICS_CLIENT_SECRET,
+        })
+        tokens.pop('properties', None)
 
     # remove client_id and client_secret
     tokens.pop('client_secret')
     tokens.pop('client_id')
 
-    # upsert Auths
+    # get properties
+    properties = ga_properties(tokens)
+
+    postback_url = url_for(
+        'auth_google_analytics.ga_save_properties',
+        org=org_id,
+        apikey=apikey)
+
+    session['tokens'] = tokens
+
+    # render customization form
+    return GA_PROP_TMPL.render(
+        properties=properties,
+        postback_url=postback_url)
+
+
+@bp.route('/api/v1/auth/google-analytics/properties', methods=['POST'])
+@load_user
+@load_org
+def ga_save_properties(user, org):
+
+    redirect_uri = session.pop('redirect_uri')
+    tokens = session.pop('tokens')
+
+    # PARSE HACKY FORM
+    req_data = request_data()
+    properties = []
+    for k, v in req_data.items():
+        prop = {
+            'property': k.split('||')[0],
+            'profile': v
+        }
+        properties.append(prop)
+
+    tokens['properties'] = properties
+
     ga_token = Auth.query\
-        .filter_by(name='google_analytics', org_id=org_id)\
+        .filter_by(name='google-analytics', org_id=org.id)\
         .first()
 
     if not ga_token:
 
         # create settings object
         ga_token = Auth(
-            org_id=org_id,
-            name='google_analytics',
+            org_id=org.id,
+            name='google-analytics',
             value=tokens)
 
     else:
@@ -130,18 +199,19 @@ def ga_callback():
 
     # redirect to app
     if redirect_uri:
-        return redirect(redirect_uri)
+        uri = url.add_query_params(redirect_uri, auth_success='true')
+        redirect(uri)
 
-    return jsonify(ga_token)
+    return jsonify(tokens)
 
 
-@bp.route('/api/v1/auth/google-analytics/revoke', methods=['GET'])
+@bp.route('/api/v1/auth/google-analytics/revoke', methods=['GET', 'DELETE'])
 @load_user
 @load_org
 def ga_revoke(user, org):
 
     ga_token = Auth.query\
-        .filter_by(org_id=org.id, name='google_analytics')\
+        .filter_by(org_id=org.id, name='google-analytics')\
         .first()
 
     obj_or_404(ga_token,
@@ -156,10 +226,5 @@ def ga_revoke(user, org):
     # drop token from table
     db.session.delete(ga_token)
     db.session.commit()
-
-    # redirect to app
-    redirect_uri = request.args.get('redirect_uri')
-    if redirect_uri:
-        return redirect(redirect_uri)
 
     return delete_response()

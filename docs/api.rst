@@ -950,6 +950,208 @@ Example
     
     curl -X DELETE $NEWSLYNX_API_URL/api/v1/settings/short_urls\?apikey=$NEWSLYNX_API_KEY\&org=2
 
+.. _endpoints-auth:
+
+**Authorizations**
++++++++++++++++++++
+
+The **Authorizations** API enables authorization with external platforms. Currently it supports
+
+* Google Analytics - Track site traffic
+* Twitter - Access tweets from individual users or lists.
+* Facebook - Access a organization's facebook page and, depending on the configuration of the associated Facebook application, collect Insights data.
+
+.. _endpoints-auth-json:
+
+Authorization JSON
+~~~~~~~~~~~~~~~~~~
+
+All methods (unless otherwise specified) return the following ``json`` object:
+
+
+.. code-block:: javascript
+
+    {
+      id: 2,
+      value: {
+        "oauth_token_secret": "ldsfkasdlfjasdlfa380257234",
+        "oauth_token": "2419585021-fdfdskadfjakjsdafjd"
+      },
+      name: "twitter"
+    }
+
+.. _endpoints-auth-google-analytics:
+
+**GET** ``/auth/google-analytics``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Authorizes Newslynx to access  an organization's Google Analytics.
+
+**NOTE**
+
+This method will prompt a user to authenticate with Google Analytics. Upon successful authentication
+it will direct them to form which they can use to select which properties and profiles they would like
+to grant Newslynx access to. If at any point a user would like to change these properties, he/she simply
+needs to access this method again - it's not necessary to revoke access first.
+
+Params
+******
+
++--------------------+--------------------------------+------------------+----------------+
+| Parameter          |  Description                   |  Default         |  Required      |
++====================+================================+==================+================+
+| ``apikey``         | Your apikey                    | null             | true           |
++--------------------+--------------------------------+------------------+----------------+
+| ``org``            | The organization's             | null             | true           |
+|                    | ``id`` or ``name`` you         |                  |                |
+|                    | wish to access.                |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+| ``redirect_uri``   | The url which you would like to| null             | false          |
+|                    | send a user back to after an   |                  |                |
+|                    | authentication attempt         |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+
+Returns
+********
+
+A :ref:`..endpoints-auth-json:` object or, if a ``redirect_uri`` is provided, a redirection to that 
+location with the added query string parameter ``auth_success`` to indicate whether or not the authorization request was successful.
+
+.. _endpoints-auth-google-analytics-revoke:
+
+**GET | DELETE** ``/auth/google-analytics/revoke``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Revokes an organization's Google Analytics authorization.
+
+Params
+******
+
++--------------------+--------------------------------+------------------+----------------+
+| Parameter          |  Description                   |  Default         |  Required      |
++====================+================================+==================+================+
+| ``apikey``         | Your apikey                    | null             | true           |
++--------------------+--------------------------------+------------------+----------------+
+| ``org``            | The organization's             | null             | true           |
+|                    | ``id`` or ``name`` you         |                  |                |
+|                    | wish to access.                |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+
+Returns
+********
+
+``STATUS_CODE`` - ``204``
+
+.. _endpoints-auth-twitter:
+
+**GET** ``/auth/twitter``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Authorizes Newslynx to access an organization's Twitter profile.
+
+Params
+******#
+
++--------------------+--------------------------------+------------------+----------------+
+| Parameter          |  Description                   |  Default         |  Required      |
++====================+================================+==================+================+
+| ``apikey``         | Your apikey                    | null             | true           |
++--------------------+--------------------------------+------------------+----------------+
+| ``org``            | The organization's             | null             | true           |
+|                    | ``id`` or ``name`` you         |                  |                |
+|                    | wish to access.                |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+| ``redirect_uri``   | The url which you would like to| null             | false          |
+|                    | send a user back to after an   |                  |                |
+|                    | authentication attempt         |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+
+Returns
+******
+
+A :ref:`..endpoints-auth-json:` object or, if a ``redirect_uri`` is provided, a redirection to that 
+location with the added query string parameter ``auth_success`` to indicate whether or not the authorization request was successful.
+
+.. _endpoints-auth-twitter-revoke:
+
+**GET | DELETE** ``/auth/twitter/revoke``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Revokes an organization's Twitter authorization.
+
+Params
+******
+
++--------------------+--------------------------------+------------------+----------------+
+| Parameter          |  Description                   |  Default         |  Required      |
++====================+================================+==================+================+
+| ``apikey``         | Your apikey                    | null             | true           |
++--------------------+--------------------------------+------------------+----------------+
+| ``org``            | The organization's             | null             | true           |
+|                    | ``id`` or ``name`` you         |                  |                |
+|                    | wish to access.                |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+
+Returns
+******
+
+``STATUS_CODE`` - ``204``
+
+.. _endpoints-auth-twitter:
+
+**GET** ``/auth/twitter``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Authorizes Newslynx to access an organization's Facebook profile.
+
+Params
+******
+
++--------------------+--------------------------------+------------------+----------------+
+| Parameter          |  Description                   |  Default         |  Required      |
++====================+================================+==================+================+
+| ``apikey``         | Your apikey                    | null             | true           |
++--------------------+--------------------------------+------------------+----------------+
+| ``org``            | The organization's             | null             | true           |
+|                    | ``id`` or ``name`` you         |                  |                |
+|                    | wish to access.                |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+| ``redirect_uri``   | The url which you would like to| null             | false          |
+|                    | send a user back to after an   |                  |                |
+|                    | authentication attempt         |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+
+Returns
+******
+
+A :ref:`..endpoints-auth-json:` object or, if a ``redirect_uri`` is provided, a redirection to that 
+location with the added query string parameter ``auth_auth_success`` to indicate whether or not the authorization request was successful.
+
+.. _endpoints-auth-twitter-revoke:
+
+**GET | DELETE** ``/auth/facebook/revoke``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Revokes an organization's Facebook authorization.
+
+Params
+******
+
++--------------------+--------------------------------+------------------+----------------+
+| Parameter          |  Description                   |  Default         |  Required      |
++====================+================================+==================+================+
+| ``apikey``         | Your apikey                    | null             | true           |
++--------------------+--------------------------------+------------------+----------------+
+| ``org``            | The organization's             | null             | true           |
+|                    | ``id`` or ``name`` you         |                  |                |
+|                    | wish to access.                |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+
+Returns
+******
+
+``STATUS_CODE`` - ``204``
+
 
 .. _endpoints-tags:
 
@@ -971,8 +1173,9 @@ A :ref:`taxonomy-subject-tags` takes the following schema:
 
     {
         "id": 1,
-        "organization_id": 1,
+        "org_id": 1,
         "name": "Politics",
+        "slug": "politics",
         "type": "subject",
         "color": "#fc0"
     }
@@ -983,8 +1186,9 @@ An :ref:`taxonomy-impact-tags` takes the following schema:
 
     {
         "id": 1,
-        "organization_id": 1,
+        "org_id": 1,
         "name": "Social Media Share",
+        "slug": "social-media-share",
         "type": "impact",
         "color": "#0cf",
         "category": "citation",
@@ -997,9 +1201,6 @@ An :ref:`taxonomy-impact-tags` takes the following schema:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 List all tags associated with an organization, as well as helpful faceted counts.
-
-**NOTE**:
-    - You can pass in either an tag's ``id`` or it's ``name`` to this endpoint.
 
 Params
 ******
@@ -1055,19 +1256,21 @@ Returns
         "tags": [
             {
                 "thing_count": 0,
-                "name": "nisi illum",
+                "name": "Politics",
+                "slug": "politics"
                 "color": "#13962A",
-                "organization_id": 1,
+                "org_id": 1,
                 "type": "subject",
                 "id": 14
             },
             {
                 "category": "change",
-                "name": "molestiae ",
+                "name": "Legislative Change",
+                "slug": "legislative-change",
                 "level": "individual",
                 "color": "#43E1D8",
                 "event_count": 0,
-                "organization_id": 1,
+                "org_id": 1,
                 "type": "impact",
                 "id": 1
             },
@@ -1139,6 +1342,9 @@ Create a impact tag.
 
 Get an individual tag.
 
+**NOTE**
+  - This endpoint can accept either a tag ``id`` or ``slug``.
+
 Params
 ******
 
@@ -1171,6 +1377,9 @@ Example
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Update a tag.
+
+**NOTE**
+  - This endpoint can accept either a tag ``id`` or ``slug``.
 
 Params
 ******
@@ -1210,6 +1419,10 @@ Example
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Delete a tag.
+
+**NOTE**
+  - This endpoint can accept either a tag ``id`` or ``slug``.
+
 
 Params
 ******
@@ -1349,53 +1562,7 @@ All methods, unless otherwise specified, will return one or many sous chef objec
           },
           "options": [
             "12:00 AM",
-            "12:30 AM",
-            "1:00 AM",
-            "1:30 AM",
-            "2:00 AM",
-            "2:30 AM",
-            "3:00 AM",
-            "3:30 AM",
-            "4:00 AM",
-            "4:30 AM",
-            "5:00 AM",
-            "5:30 AM",
-            "6:00 AM",
-            "6:30 AM",
-            "7:00 AM",
-            "7:30 AM",
-            "8:00 AM",
-            "8:30 AM",
-            "9:00 AM",
-            "9:30 AM",
-            "10:00 AM",
-            "10:30 AM",
-            "11:00 AM",
-            "11:30 AM",
-            "12:00 PM",
-            "12:30 PM",
-            "1:00 PM",
-            "1:30 PM",
-            "2:00 PM",
-            "2:30 PM",
-            "3:00 PM",
-            "3:30 PM",
-            "4:00 PM",
-            "4:30 PM",
-            "5:00 PM",
-            "5:30 PM",
-            "6:00 PM",
-            "6:30 PM",
-            "7:00 PM",
-            "7:30 PM",
-            "8:00 PM",
-            "8:30 PM",
-            "9:00 PM",
-            "9:30 PM",
-            "10:00 PM",
-            "10:30 PM",
-            "11:00 PM",
-            "11:30 PM"
+            ...
           ]
         },
         "tag": {
@@ -1557,7 +1724,7 @@ Now run this command:
 
 .. _endpoints-sous-chefs-get:
 
-**GET** ``/sous-chefs/:sous-chef-id``
+**GET** ``/sous-chefs/:sous_chef_id``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Fetch an individual SousChef.

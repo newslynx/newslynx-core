@@ -70,7 +70,7 @@ definitions:
                     - 'null'
                     - array
             options:
-                description: "If the option type is list, a list of valid options for the item."
+                description: "If the type is list, a optional list of valid items."
                 type: array
                 minItems: 1
                 uniqueItems: true

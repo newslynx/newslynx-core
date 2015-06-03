@@ -62,7 +62,7 @@ class RecipeScheduler:
         while 1:
             print 'Running: {} at {}'.format(recipe, dates.now())
             api = API(apikey=recipe.user.apikey, org=recipe.org_id)
-            # api.recipe.run(recipe.id)
+            # api.recipes.run(recipe.id)
             time.sleep(interval)
 
     def get_scheduled_recipes(self):

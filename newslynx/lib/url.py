@@ -66,7 +66,7 @@ def prepare(raw_url, source=None, canonicalize=True, keep_params=('id', 'p', 'v'
         url = unshorten(url, attempts=1)
 
     # canonicalize
-    if try_canonical:
+    if canonicalize:
         page_html = network.get_html(url)
         if page_html:
             soup = BeautifulSoup(page_html)
@@ -140,25 +140,29 @@ def shorten(url):
     }
 
 
-def get_domain(url):
+def get_domain(url, **kw):
     """
     Returns a url's domain, this method exists to
     encapsulate all url code into this file
     """
-    domain = urlparse(url).netloc
+    if url is None:
+        return None
+    domain = urlparse(url, **kw).netloc
     domain = re_www.sub('', domain)
     return domain
 
 
-def get_simple_domain(url):
+def get_simple_domain(url, **kw):
     """
     Returns a standardized domain
     i.e.:
     get_simple_domain('http://publiceditor.blogs.nytimes.com/')
     >>> 'nytimes'
     """
+    if url is None:
+        return None
     domain = get_domain(url)
-    tld_dat = tldextract.extract(domain)
+    tld_dat = tldextract.extract(domain, **kw)
     return tld_dat.domain
 
 
@@ -186,6 +190,8 @@ def get_slug(url):
     """
     turn a url into a slug, removing (index).html
     """
+    if url is None:
+        return None
     url = get_path(url.decode('utf-8', 'ignore'))
     url = re_html.sub('', url).strip().lower()
     url = re_slug.sub(r'-', url)
@@ -203,17 +209,21 @@ def get_hash(url):
     """
     turn a url into a unique md5 hash
     """
+    if url is None:
+        return None
     url = re_http.sub('', url)
     url = re_www.sub('', url)
     url = re_html.sub('', url).strip()
     return hashlib.md5(url).hexdigest()
 
 
-def get_path_hash(url):
+def get_path_hash(url, **kw):
     """
     turn a url's path into a unique md5 hash
     """
-    url = get_path(url)
+    if url is None:
+        return None
+    url = get_path(url, **kw)
     url = re_html.sub('', url)
     return hashlib.md5(url).hexdigest()
 
@@ -225,7 +235,9 @@ def get_filetype(url):
     'http://blahblah/images/car.jpg' -> 'jpg'
     'http://yahoo.com'               -> None
     """
-    path = get_path(url)
+    if url is None:
+        return None
+    path = get_path(url, **kw)
     # Eliminate the trailing '/', we are extracting the file
     if path.endswith('/'):
         path = path[:-1]
@@ -434,7 +446,7 @@ def from_html(htmlstring, source=None, dedupe=True):
         return final_urls
 
 
-def remove_args(url, keep_params=('id', 'p'), frags=False):
+def remove_args(url, keep_params, frags=False):
     """
     Remove all param arguments from a url.
     """
@@ -471,6 +483,26 @@ def redirect_back(url, source_domain=None):
         return query_item['url'][0]
 
     return url
+
+
+def add_query_params(url, **kw):
+    """
+    Add/update query strings to a url.
+    """
+    p = urlparse(url)
+    endpoint = "{}://{}{}".format(p.scheme, p.netloc, p.path)
+
+    # allow for multiple query strings
+    qs = [(k, v) for k, vv in parse_qs(p.query).items() for v in vv]
+
+    # add in new query strings
+    for k, v in kw.items():
+        qs.append((k, str(v)))
+
+    # format string
+    qs = "&".join(["{}={}".format(q[0], q[1]) for q in qs])
+
+    return "{}?{}".format(endpoint, qs)
 
 
 def reconcile_embed(url):

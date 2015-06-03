@@ -39,6 +39,10 @@ class NotFoundError(APIError):
     status_code = 404
 
 
+class InternalServerError(APIError):
+    status_code = 500
+
+
 # Internal Errors #
 
 class SousChefSchemaError(Exception):

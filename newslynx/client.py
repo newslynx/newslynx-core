@@ -388,6 +388,47 @@ class Tags(BaseClient):
         return self._request('DELETE', url, params=kw)
 
 
+class Recipes(BaseClient):
+
+    def list(self, **kw):
+        """
+        Get all recipes / facets.
+        """
+        url = self._format_url('recipes')
+        return self._request('GET', url, params=kw)
+
+    def create(self, **kw):
+        """
+        Create a recipe
+        """
+        kw, params = self._split_auth_params_from_kw(**kw)
+        url = self._format_url('recipes')
+        return self._request('POST', url, data=kw, params=params)
+
+    def get(self, tag_id, **kw):
+        """
+        Get a tag
+        """
+        url = self._format_url('tags', tag_id)
+        return self._request('GET', url, data=kw, params=kw)
+
+    def update(self, tag_id, **kw):
+        """
+        Update a tag
+        """
+        kw, params = self._split_auth_params_from_kw(**kw)
+        url = self._format_url('tags', tag_id)
+        return self._request('PUT', url, data=kw, params=params)
+
+    def delete(self, tag_id, **kw):
+        """
+        Delete a tag
+        """
+        kw, params = self._split_auth_params_from_kw(**kw)
+        url = self._format_url('tags', tag_id)
+        return self._request('DELETE', url, params=kw)
+
+
 class Events(BaseClient):
 
     def search(self, **kw):
@@ -453,11 +494,11 @@ class Events(BaseClient):
         return self._request('DELETE', url, params=kw)
 
 
-class SousChefs(BaseClient):
+class Creators(BaseClient):
     pass
 
 
-class Recipes(BaseClient):
+class SousChefs(BaseClient):
     pass
 
 
@@ -469,19 +510,7 @@ class Metrics(BaseClient):
     pass
 
 
-class Series(BaseClient):
-    pass
-
-
-class Links(BaseClient):
-    pass
-
-
 class Reports(BaseClient):
-    pass
-
-
-class Creators(BaseClient):
     pass
 
 
@@ -500,8 +529,6 @@ class API(BaseClient):
         self.recipes = Recipes(**kw)
         self.events = Events(**kw)
         self.things = Things(**kw)
-        self.links = Links(**kw)
-        self.series = Series(**kw)
         self.metrics = Metrics(**kw)
         self.reports = Reports(**kw)
         self.creators = Creators(**kw)

@@ -39,6 +39,6 @@ class Creator(db.Model):
             'name': self.name,
             'created': self.created,
         }
-    
+
     def __repr__(self):
         return '<Creator %r >' % (self.name)

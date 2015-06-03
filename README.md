@@ -30,12 +30,6 @@ createdb newslynx
 newslynx init
 ```
 
-You can ignore the following error if you see it
-
-````
-Exception KeyError: KeyError(4384375024,) in <module 'threading' from '/System/Library/Frameworks/Python.framework/Versions/2.7/lib/python2.7/threading.pyc'> ignored
-````
-
 * populate with sample data
 
 ```
@@ -46,6 +40,12 @@ newslynx gen_random_data
 
 ```
 newslynx runserver -d
+```
+
+* start a production server via `gunicorn`
+
+```
+./run
 ```
 
 
@@ -82,7 +82,7 @@ newslynx runserver -d
 - [ ] Implement Thing Creation API
 - [ ] Implement Event Creation API
 - [ ] Implement Metrics API:
-    - [x] Figure out how to use `tablefunc` for pivot tables.
+    - [x] Figure out how to use `tablefunc` for pivot tables. DO WE ACTUALLY NEED THIS?
     - [ ] Create metrics table which contains information
           on each metric (name, timeseries agg method,
           summary agg method, cumulative, metric 
@@ -135,6 +135,7 @@ newslynx runserver -d
 - [ ] Implement Redis Task Queue For Recipe Running
     - [ ] Create gevent worker class to avoid reliance on
           os.fork
+    - [ ] Figure out how to rate limit requests.
 - [ ] Implement Modular SousChefs
 - [x] Figure out how best to use OAuth tokens in SousChefs. Ideally these should not be exposed to users.
 - [x] Implement API client
@@ -189,3 +190,6 @@ newslynx runserver -d
 
 ### Nonblocking with flask, gevent, + psycopg2
 * [https://github.com/kljensen/async-flask-sqlalchemy-example](https://github.com/kljensen/async-flask-sqlalchemy-example)
+
+### Rate Limiting
+* [http://flask.pocoo.org/snippets/70/](http://flask.pocoo.org/snippets/70/)
