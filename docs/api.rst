@@ -985,12 +985,12 @@ All methods (unless otherwise specified) return the following ``json`` object:
 **GET** ``/auth/google-analytics``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Authorizes Newslynx to access  an organization's Google Analytics.
+Authorizes Newslynx to access an organization's Google Analytics.
 
 **NOTE**
 
 This method will prompt a user to authenticate with Google Analytics. Upon successful authentication
-it will direct them to form which they can use to select which properties and profiles they would like
+it will direct them to a form which they can use to select which properties and profiles they would like
 to grant Newslynx access to. If at any point a user would like to change these properties, he/she simply
 needs to access this method again - it's not necessary to revoke access first.
 
