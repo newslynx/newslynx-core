@@ -60,7 +60,7 @@ def prepare(htmlstring, source_url, safe_attrs=['src', 'href']):
 
 def make_abs(htmlstring, source_url):
     """
-    Make "src" and "href" attributes absolute and format inner text
+    Make "src" and "href" attributes absolute.
     """
     soup = BeautifulSoup(htmlstring)
 

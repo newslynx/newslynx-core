@@ -77,7 +77,7 @@ def arg_date(name, default=None):
 
 def arg_limit(name='per_page', default=25):
     """ Get a limit argument. """
-    return max(0, min(1000, arg_int(name, default=default)))
+    return max(1, min(100, arg_int(name, default=default)))
 
 
 def arg_list(name, default=None, typ=str, exclusions=False):
@@ -410,7 +410,7 @@ def urls_for_pagination(handler, total_results, **kw):
     # parse pagination args
     per_page = arg_limit('per_page')
     page = arg_int('page', 1)
-    total_pages = math.ceil(total_results / float(per_page))
+    total_pages = int(math.ceil(total_results / float(per_page)))
 
     p = dict(page=page, per_page=per_page, total_pages=total_pages)
 

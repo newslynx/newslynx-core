@@ -33,7 +33,13 @@ DESC_TAGS = [
 ]
 
 SITE_NAME_TAGS = [
-    {'tag': 'meta', 'attr': 'property', 'val': 'og:site_name', 'data': 'content'}
+    {'tag': 'meta', 'attr': 'property', 'val': 'og:site_name', 'data': 'content'},
+    {'tag': 'meta', 'attr': 'property', 'val': 'twitter:site', 'data': 'content'},
+    {'tag': 'meta', 'attr': 'name', 'val': 'parsely-type', 'data': 'content'}
+]
+
+PAGE_TYPE_TAGS = [
+    {'tag': 'meta', 'attr': 'property', 'val': 'og:type', 'data': 'content'}
 ]
 
 IMG_TAGS = [
@@ -127,6 +133,16 @@ def site_name(soup, source_url=None):
     domain = urlparse(source_url).netloc
     tld_dat = tldextract.extract(domain)
     return tld_dat.domain.replace('.', ' ').title()
+
+
+def page_type(soup, source_url=None):
+    """
+    Returns meta type of a page, open graph protocol
+    """
+    for tag in PAGE_TYPE_TAGS:
+        data = extract_tag_data(soup, tag)
+        if data:
+            return data
 
 
 def img_url(soup, source_url=None):

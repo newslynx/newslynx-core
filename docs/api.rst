@@ -2112,3 +2112,9 @@ Now run this command:
        --data-binary @recipe.json \
        $NEWSLYNX_API_URL/api/v1/recipes/1\?apikey=$NEWSLYNX_API_KEY\&org=1
 
+.. _endpoints-recipes:
+
+**Events**
+++++++++++++++++++
+
+The **Events** API enables the creation, querying, faceting, updating, and deleting of Events.  

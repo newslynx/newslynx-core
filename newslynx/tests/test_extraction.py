@@ -12,6 +12,7 @@ class TestArticleExtraction(unittest.TestCase):
 
         source_url = 'http://www.propublica.org/article/congress-to-consider-scaling-down-group-homes-for-troubled-children'
         d = article.extract(source_url)
+        assert(d['page_type'] == 'article')
         assert(d['title'] == 'Congress to Consider Scaling Down Group Homes for Troubled Children')
         assert(d['description'] == 'At a hearing in Washington, a renewed call for addressing the violence and neglect that plagues group homes for foster youth.')
         assert(d['domain'] == 'propublica.org')

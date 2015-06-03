@@ -1,7 +1,8 @@
 # gevent patching
-import sys
-if 'threading' in sys.modules:
-    sys.modules.pop('threading')
+# import sys
+# if 'threading' in sys.modules:
+#     sys.modules.pop('threading')
+
 from gevent.monkey import patch_all
 patch_all()
 from psycogreen.gevent import patch_psycopg
