@@ -1014,7 +1014,7 @@ Params
 Returns
 ********
 
-A :ref:`endpoints-auth-json` object or, if a ``redirect_uri`` is provided, a redirection to that 
+An :ref:`endpoints-auth-json` object or, if a ``redirect_uri`` is provided, a redirection to that 
 location with the added query string parameter ``auth_success`` to indicate whether or not the authorization request was successful.
 
 .. _endpoints-auth-google-analytics-revoke:
@@ -1069,7 +1069,7 @@ Params
 Returns
 ********
 
-A :ref:`endpoints-auth-json` object or, if a ``redirect_uri`` is provided, a redirection to that 
+An :ref:`endpoints-auth-json` object or, if a ``redirect_uri`` is provided, a redirection to that 
 location with the added query string parameter ``auth_success`` to indicate whether or not the authorization request was successful.
 
 .. _endpoints-auth-twitter-revoke:
@@ -1124,7 +1124,7 @@ Params
 Returns
 ********
 
-A :ref:`endpoints-auth-json` object or, if a ``redirect_uri`` is provided, a redirection to that 
+An :ref:`endpoints-auth-json` object or, if a ``redirect_uri`` is provided, a redirection to that 
 location with the added query string parameter ``auth_success`` to indicate whether or not the authorization request was successful.
 
 .. _endpoints-auth-twitter-revoke:
