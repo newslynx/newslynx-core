@@ -48,6 +48,15 @@ newslynx runserver -d
 ./run
 ```
 
+* IGNORE THIS ERROR:
+
+This is a result of our extensive use of `gevent`. We haven't yet figured out how to properly suppress this error. See more details [here](http://stackoverflow.com/questions/8774958/keyerror-in-module-threading-after-a-successful-py-test-run).
+
+```
+Exception KeyError: KeyError(4332017936,) in <module 'threading' from '/System/Library/Frameworks/Python.framework/Versions/2.7/lib/python2.7/threading.pyc'> ignored
+```
+
+
 
 ## TODO 
 
