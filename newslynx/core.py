@@ -3,6 +3,7 @@
 # if 'threading' in sys.modules:
 #     sys.modules.pop('threading')
 
+import gevent
 from gevent.monkey import patch_all
 patch_all()
 from psycogreen.gevent import patch_psycopg

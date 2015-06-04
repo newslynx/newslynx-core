@@ -93,6 +93,5 @@ def create_admin_user(email, password, name, admin=False):
 def run():
     manager.run()
 
-
 if __name__ == '__main__':
     run()
