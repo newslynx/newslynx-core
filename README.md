@@ -1,6 +1,8 @@
 # newslynx
 
-the API and SousChefs that Power Newslynx.
+V2 of NewsLynx's API and data collection modules.  This is still a WIP and we should be officially open-sourcing the codebase within the coming month or so. Partially-completed docs are [here](http://newslynx.readthedocs.org/en/latest/).
+
+For now, please read [the report](http://towcenter.org/research/the-newslynx-impact-tracker-produced-these-key-ideas/) we published for the [TowCenter](http://towcenter.org) on our prototype.
 
 
 ## (Re)Setting up the dev environment
@@ -171,7 +173,7 @@ Exception KeyError: KeyError(4332017936,) in <module 'threading' from '/System/L
     - [ ] Newsletter Email Promotions => Metric
 - [x] Implement Recipe scheduler
 - [ ] Implement Admin Panel
-- [ ] Migrate Core Beta Users (Lauren, Lindsay, Blair)
+- [ ] Migrate Core Prototype Users.
 - [ ] Automate Deployment
 - [ ] App Integration
 - [ ] Document, Document, Document
@@ -200,5 +202,5 @@ Exception KeyError: KeyError(4332017936,) in <module 'threading' from '/System/L
 ### Nonblocking with flask, gevent, + psycopg2
 * [https://github.com/kljensen/async-flask-sqlalchemy-example](https://github.com/kljensen/async-flask-sqlalchemy-example)
 
-### Rate Limiting
+### Rate Limiting in Flask.
 * [http://flask.pocoo.org/snippets/70/](http://flask.pocoo.org/snippets/70/)
