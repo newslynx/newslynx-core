@@ -123,8 +123,7 @@ def random_url(scheme="http", ext=None):
     u = "{}://example.com/{}".format(scheme, uuid.uuid1())
     if ext:
         return "{}.{}".format(u, ext)
-    else:
-        return u + '/'
+    return u
 
 
 def random_email():

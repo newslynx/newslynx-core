@@ -102,6 +102,7 @@ class Event(db.Model):
         d = {
             'id': self.id,
             'recipe_id': self.recipe_id,
+            'source_id': self.source_id,
             'status': self.status,
             'provenance': self.provenance,
             'url': self.url,
@@ -115,7 +116,7 @@ class Event(db.Model):
             'tag_ids': self.tag_ids,
             'things': self.simple_things,
         }
-        if kw.get('incl_content', False):
+        if kw.get('incl_content', True):
             d['content'] = self.content
         return d
 

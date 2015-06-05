@@ -31,7 +31,7 @@ EXTRACTORS = {
 
 def event(o,
           url_fields=['title', 'content', 'description'],
-          requires=['org_id', 'title', 'content'],
+          requires=['org_id', 'content'],
           only_things=False):
     """
     Ingest an Event.
@@ -51,7 +51,7 @@ def event(o,
         validate_event_status(o['status'])
 
     # normalize the url
-    o['url'] = _prepare_url(o['url'])
+    o['url'] = _prepare_url(o, 'url')
 
     # sanitize creation date
     o['created'] = _prepare_date(o, 'created')
@@ -59,7 +59,7 @@ def event(o,
     # sanitize text/html fields
     o['title'] = _prepare_str(o, 'title')
     o['description'] = _prepare_str(o, 'description')
-    o['content'] - _prepare_str(o, 'content')
+    o['content'] = _prepare_str(o, 'content', o['url'])
 
     # split out tags_ids + thing_ids
     tag_ids = o.pop('tag_ids', [])
@@ -91,10 +91,12 @@ def event(o,
 
     # extract urls asynchronously.
     urls = _extract_urls(o, url_fields, source=o.get('url'))
-
+    
+    print urls
+    
     # detect things
     if len(urls):
-
+        print urls
         things = Thing.query\
             .filter(or_(Thing.url.in_(urls), Thing.id.in_(thing_ids)))\
             .filter(Thing.org_id == org_id)\
@@ -148,8 +150,11 @@ def _extract_urls(obj, fields, source=None):
         v = obj.get(f)
         if v:
             v = str(v)
+            print "V", v
             if html.is_html(v):
                 for u in url.from_html(v, source):
+                    print "HERE"
+                    print u
                     raw_urls.add(u)
             else:
                 for u in url.from_string(v, source):
@@ -161,7 +166,7 @@ def _extract_urls(obj, fields, source=None):
     return list(clean_urls)
 
 
-def _prepare_str(o, field):
+def _prepare_str(o, field, source_url=None):
     """
     Prepare text/html fi_streld
     """
@@ -170,7 +175,7 @@ def _prepare_str(o, field):
     if o[field] is None:
         return None
     if html.is_html(o[field]):
-        return html.prepare(o[field])
+        return html.prepare(o[field], source_url)
     return text.prepare(o[field])
 
 
