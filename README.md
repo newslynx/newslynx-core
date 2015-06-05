@@ -180,29 +180,29 @@ Exception KeyError: KeyError(4332017936,) in <module 'threading' from '/System/L
 
 ## References
 
-### API Design
+#### API Design
 
 * [http://www.vinaysahni.com/best-practices-for-a-pragmatic-restful-api](http://www.vinaysahni.com/best-practices-for-a-pragmatic-restful-api)
 
-### Crosstab in Postgres
+#### Crosstab in Postgres
 * [http://www.postgresonline.com/journal/archives/14-CrossTab-Queries-in-PostgreSQL-using-tablefunc-contrib.html](http://www.postgresonline.com/journal/archives/14-CrossTab-Queries-in-PostgreSQL-using-tablefunc-contrib.html)
 
-### filling in zeros for a timezeries
+#### filling in zeros for a timezeries
 * [http://stackoverflow.com/questions/346132/postgres-how-to-return-rows-with-0-count-for-missing-data]
 
-### fetching column names from table
+#### fetching column names from table
 * [http://www.postgresql.org/message-id/AANLkTilsjTAXyN5DghR3M2U4c8w48UVxhov4-8igMpd1@mail.gmail.com](http://www.postgresql.org/message-id/AANLkTilsjTAXyN5DghR3M2U4c8w48UVxhov4-8igMpd1@mail.gmail.com)
 
-### timeseries tips
+#### timeseries tips
 * [http://no0p.github.io/postgresql/2014/05/08/timeseries-tips-pg.html](http://no0p.github.io/postgresql/2014/05/08/timeseries-tips-pg.html)
 
-### Getting bigger with flask (+ dynamic subdomains):
+#### Getting bigger with flask (+ dynamic subdomains):
 * [http://maximebf.com/blog/2012/11/getting-bigger-with-flask/#.VVYvUZNVhBc](http://maximebf.com/blog/2012/11/getting-bigger-with-flask/#.VVYvUZNVhBc)
 
-### Nonblocking with flask, gevent, + psycopg2
+#### Nonblocking with flask, gevent, + psycopg2
 * [https://github.com/kljensen/async-flask-sqlalchemy-example](https://github.com/kljensen/async-flask-sqlalchemy-example)
 
-### Rate Limiting in Flask.
+#### Rate Limiting in Flask.
 * [http://flask.pocoo.org/snippets/70/](http://flask.pocoo.org/snippets/70/)
 
 
