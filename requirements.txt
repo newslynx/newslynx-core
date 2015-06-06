@@ -1,7 +1,7 @@
 Embedly==0.5.0
 Faker==0.0.4
 Flask==0.10.1
-Flask-Compress==1.2.0
+Flask-Compress
 Flask-Migrate==1.4.0
 Flask-SQLAlchemy==2.0
 Flask-Script==2.0.5
@@ -51,7 +51,7 @@ jellyfish==0.5.0
 hashids==1.1.0
 gevent==1.0.1
 psycogreen==1.0
-gunicorn==19.3.0
+gunicorn
 hiredis==0.2.0
 redis==2.10.3
 beautifulsoup4==4.3.2
