@@ -42,12 +42,12 @@ class Thing(db.Model):
     byline = db.Column(db.Text)
     title = db.Column(db.Text)
     description = db.Column(db.Text)
-    content = db.Column(db.Text)
+    body = db.Column(db.Text)
     meta = db.Column(JSON)
 
     # our search vector
     search_vector = db.Column(
-        TSVectorType('title', 'description', 'content', 'type', 'byline', 'meta'))
+        TSVectorType('title', 'description', 'body', 'type', 'byline', 'meta'))
 
     # relations
     tags = db.relationship(
@@ -94,7 +94,7 @@ class Thing(db.Model):
         self.byline = kw.get('byline')  # TODO: Autoformat.
         self.title = kw.get('title')
         self.description = kw.get('description')
-        self.content = kw.get('content')
+        self.body = kw.get('body')
         self.meta = kw.get('meta', {})
 
     @property
@@ -154,8 +154,8 @@ class Thing(db.Model):
         if kw.get('incl_links', False):
             d['in_links'] = self.in_link_display
             d['out_links'] = self.out_link_display
-        if kw.get('incl_content', False):
-            d['content'] = self.content
+        if kw.get('incl_body', False):
+            d['body'] = self.body
         return d
 
     def __repr__(self):

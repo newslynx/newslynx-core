@@ -11,7 +11,7 @@ class TestEventsAPI(unittest.TestCase):
         e = {
             'source_id': '09ac-11e5-8e2a-6c4008aeb606',
             'description': 'eos aliquid mollitia dicta',
-            'content': 'foo bar',
+            'body': 'foo bar',
             'created': '2015-05-15 09:54:46+00:00',
             'url': 'http://example.com/a81857dc-09ac-11e5-8e2a-6c4008aeb606/',
             'tag_ids': [1, 2, 3],
@@ -31,7 +31,7 @@ class TestEventsAPI(unittest.TestCase):
         e = {
             'source_id': '09ac-11fdasfde5-8e2a-6c4008aeb606',
             'description': 'eos aliquid mollitia dicta',
-            'content': 'foo bar',
+            'body': 'foo bar',
             'created': '2015-05-15 09:54:46+00:00',
             'url': 'http://example.com/a81857dc-09ac-11e5-8e2a-6c4008aeb606/',
             'recipe_id': 1,
@@ -50,7 +50,7 @@ class TestEventsAPI(unittest.TestCase):
         e = {
             'source_id': '09ac-11fdasfsafasdfasde5-8e2a-6c4008aeb606',
             'description': 'eos aliquid mollitia dicta',
-            'content': 'foo bar',
+            'body': 'foo bar',
             'created': '2015-05-15 09:54:46+00:00',
             'url': 'http://example.com/a81857dc-09ac-11e5-8e2a-6c4008aeb606/',
             'tag_ids': [1, 2, 3],
@@ -69,7 +69,7 @@ class TestEventsAPI(unittest.TestCase):
         e = {
             'source_id': '09ac-11fdasffsafddsfsafasdfasdefdsaf5-8e2a-6c4008aeb606',
             'description': 'eos aliquid mollitia dicta',
-            'content': 'foo bar',
+            'body': 'foo bar',
             'created': '2015-05-15 09:54:46+00:00',
             'url': 'http://example.com/a81857dc-09ac-11e5-8e2a-6c4008aeb606/',
             'authors': ['Stanford Feeney'],
@@ -88,7 +88,7 @@ class TestEventsAPI(unittest.TestCase):
         e = {
             'source_id': '09ac-11fdasfsafasdfasdfdsafdfefdsaf5-8e2a-6c4008aeb606',
             'description': 'eos aliquid mollitia dicta',
-            'content': 'foo bar {}'.format(t.url),
+            'body': 'foo bar {}'.format(t.url),
             'created': '2015-05-15 09:54:46+00:00',
             'url': 'http://example.com/a81857dc-09ac-11e5-8e2a-6c4008aeb606/',
             'authors': ['Stanford Feeney'],
@@ -103,7 +103,7 @@ class TestEventsAPI(unittest.TestCase):
         e = {
             'source_id': '09ac-11fdasfsafasdfdasfddsafasdfdsafdfefdsaf5-8e2a-6c4008aeb606',
             'description': 'eos aliquid mollitia dicta',
-            'content': s,
+            'body': s,
             'created': '2015-05-15 09:54:46+00:00',
             'url': 'http://example.com/a81857dc-09ac-11e5-8e2a-6c4008aeb606/',
             'authors': ['Stanford Feeney'],
@@ -111,27 +111,28 @@ class TestEventsAPI(unittest.TestCase):
             'img_url': 'http://example.com/a818591c-09ac-11e5-8e9f-6c4008aeb606.jpg',
         }
         self.api.events.create(**e)
-        results = self.api.events.search(q=s, incl_content=True)
+        results = self.api.events.search(q=s, incl_body=True)
         for r in results.events:
-            assert(s in r.content)
+            assert(s in r.body)
             self.api.events.delete(r.id, force=True)
 
     def test_error_on_create_deleted_events(self):
-        event = self.api.events.search(status='deleted', incl_content=True)
+        event = self.api.events.search(status='deleted', incl_body=True)
         e = event.events[0]
         resp = self.api.events.create(**e)
         assert(resp.status_code == 422)
 
-    def test_null_on_create_event_with_no_content(self):
-        event = self.api.events.search(status='pending', incl_content=True)
+    def test_null_on_create_event_with_no_things(self):
+        event = self.api.events.search(status='pending', incl_body=True)
         e = event.events[0]
-        e['only_content'] = True
+        e['must_link'] = True
         resp = self.api.events.create(**e)
+        print resp
         assert(resp is None)
 
     def test_event_update(self):
         res = self.api.events.search(
-            status='pending', provenance='recipe', incl_content=True)
+            status='pending', provenance='recipe', incl_body=True)
         event = res.events[0]
         event['thing_ids'] = [1, 2]
         event['tag_ids'] = [1, 2]
@@ -142,7 +143,7 @@ class TestEventsAPI(unittest.TestCase):
 
     def test_event_update_error_no_tags(self):
         res = self.api.events.search(
-            status='pending', provenance='recipe', incl_content=True)
+            status='pending', provenance='recipe', incl_body=True)
         event = res.events[0]
         event['thing_ids'] = [1, 2]
         event['status'] = 'approved'
@@ -151,7 +152,7 @@ class TestEventsAPI(unittest.TestCase):
 
     def test_event_update_error_no_things(self):
         res = self.api.events.search(
-            status='pending', provenance='recipe', incl_content=True)
+            status='pending', provenance='recipe', incl_body=True)
         event = res.events[0]
         event['tag_ids'] = [1, 2]
         event['status'] = 'approved'

@@ -101,11 +101,10 @@ All endpoints are prefaced by ``/api/:version``. The current (and only version) 
 **Endpoints**
 --------------
 
-All endpoints retunrn ``json``. If you'd like to follow along with these examples, go ahead and set these environment variables:
+All endpoints retunrn ``json``. If you'd like to follow along with these examples, go ahead and set your api key as an environment variables:
 
 .. code-block:: bash 
 
-    export NEWSLYNX_API_URL='http://localhost:5000'
     export NEWSLYNX_API_KEY='djljahflsdkfhasldkfhasldfa'
 
 
@@ -170,7 +169,7 @@ Example
 .. code-block:: bash
     
     curl --data "email=merlynne@newslynx.org&password=a-secure-password" \
-    $NEWSLYNX_API_URL/api/v1/login
+    http://localhost:5000/api/v1/login
 
 
 .. _endpoints-user-get-me:
@@ -199,7 +198,7 @@ Example
 
 .. code-block:: bash
     
-    curl $NEWSLYNX_API_URL/api/v1/me\?apikey=$NEWSLYNX_API_KEY
+    curl http://localhost:5000/api/v1/me\?apikey=$NEWSLYNX_API_KEY
 
     
 .. _endpoints-user-update-me:
@@ -249,20 +248,20 @@ Change your ``name`` and ``email``.
 .. code-block:: bash
     
     curl -X PUT -d email=merlynne2@newslynx.org -d name="Meryl Jones" \
-    $NEWSLYNX_API_URL/api/v1/me\?apikey=$NEWSLYNX_API_KEY
+    http://localhost:5000/api/v1/me\?apikey=$NEWSLYNX_API_KEY
 
 Change your ``password``.
 
 .. code-block:: bash
     
     curl -X PUT -d old_password="a-secure-p4ssw0rd" -d new_password="a-more-secure-p4ssw0rd" \
-    $NEWSLYNX_API_URL/api/v1/me\?apikey=$NEWSLYNX_API_KEY
+    http://localhost:5000/api/v1/me\?apikey=$NEWSLYNX_API_KEY
 
 Refresh your ``apikey``
 
 .. code-block:: bash
     
-    curl -X PUT $NEWSLYNX_API_URL/api/v1/me\?apikey=$NEWSLYNX_API_KEY\&refresh_apikey=true
+    curl -X PUT http://localhost:5000/api/v1/me\?apikey=$NEWSLYNX_API_KEY\&refresh_apikey=true
 
 
 .. _endpoints-user-delete-me:
@@ -291,7 +290,7 @@ Example
 
 .. code-block:: bash
     
-    curl -X DELETE $NEWSLYNX_API_URL/api/v1/me\?apikey=$NEWSLYNX_API_KEY
+    curl -X DELETE http://localhost:5000/api/v1/me\?apikey=$NEWSLYNX_API_KEY
 
 
 .. _endpoints-orgs:
@@ -361,7 +360,7 @@ Example
 
 .. code-block:: bash
     
-    curl $NEWSLYNX_API_URL/api/v1/orgs\?apikey=$NEWSLYNX_API_KEY
+    curl http://localhost:5000/api/v1/orgs\?apikey=$NEWSLYNX_API_KEY
 
 
 .. _endpoints-orgs-create:
@@ -404,7 +403,7 @@ Example
 .. code-block:: bash
     
     curl --data "name=ProPalpatine" \
-    $NEWSLYNX_API_URL/api/v1/orgs\?apikey=$NEWSLYNX_API_KEY
+    http://localhost:5000/api/v1/orgs\?apikey=$NEWSLYNX_API_KEY
 
 
 .. _endpoints-orgs-get:
@@ -436,7 +435,7 @@ Example
 
 .. code-block:: bash
     
-    curl $NEWSLYNX_API_URL/api/v1/orgs/1\?apikey=$NEWSLYNX_API_KEY
+    curl http://localhost:5000/api/v1/orgs/1\?apikey=$NEWSLYNX_API_KEY
 
 
 .. _endpoints-orgs-update:
@@ -480,7 +479,7 @@ Example
 .. code-block:: bash
     
     curl -X PUT -d name=ProPalpatine2 \
-    $NEWSLYNX_API_URL/api/v1/orgs/2\?apikey=$NEWSLYNX_API_KEY
+    http://localhost:5000/api/v1/orgs/2\?apikey=$NEWSLYNX_API_KEY
 
 
 .. _endpoints-orgs-delete:
@@ -517,7 +516,7 @@ Example
 
 .. code-block:: bash
     
-    curl -X DELETE $NEWSLYNX_API_URL/api/v1/orgs/2\?apikey=$NEWSLYNX_API_KEY
+    curl -X DELETE http://localhost:5000/api/v1/orgs/2\?apikey=$NEWSLYNX_API_KEY
 
 
 .. _endpoints-orgs-users-list:
@@ -550,7 +549,7 @@ Example
 
 .. code-block:: bash
     
-    curl $NEWSLYNX_API_URL/api/v1/orgs/2/users\?apikey=$NEWSLYNX_API_KEY
+    curl http://localhost:5000/api/v1/orgs/2/users\?apikey=$NEWSLYNX_API_KEY
 
 
 .. _endpoints-orgs-users-create:
@@ -598,7 +597,7 @@ Example
 .. code-block:: bash
     
     curl --data "name=Brian Abelson&email=b@nytimes.cat&password=l0l4k4t&admin=false" \
-    $NEWSLYNX_API_URL/api/v1/orgs/2/users\?apikey=$NEWSLYNX_API_KEY
+    http://localhost:5000/api/v1/orgs/2/users\?apikey=$NEWSLYNX_API_KEY
 
 
 .. _endpoints-orgs-users-get-user:
@@ -632,7 +631,7 @@ Example
 
 .. code-block:: bash
     
-    curl $NEWSLYNX_API_URL/api/v1/orgs/2/users/b@nytimes.cat\?apikey=$NEWSLYNX_API_KEY
+    curl http://localhost:5000/api/v1/orgs/2/users/b@nytimes.cat\?apikey=$NEWSLYNX_API_KEY
 
 
 .. _endpoints-orgs-users-add-user:
@@ -667,7 +666,7 @@ Example
 
 .. code-block:: bash
     
-    curl -X PUT $NEWSLYNX_API_URL/api/v1/orgs/2/users/m@nytimes.cat\?apikey=$NEWSLYNX_API_KEY
+    curl -X PUT http://localhost:5000/api/v1/orgs/2/users/m@nytimes.cat\?apikey=$NEWSLYNX_API_KEY
 
 
 .. _endpoints-orgs-users-remove-user:
@@ -712,7 +711,7 @@ Example
 
 .. code-block:: bash
     
-    curl -X DELETE $NEWSLYNX_API_URL/api/v1/orgs/2/users/m@nytimes.cat\?apikey=$NEWSLYNX_API_KEY
+    curl -X DELETE http://localhost:5000/api/v1/orgs/2/users/m@nytimes.cat\?apikey=$NEWSLYNX_API_KEY
 
 
 .. _endpoints-settings:
@@ -781,7 +780,7 @@ Example
 
 .. code-block:: bash
     
-    curl $NEWSLYNX_API_URL/api/v1/settings\?apikey=$NEWSLYNX_API_KEY\&org=2
+    curl http://localhost:5000/api/v1/settings\?apikey=$NEWSLYNX_API_KEY\&org=2
 
 
 .. _endpoints-settings-create:
@@ -823,14 +822,14 @@ Create a simple setting.
 .. code-block:: bash
     
     curl --data "name=icon&value=http://example.com/mylogo.png" \
-    $NEWSLYNX_API_URL/api/v1/settings\?apikey=$NEWSLYNX_API_KEY\&org=2
+    http://localhost:5000/api/v1/settings\?apikey=$NEWSLYNX_API_KEY\&org=2
 
 Create a ``json`` setting.
 
 .. code-block:: bash
     
     curl --data "name=short_urls&value=[\"prplt.in\"]&json_value=true" \
-    $NEWSLYNX_API_URL/api/v1/settings\?apikey=$NEWSLYNX_API_KEY\&org=2
+    http://localhost:5000/api/v1/settings\?apikey=$NEWSLYNX_API_KEY\&org=2
 
 
 .. _endpoints-settings-get:
@@ -867,7 +866,7 @@ Example
 
 .. code-block:: bash
     
-    curl $NEWSLYNX_API_URL/api/v1/settings/icon\?apikey=$NEWSLYNX_API_KEY\&org=2
+    curl http://localhost:5000/api/v1/settings/icon\?apikey=$NEWSLYNX_API_KEY\&org=2
 
 .. _endpoints-settings-update:
 
@@ -911,7 +910,7 @@ Update a setting.
 .. code-block:: bash
 
     curl -X PUT -d "value=[\"zzzz.in\"]" -d "json_value=true" \
-    $NEWSLYNX_API_URL/api/v1/settings/short_urls\?apikey=$NEWSLYNX_API_KEY\&org=2
+    http://localhost:5000/api/v1/settings/short_urls\?apikey=$NEWSLYNX_API_KEY\&org=2
 
 
 .. _endpoints-settings-delete:
@@ -948,7 +947,7 @@ Example
 
 .. code-block:: bash
     
-    curl -X DELETE $NEWSLYNX_API_URL/api/v1/settings/short_urls\?apikey=$NEWSLYNX_API_KEY\&org=2
+    curl -X DELETE http://localhost:5000/api/v1/settings/short_urls\?apikey=$NEWSLYNX_API_KEY\&org=2
 
 .. _endpoints-auth:
 
@@ -1284,7 +1283,7 @@ Example
 
 .. code-block:: bash
     
-    curl $NEWSLYNX_API_URL/api/v1/tags\?apikey=$NEWSLYNX_API_KEY\&org=1
+    curl http://localhost:5000/api/v1/tags\?apikey=$NEWSLYNX_API_KEY\&org=1
 
 
 .. _endpoints-tags-create:
@@ -1326,14 +1325,14 @@ Create a subject tag.
 .. code-block:: bash
     
     curl --data "name=foo&type=subject&color=#fc0" \
-    $NEWSLYNX_API_URL/api/v1/tags\?apikey=$NEWSLYNX_API_KEY\&org=1
+    http://localhost:5000/api/v1/tags\?apikey=$NEWSLYNX_API_KEY\&org=1
 
 Create a impact tag.
 
 .. code-block:: bash
     
     curl --data "name=bar&type=subject&color=#0cf&level=media&category=change" \
-    $NEWSLYNX_API_URL/api/v1/tags\?apikey=$NEWSLYNX_API_KEY\&org=1
+    http://localhost:5000/api/v1/tags\?apikey=$NEWSLYNX_API_KEY\&org=1
 
 .. _endpoints-tags-get:
 
@@ -1368,7 +1367,7 @@ Example
 
 .. code-block:: bash
     
-    curl $NEWSLYNX_API_URL/api/v1/tags/21\?apikey=$NEWSLYNX_API_KEY\&org=1
+    curl http://localhost:5000/api/v1/tags/21\?apikey=$NEWSLYNX_API_KEY\&org=1
 
 
 .. _endpoints-tags-update:
@@ -1410,7 +1409,7 @@ Example
 .. code-block:: bash
     
     curl -X PUT -d "color=#fc0aaa" \
-    $NEWSLYNX_API_URL/api/v1/tags/21\?apikey=$NEWSLYNX_API_KEY\&org=1
+    http://localhost:5000/api/v1/tags/21\?apikey=$NEWSLYNX_API_KEY\&org=1
 
 
 .. _endpoints-tags-delete:
@@ -1448,7 +1447,7 @@ Example
 
 .. code-block:: bash
     
-    curl -X DELETE $NEWSLYNX_API_URL/api/v1/tags/21\?apikey=$NEWSLYNX_API_KEY\&org=1
+    curl -X DELETE http://localhost:5000/api/v1/tags/21\?apikey=$NEWSLYNX_API_KEY\&org=1
 
 
 .. _endpoints-tags-categories:
@@ -1468,7 +1467,7 @@ Example
 
 .. code-block:: bash
     
-    curl $NEWSLYNX_API_URL/api/v1/tags/categories
+    curl http://localhost:5000/api/v1/tags/categories
 
 .. _endpoints-tags-levels:
 
@@ -1488,7 +1487,7 @@ Example
 
 .. code-block:: bash
     
-    curl $NEWSLYNX_API_URL/api/v1/tags/levels
+    curl http://localhost:5000/api/v1/tags/levels
 
 .. _endpoints-sous-chefs:
 
@@ -1652,13 +1651,13 @@ Fetch all SousChefs:
 
 .. code-block:: bash
     
-    curl $NEWSLYNX_API_URL/api/v1/sous-chefs\?apikey=$NEWSLYNX_API_KEY\&org=1
+    curl http://localhost:5000/api/v1/sous-chefs\?apikey=$NEWSLYNX_API_KEY\&org=1
 
 Fetch all SousChefs that create ``events``:
 
 .. code-block:: bash
     
-    curl $NEWSLYNX_API_URL/api/v1/sous-chefs\?apikey=$NEWSLYNX_API_KEY\&org=1\&creates=event
+    curl http://localhost:5000/api/v1/sous-chefs\?apikey=$NEWSLYNX_API_KEY\&org=1\&creates=event
 
 .. _endpoints-sous-chefs-create:
 
@@ -1718,7 +1717,7 @@ Now run this command:
   curl -X POST \
        -H 'Content-Type:application/json' \
        --data-binary @sous-chef.json \
-       $NEWSLYNX_API_URL/api/v1/sous-chefs\?apikey=$NEWSLYNX_API_KEY\&org=1
+       http://localhost:5000/api/v1/sous-chefs\?apikey=$NEWSLYNX_API_KEY\&org=1
 
 
 
@@ -1758,7 +1757,7 @@ Fetch a SousChef
 
 .. code-block:: bash
     
-    curl $NEWSLYNX_API_URL/api/v1/sous-chefs/event-twitter-user\?apikey=$NEWSLYNX_API_KEY\&org=1
+    curl http://localhost:5000/api/v1/sous-chefs/event-twitter-user\?apikey=$NEWSLYNX_API_KEY\&org=1
 
 
 .. _endpoints-sous-chefs-update:
@@ -1824,7 +1823,7 @@ Now run this command:
   curl -X PUT \
        -H 'Content-Type:application/json' \
        --data-binary @sous-chef.json \
-       $NEWSLYNX_API_URL/api/v1/sous-chefs/event-twitter-user\?apikey=$NEWSLYNX_API_KEY\&org=1
+       http://localhost:5000/api/v1/sous-chefs/event-twitter-user\?apikey=$NEWSLYNX_API_KEY\&org=1
 
 
 .. _endpoints-recipes:
@@ -1935,13 +1934,13 @@ Fetch all Recipes:
 
 .. code-block:: bash
     
-    curl $NEWSLYNX_API_URL/api/v1/recipes\?apikey=$NEWSLYNX_API_KEY\&org=1
+    curl http://localhost:5000/api/v1/recipes\?apikey=$NEWSLYNX_API_KEY\&org=1
 
 Fetch all Recipes that are not instances of ``article-rss-feed`` SousChefs:
 
 .. code-block:: bash
     
-    curl $NEWSLYNX_API_URL/api/v1/recipes\?apikey=$NEWSLYNX_API_KEY\&org=1\&sous_chefs=-article-rss-feed
+    curl http://localhost:5000/api/v1/recipes\?apikey=$NEWSLYNX_API_KEY\&org=1\&sous_chefs=-article-rss-feed
 
 
 .. _endpoints-recipes-create:
@@ -2004,7 +2003,7 @@ Now run this command:
   curl -X POST \
        -H 'Content-Type:application/json' \
        --data-binary @recipe.json \
-       $NEWSLYNX_API_URL/api/v1/recipes\?apikey=$NEWSLYNX_API_KEY\&org=1
+       http://localhost:5000/api/v1/recipes\?apikey=$NEWSLYNX_API_KEY\&org=1
 
 
 
@@ -2044,7 +2043,7 @@ Fetch a Recipe
 
 .. code-block:: bash
     
-    curl $NEWSLYNX_API_URL/api/v1/recipes/1\?apikey=$NEWSLYNX_API_KEY\&org=1
+    curl http://localhost:5000/api/v1/recipes/1\?apikey=$NEWSLYNX_API_KEY\&org=1
 
 .. _endpoints-sous-chefs-get:
 
@@ -2110,7 +2109,7 @@ Now run this command:
   curl -X PUT \
        -H 'Content-Type:application/json' \
        --data-binary @recipe.json \
-       $NEWSLYNX_API_URL/api/v1/recipes/1\?apikey=$NEWSLYNX_API_KEY\&org=1
+       http://localhost:5000/api/v1/recipes/1\?apikey=$NEWSLYNX_API_KEY\&org=1
 
 .. _endpoints-recipes:
 
@@ -2118,4 +2117,44 @@ Now run this command:
 ++++++++++++++++++
 
 The **Events** API enables the creation, querying, faceting, updating, and deleting of Events. Refer to the :ref:`Events docs <events>` for more details on what these are.
+
+.. _endpoints-events-json:
+
+Event JSON
+~~~~~~~~~~~~~~~~~
+
+All methods, unless otherwise specified, will return one or many Event objects of the following ``json`` schema:
+
+.. code-block:: javascript
+
+    {
+      "status": "approved",
+      "updated": "2015-06-06T15:55:57.849454+00:00",
+      "provenance": "manual",
+      "description": "pariatur aperiam veniam sint ea quaerat amet id qui et est ea quis est dicta officia eos laboriosam ",
+      "recipe_id": null,
+      "authors": [
+        "Kurtis Nolan"
+      ],
+      "id": 291,
+      "created": "2015-05-27T02:21:09.236835+00:00",
+      "url": "http://example.com/0e24032e-0b4b-11e5-8339-6c4008aeb606",
+      "things": [
+        {
+          "url": "http://example.com/0aab2d94-0b4b-11e5-a4a5-6c4008aeb606",
+          "id": 96,
+          "title": "sint tempora eligend"
+        }
+      ],
+      "title": "cum ipsa doloribus p",
+      "tag_ids": [
+        4
+      ],
+      "body": "minima sunt deserunt consequatur impedit voluptate officiis in sequi quia porro cumque perferendis aut voluptates nihil quod magni asperiores sed neque nam quia sunt iste dicta non et facilis autem ex aut et fugit rem et enim qui dolorem voluptatum quidem et similique fugiat dolore nobis a aut rerum itaque molestiae vero sint animi tenetur in nostrum saepe eos molestiae officia quam veritatis pariatur consequatur vel quo excepturi voluptas recusandae earum est ratione eligendi est commodi quaera",
+      "meta": {
+        "address": "669 Schultz Inlet Apt. 136"
+      },
+      "source_id": "0e23d88f-0b4b-11e5-82b4-6c4008aeb606",
+      "img_url": "http://example.com/0e2405e1-0b4b-11e5-92a9-6c4008aeb606.pg"
+    }
 

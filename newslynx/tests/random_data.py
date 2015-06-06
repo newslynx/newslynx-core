@@ -317,12 +317,12 @@ def gen_events(org, recipes, impact_tags, things, n_events):
         e = Event(
             org_id=org.id,
             recipe_id=r.id,
-            source_id=uuid.uuid1(),
+            source_id="{}:{}".format(provenance, str(uuid.uuid1())),
             title=random_text(20),
             description=random_text(100),
             url=random_url(),
-            img_url=random_url(ext='pg'),
-            content=random_text(500),
+            img_url=random_url(ext='png'),
+            body=random_text(500),
             created=random_date(10, 100),
             updated=random_date(1, 9),
             authors=authors,
@@ -363,7 +363,7 @@ def gen_thing(org, recipes, subject_tags, creators):
         title=random_text(20),
         byline='By {}'.format(c.name),
         description=random_text(100),
-        content=random_text(500),
+        body=random_text(500),
         img_url=random_url(ext='jpg'),
         meta=random_meta())
 
@@ -414,7 +414,7 @@ def main(
         n_impact_tags=10,
         n_events=500,
         n_metrics_per_thing=5,
-        n_things=100,
+        n_things=50,
         verbose=True):
 
     # top level things

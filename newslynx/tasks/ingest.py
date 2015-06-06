@@ -25,9 +25,9 @@ url_cache_pool = Pool(settings.URL_CACHE_POOL_SIZE)
 
 
 def event(o,
-          url_fields=['title', 'content', 'description'],
-          requires=['org_id', 'content'],
-          only_content=False):
+          url_fields=['title', 'body', 'description'],
+          requires=['org_id', 'title'],
+          must_link=False):
     """
     Ingest an Event.
     """
@@ -52,13 +52,14 @@ def event(o,
     o['created'] = _prepare_date(o, 'created')
 
     # sanitize text/html fields
-    o['title'] = _prepare_str(o, 'title')
-    o['description'] = _prepare_str(o, 'description')
-    o['content'] = _prepare_str(o, 'content', o['url'])
+    o['title'] = _prepare_str(o, 'title', o['url'])
+    o['description'] = _prepare_str(o, 'description', o['url'])
+    o['body'] = _prepare_str(o, 'body', o['url'])
 
     # split out tags_ids + thing_ids
     tag_ids = o.pop('tag_ids', [])
     thing_ids = o.pop('thing_ids', [])
+    links = o.pop('links', [])
 
     # determine event provenance
     o = _event_provenance(o, org_id)
@@ -91,7 +92,7 @@ def event(o,
         e.updated = dates.now()
 
     # extract urls asynchronously.
-    urls = _extract_urls(o, url_fields, source=o.get('url'))
+    urls = _extract_urls(o, url_fields, source=o.get('url'), links=links)
 
     # detect things
     if len(urls):
@@ -130,7 +131,7 @@ def event(o,
 
     # dont commit event if we're only looking
     # for events that link to things
-    if not has_things and only_content:
+    if not has_things and must_link:
         return None
 
     db.session.add(e)
@@ -138,12 +139,12 @@ def event(o,
     return e
 
 
-def _extract_urls(obj, fields, source=None):
+def _extract_urls(obj, fields, source=None, links=[]):
     """
     Extract, normalize, and dedupe urls from
     text/html fields in an object.
     """
-    raw_urls = set()
+    raw_urls = set(links)
     for f in fields:
         v = obj.get(f)
         if v:
@@ -158,7 +159,7 @@ def _extract_urls(obj, fields, source=None):
 
 def _prepare_str(o, field, source_url=None):
     """
-    Prepare text/html fi_streld
+    Prepare text/html field
     """
     if field not in o:
         return None
@@ -179,7 +180,7 @@ def _prepare_date(o, field):
         return None
     dt = dates.parse_any(o[field])
     if not dt:
-        raise RequestError(' {}: {} is an invalid date.'
+        raise RequestError('{}: {} is an invalid date.'
                            .format(field, o[field]))
     return dt
 

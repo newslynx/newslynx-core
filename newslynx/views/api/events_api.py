@@ -204,7 +204,7 @@ def search_events(user, org):
         status=arg_str('status', default='all'),
         provenance=arg_str('provenance', default=None),
         facets=arg_list('facets', default=[], typ=str),
-        incl_content=arg_bool('incl_content', False),
+        incl_body=arg_bool('incl_body', False),
         include_categories=include_categories,
         exclude_categories=exclude_categories,
         include_levels=include_levels,
@@ -289,7 +289,7 @@ def search_events(user, org):
     if kw['fields']:
         events = [dict(zip(kw['fields'], r)) for r in events.items]
     else:
-        events = [e.to_dict(incl_content=kw['incl_content']) for e in events.items]
+        events = [e.to_dict(incl_body=kw['incl_body']) for e in events.items]
 
     resp = {
         'events': events,
@@ -312,7 +312,7 @@ def create_event(user, org):
     """
     req_data = request_data()
     req_data['org_id'] = org.id
-    e = ingest.event(req_data, only_content=arg_bool('only_content', False))
+    e = ingest.event(req_data, must_link=arg_bool('must_link', False))
     return jsonify(e)
 
 

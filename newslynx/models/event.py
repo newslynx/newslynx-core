@@ -36,13 +36,13 @@ class Event(db.Model):
     updated = db.Column(db.DateTime(timezone=True), index=True)
     title = db.Column(db.Text)
     description = db.Column(db.Text)
-    content = db.Column(db.Text)
+    body = db.Column(db.Text)
     authors = db.Column(ARRAY(String))
     meta = db.Column(JSON)
 
     # our search vector
     search_vector = db.Column(
-        TSVectorType('title', 'description', 'content', 'authors', 'meta'))
+        TSVectorType('title', 'description', 'body', 'authors', 'meta'))
 
     # relations
     tags = db.relationship('Tag',
@@ -71,7 +71,7 @@ class Event(db.Model):
         self.updated = kw.get('updated', dates.now())
         self.title = kw.get('title')
         self.description = kw.get('description')
-        self.content = kw.get('content')
+        self.body = kw.get('body')
         self.authors = kw.get('authors', [])
         self.meta = kw.get('meta', {})
 
@@ -116,8 +116,8 @@ class Event(db.Model):
             'tag_ids': self.tag_ids,
             'things': self.simple_things,
         }
-        if kw.get('incl_content', True):
-            d['content'] = self.content
+        if kw.get('incl_body', False):
+            d['body'] = self.body
         return d
 
     def __repr__(self):

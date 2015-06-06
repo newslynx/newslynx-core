@@ -55,29 +55,29 @@ def extract(source_url):
         'site_name': meta.site_name(soup, canonical_url),
         'page_type': meta.page_type(soup, canonical_url),
         'authors': author.extract(soup),
-        'content': None
+        'body': None
     }
 
-    # extract content from embedly + readability
+    # extract body from embedly + readability
     if settings.EMBEDLY_ENABLED:
-        data['content'] = content_via_embedly(canonical_url)
+        data['body'] = body_via_embedly(canonical_url)
 
-    if not data['content']:
-        data['content'] = content_via_readability(page_html, canonical_url)
+    if not data['body']:
+        data['body'] = body_via_readability(page_html, canonical_url)
 
-    # # extract content from article tag
-    content, raw_html = content_via_article_tag(soup, canonical_url)
+    # # extract body from article tag
+    body, raw_html = body_via_article_tag(soup, canonical_url)
 
-    # merge content
-    if not data['content']:
-        data['content'] = content
+    # merge body
+    if not data['body']:
+        data['body'] = body
 
     # get creators from raw article html
     if not len(data['authors']) and raw_html:
         data['authors'] = author.extract(raw_html, tags=author.OPTIMISTIC_TAGS)
 
-    # get urls from raw_html + content
-    data['links'] = [u for u in url.from_any(data['content']) if source_url not in u]
+    # get links from raw_html + content
+    data['links'] = [u for u in url.from_any(data['body']) if source_url not in u]
     for u in url.from_any(raw_html, source=source_url):
         if u not in data['links'] and source_url not in u:
             data['links'].append(u)
@@ -90,7 +90,7 @@ def extract(source_url):
     return data
 
 
-def content_via_embedly(source_url):
+def body_via_embedly(source_url):
     """
     Use Embed.ly's API for content extraction.
     """
@@ -106,19 +106,19 @@ def content_via_embedly(source_url):
     return html.prepare(e.get('content'), source_url)
 
 
-def content_via_readability(page_html, source_url):
+def body_via_readability(page_html, source_url):
     """
     Readbility is good at article + title.
     """
 
     obj = Document(page_html)
-    content = obj.summary()
-    if not content:
+    body = obj.summary()
+    if not body:
         return None
-    return html.prepare(content, source_url)
+    return html.prepare(body, source_url)
 
 
-def content_via_article_tag(soup, source_url):
+def body_via_article_tag(soup, source_url):
     """
     Extract content from an "article" tag.
     """
@@ -127,6 +127,6 @@ def content_via_article_tag(soup, source_url):
     articles = soup.find_all('article')
     if len(articles):
         raw_html = html.get_inner(articles[0])
-        content = html.prepare(raw_html, source_url)
-        return content, raw_html
+        body = html.prepare(raw_html, source_url)
+        return body, raw_html
     return None, None
