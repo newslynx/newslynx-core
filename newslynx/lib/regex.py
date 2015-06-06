@@ -57,7 +57,7 @@ re_short_url = re.compile(r"""
     (https?://)?          # optional scheme
     ([a-z1-9]+\.)?        # optional sub domain
     [a-z1-9]+.[a-z1-9]+/  # required domain
-    [a-z1-9]{5,9}         # six-ish digit hash
+    [^\s]{5,11}         # six-ish digit hash
   )$                      # end group
 """, re.VERBOSE | re.IGNORECASE)
 

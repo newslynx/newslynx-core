@@ -335,7 +335,7 @@ def thing(user, org, thing_id):
     """
     Fetch an individual event.
     """
-    t = thing.query.filter_by(id=thing_id, org_id=org.id).first()
+    t = Thing.query.filter_by(id=thing_id, org_id=org.id).first()
     if not t:
         raise NotFoundError(
             'An Thing with ID {} does not exist.'.format(event_id))

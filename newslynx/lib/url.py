@@ -16,6 +16,7 @@ from bs4 import BeautifulSoup
 
 from newslynx.lib.regex import *
 from newslynx.lib import network
+from newslynx.lib import meta
 
 # url chunks
 ALLOWED_TYPES = [

@@ -441,7 +441,7 @@ class Events(BaseClient):
     def create(self, **kw):
         kw, params = self._split_auth_params_from_kw(**kw)
         url = self._format_url('events')
-        return self._request('GET', url, params=kw)
+        return self._request('POST', url, params=params, data=kw)
 
     def get(self, event_id, **kw):
         """
@@ -494,6 +494,16 @@ class Events(BaseClient):
         return self._request('DELETE', url, params=kw)
 
 
+class Things(BaseClient):
+
+    def get(self, thing_id, **kw):
+        """
+        Get an individual thing.
+        """
+        url = self._format_url('things', thing_id)
+        return self._request('GET', url, params=kw)
+
+
 class Creators(BaseClient):
     pass
 
@@ -502,8 +512,7 @@ class SousChefs(BaseClient):
     pass
 
 
-class Things(BaseClient):
-    pass
+
 
 
 class Metrics(BaseClient):
