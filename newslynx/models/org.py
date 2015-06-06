@@ -15,8 +15,8 @@ class Org(db.Model):
     id = db.Column(db.Integer, unique=True, index=True, primary_key=True)
     name = db.Column(db.Text, unique=True, index=True)
     slug = db.Column(db.Text, unique=True, index=True)
-    created = db.Column(db.DateTime(timezone=True))
-    updated = db.Column(db.DateTime(timezone=True))
+    created = db.Column(db.DateTime(timezone=True), default=dates.now)
+    updated = db.Column(db.DateTime, onupdate=dates.now, default=dates.now)
 
     # joins
     auths = db.relationship('Auth',
@@ -36,24 +36,22 @@ class Org(db.Model):
     events = db.relationship('Event',
                              lazy='dynamic',
                              cascade='all')
-    things = db.relationship('Thing',
-                             lazy='dynamic',
-                             cascade='all')
+    content_items = db.relationship('ContentItem',
+                                    lazy='dynamic',
+                                    cascade='all')
     metrics = db.relationship('Metric',
                               lazy='dynamic',
                               cascade='all')
     recipes = db.relationship('Recipe',
                               lazy='dynamic',
                               cascade='all')
-    creators = db.relationship('Creator', lazy='dynamic')
+    authors = db.relationship('Author', lazy='dynamic')
 
     tags = db.relationship('Tag', lazy='dynamic', cascade='all')
 
     def __init__(self, **kw):
         self.name = kw.get('name')
         self.slug = kw.get('slug', slugify(kw['name']))
-        self.created = kw.get('created', dates.now())
-        self.updated = kw.get('updated', dates.now())
 
     @property
     def settings_dict(self):
@@ -70,12 +68,15 @@ class Org(db.Model):
     def user_ids(self):
         return frozenset([u.id for u in self.users])
 
-    def to_dict(self,
-                incl_users=True,
-                incl_settings=True,
-                incl_auths=True,
-                incl_tags=False,
-                settings_as_dict=True):
+    def to_dict(self, **kw):
+
+        # parse kwargs
+        incl_users = kw.get('incl_users', True)
+        incl_settings = kw.get('incl_settings', True)
+        incl_auths = kw.get('incl_auths', True)
+        incl_tags = kw.get('incl_tags', False)
+        settings_as_dict = kw.get('settings_dict', True)
+
         d = {
             'id': self.id,
             'name': self.name,

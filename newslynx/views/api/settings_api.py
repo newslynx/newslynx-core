@@ -36,7 +36,8 @@ def create_setting(user, org):
     if not name or not value:
         raise RequestError(
             "You must pass in a 'name' and 'value' to create a setting. "
-            "You only passed in: {}".format(", ".join(req_data.keys())))
+            "You only passed in: {}"
+            .format(", ".join(req_data.keys())))
 
     # if it's a json_value check whether we can parse it as such
     if json_value:
@@ -73,8 +74,10 @@ def get_setting(user, org, name_id):
 
     s = fetch_by_id_or_field(Setting, 'name', name_id, org_id=org.id)
     if not s:
-        raise NotFoundError('Setting "{}" does not yet exist for Org "{}"'
-                            .format(name_id, org.name))
+        raise NotFoundError(
+            'Setting "{}" does not yet exist for Org "{}"'
+            .format(name_id, org.name))
+
     return jsonify(s)
 
 
@@ -86,8 +89,9 @@ def update_setting(user, org, name_id):
     s = fetch_by_id_or_field(Setting, 'name', name_id, org_id=org.id)
 
     if not s:
-        raise NotFoundError('Setting "{}" does not yet exist for Org "{}"'
-                            .format(name_id, org.name))
+        raise NotFoundError(
+            'Setting "{}" does not yet exist for Org "{}"'
+            .format(name_id, org.name))
 
     # get the request data
     req_data = request_data()
@@ -136,8 +140,9 @@ def delete_setting(user, org, name_id):
     s = fetch_by_id_or_field(Setting, 'name', name_id, org_id=org.id)
 
     if not s:
-        raise NotFoundError('Setting "{}" does not yet exist for Org "{}"'
-                            .format(name_id, org.name))
+        raise NotFoundError(
+            'Setting "{}" does not yet exist for Org "{}"'
+            .format(name_id, org.name))
 
     db.session.delete(s)
     db.session.commit()

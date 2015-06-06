@@ -7,11 +7,10 @@ from flask import Blueprint
 
 from newslynx.core import db
 from newslynx.exc import RequestError, NotFoundError
-from newslynx.models import Event, Tag, SousChef, Recipe, Thing
-from newslynx.models.relations import events_tags, things_events
+from newslynx.models import Event, Tag, SousChef, Recipe, ContentItem
+from newslynx.models.relations import events_tags, content_items_events
 from newslynx.models.util import get_table_columns
 from newslynx.lib.serialize import jsonify
-from newslynx.lib import dates
 from newslynx.views.decorators import load_user, load_org
 from newslynx.views.util import *
 from newslynx.tasks import facet
@@ -108,11 +107,13 @@ def apply_event_filters(q, **kw):
         q = q.filter(~Event.tags.any(Tag.id.in_(kw['exclude_tags'])))
 
     # apply things filter
-    if len(kw['include_things']):
-        q = q.filter(Event.things.any(Thing.id.in_(kw['include_things'])))
+    if len(kw['include_content_items']):
+        q = q.filter(Event.content_items.any(
+            ContentItem.id.in_(kw['include_content_items'])))
 
-    if len(kw['exclude_things']):
-        q = q.filter(~Event.things.any(Thing.id.in_(kw['exclude_things'])))
+    if len(kw['exclude_content_items']):
+        q = q.filter(~Event.content_items.any(
+            ContentItem.id.in_(kw['exclude_content_items'])))
 
     # apply sous_chefs filter
     # TODO: DONT USE MULTIPLE QUERIES HERE
@@ -140,25 +141,25 @@ def apply_event_filters(q, **kw):
 def search_events(user, org):
     """
     args:
-        q              | search query
-        fields         | a comma-separated list of fields to include in response
-        page           | page number
-        per_page       | number of items per page.
-        sort           | variable to order by, preface with '-' to sort desc.
-        created_after  | isodate to filter results after
-        created_before | isodate to filter results before
-        updated_after  | isodate to filter results after
-        updated_before | isodate to filter results before
-        status         | ['pending', 'approved', 'deleted']
-        provenance     | ['recipe', 'manual']
-        facets         | a comma-separated list of facets to include, default=all
-        tag            | a comma-separated list of tags to filter by
-        categories     | a comma-separated list of tag_categories to filter by
-        levels         | a comma-separated list of tag_levels to filter by
-        tag_ids        | a comma-separated list of thing_ids to filter by
-        thing_ids      | a comma-separated list of thing_ids to filter by
-        recipe_ids     | a comma-separated list of recipes to filter by
-        sous_chef_ids  | a comma-separated list of sous_chefs to filter by
+        q                | search query
+        fields           | a comma-separated list of fields to include in response
+        page             | page number
+        per_page         | number of items per page.
+        sort             | variable to order by, preface with '-' to sort desc.
+        created_after    | isodate to filter results after
+        created_before   | isodate to filter results before
+        updated_after    | isodate to filter results after
+        updated_before   | isodate to filter results before
+        status           | ['pending', 'approved', 'deleted']
+        provenance       | ['recipe', 'manual']
+        facets           | a comma-separated list of facets to include, default=all
+        tag              | a comma-separated list of tags to filter by
+        categories       | a comma-separated list of tag_categories to filter by
+        levels           | a comma-separated list of tag_levels to filter by
+        tag_ids          | a comma-separated list of tag_ids to filter by
+        content_item_ids | a comma-separated list of content_item_ids to filter by
+        recipe_ids       | a comma-separated list of recipes to filter by
+        sous_chef_ids    | a comma-separated list of sous_chefs to filter by
     """
 
     # parse arguments
@@ -175,8 +176,8 @@ def search_events(user, org):
     include_tags, exclude_tags = \
         arg_list('tag_ids', default=[], typ=int, exclusions=True)
 
-    include_things, exclude_things = \
-        arg_list('thing_ids', default=[], typ=int, exclusions=True)
+    include_content_items, exclude_content_items = \
+        arg_list('content_item_ids', default=[], typ=int, exclusions=True)
 
     include_recipes, exclude_recipes = \
         arg_list('recipe_ids', default=[], typ=int, exclusions=True)
@@ -211,8 +212,8 @@ def search_events(user, org):
         exclude_levels=exclude_levels,
         include_tags=include_tags,
         exclude_tags=exclude_tags,
-        include_things=include_things,
-        exclude_things=exclude_things,
+        include_content_items=include_content_items,
+        exclude_content_items=exclude_content_items,
         include_recipes=include_recipes,
         exclude_recipes=exclude_recipes,
         include_sous_chefs=include_sous_chefs,
@@ -263,7 +264,10 @@ def search_events(user, org):
             kw['facets'] = copy.copy(EVENT_FACETS)
 
         # get all event ids for computing counts
-        event_ids = [e[0] for e in event_query.with_entities(Event.id).all()]
+        event_ids = event_query\
+            .with_entities(Event.id)\
+            .all()
+        event_ids = [e[0] for e in event_ids]
 
         # pooled facet function
         def fx(by):
@@ -289,7 +293,8 @@ def search_events(user, org):
     if kw['fields']:
         events = [dict(zip(kw['fields'], r)) for r in events.items]
     else:
-        events = [e.to_dict(incl_body=kw['incl_body']) for e in events.items]
+        events = [e.to_dict(incl_body=kw['incl_body'])
+                  for e in events.items]
 
     resp = {
         'events': events,
@@ -312,7 +317,9 @@ def create_event(user, org):
     """
     req_data = request_data()
     req_data['org_id'] = org.id
-    e = ingest.event(req_data, must_link=arg_bool('must_link', False))
+    e = ingest.event(
+        req_data,
+        must_link=arg_bool('must_link', False))
     return jsonify(e)
 
 
@@ -323,10 +330,13 @@ def get_event(user, org, event_id):
     """
     Fetch an individual event.
     """
-    e = Event.query.filter_by(id=event_id, org_id=org.id).first()
+    e = Event.query\
+        .filter_by(id=event_id, org_id=org.id)\
+        .first()
     if not e:
         raise NotFoundError(
-            'An Event with ID {} does not exist.'.format(event_id))
+            'An Event with ID {} does not exist.'
+            .format(event_id))
     return jsonify(e)
 
 
@@ -337,45 +347,53 @@ def event_update(user, org, event_id):
     """
     Modify an individual event.
     """
-    e = Event.query.filter_by(id=event_id, org_id=org.id).first()
+    e = Event.query\
+        .filter_by(id=event_id, org_id=org.id)\
+        .first()
     if not e:
         raise NotFoundError(
-            'An Event with ID {} does not exist.'.format(event_id))
+            'An Event with ID {} does not exist.'
+            .format(event_id))
 
     # get request data
     req_data = request_data()
 
     # fetch tag and thing
     tag_ids = listify_data_arg('tag_ids')
-    thing_ids = listify_data_arg('thing_ids')
+    content_item_ids = listify_data_arg('content_item_ids')
 
     # check for current status / PUT status
     current_status = e.status
     req_status = req_data.get('status')
 
-    if len(tag_ids) and len(thing_ids):
+    if len(tag_ids) and len(content_item_ids):
 
         approve = True
         tags = Tag.query\
             .filter_by(org_id=org.id)\
-            .filter(Tag.id.in_(tag_ids)).all()
+            .filter(Tag.id.in_(tag_ids))\
+            .all()
         if not len(tags):
             raise RequestError(
-                'Tag(s) with ID(s) {} do(es) not exist.'.format(tag_ids))
+                'Tag(s) with ID(s) {} do(es) not exist.'
+                .format(tag_ids))
 
-        things = Thing.query\
+        content_items = ContentItem.query\
             .filter_by(org_id=org.id)\
-            .filter(Thing.id.in_(thing_ids)).all()
-        if not len(things):
+            .filter(ContentItem.id.in_(content_item_ids))\
+            .all()
+        if not len(content_items):
             raise RequestError(
-                'Thing(s) with ID(s) {} do(es) not exist.'.format(tag_ids))
+                'ContentItem(s) with ID(s) {} do(es) not exist.'
+                .format(tag_ids))
 
     # check for incomplete approval requests.
     elif current_status != 'approved' and req_status == 'approved':
 
         raise RequestError(
             'To approve an event you must assign it to one or more '
-            'Things or Tags by using the "thing_ids" and "tag_ids" fields.')
+            'ContentItems or Tags by using the "content_item_ids" and '
+            '"tag_ids" fields.')
 
     else:
         approve = False
@@ -390,9 +408,6 @@ def event_update(user, org, event_id):
     if approve:
         req_data['status'] = 'approved'
 
-    # add "updated" date
-    req_data['updated'] = dates.now()
-
     # update fields
     for k, v in req_data.items():
         setattr(e, k, v)
@@ -405,9 +420,9 @@ def event_update(user, org, event_id):
     if approve:
 
         # only add things + tags that haven't already been assigned.
-        for thing, tag in zip(things, tags):
-            if thing.id not in e.thing_ids:
-                e.things.append(thing)
+        for content_item, tag in zip(content_items, tags):
+            if content_item.id not in e.content_item_ids:
+                e.content_items.append(content_item)
 
             # validate tag
             if tag.type != 'impact':
@@ -435,10 +450,13 @@ def event_delete(user, org, event_id):
     when polling recipes for new events since we'll be able to ensure
     that we do not create duplicate events.
     """
-    e = Event.query.filter_by(id=event_id, org_id=org.id).first()
+    e = Event.query\
+        .filter_by(id=event_id, org_id=org.id)\
+        .first()
     if not e:
         raise NotFoundError(
-            'An Event with ID {} does not exist.'.format(event_id))
+            'An Event with ID {} does not exist.'
+            .format(event_id))
 
     if arg_bool('force', False):
         db.session.delete(e)
@@ -448,17 +466,16 @@ def event_delete(user, org, event_id):
     # remove associations
     # from
     # http://stackoverflow.com/questions/9882358/how-to-delete-rows-from-a-table-using-an-sqlalchemy-query-without-orm
-    d = events_tags.delete(events_tags.c.event_id == event_id)
+    d = events_tags\
+        .delete(events_tags.c.event_id == event_id)
     db.session.execute(d)
 
-    d = things_events.delete(things_events.c.event_id == event_id)
+    d = content_items_events\
+        .delete(content_items_events.c.event_id == event_id)
     db.session.execute(d)
 
     # update event
     e.status = 'deleted'
-    e.updated = dates.now()
-
-    # add object
     db.session.add(e)
     db.session.commit()
 
@@ -473,27 +490,33 @@ def event_add_tag(user, org, event_id, tag_id):
     """
     Add a tag to an event.
     """
-    e = Event.query.filter_by(id=event_id, org_id=org.id).first()
+    e = Event.query\
+        .filter_by(id=event_id, org_id=org.id)\
+        .first()
     if not e:
         raise NotFoundError(
-            'An Event with ID {} does not exist.'.format(event_id))
+            'An Event with ID {} does not exist.'
+            .format(event_id))
 
     if not e.status == 'approved':
         raise RequestError(
             'You must first approve an Event before adding additional Tags.')
 
-    tag = Tag.query.filter_by(id=tag_id, org_id=org.id).first()
+    tag = Tag.query\
+        .filter_by(id=tag_id, org_id=org.id)\
+        .first()
     if not tag:
         raise RequestError(
-            'Tag with ID {} does not exist.'.format(tag_id))
+            'Tag with ID {} does not exist.'
+            .format(tag_id))
 
     if tag.type != 'impact':
-        raise RequestError('Events can only be assigned Impact Tags.')
+        raise RequestError(
+            'Events can only be assigned Impact Tags.')
 
     if tag.id not in e.tag_ids:
         e.tags.append(tag)
 
-    e.updated = dates.now()
     db.session.add(e)
     db.session.commit()
 
@@ -501,28 +524,32 @@ def event_add_tag(user, org, event_id, tag_id):
     return jsonify(e)
 
 
-@bp.route('/api/v1/events/<int:event_id>/tags/<int:tag_id>', methods=['DELETE'])
+@bp.route('/api/v1/events/<int:event_id>/tags/<int:tag_id>',
+          methods=['DELETE'])
 @load_user
 @load_org
 def event_delete_tag(user, org, event_id, tag_id):
     """
     Remove a tag from an event.
     """
-    e = Event.query.filter_by(id=event_id, org_id=org.id).first()
+    e = Event.query\
+        .filter_by(id=event_id, org_id=org.id)\
+        .first()
     if not e:
         raise NotFoundError(
-            'An Event with ID {} does not exist.'.format(event_id))
+            'An Event with ID {} does not exist.'
+            .format(event_id))
 
     if tag_id not in e.tag_ids:
         raise RequestError(
             'An Event with ID {} does not currently have an association '
-            'with a Tag with ID {}'.format(event_id, tag_id))
+            'with a Tag with ID {}.'
+            .format(event_id, tag_id))
 
     for tag in e.tags:
         if tag.id == tag_id:
             e.tags.remove(tag)
 
-    e.updated = dates.now()
     db.session.add(e)
     db.session.commit()
 
@@ -530,10 +557,11 @@ def event_delete_tag(user, org, event_id, tag_id):
     return jsonify(e)
 
 
-@bp.route('/api/v1/events/<int:event_id>/things/<int:thing_id>', methods=['PUT'])
+@bp.route('/api/v1/events/<int:event_id>/things/<int:content_item_id>',
+          methods=['PUT'])
 @load_user
 @load_org
-def event_add_thing(user, org, event_id, thing_id):
+def event_add_thing(user, org, event_id, content_item_id):
     """
     Add a thing to an event.
     """
@@ -544,17 +572,19 @@ def event_add_thing(user, org, event_id, thing_id):
 
     if not e.status == 'approved':
         raise RequestError(
-            'You must first approve an Event before adding additional Things.')
+            'You must first approve an Event before adding additional ContentItems.')
 
-    thing = Thing.query.filter_by(id=thing_id, org_id=org.id).first()
-    if not thing:
+    content_item = ContentItem.query\
+        .filter_by(id=content_item_id, org_id=org.id)\
+        .first()
+    if not content_item:
         raise RequestError(
-            'Thing with ID {} does not exist.'.format(thing_id))
+            'ContentItem with ID {} does not exist.'
+            .format(content_item_id))
 
-    if thing.id not in e.thing_ids:
-        e.things.append(thing)
+    if content_item.id not in e.content_item_ids:
+        e.content_items.append(content_item)
 
-    e.updated = dates.now()
     db.session.add(e)
     db.session.commit()
 
@@ -562,10 +592,11 @@ def event_add_thing(user, org, event_id, thing_id):
     return jsonify(e)
 
 
-@bp.route('/api/v1/events/<int:event_id>/things/<int:thing_id>', methods=['DELETE'])
+@bp.route('/api/v1/events/<int:event_id>/content/<int:content_item_id>',
+          methods=['DELETE'])
 @load_user
 @load_org
-def event_delete_thing(user, org, event_id, thing_id):
+def event_delete_content_item(user, org, event_id, content_item_id):
     """
     Remove a thing from an event.
     """
@@ -574,16 +605,15 @@ def event_delete_thing(user, org, event_id, thing_id):
         raise NotFoundError(
             'An Event with ID {} does not exist.'.format(event_id))
 
-    if thing_id not in e.thing_ids:
+    if content_item_id not in e.content_item_ids:
         raise RequestError(
             'An Event with ID {} does not currently have an association '
-            'with a Thing with ID {}'.format(event_id, thing_id))
+            'with a ContentItem with ID {}'.format(event_id, content_item_id))
 
-    for thing in e.things:
-        if thing.id == thing_id:
-            e.things.remove(thing)
+    for content_item in e.content_items:
+        if content_item.id == content_item_id:
+            e.content_items.remove(content_item)
 
-    e.updated = dates.now()
     db.session.add(e)
     db.session.commit()
 

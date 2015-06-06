@@ -32,12 +32,15 @@ def org_create(user):
         raise ForbiddenError(
             'You must be an admin to create or update an Org')
 
-    org = Org.query.filter_by(name=req_data['name']).first()
+    org = Org.query\
+        .filter_by(name=req_data['name'])\
+        .first()
 
     # if the org doesnt exist, create it.
     if org:
         raise RequestError(
-            "Org '{}' already exists".format(req_data['name']))
+            "Org '{}' already exists"
+            .format(req_data['name']))
 
     # add the requesting user to the org
     org = Org(name=req_data['name'])
@@ -62,11 +65,16 @@ def org_create(user):
                 'Default recipe "{}" is missing a "sous_chef" slug.'
                 .format(recipe.get('name', '')))
 
-        sc = SousChef.query.filter_by(slug=sous_chef_slug).first()
+        sc = SousChef.query\
+            .filter_by(slug=sous_chef_slug)\
+            .first()
+
         if not sc:
             raise RecipeSchemaError(
-                '"{}" is not a valid SousChef slug or the SousChef does not yet exist.'
+                '"{}" is not a valid SousChef slug or the '
+                'SousChef does not yet exist.'
                 .format(recipe['name']))
+
         r = Recipe(sc, **recipe)
         db.session.add(r)
 
@@ -83,11 +91,13 @@ def org(user, org_id_slug):
 
     # if it still doesn't exist, raise an error.
     if not org:
-        raise NotFoundError('This Org does not exist.')
+        raise NotFoundError(
+            'This Org does not exist.')
 
     # ensure the active user can edit this Org
     if user.id not in org.user_ids:
-        raise ForbiddenError('You are not allowed to access this Org')
+        raise ForbiddenError(
+            'You are not allowed to access this Org')
 
     return jsonify(org)
 
@@ -107,7 +117,8 @@ def org_update(user, org_id_slug):
 
     # if the org doesnt exist, create it.
     if not org:
-        raise NotFoundError('This Org does not exist.')
+        raise NotFoundError(
+            'This Org does not exist.')
 
     if user.id not in org.user_ids:
         raise ForbiddenError(
@@ -116,8 +127,10 @@ def org_update(user, org_id_slug):
     # update the requesting user to the org
     if 'name' in req_data:
         org.name = req_data['name']
+
     if 'slug' in req_data:
         org.slug = req_data['slug']
+
     db.session.add(org)
     db.session.commit()
 
@@ -129,19 +142,22 @@ def org_update(user, org_id_slug):
 def org_delete(user, org_id_slug):
 
     if not user.admin:
-        raise AuthError('You must be an admin to delete an Org')
+        raise AuthError(
+            'You must be an admin to delete an Org')
 
     # fetch org
     org = fetch_by_id_or_field(Org, 'slug', org_id_slug)
 
     # if it still doesn't exist, raise an error.
     if not org:
-        raise NotFoundError('This Org does not exist.')
+        raise NotFoundError(
+            'This Org does not exist.')
 
     # ensure the active user can edit this Org
     if user.id not in org.user_ids:
-        raise ForbiddenError('User "{}" is not allowed to access Org "{}".'
-                             .format(user.name, org.name))
+        raise ForbiddenError(
+            'User "{}" is not allowed to access Org "{}".'
+            .format(user.name, org.name))
 
     db.session.delete(org)
     db.session.commit()
@@ -158,12 +174,14 @@ def org_users(user, org_id_slug):
 
     # if it still doesn't exist, raise an error.
     if not org:
-        raise NotFoundError('This Org does not exist.')
+        raise NotFoundError(
+            'This Org does not exist.')
 
     # ensure the active user can edit this Org
     if user.id not in org.user_ids:
-        raise ForbiddenError('User "{}" is not allowed to access Org "{}".'
-                             .format(user.email, org.name))
+        raise ForbiddenError(
+            'User "{}" is not allowed to access Org "{}".'
+            .format(user.email, org.name))
 
     return jsonify(org.users)
 
@@ -204,9 +222,15 @@ def org_create_user(user, org_id_slug):
 
     if User.query.filter_by(email=email).first():
         raise RequestError(
-            'A User with email "{}" already exists'.format(email))
+            'A User with email "{}" already exists'
+            .format(email))
 
-    new_org_user = User(email=email, password=password, name=name, admin=admin)
+    new_org_user = User(
+        email=email,
+        password=password,
+        name=name,
+        admin=admin)
+
     org.users.append(new_org_user)
     db.session.commit()
 
@@ -221,22 +245,26 @@ def org_user(user, org_id_slug, user_email):
     org = fetch_by_id_or_field(Org, 'slug', org_id_slug)
 
     if not org:
-        raise NotFoundError('This Org does not exist.')
+        raise NotFoundError(
+            'This Org does not exist.')
 
     # ensure the active user can edit this Org
     if user.id not in org.user_ids:
-        raise ForbiddenError('You are not allowed to access this Org')
+        raise ForbiddenError(
+            'You are not allowed to access this Org')
 
     # get this new user by id / email
     org_user = fetch_by_id_or_field(User, 'email', user_email)
 
     if not org_user:
-        raise RequestError('This user does not yet exist')
+        raise RequestError(
+            'This user does not yet exist')
 
     # check whether this user can view this other user:
     if not len(list(set(org_user.org_ids).intersection(set(user.org_ids)))):
-        raise ForbiddenError('You are not allowed to view this user.'
-                             .format(user.email))
+        raise ForbiddenError(
+            'You are not allowed to view this user.'
+            .format(user.email))
 
     return jsonify(org_user)
 
@@ -253,11 +281,13 @@ def org_add_user(user, org_id_slug, user_email):
     org = fetch_by_id_or_field(Org, 'slug', org_id_slug)
 
     if not org:
-        raise NotFoundError('This Org does not exist.')
+        raise NotFoundError(
+            'This Org does not exist.')
 
     # ensure the active user can edit this Org
     if user.id not in org.user_ids:
-        raise ForbiddenError('You are not allowed to edit this Org.')
+        raise ForbiddenError(
+            'You are not allowed to edit this Org.')
 
     # get this new user by id / email
     new_org_user = fetch_by_id_or_field(User, 'email', user_email)
@@ -301,13 +331,15 @@ def org_remove_user(user, org_id_slug, user_email):
     existing_user = fetch_by_id_or_field(User, 'email', user_email)
 
     if not existing_user:
-        raise RequestError('User "{}" does not yet exist'
-                           .format(user_email))
+        raise RequestError(
+            'User "{}" does not yet exist'
+            .format(user_email))
 
     # ensure that user is not already a part of this Org.
     if existing_user.id not in org.user_ids:
-        raise RequestError('User "{}" is not a part of Org "{}"'
-                           .format(existing_user.email, org.name))
+        raise RequestError(
+            'User "{}" is not a part of Org "{}"'
+            .format(existing_user.email, org.name))
 
     org.users.remove(existing_user)
 

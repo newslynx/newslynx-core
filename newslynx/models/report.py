@@ -14,14 +14,14 @@ class Report(db.Model):
     org_id = db.Column(
         db.Integer, db.ForeignKey('orgs.id'), index=True)
     name = db.Column(db.Text, index=True)
-    created = db.Column(db.DateTime(timezone=True), index=True)
+    created = db.Column(db.DateTime(timezone=True), default=dates.now)
+    updated = db.Column(db.DateTime, onupdate=dates.now, default=dates.now)
     template = db.Column(db.Text)
     data = db.Column(JSON)
 
     def __init__(self, **kw):
         self.org_id = kw.get('org_id')
         self.name = kw.get('name')
-        self.created = kw.get('created', dates.now())
         self.template = kw.get('template', None)
         self.data = kw.get('data')
 
@@ -31,6 +31,7 @@ class Report(db.Model):
             'org_id': self.org_id,
             'name': self.name,
             'created': self.created,
+            'updated': self.updated,
             'has_template': self.template is not None,
             'data': self.data
         }

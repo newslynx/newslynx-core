@@ -26,48 +26,48 @@ IMPACT_TAG_NAMES = ['Media pickup', 'Media social share',
 SUBJECT_TAG_NAMES = ['Environment', 'Money & politics', 'Government', 'Health']
 
 
-CREATORS = ['Michael Keller', 'Brian Abelson', 'Merlynne Jones']
+AUTHORS = ['Michael Keller', 'Brian Abelson', 'Merlynne Jones']
 
 METRICS = [
     {
         'name': 'pageviews',
         'category': 'performance',
-        'level': 'thing',
+        'level': 'content_item',
         'timeseries': True,
         'cumulative': False
     },
     {
         'name': 'on_homepage',
         'category': 'promotion',
-        'level': 'thing',
+        'level': 'content_item',
         'timeseries': True,
         'cumulative': False
     },
     {
         'name': 'twitter_shares',
         'category': 'performance',
-        'level': 'thing',
+        'level': 'content_item',
         'timeseries': True,
         'cumulative': False
     },
     {
         'name': 'external_pageviews',
         'category': 'performance',
-        'level': 'thing',
+        'level': 'content_item',
         'timeseries': False,
         'cumulative': False
     },
     {
         'name': 'pageviews_by_referrer__google_com',
         'category': 'performance',
-        'level': 'thing',
+        'level': 'content_item',
         'timeseries': False,
         'cumulative': False
     },
     {
         'name': 'pageviews_by_referrer__reddit_com',
         'category': 'performance',
-        'level': 'thing',
+        'level': 'content_item',
         'timeseries': False,
         'cumulative': False
     },
@@ -290,23 +290,23 @@ def gen_subject_tags(org, n_subject_tags):
     return subject_tags
 
 
-# CREATORS
-def gen_creators(org):
-    creators = []
-    for name in CREATORS:
-        c = Creator(
+# AUTHORS
+def gen_authors(org):
+    authors = []
+    for name in AUTHORS:
+        c = Author(
             org_id=org.id,
             name=name,
             created=random_date(100, 200),
             meta=random_meta())
         db_session.add(c)
         db_session.commit()
-        creators.append(c)
-    return creators
+        authors.append(c)
+    return authors
 
 
 # EVENTS
-def gen_events(org, recipes, impact_tags, things, n_events):
+def gen_events(org, recipes, impact_tags, content_items, n_events):
     events = []
     for i in xrange(n_events):
         status = choice(EVENT_STATUSES)
@@ -332,7 +332,7 @@ def gen_events(org, recipes, impact_tags, things, n_events):
 
         if status == 'approved':
             e.tags.append(choice(impact_tags))
-            e.things.append(choice(things))
+            e.content_items.append(choice(content_items))
 
         if provenance == 'manual':
             e.recipe_id = None
@@ -343,19 +343,19 @@ def gen_events(org, recipes, impact_tags, things, n_events):
     return e
 
 
-# THINGS
-def gen_thing(org, recipes, subject_tags, creators):
+# content_items
+def gen_content_item(org, recipes, subject_tags, authors):
 
     r = choice(recipes)
     st = choice(subject_tags)
-    c = choice(creators)
-    provenance = choice(THING_PROVENANCES)
+    c = choice(authors)
+    provenance = choice(CONTENT_ITEM_PROVENANCES)
 
-    t = Thing(
+    t = ContentItem(
         org_id=org.id,
         recipe_id=r.id,
         url=random_url(),
-        type=choice(THING_TYPES),
+        type=choice(CONTENT_ITEM_TYPES),
         provenance=provenance,
         created=random_date(10, 100),
         updated=random_date(1, 9),
@@ -371,7 +371,7 @@ def gen_thing(org, recipes, subject_tags, creators):
         t.recipe_id = None
 
     t.tags.append(st)
-    t.creators.append(c)
+    t.authors.append(c)
     db_session.add(t)
     db_session.commit()
     return t
@@ -379,7 +379,7 @@ def gen_thing(org, recipes, subject_tags, creators):
 # METRICS
 
 
-def gen_metrics(org, thing, recipe, metric, n=100):
+def gen_metrics(org, content_item, recipe, metric, n=100):
     for i in xrange(n):
 
         if metric['cumulative']:
@@ -397,7 +397,7 @@ def gen_metrics(org, thing, recipe, metric, n=100):
         m = Metric(
             org_id=org.id,
             recipe_id=recipe.id,
-            thing_id=thing.id,
+            content_item_id=content_item.id,
             value=value,
             created=created,
             meta=random_meta(),
@@ -409,41 +409,41 @@ def gen_metrics(org, thing, recipe, metric, n=100):
 def main(
         n_users=2,
         n_event_recipes=10,
-        n_thing_recipes=10,
+        n_content_item_recipes=10,
         n_subject_tags=10,
         n_impact_tags=10,
         n_events=500,
-        n_metrics_per_thing=5,
-        n_things=50,
+        n_metrics_per_content_item=5,
+        n_content_items=50,
         verbose=True):
 
-    # top level things
+    # top level content_items
     admin = gen_admin_user()
     users = [gen_user() for _ in xrange(n_users)] + [admin]
     org = gen_org(users)
     impact_tags = gen_impact_tags(org, n_subject_tags)
     subject_tags = gen_subject_tags(org, n_impact_tags)
-    creators = gen_creators(org)
+    authors = gen_authors(org)
     sous_chefs = get_sous_chefs()
     recipes = gen_built_in_recipes(org)
 
-    # generate things + metrics
-    things = []
-    for i in xrange(n_things):
+    # generate content_items + metrics
+    content_items = []
+    for i in xrange(n_content_items):
 
-        thing = gen_thing(org, recipes, subject_tags, creators)
-        things.append(thing)
+        content_item = gen_content_item(org, recipes, subject_tags, authors)
+        content_items.append(content_item)
         for metric in METRICS:
             recipe = choice(recipes)
             if not metric['timeseries']:
                 n_metrics = 1
             else:
-                n_metrics = copy.copy(n_metrics_per_thing)
+                n_metrics = copy.copy(n_metrics_per_content_item)
             if verbose:
-                print "generating {} {} for thing {} of {}"\
-                    .format(n_metrics, metric['name'], i, n_things)
+                print "generating {} {} for content_item {} of {}"\
+                    .format(n_metrics, metric['name'], i, n_content_items)
 
-            gen_metrics(org, thing, recipe, metric, n_metrics)
+            gen_metrics(org, content_item, recipe, metric, n_metrics)
 
     if verbose:
         print "generating {} events".format(n_events)
@@ -451,18 +451,19 @@ def main(
     # generate links
     if verbose:
         print "generating in/out links"
-    for thing in things:
-        t = choice(things)
-        thing.out_links.append(t)
+
+    for content_item in content_items:
+        t = choice(content_items)
+        content_item.out_links.append(t)
 
     # generate events
-    gen_events(org, recipes, impact_tags, things, n_events)
+    gen_events(org, recipes, impact_tags, content_items, n_events)
     db_session.commit()
 
     if verbose:
         print "generating views."
     # generate views
-    # view.thing_timeseries()
+    # view.content_item_timeseries()
     # view.org_timeseries()
 
 

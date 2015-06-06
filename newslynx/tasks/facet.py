@@ -1,7 +1,7 @@
 from sqlalchemy import func, desc
 
-from newslynx.models import Event, Recipe, Tag, SousChef, Thing
-from newslynx.models.relations import events_tags, things_tags
+from newslynx.models import Event, Recipe, Tag, SousChef, ContentItem
+from newslynx.models.relations import events_tags, content_items_tags
 from newslynx.core import db
 
 
@@ -89,15 +89,15 @@ def events_by_sous_chefs(event_ids):
     return [dict(zip(['id', 'count'], c)) for c in sous_chef_counts]
 
 
-def events_by_things(event_ids):
+def events_by_content_items(event_ids):
     """
-    Count the number of events associated with things.
+    Count the number of events associated with content_items.
     """
     thing_counts = db.session\
-        .query(Thing.id, Thing.title, func.count(Thing.id))\
-        .filter(Thing.events.any(Event.id.in_(event_ids)))\
-        .order_by(desc(func.count(Thing.id)))\
-        .group_by(Thing.id, Thing.url, Thing.title).all()
+        .query(ContentItem.id, ContentItem.title, func.count(ContentItem.id))\
+        .filter(ContentItem.events.any(Event.id.in_(event_ids)))\
+        .order_by(desc(func.count(ContentItem.id)))\
+        .group_by(ContentItem.id, ContentItem.url, ContentItem.title).all()
 
     # explicitly shutdown session started in greenlet
     db.session.remove()
@@ -145,24 +145,24 @@ def events(by, event_ids):
         'categories': events_by_categories,
         'levels': events_by_levels,
         'sous_chefs': events_by_sous_chefs,
-        'things': events_by_things,
+        'content_items': events_by_content_items,
         'statuses': events_by_statuses,
         'provenances': events_by_provenances
     }
     return fx_lookup.get(by)(event_ids)
 
 
-# things
+# content_items
 
-def things_by_types(thing_ids):
+def content_items_by_types(content_item_ids):
     """
-    Count the number of things associated with thing types.
+    Count the number of content_items associated with thing types.
     """
     type_counts = db.session\
-        .query(Thing.type, func.count(Thing.type))\
-        .filter(Thing.id.in_(thing_ids))\
-        .group_by(Thing.type)\
-        .order_by(desc(func.count(Thing.type)))\
+        .query(ContentItem.type, func.count(ContentItem.type))\
+        .filter(ContentItem.id.in_(content_item_ids))\
+        .group_by(ContentItem.type)\
+        .order_by(desc(func.count(ContentItem.type)))\
         .all()
 
     # explicitly shutdown session started in greenlet
@@ -170,15 +170,15 @@ def things_by_types(thing_ids):
     return [dict(zip(['type', 'count'], r)) for r in type_counts]
 
 
-def things_by_provenances(thing_ids):
+def content_items_by_provenances(content_item_ids):
     """
-    Count the number of things associated with thing types.
+    Count the number of content_items associated with thing types.
     """
     type_counts = db.session\
-        .query(Thing.provenance, func.count(Thing.provenance))\
-        .filter(Thing.id.in_(thing_ids))\
-        .group_by(Thing.provenance)\
-        .order_by(desc(func.count(Thing.provenance)))\
+        .query(ContentItem.provenance, func.count(ContentItem.provenance))\
+        .filter(ContentItem.id.in_(content_item_ids))\
+        .group_by(ContentItem.provenance)\
+        .order_by(desc(func.count(ContentItem.provenance)))\
         .all()
 
     # explicitly shutdown session started in greenlet
@@ -186,15 +186,15 @@ def things_by_provenances(thing_ids):
     return [dict(zip(['provenance', 'count'], r)) for r in type_counts]
 
 
-def things_by_domains(thing_ids):
+def content_items_by_domains(content_item_ids):
     """
-    Count the number of things associated with domains.
+    Count the number of content_items associated with domains.
     """
     domain_counts = db.session\
-        .query(Thing.domain, func.count(Thing.domain))\
-        .filter(Thing.id.in_(thing_ids))\
-        .group_by(Thing.domain)\
-        .order_by(desc(func.count(Thing.domain)))\
+        .query(ContentItem.domain, func.count(ContentItem.domain))\
+        .filter(ContentItem.id.in_(content_item_ids))\
+        .group_by(ContentItem.domain)\
+        .order_by(desc(func.count(ContentItem.domain)))\
         .all()
 
     # explicitly shutdown session started in greenlet
@@ -202,14 +202,14 @@ def things_by_domains(thing_ids):
     return [dict(zip(['domain', 'count'], r)) for r in domain_counts]
 
 
-def things_by_recipes(thing_ids):
+def content_items_by_recipes(content_item_ids):
     """
-    Count the number of things associated with recipes.
+    Count the number of content_items associated with recipes.
     """
     recipe_counts = db.session\
         .query(Recipe.slug, func.count(Recipe.slug))\
-        .join(Thing)\
-        .filter(Thing.id.in_(thing_ids))\
+        .join(ContentItem)\
+        .filter(ContentItem.id.in_(content_item_ids))\
         .order_by(desc(func.count(Recipe.slug)))\
         .group_by(Recipe.slug).all()
 
@@ -218,15 +218,15 @@ def things_by_recipes(thing_ids):
     return [dict(zip(['slug', 'count'], r)) for r in recipe_counts]
 
 
-def things_by_tags(thing_ids):
+def content_items_by_tags(content_item_ids):
     """
-    Count the number of things associated with tags.
+    Count the number of content_items associated with tags.
     """
     tag_counts = db.session\
-        .query(things_tags.c.tag_id, func.count(things_tags.c.tag_id))\
-        .filter(things_tags.c.thing_id.in_(thing_ids))\
-        .group_by(things_tags.c.tag_id)\
-        .order_by(desc(func.count(things_tags.c.tag_id)))\
+        .query(content_items_tags.c.tag_id, func.count(content_items_tags.c.tag_id))\
+        .filter(content_items_tags.c.content_item_id.in_(content_item_ids))\
+        .group_by(content_items_tags.c.tag_id)\
+        .order_by(desc(func.count(content_items_tags.c.tag_id)))\
         .all()
 
     # explicitly shutdown session started in greenlet
@@ -234,15 +234,15 @@ def things_by_tags(thing_ids):
     return [dict(zip(['id', 'count'], c)) for c in tag_counts]
 
 
-def things_by_sous_chefs(thing_ids):
+def content_items_by_sous_chefs(content_item_ids):
     """
-    Count the number of things associated with sous chefs.
+    Count the number of content_items associated with sous chefs.
     """
     task_counts = db.session\
         .query(SousChef.slug, func.count(SousChef.slug))\
         .outerjoin(Recipe)\
-        .outerjoin(Thing)\
-        .filter(Thing.id.in_(thing_ids))\
+        .outerjoin(ContentItem)\
+        .filter(ContentItem.id.in_(content_item_ids))\
         .order_by(desc(func.count(SousChef.slug)))\
         .group_by(SousChef.slug).all()
 
@@ -251,17 +251,17 @@ def things_by_sous_chefs(thing_ids):
     return [dict(zip(['slug', 'count'], c)) for c in task_counts]
 
 
-def things(by, thing_ids):
+def content_items(by, content_item_ids):
     """
     Simplified mapping of facet functions
     """
     fx_lookup = {
-        'recipes': things_by_recipes,
-        'tags': things_by_tags,
-        'sous_chefs': things_by_sous_chefs,
-        'statuses': things_by_types,
-        'types': things_by_types,
-        'domains': things_by_domains,
-        'provenances': things_by_provenances
+        'recipes': content_items_by_recipes,
+        'tags': content_items_by_tags,
+        'sous_chefs': content_items_by_sous_chefs,
+        'statuses': content_items_by_types,
+        'types': content_items_by_types,
+        'domains': content_items_by_domains,
+        'provenances': content_items_by_provenances
     }
-    return fx_lookup.get(by)(thing_ids)
+    return fx_lookup.get(by)(content_item_ids)

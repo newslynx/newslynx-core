@@ -114,9 +114,10 @@ def arg_list(name, default=None, typ=str, exclusions=False):
                 v = typ(value)
 
         except:
-            raise RequestError('"{}", element {} of "{}" is invalid. '
-                               'It should be a {} type.'
-                               .format(value), i, name, type_string)
+            raise RequestError(
+                '"{}", element  {} of "{}" is invalid. '
+                'It should be a {} type.'
+                .format(value), i, name, type_string)
 
         if exclusions:
             if exclude:
@@ -213,8 +214,9 @@ def validate_fields(obj, fields=[], incl=[], suffix='to select by'):
             msg = 'is not a valid field name'
         else:
             msg = 'are not valid field names'
-        raise RequestError("'{}' {} {}. Choose from: {}."
-                           .format(', '.join(bad_fields), msg, suffix, columns))
+        raise RequestError(
+            "'{}' {} {}. Choose from: {}."
+            .format(', '.join(bad_fields), msg, suffix, columns))
 
 
 def validate_tag_types(values):
@@ -233,8 +235,9 @@ def validate_tag_types(values):
             msg = 'is not a valid tag type'
         else:
             msg = 'are not valid tag types'
-        raise RequestError("'{}' {}. Choose from:"
-                           .format(', '.join(bad_values), msg, IMPACT_TAG_TYPES))
+        raise RequestError(
+            "'{}' {}. Choose from:"
+            .format(', '.join(bad_values), msg, IMPACT_TAG_TYPES))
 
 
 def validate_tag_categories(values):
@@ -253,8 +256,9 @@ def validate_tag_categories(values):
             msg = 'is not a valid tag category.'
         else:
             msg = 'are not valid tag categories.'
-        raise RequestError("'{}' {}. Choose from: {}"
-                           .format(', '.join(bad_values), msg, IMPACT_TAG_CATEGORIES))
+        raise RequestError(
+            "'{}' {}. Choose from: {}"
+            .format(', '.join(bad_values), msg, IMPACT_TAG_CATEGORIES))
 
 
 def validate_tag_levels(values):
@@ -273,39 +277,43 @@ def validate_tag_levels(values):
             msg = 'is not a valid tag level.'
         else:
             msg = 'are not valid tag levels.'
-        raise RequestError("'{}' {}. Choose from: {}."
-                           .format(', '.join(bad_values), msg, IMPACT_TAG_LEVELS))
+        raise RequestError(
+            "'{}' {}. Choose from: {}."
+            .format(', '.join(bad_values), msg, IMPACT_TAG_LEVELS))
 
 
-def validate_thing_types(values):
+def validate_content_item_types(values):
     """
-    check a list of values against thing types.
+    check a list of values against ContentItem types.
     """
     if not isinstance(values, list):
         values = [values]
     bad_values = []
     for value in values:
-        if value not in THING_TYPES + ['all']:
+        if value not in CONTENT_ITEM_TYPES + ['all']:
             bad_values.append(value)
 
     if len(bad_values):
         if len(bad_values) == 1:
-            msg = 'is not a valid Thing type.'
+            msg = 'is not a valid ContentItem type.'
         else:
-            msg = 'are not valid Thing types.'
-        raise RequestError("'{}' {}. Choose from: {}."
-                           .format(', '.join(bad_values), msg, THING_TYPES))
+            msg = 'are not valid ContentItem types.'
+        raise RequestError(
+            "'{}' {}. Choose from: {}."
+            .format(', '.join(bad_values), msg, content_item_TYPES))
 
 
-def validate_thing_provenances(value):
+def validate_content_item_provenances(value):
     """
-    check a list of values against Thing provenances.
+    check a list of values against ContentItem provenances.
     """
     if not value:
         return
-    if value not in THING_PROVENANCES:
-        raise RequestError("'{}' is not a valid Thing provenance. Choose from {}."
-                           .format(value, provenances))
+    provenances = CONTENT_ITEM_PROVENANCES + ['all']
+    if value not in provenances:
+        raise RequestError(
+            "'{}' is not a valid ContentItem provenance. Choose from {}."
+            .format(value, provenances))
 
 
 def validate_event_status(value):
@@ -314,8 +322,9 @@ def validate_event_status(value):
     """
     statuses = EVENT_STATUSES + ['all']
     if value not in statuses:
-        raise RequestError("'{}' is not a valid Event status. Choose from {}."
-                           .format(value, statuses))
+        raise RequestError(
+            "'{}' is not a valid Event status. Choose from {}."
+            .format(value, statuses))
 
 
 def validate_event_provenances(value):
@@ -324,14 +333,16 @@ def validate_event_provenances(value):
     """
     if not value:
         return
-    if value not in EVENT_PROVENANCES:
-        raise RequestError("'{}' is not a valid Event provenance. Choose from {}."
-                           .format(value, provenances))
+    provenances = CONTENT_ITEM_PROVENANCES + ['all']
+    if value not in provenances:
+        raise RequestError(
+            "'{}' is not a valid Event provenance. Choose from {}."
+            .format(value, provenances))
 
 
 def validate_event_facets(values):
     """
-    check a list of values against thing types.
+    check a list of values against ContentItem types.
     """
     if not isinstance(values, list):
         values = [values]
@@ -346,17 +357,18 @@ def validate_event_facets(values):
             msg = 'is not a valid Event facet.'
         else:
             msg = 'are not valid Event facets.'
-        raise RequestError("'{}' {}. Choose from: {}."
-                           .format(', '.join(bad_values), msg, facets))
+        raise RequestError(
+            "'{}' {}. Choose from: {}."
+            .format(', '.join(bad_values), msg, facets))
 
 
-def validate_thing_facets(values):
+def validate_content_item_facets(values):
     """
-    check a list of values against thing types.
+    check a list of values against ContentItem types.
     """
     if not isinstance(values, list):
         values = [values]
-    facets = THING_FACETS + ['all']
+    facets = CONTENT_ITEM_FACETS + ['all']
     bad_values = []
     for value in values:
         if value not in facets:
@@ -364,16 +376,17 @@ def validate_thing_facets(values):
 
     if len(bad_values):
         if len(bad_values) == 1:
-            msg = 'is not a valid Thing facet.'
+            msg = 'is not a valid ContentItem facet.'
         else:
-            msg = 'are not valid Thing facets.'
-        raise RequestError("'{}' {}. Choose from: {}."
-                           .format(', '.join(bad_values), msg, facets))
+            msg = 'are not valid ContentItem facets.'
+        raise RequestError(
+            "'{}' {}. Choose from: {}."
+            .format(', '.join(bad_values), msg, facets))
 
 
 def validate_sous_chef_creates(values):
     """
-    check a list of values against thing types.
+    check a list of values against ContentItem types.
     """
     if not isinstance(values, list):
         values = [values]
@@ -387,14 +400,14 @@ def validate_sous_chef_creates(values):
         if len(bad_values) == 1:
             msg = 'is not a valid collection a SousChef creates.'
         else:
-            msg = 'are not valid Thing facets.'
+            msg = 'are not valid ContentItem facets.'
         raise RequestError("'{}' {}. Choose from: {}."
                            .format(', '.join(bad_values), msg, facets))
 
 
 def validate_hex_code(value):
     """
-    check a list of values against thing types.
+    check a list of values against ContentItem types.
     """
     if not RE_HEX_CODE.search(value):
         raise RequestError("'{}' is not a valid hex code.".format(value))

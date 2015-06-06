@@ -29,10 +29,13 @@ def login():
         raise AuthError('"email" or "password" not provided.')
 
     # check user's existence
-    user = User.query.filter_by(email=email).first()
+    user = User.query\
+        .filter_by(email=email)\
+        .first()
+
     if user is None:
         raise AuthError('A user with email "{}" does not exist.'
-                           .format(email))
+                        .format(email))
 
     # check the supplied password
     if not user.check_password(password):

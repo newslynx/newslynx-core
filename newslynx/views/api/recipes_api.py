@@ -8,7 +8,6 @@ from newslynx.models import SousChef, Recipe
 from newslynx.models.recipe import validate_recipe
 from newslynx.models.util import get_table_columns, fetch_by_id_or_field
 from newslynx.lib.serialize import jsonify
-from newslynx.lib import dates
 from newslynx.views.decorators import load_user, load_org
 from newslynx.views.util import *
 
@@ -67,13 +66,15 @@ def list_recipes(user, org):
         facets['statuses'][r.status] += 1
         facets['sous_chefs'][r.sous_chef.slug] += 1
         facets['creates'][r.sous_chef.creates] += 1
+
         if r.scheduled:
             facets['schedules']['scheduled'] += 1
         else:
             facets['schedules']['unscheduled'] += 1
+
         recipe = r.to_dict()
         recipe['event_count'] = r.events.count()
-        recipe['thing_count'] = r.things.count()
+        recipe['content_item_count'] = r.content_items.count()
         clean_recipes.append(recipe)
 
     resp = {
@@ -104,6 +105,7 @@ def create_recipe(user, org):
         req_data['status'] = 'stable'
 
     r = Recipe(sc, user_id=user.id, org_id=org.id, **req_data)
+
     db.session.add(r)
     db.session.commit()
 
@@ -130,11 +132,6 @@ def update_recipe(user, org, recipe_id):
     if not r:
         raise RequestError('Recipe with id/slug {} does not exist.'
                            .format(recipe_id))
-    print "START"
-    print r.to_dict()
-
-    print "REQ DATA RAW"
-    print req_data
 
     req_data = request_data()
 
@@ -146,9 +143,6 @@ def update_recipe(user, org, recipe_id):
     ]
     for k in non_schema:
         req_data.pop(k, None)
-
-    print "REQ DATA CLEAN"
-    print req_data
 
     recipe, parsed_options = validate_recipe(
         r.sous_chef.to_dict(), req_data)
@@ -162,14 +156,8 @@ def update_recipe(user, org, recipe_id):
     if r.status == 'uninitialized':
         r.status = 'stable'
 
-    # set updated time.
-    r.updated = dates.now()
-
     # update pickled options
     r.set_pickle_opts(parsed_options)
-
-    print "END"
-    print r.to_dict()
 
     db.session.add(r)
     db.session.commit()

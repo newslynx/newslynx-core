@@ -32,10 +32,10 @@ properties:
     creates:
         description: "What does this sous-chef create? Can be event, thing, tag, metric, series."
         enum:
-            - event
-            - thing
-            - tag
-            - metric
+            - events
+            - content
+            - tags
+            - metrics
             - series
     options:
         description: Options this sous-chef accepts

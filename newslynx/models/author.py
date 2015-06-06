@@ -4,21 +4,23 @@ from newslynx.core import db
 from newslynx.lib import dates
 
 
-class Creator(db.Model):
+class Author(db.Model):
 
     """
-    A creator is an author of a thing.
-    A unique creator is a combination of an organization_id and a name.
+    An author of a content-item.
+    A unique author is a combination of an org_id and a name.
     """
 
-    __tablename__ = 'creators'
+    __tablename__ = 'authors'
 
     # the ID is the global bitly hash.
     id = db.Column(db.Integer, unique=True, primary_key=True, index=True)
     org_id = db.Column(
-        db.Integer, db.ForeignKey('orgs.id'), index=True, primary_key=True)
-    name = db.Column(db.Text, index=True, primary_key=True)
-    created = db.Column(db.DateTime(timezone=True), index=True)
+        db.Integer, db.ForeignKey('orgs.id'), index=True)
+    name = db.Column(db.Text, index=True)
+    img_url = db.Column(db.Text)
+    created = db.Column(db.DateTime(timezone=True), default=dates.now)
+    updated = db.Column(db.DateTime, onupdate=dates.now, default=dates.now)
 
     __table_args__ = (
         db.UniqueConstraint('org_id', 'name'),
@@ -30,15 +32,17 @@ class Creator(db.Model):
     def __init__(self, **kw):
         self.org_id = kw.get('org_id')
         self.name = kw.get('name').upper()
-        self.created = kw.get('created', dates.now())
+        self.img_url = kw.get('img_url')
 
     def to_dict(self):
         return {
             'id': self.id,
             'org_id': self.org_id,
-            'name': self.name,
+            'name': self.name.title(),
+            'img_url': self.img_url,
             'created': self.created,
+            'updated': self.updated
         }
 
     def __repr__(self):
-        return '<Creator %r >' % (self.name)
+        return '<Author %r >' % (self.name)

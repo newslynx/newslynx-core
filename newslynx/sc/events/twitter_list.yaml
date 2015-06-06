@@ -2,7 +2,7 @@ name: Twitter List To Event
 slug: twitter-list-to-event
 description: Extracts events from a twitter list.
 runs: newslynx.sc.events.twitter.List
-creates: event
+creates: events
 options:
     
     list_owner_screen_name:

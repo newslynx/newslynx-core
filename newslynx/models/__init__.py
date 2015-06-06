@@ -1,12 +1,12 @@
 from .auth import Auth
-from .creator import Creator
+from .author import Author
 from .event import Event
 from .metric import Metric
 from .org import Org
 from .recipe import Recipe
 from .setting import Setting
 from .tag import Tag
-from .thing import Thing
+from .content_item import ContentItem
 from .user import User
 from .sous_chef import SousChef, validate_sous_chef
 from .url import url_cache

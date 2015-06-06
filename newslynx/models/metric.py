@@ -19,7 +19,7 @@ class Metric(db.Model):
         - impact (i.e. number of impact events)
 
     level:
-        - thing
+        - content_item
         - series
         - org
 
@@ -34,26 +34,26 @@ class Metric(db.Model):
         db.Integer, db.ForeignKey('orgs.id'), index=True
     )
     recipe_id = db.Column(db.Integer, db.ForeignKey('recipes.id'), index=True)
-    thing_id = db.Column(db.Integer, db.ForeignKey('things.id'), index=True)
+    content_item_id = db.Column(db.Integer, db.ForeignKey('content.id'), index=True)
     name = db.Column(db.Text, index=True)
     value = db.Column(db.Float, index=True)
     category = db.Column(
         ENUM(*METRIC_CATEGORIES, name='metric_categories_enum'), index=True)
     level = db.Column(
-        ENUM('thing', 'org', 'series', name='metric_levels_enum'), index=True)
+        ENUM('content_item', 'org', 'series', name='metric_levels_enum'), index=True)
     cumulative = db.Column(db.Boolean, index=True)
     timeseries = db.Column(db.Boolean, index=True)
     created = db.Column(db.DateTime(timezone=True), index=True)
 
     __table_args__ = (
         db.UniqueConstraint(
-            'thing_id', 'org_id', 'recipe_id', 'name', 'created'),
+            'content_item_id', 'org_id', 'recipe_id', 'name', 'created'),
     )
 
     def __init__(self, **kw):
         self.org_id = kw.get('org_id')
         self.recipe_id = kw.get('recipe_id')
-        self.thing_id = kw.get('thing_id')
+        self.content_item_id = kw.get('content_item_id')
         self.name = kw.get('name')
         self.value = kw.get('value')
         self.created = kw.get('created')
@@ -68,7 +68,7 @@ class Metric(db.Model):
             'id': self.id,
             'org_id': self.org_id,
             'recipe_id': self.recipe_id,
-            'thing_id': self.thing_id,
+            'content_item_id': self.content_item_id,
             'name': self.name,
             'value': self.value,
             'created': self.created,

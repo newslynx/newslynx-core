@@ -497,13 +497,13 @@ class Events(BaseClient):
         return self._request('DELETE', url, params=kw)
 
 
-class Things(BaseClient):
+class Content(BaseClient):
 
     def get(self, thing_id, **kw):
         """
         Get an individual thing.
         """
-        url = self._format_url('things', thing_id)
+        url = self._format_url('content', thing_id)
         return self._request('GET', url, params=kw)
 
 
@@ -513,9 +513,6 @@ class Creators(BaseClient):
 
 class SousChefs(BaseClient):
     pass
-
-
-
 
 
 class Metrics(BaseClient):
@@ -540,7 +537,7 @@ class API(BaseClient):
         self.sous_chefs = SousChefs(**kw)
         self.recipes = Recipes(**kw)
         self.events = Events(**kw)
-        self.things = Things(**kw)
+        self.content = Content(**kw)
         self.metrics = Metrics(**kw)
         self.reports = Reports(**kw)
         self.creators = Creators(**kw)

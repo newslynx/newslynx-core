@@ -11,13 +11,13 @@ from newslynx.lib import text
 from newslynx.lib import html
 from newslynx.lib import article
 from newslynx.models import (
-    url_cache, Event, Thing, Tag,
+    url_cache, Event, ContentItem, Tag,
     Recipe)
 from newslynx.models.util import (
     split_meta, get_table_columns,
     fetch_by_id_or_field)
 from newslynx.views.util import (
-    validate_thing_types, validate_event_status)
+    validate_content_item_types, validate_event_status)
 from newslynx.exc import RequestError, UnprocessableEntityError
 
 # a pool to multithread url_cache.
@@ -35,8 +35,8 @@ def event(o,
     # check required fields
     _check_requires(o, requires, type='Event')
 
-    # keep track if we detected things
-    has_things = False
+    # keep track if we detected content_items
+    has_content_items = False
 
     # get org_id
     org_id = o.get('org_id')
@@ -56,9 +56,9 @@ def event(o,
     o['description'] = _prepare_str(o, 'description', o['url'])
     o['body'] = _prepare_str(o, 'body', o['url'])
 
-    # split out tags_ids + thing_ids
+    # split out tags_ids + content_item_ids
     tag_ids = o.pop('tag_ids', [])
-    thing_ids = o.pop('thing_ids', [])
+    content_item_ids = o.pop('content_item_ids', [])
     links = o.pop('links', [])
 
     # determine event provenance
@@ -94,20 +94,21 @@ def event(o,
     # extract urls asynchronously.
     urls = _extract_urls(o, url_fields, source=o.get('url'), links=links)
 
-    # detect things
+    # detect content_items
     if len(urls):
-        things = Thing.query\
-            .filter(or_(Thing.url.in_(urls), Thing.id.in_(thing_ids)))\
-            .filter(Thing.org_id == org_id)\
+        content_items = ContentItem.query\
+            .filter(or_(ContentItem.url.in_(urls),
+                        ContentItem.id.in_(content_item_ids)))\
+            .filter(ContentItem.org_id == org_id)\
             .all()
 
-        if len(things):
-            has_things = True
+        if len(content_items):
+            has_content_items = True
 
-            # upsert things.
-            for t in things:
-                if t.id not in e.thing_ids:
-                    e.things.append(t)
+            # upsert content_items.
+            for t in content_items:
+                if t.id not in e.content_item_ids:
+                    e.content_items.append(t)
 
     # associate tags
     if len(tag_ids):
@@ -115,12 +116,15 @@ def event(o,
             tag = fetch_by_id_or_field(Tag, 'slug', tid, org_id)
             if not tag:
                 raise RequestError(
-                    'Tag with id/slug {} does not exist.'.format(tid))
+                    'Tag with id/slug {} does not exist.'
+                    .format(tid))
+
             if tag:
                 if tag.type != 'impact':
                     raise RequestError(
                         'Only impact tags can be associated with Events. '
-                        'Tag {} is of type {}'.format(tag.id, tag.type))
+                        'Tag {} is of type {}'
+                        .format(tag.id, tag.type))
 
             # if there are tags, the status is approved
             e.status = 'approved'
@@ -130,8 +134,8 @@ def event(o,
                 e.tags.append(tag)
 
     # dont commit event if we're only looking
-    # for events that link to things
-    if not has_things and must_link:
+    # for events that link to content_items
+    if not has_content_items and must_link:
         return None
 
     db.session.add(e)
@@ -180,8 +184,9 @@ def _prepare_date(o, field):
         return None
     dt = dates.parse_any(o[field])
     if not dt:
-        raise RequestError('{}: {} is an invalid date.'
-                           .format(field, o[field]))
+        raise RequestError(
+            '{}: {} is an invalid date.'
+            .format(field, o[field]))
     return dt
 
 
@@ -204,7 +209,8 @@ def _check_requires(o, requires, type='Event'):
     for k in requires:
         if k not in o:
             raise RequestError(
-                "Missing '{}'. An {} Requires {}".format(k, type, requires))
+                "Missing '{}'. An {} Requires {}"
+                .format(k, type, requires))
 
 
 def _event_provenance(o, org_id):
@@ -219,6 +225,7 @@ def _event_provenance(o, org_id):
     multiple child recipes of the same
     sous-chef
     """
+
     if 'recipe_id' not in o or not o['recipe_id']:
         o['source_id'] = "manual:{}".format(gen_uuid())
         o['provenance'] = 'manual'
@@ -237,8 +244,9 @@ def _event_provenance(o, org_id):
             .first()
 
         if not r:
-            raise RequestError('Recipe id "{recipe_id}" does not exist.'
-                               .format(**o))
+            raise RequestError(
+                'Recipe id "{recipe_id}" does not exist.'
+                .format(**o))
 
         # reformant source id.
         o['source_id'] = "{}:{}"\

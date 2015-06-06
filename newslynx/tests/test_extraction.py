@@ -1,5 +1,4 @@
 import datetime
-from pprint import pprint
 
 import unittest
 import pytz
@@ -23,7 +22,7 @@ class TestArticleExtraction(unittest.TestCase):
         assert(d['created'] == datetime.datetime(2015, 5, 20, 17, 47, 13, tzinfo=pytz.utc))
         assert(d['favicon'] == 'https://www.propublica.org/favicon.ico')
         assert(d['img_url'] == 'https://www.propublica.org/images/ngen/gypsy_og_image/20150520-group-home-hearing-1200x630.jpg')
-        assert('finding that children had repeatedly been sent to facilities that were rife with abuse and that had become known recruiting grounds for pimp' in d['content'])
+        assert('finding that children had repeatedly been sent to facilities that were rife with abuse and that had become known recruiting grounds for pimp' in d['body'])
         assert(d['url'] == source_url)
         assert('http://media.miamiherald.com/static/media/projects/2014/innocents-lost/' in d['links'])
 
@@ -39,7 +38,7 @@ class TestArticleExtraction(unittest.TestCase):
         assert(d['created'] == datetime.datetime(2014, 11, 11, 0, 57, tzinfo=pytz.utc))
         assert(d['favicon'] == 'https://www.revealnews.org/wp-content/themes/reveal2015/static/images/cir/favicon.ico')
         assert(d['img_url'] == 'https://www.revealnews.org/wp-content/uploads/2015/02/Strawberry-CA0.png')
-        assert('it seems that strawberries are served with just about everything' in d['content'])
+        assert('it seems that strawberries are served with just about everything' in d['body'])
         assert(d['url'] == source_url)
         assert('http://www.youtube.com/watch?v=fPxUIz5GHAE' in d['links'])
 
@@ -55,7 +54,7 @@ class TestArticleExtraction(unittest.TestCase):
         assert(d['created'] == datetime.datetime(2015, 6, 3, 0, 0, tzinfo=pytz.utc))
         assert(d['favicon'] == 'http://static01.nyt.com/favicon.ico')
         assert(d['img_url'] == 'http://static01.nyt.com/images/2015/06/05/fashion/05RITESOFPASSAGE1/05RITESOFPASSAGE1-facebookJumbo.jpg')
-        assert('Someone could easily get cut' in d['content'])
+        assert('Someone could easily get cut' in d['body'])
         assert(d['url'] == 'http://www.nytimes.com/2015/06/05/fashion/mens-style/farewell-my-lovely-cigarettes.html')
         assert('http://drinks.seriouseats.com/2011/02/taste-test-best-malt-liquor-forty-colt-45-mickeys-private-stock-olde-english-king-cobra.html' in d['links'])
 

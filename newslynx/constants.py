@@ -21,7 +21,7 @@ EVENT_TYPES = [
 EVENT_PROVENANCES = ['manual', 'recipe']
 
 EVENT_FACETS = [
-    'tags', 'things', 'levels',
+    'tags', 'content_items', 'levels',
     'categories', 'sous_chefs',
     'recipes', 'statuses', 'provenances'
 ]
@@ -30,29 +30,29 @@ EVENT_FACETS = [
 # THINGS
 
 # TK: refine these.
-THING_TYPES = [
+CONTENT_ITEM_TYPES = [
     'video', 'article', 'slideshow',
     'interactive', 'podcast'
 ]
 
-THING_EVENT_FACETS = [
+CONTENT_ITEM_EVENT_FACETS = [
     'events', 'categories', 'levels',
     'event_statuses'
 ]
 
-THING_FACETS = [
+CONTENT_ITEM_FACETS = [
     'tags', 'provenances',
     'sous_chefs', 'recipes',
     'types', 'domains'
-    ] + THING_EVENT_FACETS
+    ] + CONTENT_ITEM_EVENT_FACETS
 
-THING_PROVENANCES = ['manual', 'recipe']
+CONTENT_ITEM_PROVENANCES = ['manual', 'recipe']
 
 # SOUS CHEFS
 
 SOUS_CHEF_CREATES = [
-    'event', 'thing', 'tag',
-    'metric', 'series', 'report'
+    'events', 'content', 'tags',
+    'metrics', 'series', 'reports'
 ]
 
 # RECIPES

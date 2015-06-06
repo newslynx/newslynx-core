@@ -6,7 +6,7 @@ from flask import Blueprint
 from newslynx.core import db
 from newslynx.exc import RequestError, NotFoundError
 from newslynx.models import Tag
-from newslynx.models.relations import events_tags, things_tags
+from newslynx.models.relations import events_tags, content_items_tags
 from newslynx.models.util import fetch_by_id_or_field
 from newslynx.lib.serialize import jsonify
 from newslynx.views.decorators import load_user, load_org
@@ -33,9 +33,10 @@ def get_tags(user, org):
     tag_query = db.session\
         .query(Tag.id, Tag.org_id, Tag.name, Tag.slug, Tag.type,
                Tag.level, Tag.category, Tag.color, Tag.created, Tag.updated,
-               func.count(events_tags.c.event_id), func.count(things_tags.c.thing_id))\
+               func.count(events_tags.c.event_id),
+               func.count(content_items_tags.c.content_item_id))\
         .outerjoin(events_tags)\
-        .outerjoin(things_tags)\
+        .outerjoin(content_items_tags)\
         .filter(Tag.org_id == org.id)\
         .group_by(Tag.id)
 
@@ -107,7 +108,8 @@ def create_tag(user, org):
     # check for required keys
     for k in ['name', 'type', 'color']:
         if k not in req_data:
-            raise RequestError('A Tag requires a "name", "color", and "type"')
+            raise RequestError(
+                'A Tag requires a "name", "color", and "type"')
 
     # check hex code
     validate_hex_code(req_data['color'])
@@ -149,7 +151,9 @@ def get_tag(user, org, tag_id):
     # fetch the tag object
     tag = fetch_by_id_or_field(Tag, 'slug', tag_id, org_id=org.id)
     if not tag:
-        raise NotFoundError('A Tag with ID {} does not exist'.format(tag_id))
+        raise NotFoundError(
+            'A Tag with ID {} does not exist'
+            .format(tag_id))
 
     return jsonify(tag)
 
@@ -164,7 +168,9 @@ def update_tag(user, org, tag_id):
     # fetch the tag object
     tag = fetch_by_id_or_field(Tag, 'slug', tag_id, org_id=org.id)
     if not tag:
-        raise NotFoundError('A Tag with ID {} does not exist'.format(tag_id))
+        raise NotFoundError(
+            'A Tag with ID {} does not exist'
+            .format(tag_id))
 
     # fetch the request data.
     req_data = request_data()
@@ -226,7 +232,9 @@ def delete_tag(user, org, tag_id):
     # fetch the tag object
     tag = fetch_by_id_or_field(Tag, 'slug', tag_id, org_id=org.id)
     if not tag:
-        raise NotFoundError('A Tag with ID {} does not exist'.format(tag_id))
+        raise NotFoundError(
+            'A Tag with ID {} does not exist'
+            .format(tag_id))
 
     db.session.delete(tag)
     db.session.commit()

@@ -19,7 +19,8 @@ class User(db.Model):
     password = db.Column(db.Text)
     apikey = db.Column(db.Text, index=True)
     admin = db.Column(db.Boolean, index=True)
-    created = db.Column(db.DateTime(timezone=True))
+    created = db.Column(db.DateTime(timezone=True), default=dates.now)
+    updated = db.Column(db.DateTime, onupdate=dates.now, default=dates.now)
 
     def __init__(self, **kw):
         self.name = kw.get('name')
@@ -43,10 +44,18 @@ class User(db.Model):
         self.apikey = str(md5(s).hexdigest())
 
     @property
+    def display_orgs(self):
+        return [o.to_dict(incl_users=False, incl_settings=False, incl_auths=False)
+                for o in self.orgs]
+
+    @property
     def org_ids(self):
         return [o.id for o in self.orgs]
 
-    def to_dict(self, incl_org=True, incl_apikey=False):
+    def to_dict(self, **kw):
+        incl_org = kw.get('incl_org', True)
+        incl_apikey = kw.get('incl_apikey', False)
+
         d = {
             'id': self.id,
             'name': self.name,
@@ -54,11 +63,13 @@ class User(db.Model):
             'admin': self.admin,
             'created': self.created
         }
+
         if incl_org:
-            d['orgs'] = [o.to_dict(incl_users=False, incl_settings=False, incl_auths=False)
-                          for o in self.orgs]
+            d['orgs'] = self.display_orgs
+
         if incl_apikey:
             d['apikey'] = self.apikey
+
         return d
 
     def __repr__(self):

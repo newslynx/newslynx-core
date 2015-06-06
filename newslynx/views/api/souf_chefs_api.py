@@ -82,7 +82,8 @@ def get_sous_chef(user, org, sous_chef):
     sc = fetch_by_id_or_field(SousChef, 'slug', sous_chef)
     if not sc:
         raise NotFoundError(
-            'A SousChef does not exist with ID/slug {}'.format(sous_chef))
+            'A SousChef does not exist with ID/slug {}'
+            .format(sous_chef))
 
     return jsonify(sc)
 
@@ -95,7 +96,8 @@ def update_sous_chef(user, org, sous_chef):
     sc = fetch_by_id_or_field(SousChef, 'slug', sous_chef)
     if not sc:
         raise NotFoundError(
-            'A SousChef does not exist with ID/slug {}'.format(sous_chef))
+            'A SousChef does not exist with ID/slug {}'
+            .format(sous_chef))
 
     req_data = request_data()
 
@@ -126,7 +128,8 @@ def delete_sous_chef(user, org, sous_chef):
     sc = fetch_by_id_or_field(SousChef, 'slug', sous_chef)
     if not sc:
         raise NotFoundError(
-            'A SousChef does not exist with ID/slug {}'.format(sous_chef))
+            'A SousChef does not exist with ID/slug {}'
+            .format(sous_chef))
 
     db.session.delete(sc)
     db.session.commit()

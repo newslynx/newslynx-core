@@ -32,8 +32,8 @@ class Event(db.Model):
         ENUM(*EVENT_PROVENANCES, name='event_provenance_enum'), index=True)
     url = db.Column(db.Text, index=True)
     img_url = db.Column(db.Text)
-    created = db.Column(db.DateTime(timezone=True), index=True)
-    updated = db.Column(db.DateTime(timezone=True), index=True)
+    created = db.Column(db.DateTime(timezone=True), default=dates.now)
+    updated = db.Column(db.DateTime, onupdate=dates.now, default=dates.now)
     title = db.Column(db.Text)
     description = db.Column(db.Text)
     body = db.Column(db.Text)
@@ -68,7 +68,6 @@ class Event(db.Model):
         self.url = kw.get('url')
         self.img_url = kw.get('img_url')
         self.created = kw.get('created', dates.now())
-        self.updated = kw.get('updated', dates.now())
         self.title = kw.get('title')
         self.description = kw.get('description')
         self.body = kw.get('body')
@@ -76,19 +75,19 @@ class Event(db.Model):
         self.meta = kw.get('meta', {})
 
     @property
-    def simple_things(self):
-        things = []
-        for t in self.things:
-            things.append({
+    def simple_content_items(self):
+        content_items = []
+        for t in self.content_items:
+            content_items.append({
                 'id': t.id,
                 'title': t.title,
                 'url': t.url
             })
-        return things
+        return content_items
 
     @property
-    def thing_ids(self):
-        return [t.id for t in self.things]
+    def content_item_ids(self):
+        return [t.id for t in self.content_items]
 
     @property
     def tag_ids(self):
@@ -114,7 +113,7 @@ class Event(db.Model):
             'authors': self.authors,
             'meta': self.meta,
             'tag_ids': self.tag_ids,
-            'things': self.simple_things,
+            'content_items': self.simple_content_items,
         }
         if kw.get('incl_body', False):
             d['body'] = self.body

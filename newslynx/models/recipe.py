@@ -189,8 +189,8 @@ class Recipe(db.Model):
     description = db.Column(db.Text)
 
     # date fields
-    created = db.Column(db.DateTime(timezone=True), index=True)
-    updated = db.Column(db.DateTime(timezone=True), index=True)
+    created = db.Column(db.DateTime(timezone=True), default=dates.now)
+    updated = db.Column(db.DateTime, onupdate=dates.now, default=dates.now)
     last_run = db.Column(db.DateTime(timezone=True), index=True)
 
     # scheduler fields
@@ -208,8 +208,8 @@ class Recipe(db.Model):
     # relations
     events = db.relationship(
         'Event', backref=db.backref('recipe', lazy='joined'), lazy='dynamic')
-    things = db.relationship(
-        'Thing', backref=db.backref('recipe', lazy='joined'), lazy='dynamic')
+    content_items = db.relationship(
+        'ContentItem', backref=db.backref('recipe', lazy='joined'), lazy='dynamic')
     metrics = db.relationship(
         'Metric', backref=db.backref('recipe', lazy='joined'), lazy='dynamic')
     sous_chef = db.relationship(
@@ -242,8 +242,6 @@ class Recipe(db.Model):
         self.sous_chef_id = sous_chef.id
         self.user_id = kw.get('user_id')
         self.org_id = kw.get('org_id')
-        self.created = kw.get('created', dates.now())
-        self.updated = kw.get('updated', dates.now())
         self.scheduled = kw.get('scheduled')
         self.last_run = kw.get('last_run', None)
         self.last_job = kw.get('last_job', {})

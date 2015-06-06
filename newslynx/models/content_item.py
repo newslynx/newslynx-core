@@ -6,38 +6,38 @@ from newslynx.core import db, SearchQuery
 from newslynx.lib import dates
 from newslynx.models import relations
 from newslynx.constants import (
-    THING_TYPES, THING_PROVENANCES)
+    CONTENT_ITEM_TYPES, CONTENT_ITEM_PROVENANCES)
 
 
-class Thing(db.Model):
+class ContentItem(db.Model):
 
     """
-    A thing is a unit of content
+    A content-item is a unit of content
     to which we attach metrics.
 
-    We do not initialize a thing until we have past it completely through
-    our single extraction pipeline.
+    We do not initialize a content-item until we have past it completely through
+    our single ingestion pipeline.
 
-    At this point all things should have a standardized schema,
+    At this point all content-items should have a standardized schema,
     though may not have all theses fields filled in.
     """
 
     query_class = SearchQuery
 
-    __tablename__ = 'things'
+    __tablename__ = 'content'
 
     # the ID is the global bitly hash.
     id = db.Column(db.Integer, unique=True, primary_key=True, index=True)
     org_id = db.Column(
         db.Integer, db.ForeignKey('orgs.id'), index=True)
     recipe_id = db.Column(db.Integer, db.ForeignKey('recipes.id'), index=True)
-    type = db.Column(ENUM(*THING_TYPES, name='thing_types_enum'))
+    type = db.Column(ENUM(*CONTENT_ITEM_TYPES, name='content_item_types_enum'))
     provenance = db.Column(
-        ENUM(*THING_PROVENANCES, name='thing_provenance_enum'), index=True)
+        ENUM(*CONTENT_ITEM_PROVENANCES, name='content_item_provenance_enum'), index=True)
     url = db.Column(db.Text, index=True)
     domain = db.Column(db.Text, index=True)
-    created = db.Column(db.DateTime(timezone=True), index=True)
-    updated = db.Column(db.DateTime(timezone=True), index=True)
+    created = db.Column(db.DateTime(timezone=True), default=dates.now)
+    updated = db.Column(db.DateTime, onupdate=dates.now, default=dates.now)
     img_url = db.Column(db.Text)
     byline = db.Column(db.Text)
     title = db.Column(db.Text)
@@ -51,33 +51,34 @@ class Thing(db.Model):
 
     # relations
     tags = db.relationship(
-        'Tag', secondary=relations.things_tags,
-        backref=db.backref('things', lazy='dynamic'), lazy='joined')
+        'Tag', secondary=relations.content_items_tags,
+        backref=db.backref('content_items', lazy='dynamic'), lazy='joined')
 
-    events = db.relationship('Event',
-                             secondary=relations.things_events,
-                             backref=db.backref('things', lazy='dynamic'),
-                             lazy='dynamic')
+    events = db.relationship(
+        'Event',
+        secondary=relations.content_items_events,
+        backref=db.backref('content_items', lazy='dynamic'),
+        lazy='dynamic')
 
-    creators = db.relationship(
-        'Creator', secondary=relations.things_creators,
-        backref=db.backref('things', lazy='dynamic'), lazy='joined')
+    authors = db.relationship(
+        'Author', secondary=relations.content_items_authors,
+        backref=db.backref('content_items', lazy='dynamic'), lazy='joined')
 
     # in/out links
     out_links = db.relationship(
-        'Thing', secondary=relations.things_things,
-        primaryjoin=relations.things_things.c.from_thing_id == id,
-        secondaryjoin=relations.things_things.c.to_thing_id == id,
+        'ContentItem', secondary=relations.content_items_content_items,
+        primaryjoin=relations.content_items_content_items.c.from_content_item_id == id,
+        secondaryjoin=relations.content_items_content_items.c.to_content_item_id == id,
         backref=db.backref("in_links", lazy='dynamic'),
         lazy='dynamic')
 
-    # things should be unique to org, url, and type.
-    # IE there might be multiple things per url -
+    # content_items should be unique to org, url, and type.
+    # IE there might be multiple content_items per url -
     # an article, a video, a podcast, etc.
     __table_args__ = (
         db.UniqueConstraint(
-            'org_id', 'url', 'type', name='thing_unique_constraint'),
-        Index('things_search_vector_idx',
+            'org_id', 'url', 'type', name='content_item_unique_constraint'),
+        Index('content_item_search_vector_idx',
               'search_vector', postgresql_using='gin')
     )
 
@@ -89,7 +90,6 @@ class Thing(db.Model):
         self.provenance = kw.get('provenance', 'recipe')
         self.domain = kw.get('domain')
         self.created = kw.get('created', dates.now())
-        self.updated = kw.get('updated', dates.now())
         self.img_url = kw.get('img_url')
         self.byline = kw.get('byline')  # TODO: Autoformat.
         self.title = kw.get('title')
@@ -98,34 +98,34 @@ class Thing(db.Model):
         self.meta = kw.get('meta', {})
 
     @property
-    def simple_creators(self):
-        return [{"id": c.id, "name": c.name} for c in self.creators]
+    def simple_authors(self):
+        return [{"id": c.id, "name": c.name} for c in self.authors]
 
     @property
     def out_link_ids(self):
-        out_links = db.session.query(relations.things_things.c.to_thing_id)\
-            .filter(relations.things_things.c.from_thing_id == self.id)\
+        out_links = db.session.query(relations.content_items_content_items.c.to_content_item_id)\
+            .filter(relations.content_items_content_items.c.from_content_item_id == self.id)\
             .all()
         return [o[0] for o in out_links]
 
     @property
     def in_link_ids(self):
-        in_links = db.session.query(relations.things_things.c.from_thing_id)\
-            .filter(relations.things_things.c.to_thing_id == self.id)\
+        in_links = db.session.query(relations.content_items_content_items.c.from_content_item_id)\
+            .filter(relations.content_items_content_items.c.to_content_item_id == self.id)\
             .all()
         return [o[0] for o in in_links]
 
     @property
     def out_link_display(self):
         out_links = self.out_links\
-            .with_entities(Thing.id, Thing.title)\
+            .with_entities(ContentItem.id, ContentItem.title)\
             .all()
         return [dict(zip(['id', 'title'], l)) for l in out_links]
 
     @property
     def in_link_display(self):
         in_links = self.in_links\
-            .with_entities(Thing.id, Thing.title)\
+            .with_entities(ContentItem.id, ContentItem.title)\
             .all()
         return [dict(zip(['id', 'title'], l)) for l in in_links]
 
@@ -134,6 +134,9 @@ class Thing(db.Model):
         return [t.id for t in self.tags]
 
     def to_dict(self, **kw):
+        incl_links = kw.get('incl_links', False)
+        incl_body = kw.get('incl_body', False)
+
         d = {
             'id': self.id,
             'org_id': self.org_id,
@@ -145,18 +148,18 @@ class Thing(db.Model):
             'created': self.created,
             'updated': self.updated,
             'img_url': self.img_url,
-            'creators': self.simple_creators,
+            'creators': self.simple_authors,
             'title': self.title,
             'description': self.description,
             'tag_ids': self.tag_ids,
             'meta': self.meta
         }
-        if kw.get('incl_links', False):
+        if incl_links:
             d['in_links'] = self.in_link_display
             d['out_links'] = self.out_link_display
-        if kw.get('incl_body', False):
+        if incl_body:
             d['body'] = self.body
         return d
 
     def __repr__(self):
-        return '<Thing %r >' % (self.url)
+        return '<ContentItem %r /  >' % (self.url, self.type)
