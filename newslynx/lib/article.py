@@ -65,7 +65,7 @@ def extract(source_url):
     if not data['content']:
         data['content'] = content_via_readability(page_html, canonical_url)
 
-    # extract content from article tag
+    # # extract content from article tag
     content, raw_html = content_via_article_tag(soup, canonical_url)
 
     # merge content
@@ -75,6 +75,12 @@ def extract(source_url):
     # get creators from raw article html
     if not len(data['authors']) and raw_html:
         data['authors'] = author.extract(raw_html, tags=author.OPTIMISTIC_TAGS)
+
+    # get urls from raw_html + content
+    data['links'] = url.from_any(data['content'])
+    for u in url.from_any(raw_html, source=source_url):
+        if u not in data['links']:
+            data['links'].append(u)
 
     # add in short urls
     if settings.BITLY_ENABLED:

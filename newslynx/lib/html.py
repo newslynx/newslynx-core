@@ -50,8 +50,7 @@ def prepare(htmlstring, source_url, safe_attrs=['src', 'href']):
     """
     if not htmlstring:
         return None
-    cleaner = clean.Cleaner(
-        safe_attrs_only=True, safe_attrs=frozenset(safe_attrs))
+    cleaner = clean.Cleaner(safe_attrs_only=True, safe_attrs=set(safe_attrs))
     cleansed = cleaner.clean_html(htmlstring)
     soup = make_abs(cleansed, source_url)
     cleansed = get_inner(soup)

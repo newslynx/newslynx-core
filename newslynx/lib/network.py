@@ -31,9 +31,6 @@ def retry(*dargs, **dkwargs):
     # wrapper
     def wrapper(f):
 
-        # logger
-        log = logging.getLogger(f.__name__)
-
         @wraps(f)
         def wrapped_func(*args, **kw):
 
@@ -52,7 +49,7 @@ def retry(*dargs, **dkwargs):
                 # return
                 if tries == attempts:
                     if verbose:
-                        log.error('Request Failed after {} tries.'.format(tries))
+                        log.error('Request to {} Failed after {} tries.'.format(args, tries))
                     return r
 
                 # increment tries
@@ -104,7 +101,7 @@ def get_request_kwargs(timeout, useragent):
     }
 
 
-@retry(attempts=3)
+@retry(attempts=2)
 def get_html(url, config=None, response=None):
     """Retrieves the html for either a url or a response object. All html
     extractions MUST come from this method due to some intricies in the

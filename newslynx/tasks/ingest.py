@@ -91,9 +91,7 @@ def event(o,
 
     # extract urls asynchronously.
     urls = _extract_urls(o, url_fields, source=o.get('url'))
-    
-    print urls
-    
+
     # detect things
     if len(urls):
         print urls

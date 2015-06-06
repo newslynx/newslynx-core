@@ -5,10 +5,10 @@ From: https://github.com/codelucas/newspaper/blob/master/newspaper/urls.py
 
 import copy
 import time
-import httplib
 from urlparse import (
     urlparse, urljoin, urlsplit, urlunsplit, parse_qs
 )
+import logging
 
 import requests
 import tldextract
@@ -17,6 +17,7 @@ from bs4 import BeautifulSoup
 from newslynx.lib.regex import *
 from newslynx.lib import network
 from newslynx.lib import meta
+from newslynx.lib import html
 
 # url chunks
 ALLOWED_TYPES = [
@@ -42,8 +43,12 @@ BAD_DOMAINS = [
     'facebook', 'pinterest', 'google',
 ]
 
+URL_TAGS = ['a', 'embed', 'video', 'iframe']
 
-def prepare(raw_url, source=None, canonicalize=True, keep_params=('id', 'p', 'v')):
+URL_ATTRS = ['href', 'src']
+
+
+def prepare(url, source=None, canonicalize=True, keep_params=('id', 'p', 'v')):
     """
     Operations that unshorten a url, reconcile embeds,
     resolves redirects, strip parameters (with optional
@@ -53,14 +58,22 @@ def prepare(raw_url, source=None, canonicalize=True, keep_params=('id', 'p', 'v'
     All urls that enter `merlynne` are first treated with this function.
     """
 
+    # reconcile embeds:
+    url = reconcile_embed(url)
+
     # check for redirects / non absolute urls
     if source:
         source_domain = get_domain(source)
-        url = urljoin(source, url)
+
+        # reconcile redirects
         url = redirect_back(url, source_domain)
 
-    # reconcile embeds:
-    url = reconcile_embed(raw_url)
+        # if the domain is in the source, attempt to absolutify it
+        if source_domain in url:
+
+            # check for non-absolute urls
+            if not is_abs(url):
+                url = urljoin(source, url)
 
     # check short urls
     if is_shortened(url):
@@ -75,6 +88,10 @@ def prepare(raw_url, source=None, canonicalize=True, keep_params=('id', 'p', 'v'
             if canonical:
                 return canonical
 
+    # if it got converted to None, return
+    if not url:
+        return None
+
     # remove arguments w/ optional parameters to keep.
     url = remove_args(url, keep_params)
 
@@ -87,44 +104,33 @@ def prepare(raw_url, source=None, canonicalize=True, keep_params=('id', 'p', 'v'
     return url
 
 
-@network.retry(attempts=2)
-def unshorten(short_url, **kw):
+def unshorten(orig_url, **kw):
+    """
+    Unshorten a url.
+    """
 
     # set vars
     pattern = kw.get('pattern', None)
-    max_attempts = kw.get('max_attempts', 2)
-    raise_err = kw.get('raise_err', False)
-    interval = kw.get('interval', 1.5)
+    max_attempts = kw.get('max_attempts', 3)
+    interval = kw.get('interval', 0.5)
     factor = kw.get('factor', 2)
-    success = False
     attempts = 0
 
-    # absolutify url
-    if not short_url.startswith('http://'):
-        short_url = "http://" + short_url
+    if not orig_url.startswith('http://'):
+        orig_url = "http://" + orig_url
 
-    url = copy.copy(short_url)
-
-    # recursively unshorten
+    u = copy.copy(orig_url)
     while attempts < max_attempts:
-        url = _unshorten(url, pattern=pattern)
+        u = _unshorten(u)
         attempts += 1
-        if not is_shortened(url, pattern=pattern) and _is_valid(url):
-            success = True
-            break
+        if not u:
+            return orig_url
+        if not is_shortened(u):
+            return u
         interval *= factor
         time.sleep(interval)
 
-    # if it's not a short_url return
-    if success:
-        return url
-
-    # otherwise fallback to err / default return
-    else:
-        if raise_err:
-            raise UnshortenError("Failed to unshorten: %s" % short_url)
-        else:
-            return short_url
+    return u
 
 
 @network.retry(attempts=2)
@@ -227,6 +233,15 @@ def get_path_hash(url, **kw):
     url = get_path(url, **kw)
     url = re_html.sub('', url)
     return hashlib.md5(url).hexdigest()
+
+
+def get_query_string(url, **kw):
+    """
+    Get the query string from a url.
+    """
+    if url is None:
+        return None
+    return urlparse(url, **kw).query
 
 
 def get_filetype(url):
@@ -400,57 +415,81 @@ def is_abs(url):
     """
     check if a url is absolute.
     """
-    return re_abs_url.search(url.lower()) is not None
+    return bool(get_domain(url))
 
 
 def from_string(string, dedupe=True, source=None):
     """
     get urls from input string
     """
-    urls = re_url.findall(string)
-    urls += [g[0] for g in re_short_url_text.findall(string)]
-    final_urls = []
+    raw_urls = re_url.findall(string)
+    short_urls = [g[0].strip() for g in re_short_url_text.findall(string)]
+
+    urls = []
     if source:
-        for url in urls:
+        for url in raw_urls:
             if not is_abs(url):
                 url = urljoin(source, url)
-            final_urls.append(url)
+            urls.append(url)
     else:
-        final_urls = urls
+        urls = raw_urls
+
+    # make sure short url regex doesn't create partial dupes.
+    for u in short_urls:
+        if any([u in r for r in urls]):
+            short_urls.remove(u)
+
+    # combine
+    urls += short_urls
 
     if dedupe:
-        return list(set(final_urls))
-    else:
-        return final_urls
+        return list(set(urls))
+    return urls
 
 
 def from_html(htmlstring, source=None, dedupe=True):
     """
     Extract urls from htmlstring, optionally reconciling
-    relative urls
+    relative urls + embeds + redirects.
     """
     final_urls = []
-
+    if source:
+        source_domain = get_domain(source)
     soup = BeautifulSoup(htmlstring)
-
-    for a in soup.find_all('a'):
-        href = a.attrs.get('href', None)
-        if href:
-            if not is_abs(href):
-                if source:
-                    href = urljoin(source, href)
-            final_urls.append(href)
-
+    for tag in URL_TAGS:
+        for el in soup.find_all(tag):
+            for attr in URL_ATTRS:
+                href = el.attrs.get(attr, None)
+                if href:
+                    url = reconcile_embed(href)
+                    if source:
+                        url = redirect_back(url, source_domain)
+                        if not is_abs(url):
+                            url = urljoin(source, url)
+                    final_urls.append(url)
     if dedupe:
         return list(set(final_urls))
     else:
         return final_urls
+
+
+def from_any(html_or_string, **kw):
+    """
+    Parse urls out of html or raw string.
+    """
+    if not html_or_string:
+        return []
+    if html.is_html(html_or_string):
+        return from_html(html_or_string, **kw)
+    return from_string(html_or_string, **kw)
 
 
 def remove_args(url, keep_params, frags=False):
     """
     Remove all param arguments from a url.
     """
+    if not url:
+        return None
     parsed = urlsplit(url)
     filtered_query = '&'.join(
         qry_item for qry_item in parsed.query.split('&')
@@ -470,9 +509,8 @@ def redirect_back(url, source_domain=None):
     args to direct to their site with the real news url as a
     GET param. This method catches that and returns our param.
     """
-    parse_data = urlparse(url)
-    domain = parse_data.netloc
-    query = parse_data.query
+    domain = get_domain(url)
+    query = get_query_string(url)
 
     # If our url is even from a remotely similar domain or
     # sub domain, we don't need to redirect.
@@ -513,7 +551,7 @@ def reconcile_embed(url):
     into a full url
     """
     if url.startswith('//'):
-        url = "http{}".format(url)
+        url = "http:{}".format(url)
     return url
 
 
@@ -524,22 +562,15 @@ def _is_valid(url):
     return len(url) > 11 and 'localhost' not in url
 
 
-def _get_location(url):
+@network.retry(attempts=2)
+def get_location(url):
     """
-    most efficient yet error prone method for unshortening a url.
+    most efficient method for unshortening a url.
     """
-    try:
-        parsed = urlparse(url)
-        h = httplib.HTTPConnection(parsed.netloc)
-        h.request('HEAD', parsed.path)
-        response = h.getresponse()
-        if response.status / 100 == 3 and response.getheader('Location'):
-            return response.getheader('Location')
-        else:
-            return url
-
-    # DONT FAIL
-    except:
+    r = requests.head(url)
+    if r.status_code / 100 == 3 and 'Location' in r.headers:
+        return r.headers['Location']
+    else:
         return url
 
 
@@ -567,12 +598,11 @@ def _bypass_bitly_warning(url):
     """
     Sometime bitly blocks unshorten attempts, this bypasses that.
     """
-    r = requests.get(url)
-    if r.status_code == 200:
-        soup = BeautifulSoup(r.content)
-        a = soup.find('a', {'id': 'clickthrough'})
+    html_string = network.get_html(url)
+    soup = BeautifulSoup(html_string)
+    a = soup.find('a', {'id': 'clickthrough'})
+    if a:
         return a.attrs.get('href')
-
     return url
 
 
@@ -581,11 +611,13 @@ def _unshorten(url, pattern=None):
     """
     dual-method approach to unshortening a url
     """
+    orig_url = copy.copy(url)
 
     # method 1, get location
-    url = _get_location(url)
-    if not is_shortened(url, pattern=pattern):
-        return url
+    url = get_location(url)
+
+    if not _is_valid(url):
+        return orig_url
 
     # check if there's a bitly warning.
     if re_bitly_warning.search(url):
@@ -593,10 +625,7 @@ def _unshorten(url, pattern=None):
         if not is_shortened(url, pattern=pattern):
             return url
 
-    # method 2, use longurl.com
-    url = _long_url(url)
-    if not is_shortened(url, pattern=pattern):
-        return url
-
-    # return whatever we have
     return url
+
+if __name__ == '__main__':
+    print unshorten('bit.ly/aaaaaa')
