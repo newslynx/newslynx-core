@@ -94,7 +94,6 @@ def event(o,
 
     # detect things
     if len(urls):
-        print urls
         things = Thing.query\
             .filter(or_(Thing.url.in_(urls), Thing.id.in_(thing_ids)))\
             .filter(Thing.org_id == org_id)\
