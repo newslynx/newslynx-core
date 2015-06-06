@@ -20,7 +20,7 @@ class User(db.Model):
     apikey = db.Column(db.Text, index=True)
     admin = db.Column(db.Boolean, index=True)
     created = db.Column(db.DateTime(timezone=True), default=dates.now)
-    updated = db.Column(db.DateTime, onupdate=dates.now, default=dates.now)
+    updated = db.Column(db.DateTime(timezone=True), onupdate=dates.now, default=dates.now)
 
     def __init__(self, **kw):
         self.name = kw.get('name')

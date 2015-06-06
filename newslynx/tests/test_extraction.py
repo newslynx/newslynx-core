@@ -20,7 +20,7 @@ class TestArticleExtraction(unittest.TestCase):
         assert(d['domain'] == 'propublica.org')
         assert(d['site_name'] == 'ProPublica')
         assert(d['created'] == datetime.datetime(2015, 5, 20, 17, 47, 13, tzinfo=pytz.utc))
-        assert(d['favicon'] == 'https://www.propublica.org/favicon.ico')
+        assert('www.propublica.org/favicon.ico' in d['favicon'])
         assert(d['img_url'] == 'https://www.propublica.org/images/ngen/gypsy_og_image/20150520-group-home-hearing-1200x630.jpg')
         assert('finding that children had repeatedly been sent to facilities that were rife with abuse and that had become known recruiting grounds for pimp' in d['body'])
         assert(d['url'] == source_url)

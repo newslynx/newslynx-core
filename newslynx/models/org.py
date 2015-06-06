@@ -16,7 +16,7 @@ class Org(db.Model):
     name = db.Column(db.Text, unique=True, index=True)
     slug = db.Column(db.Text, unique=True, index=True)
     created = db.Column(db.DateTime(timezone=True), default=dates.now)
-    updated = db.Column(db.DateTime, onupdate=dates.now, default=dates.now)
+    updated = db.Column(db.DateTime(timezone=True), onupdate=dates.now, default=dates.now)
 
     # joins
     auths = db.relationship('Auth',

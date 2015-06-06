@@ -557,7 +557,7 @@ def event_delete_tag(user, org, event_id, tag_id):
     return jsonify(e)
 
 
-@bp.route('/api/v1/events/<int:event_id>/things/<int:content_item_id>',
+@bp.route('/api/v1/events/<int:event_id>/content/<int:content_item_id>',
           methods=['PUT'])
 @load_user
 @load_org

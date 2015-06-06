@@ -84,13 +84,13 @@ class BaseClient(object):
         # format response
         return self._format_response(resp)
 
-    def _split_auth_params_from_kw(self, kw, incl=[]):
+    def _split_auth_params_from_kw(self, kw, kw_incl=[]):
         params = {}
         if 'apikey' in kw:
             params['apikey'] = kw.pop('apikey')
         if 'org' in kw:
             params['org'] = kw.pop('org')
-        for i in incl:
+        for i in kw_incl:
             if i in kw:
                 params[i] = kw.pop(i)
         return kw, params
@@ -146,7 +146,7 @@ class Me(BaseClient):
         """
         Update your user profile.
         """
-        kw, params = self._split_auth_params_from_kw(kw, incl=['refresh_apikey'])
+        kw, params = self._split_auth_params_from_kw(kw, kw_incl=['refresh_apikey'])
 
         # special case for this parameter
 
@@ -442,7 +442,7 @@ class Events(BaseClient):
         return self._request('GET', url, params=kw)
 
     def create(self, **kw):
-        kw, params = self._split_auth_params_from_kw(kw, incl=['only_content'])
+        kw, params = self._split_auth_params_from_kw(kw, kw_incl=['must_link'])
         url = self._format_url('events')
         return self._request('POST', url, params=params, data=kw)
 
@@ -482,28 +482,28 @@ class Events(BaseClient):
         url = self._format_url('events', event_id, 'tags', tag_id)
         return self._request('DELETE', url, params=kw)
 
-    def add_thing(self, event_id, thing_id, **kw):
+    def add_content_item(self, event_id, content_id, **kw):
         """
         Get an individual event.
         """
-        url = self._format_url('events', event_id, 'things', thing_id)
+        url = self._format_url('events', event_id, 'content', content_id)
         return self._request('PUT', url, params=kw)
 
-    def remove_thing(self, event_id, thing_id, **kw):
+    def remove_content_item(self, event_id, content_id, **kw):
         """
         Get an individual event.
         """
-        url = self._format_url('events', event_id, 'things', thing_id)
+        url = self._format_url('events', event_id, 'content', content_id)
         return self._request('DELETE', url, params=kw)
 
 
 class Content(BaseClient):
 
-    def get(self, thing_id, **kw):
+    def get(self, content_id, **kw):
         """
         Get an individual thing.
         """
-        url = self._format_url('content', thing_id)
+        url = self._format_url('content', content_id)
         return self._request('GET', url, params=kw)
 
 

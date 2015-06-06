@@ -37,7 +37,7 @@ class ContentItem(db.Model):
     url = db.Column(db.Text, index=True)
     domain = db.Column(db.Text, index=True)
     created = db.Column(db.DateTime(timezone=True), default=dates.now)
-    updated = db.Column(db.DateTime, onupdate=dates.now, default=dates.now)
+    updated = db.Column(db.DateTime(timezone=True), onupdate=dates.now, default=dates.now)
     img_url = db.Column(db.Text)
     byline = db.Column(db.Text)
     title = db.Column(db.Text)

@@ -20,7 +20,7 @@ class Author(db.Model):
     name = db.Column(db.Text, index=True)
     img_url = db.Column(db.Text)
     created = db.Column(db.DateTime(timezone=True), default=dates.now)
-    updated = db.Column(db.DateTime, onupdate=dates.now, default=dates.now)
+    updated = db.Column(db.DateTime(timezone=True), onupdate=dates.now, default=dates.now)
 
     __table_args__ = (
         db.UniqueConstraint('org_id', 'name'),

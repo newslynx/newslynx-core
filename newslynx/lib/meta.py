@@ -197,6 +197,12 @@ def favicon(soup, source_url=None):
         if data:
             return data
 
+    # fallback on usual location.
+    if source_url:
+        parsed_uri = urlparse(source_url)
+        domain = '{uri.scheme}://{uri.netloc}/'.format(uri=parsed_uri)
+        return domain + 'favicon.ico'
+
 
 def _extract_tag_data(soup, tag):
     """

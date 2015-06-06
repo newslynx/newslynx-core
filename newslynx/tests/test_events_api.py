@@ -137,22 +137,22 @@ class TestEventsAPI(unittest.TestCase):
         resp = self.api.events.create(**e)
         assert(resp.status_code == 422)
 
-    def test_null_on_create_event_with_no_things(self):
+    def test_null_on_create_event_with_no_content_items(self):
         event = self.api.events.search(status='pending', incl_body=True)
         e = event.events[0]
+        e.pop('id')
         e['must_link'] = True
         resp = self.api.events.create(**e)
-        print resp
         assert(resp is None)
 
     def test_event_update(self):
         res = self.api.events.search(
             status='pending', provenance='recipe', incl_body=True)
         event = res.events[0]
-        event['thing_ids'] = [1, 2]
+        event['content_item_ids'] = [1, 2]
         event['tag_ids'] = [1, 2]
         event = self.api.events.update(event.id, **event)
-        assert(len(event['things']))
+        assert(len(event['content_items']))
         assert(len(event['tag_ids']))
         assert(event['status'] == 'approved')
 
@@ -160,12 +160,12 @@ class TestEventsAPI(unittest.TestCase):
         res = self.api.events.search(
             status='pending', provenance='recipe', incl_body=True)
         event = res.events[0]
-        event['thing_ids'] = [1, 2]
+        event['content_item_ids'] = [1, 2]
         event['status'] = 'approved'
         resp = self.api.events.update(event.id, **event)
         assert(resp.status_code == 400)
 
-    def test_event_update_error_no_things(self):
+    def test_event_update_error_no_content_items(self):
         res = self.api.events.search(
             status='pending', provenance='recipe', incl_body=True)
         event = res.events[0]
@@ -199,13 +199,13 @@ class TestEventsAPI(unittest.TestCase):
         event = self.api.events.remove_tag(event.id, 1)
         assert(1 not in event.tag_ids)
 
-    def test_event_add_delete_thing(self):
+    def test_event_add_delete_content_item(self):
         res = self.api.events.search(status='approved', per_page=1)
         event = res.events[0]
-        event = self.api.events.add_thing(event.id, 1)
-        assert(1 in [t.id for t in event.things])
-        event = self.api.events.remove_thing(event.id, 1)
-        assert(1 not in [t.id for t in event.things])
+        event = self.api.events.add_content_item(event.id, 1)
+        assert(1 in [t.id for t in event.content_items])
+        event = self.api.events.remove_content_item(event.id, 1)
+        assert(1 not in [t.id for t in event.content_items])
 
     def test_event_facet_by_provenance(self):
         res = self.api.events.search(status='approved', per_page=1, facets='provenances')

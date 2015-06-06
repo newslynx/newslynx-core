@@ -15,7 +15,7 @@ class Report(db.Model):
         db.Integer, db.ForeignKey('orgs.id'), index=True)
     name = db.Column(db.Text, index=True)
     created = db.Column(db.DateTime(timezone=True), default=dates.now)
-    updated = db.Column(db.DateTime, onupdate=dates.now, default=dates.now)
+    updated = db.Column(db.DateTime(timezone=True), onupdate=dates.now, default=dates.now)
     template = db.Column(db.Text)
     data = db.Column(JSON)
 

@@ -190,7 +190,7 @@ class Recipe(db.Model):
 
     # date fields
     created = db.Column(db.DateTime(timezone=True), default=dates.now)
-    updated = db.Column(db.DateTime, onupdate=dates.now, default=dates.now)
+    updated = db.Column(db.DateTime(timezone=True), onupdate=dates.now, default=dates.now)
     last_run = db.Column(db.DateTime(timezone=True), index=True)
 
     # scheduler fields

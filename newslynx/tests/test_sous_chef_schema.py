@@ -7,13 +7,12 @@ from newslynx.models import validate_sous_chef
 class TestSousChefJSONSchema(unittest.TestCase):
 
     def test_good_schema(self):
-        print 'A valid sous chef schema has a name, slug, descritpion, runs, creates, and options fields.'
         example = {
             "name": "Twitter List",
             "slug": "twitter-list",
             "description": "Extracts events from a twitter list.",
             "runs": "newslynx.sc.events.twitter.List",
-            "creates": "thing",
+            "creates": "content",
             "options": {
                 "requires_approval": {
                     "type": "boolean",
@@ -42,13 +41,12 @@ class TestSousChefJSONSchema(unittest.TestCase):
             assert True
 
     def test_missing_type(self):
-        print 'All sous chef schema options should have types.'
         example = {
             "name": "Twitter List",
             "slug": "twitter-list",
             "description": "Extracts events from a twitter list.",
             "runs": "newslynx.sc.events.twitter.List",
-            "creates": "thing",
+            "creates": "content",
             "options": {
                 "requires_approval": {
                     "default": True,
@@ -84,13 +82,12 @@ class TestSousChefJSONSchema(unittest.TestCase):
             assert False
 
     def test_missing_help_placeholder(self):
-        print 'If a sous-chef option has a help field, it needs a placeholder.'
         example = {
             "name": "Twitter List",
             "slug": "twitter-list",
             "description": "Extracts events from a twitter list.",
             "runs": "newslynx.sc.events.twitter.List",
-            "creates": "thing",
+            "creates": "content",
             "options": {
                 "requires_approval": {
                     "type": "boolean",
@@ -126,13 +123,12 @@ class TestSousChefJSONSchema(unittest.TestCase):
             assert False
 
     def test_bad_option_type(self):
-        print 'If a sous-chef option has a help field, it needs a placeholder.'
         example = {
             "name": "Twitter List",
             "slug": "twitter-list",
             "description": "Extracts events from a twitter list.",
             "runs": "newslynx.sc.events.twitter.List",
-            "creates": "thing",
+            "creates": "content",
             "options": {
                 "requires_approval": {
                     "type": "bad-option",
