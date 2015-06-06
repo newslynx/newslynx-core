@@ -11,7 +11,7 @@ from flask import (
 from newslynx import settings
 from newslynx.core import db
 from newslynx.models import Auth
-from newslynx.exc import AuthError, InternalServerError
+from newslynx.exc import AuthError, RequestError
 from newslynx.lib.serialize import jsonify
 from newslynx.views.decorators import load_user, load_org
 from newslynx.views.util import (
@@ -74,10 +74,10 @@ def ga_auth(user, org):
     # raise error when configurations are not provided.
     if not settings.GA_ENABLED:
         raise AuthError(
-            'You must provide a "google_analytics_client_id" and '
-            '"google_analytics_client_secret in your '
-            'NewsLynx configuration to enable Google Analytics integration. '
-            'See https://developers.google.com/analytics/ for details on how to create '
+            'You must provide a "google_analytics_client_id" and ' +
+            '"google_analytics_client_secret in your ' +
+            'NewsLynx configuration to enable Google Analytics integration. ' +
+            'See https://developers.google.com/analytics/ for details on how to create ' +
             'an application on Google Analytics.')
 
     # store the user / apikey in the session:
@@ -122,11 +122,8 @@ def ga_callback():
         # end.
         if not ga_token:
             if not redirect_uri:
-                raise InternalServerError(
-                    "It seems as if you've authenticated with google-analytics already, "
-                    "but we don't have a record of it. Try manually revoking your "
-                    "permissions at https://security.google.com/settings/security/permissions "
-                    "and re-authenticating.")
+                raise RequestError(
+                    "It seems as if you've authenticated with google-analytics already, but we don't have a record of it. Try manually revoking your permissions at https://security.google.com/settings/security/permissions and re-authenticating.")
             uri = url.add_query_params(redirect_uri, auth_success='false')
             return redirect(uri)
 
