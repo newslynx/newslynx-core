@@ -1,15 +1,17 @@
 # app configurations #
 api_url: http://localhost:5000
 api_port: 5000
+api_version: v1
 
 # dev configuration
 debug_timing: true
 
 # security
 secret_key: super-secret-key
+newslynx_app_secret_key: other-super-secret-key
 admin_user: Merlynne Jones
-admin_password: super-secret-password
 admin_email: merlynne@example.com
+admin_password: super-secret-password
 super_user_password: tk
 
 # database config
