@@ -2117,4 +2117,5 @@ Now run this command:
 **Events**
 ++++++++++++++++++
 
-The **Events** API enables the creation, querying, faceting, updating, and deleting of Events.  
+The **Events** API enables the creation, querying, faceting, updating, and deleting of Events. Refer to the :ref:`Events docs <events>` for more details on what these are.
+

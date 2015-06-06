@@ -77,9 +77,9 @@ def extract(source_url):
         data['authors'] = author.extract(raw_html, tags=author.OPTIMISTIC_TAGS)
 
     # get urls from raw_html + content
-    data['links'] = url.from_any(data['content'])
+    data['links'] = [u for u in url.from_any(data['content']) if source_url not in u]
     for u in url.from_any(raw_html, source=source_url):
-        if u not in data['links']:
+        if u not in data['links'] and source_url not in u:
             data['links'].append(u)
 
     # add in short urls

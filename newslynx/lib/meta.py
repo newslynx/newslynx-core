@@ -2,6 +2,8 @@
 All things related to metadata parsing
 """
 from urlparse import urlparse
+from urlparse import urljoin
+
 import tldextract
 
 from newslynx.lib.regex import re_url_date
@@ -26,10 +28,10 @@ TITLE_TAGS = [
 ]
 
 DESC_TAGS = [
-    {'tag': 'meta', 'attr': 'name', 'val': 'description', 'data': 'content'},
     {'tag': 'meta', 'attr': 'property', 'val': 'og:description', 'data': 'content'},
     {'tag': 'meta', 'attr': 'property', 'val': 'twitter:description', 'data': 'content'},
-    {'tag': 'meta', 'attr': 'itemprop', 'val': 'description', 'data': 'content'}
+    {'tag': 'meta', 'attr': 'itemprop', 'val': 'description', 'data': 'content'},
+    {'tag': 'meta', 'attr': 'name', 'val': 'description', 'data': 'content'}
 ]
 
 SITE_NAME_TAGS = [
@@ -71,29 +73,15 @@ PUBLISH_DATE_TAGS = [
 ]
 
 
-def extract_tag_data(soup, tag):
-    """
-    Extract data from tag
-    """
-    # otherwise search more thoroughly
-    attr_dict = {tag['attr']: tag['val']}
-    el = soup.find(tag['tag'], attr_dict)
-    if el:
-        if not isinstance(tag['data'], list):
-            tag['data'] = [tag['data']]
-        for v in tag['data']:
-            data = el.get(v)
-            if data:
-                return data
-
-
-def canonical_url(soup):
+def canonical_url(soup, source_url=None):
     """
     Fetch the canonical url from meta fields.
     """
     for tag in CANONICAL_URL_TAGS:
-        data = extract_tag_data(soup, tag)
+        data = _extract_tag_data(soup, tag)
         if data:
+            if source_url and data.startswith('/'):
+                return urljoin(source_url, data)
             return data
 
 
@@ -102,7 +90,7 @@ def title(soup, source_url=None):
     Extract meta title.
     """
     for tag in TITLE_TAGS:
-        data = extract_tag_data(soup, tag)
+        data = _extract_tag_data(soup, tag)
         if data:
             return text.prepare(data)
 
@@ -115,7 +103,7 @@ def description(soup, source_url=None):
     Extract meta description.
     """
     for tag in DESC_TAGS:
-        data = extract_tag_data(soup, tag)
+        data = _extract_tag_data(soup, tag)
         if data:
             return text.prepare(data)
 
@@ -125,14 +113,20 @@ def site_name(soup, source_url=None):
     Extract site name from meta.
     """
     for tag in SITE_NAME_TAGS:
-        data = extract_tag_data(soup, tag)
+        data = _extract_tag_data(soup, tag)
         if data:
+            # handle twitter site which is actually
+            # twitter username.
+            if data.startswith('@'):
+                return data[1:].title()
             return data
 
     # fallback to extracting and title casing simplified domain
-    domain = urlparse(source_url).netloc
-    tld_dat = tldextract.extract(domain)
-    return tld_dat.domain.replace('.', ' ').title()
+    if source_url:
+        domain = urlparse(source_url).netloc
+        if domain:
+            tld_dat = tldextract.extract(domain)
+            return tld_dat.domain.replace('.', ' ').strip().title()
 
 
 def page_type(soup, source_url=None):
@@ -140,7 +134,7 @@ def page_type(soup, source_url=None):
     Returns meta type of a page, open graph protocol
     """
     for tag in PAGE_TYPE_TAGS:
-        data = extract_tag_data(soup, tag)
+        data = _extract_tag_data(soup, tag)
         if data:
             return data
 
@@ -150,7 +144,7 @@ def img_url(soup, source_url=None):
     Extract meta image url.
     """
     for tag in IMG_TAGS:
-        data = extract_tag_data(soup, tag)
+        data = _extract_tag_data(soup, tag)
         if data:
             return data
 
@@ -162,7 +156,7 @@ def publish_date(soup, source_url=None):
 
     # try isodate first
     for tag in PUBLISH_DATE_TAGS:
-        ds = extract_tag_data(soup, tag)
+        ds = _extract_tag_data(soup, tag)
         if ds:
             dt = dates.parse_iso(ds)
             if dt:
@@ -170,7 +164,7 @@ def publish_date(soup, source_url=None):
 
     # try a timestamp next.
     for tag in PUBLISH_DATE_TAGS:
-        ds = extract_tag_data(soup, tag)
+        ds = _extract_tag_data(soup, tag)
         if ds:
             dt = dates.parse_ts(ds)
             if dt:
@@ -178,7 +172,7 @@ def publish_date(soup, source_url=None):
 
     # try any date next.
     for tag in PUBLISH_DATE_TAGS:
-        ds = extract_tag_data(soup, tag)
+        ds = _extract_tag_data(soup, tag)
         if ds:
             dt = dates.parse_any(ds)
             if dt:
@@ -199,12 +193,22 @@ def favicon(soup, source_url=None):
     Extract favicon from meta / logic.
     """
     for tag in FAVICON_TAGS:
-        data = extract_tag_data(soup, tag)
+        data = _extract_tag_data(soup, tag)
         if data:
             return data
 
-    # fallback on usual location.
-    if source_url:
-        parsed_uri = urlparse(source_url)
-        domain = '{uri.scheme}://{uri.netloc}/'.format(uri=parsed_uri)
-        return domain + 'favicon.ico'
+
+def _extract_tag_data(soup, tag):
+    """
+    Extract data from tag
+    """
+    # otherwise search more thoroughly
+    attr_dict = {tag['attr']: tag['val']}
+    el = soup.find(tag['tag'], attr_dict)
+    if el:
+        if not isinstance(tag['data'], list):
+            tag['data'] = [tag['data']]
+        for v in tag['data']:
+            data = el.get(v)
+            if data:
+                return data

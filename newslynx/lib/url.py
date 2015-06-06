@@ -117,7 +117,6 @@ def unshorten(orig_url, **kw):
 
     if not orig_url.startswith('http://'):
         orig_url = "http://" + orig_url
-    print orig_url
     u = copy.copy(orig_url)
     while attempts < max_attempts:
         u = _unshorten(u)
@@ -421,6 +420,10 @@ def from_string(string, dedupe=True, source=None):
     """
     get urls from input string
     """
+
+    if not string:
+        return []
+
     raw_urls = re_url.findall(string)
     short_urls = [g[0].strip() for g in re_short_url_text.findall(string)]
 
@@ -451,6 +454,8 @@ def from_html(htmlstring, source=None, dedupe=True):
     Extract urls from htmlstring, optionally reconciling
     relative urls + embeds + redirects.
     """
+    if not htmlstring:
+        return []
     final_urls = []
     if source:
         source_domain = get_domain(source)
@@ -569,8 +574,7 @@ def get_location(url):
     r = requests.head(url)
     if r.status_code / 100 == 3 and 'Location' in r.headers:
         return r.headers['Location']
-    else:
-        return url
+    return url
 
 
 def _long_url(url):

@@ -4,29 +4,24 @@ from sqlalchemy import or_
 
 from newslynx.core import db
 from newslynx import settings
-from newslynx.models import (
-    url_cache, Event, Thing, Tag,
-    Recipe)
-from newslynx.exc import RequestError, UnprocessableEntityError
-from newslynx.models.util import (
-    split_meta, get_table_columns,
-    fetch_by_id_or_field)
 from newslynx.util import gen_uuid
-from newslynx.views.util import (
-    validate_thing_types, validate_event_status)
 from newslynx.lib import dates
 from newslynx.lib import url
 from newslynx.lib import text
 from newslynx.lib import html
 from newslynx.lib import article
-
+from newslynx.models import (
+    url_cache, Event, Thing, Tag,
+    Recipe)
+from newslynx.models.util import (
+    split_meta, get_table_columns,
+    fetch_by_id_or_field)
+from newslynx.views.util import (
+    validate_thing_types, validate_event_status)
+from newslynx.exc import RequestError, UnprocessableEntityError
 
 # a pool to multithread url_cache.
-url_extract_pool = Pool(settings.URL_CACHE_POOL_SIZE)
-
-EXTRACTORS = {
-    'article': article.extract
-}
+url_cache_pool = Pool(settings.URL_CACHE_POOL_SIZE)
 
 
 def event(o,
@@ -156,7 +151,7 @@ def _extract_urls(obj, fields, source=None):
                 raw_urls.add(u)
 
     clean_urls = set()
-    for u in url_extract_pool.imap_unordered(url_cache.get, list(raw_urls)):
+    for u in url_cache_pool.imap_unordered(url_cache.get, list(raw_urls)):
         clean_urls.add(u)
     return list(clean_urls)
 

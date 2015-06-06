@@ -4,7 +4,6 @@ import copy
 import logging
 
 from flask import Blueprint
-from pprint import pprint
 
 from newslynx.core import db
 from newslynx.exc import RequestError, NotFoundError
