@@ -59,7 +59,7 @@ def arg_bool(name, default=False):
     v = request.args.get(name, '')
     if not len(v):
         return default
-    return v in BOOL_TRUISH
+    return v.lower() in BOOL_TRUISH
 
 
 def arg_date(name, default=None):

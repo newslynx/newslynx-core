@@ -84,12 +84,15 @@ class BaseClient(object):
         # format response
         return self._format_response(resp)
 
-    def _split_auth_params_from_kw(self, **kw):
+    def _split_auth_params_from_kw(self, kw, incl=[]):
         params = {}
         if 'apikey' in kw:
             params['apikey'] = kw.pop('apikey')
         if 'org' in kw:
             params['org'] = kw.pop('org')
+        for i in incl:
+            if i in kw:
+                params[i] = kw.pop(i)
         return kw, params
 
     def _handle_errors(self, resp, err=None):
@@ -99,9 +102,9 @@ class BaseClient(object):
         if err:
             raise err
 
-        # check status codes
-        elif resp.status_code not in GOOD_CODES:
-            raise ClientError(resp.content)
+        # # check status codes
+        # elif resp.status_code not in GOOD_CODES:
+        #     raise ClientError(resp.content)
 
     def _format_response(self, resp):
         """
@@ -109,10 +112,12 @@ class BaseClient(object):
         """
 
         # if there's no response just return true.
-        if resp.status_code not in RET_CODES:
+        if resp.status_code == 204:
             return True
 
         data = resp.json()
+        if not data:
+            return None
         if isinstance(data, list):
             return [Dict(d) for d in data]
 
@@ -141,11 +146,9 @@ class Me(BaseClient):
         """
         Update your user profile.
         """
-        kw, params = self._split_auth_params_from_kw(**kw)
+        kw, params = self._split_auth_params_from_kw(kw, incl=['refresh_apikey'])
 
         # special case for this parameter
-        if 'refresh_apikey' in kw:
-            params['refresh_apikey'] = kw.pop('refresh_apikey')
 
         url = self._format_url('me')
         return self._request('PUT', url, data=kw, params=params)
@@ -184,7 +187,7 @@ class Orgs(BaseClient):
         """
         Create an organization.
         """
-        kw, params = self._split_auth_params_from_kw(**kw)
+        kw, params = self._split_auth_params_from_kw(kw)
         url = self._format_url('orgs')
         return self._request('POST', url, data=kw, params=params)
 
@@ -197,7 +200,7 @@ class Orgs(BaseClient):
             if not org:
                 raise ValueError(
                     'You must pass in the org ID or name as the first argument.')
-        kw, params = self._split_auth_params_from_kw(**kw)
+        kw, params = self._split_auth_params_from_kw(kw)
         url = self._format_url('orgs', org)
         return self._request('PUT', url, data=kw, params=params)
 
@@ -253,7 +256,7 @@ class Orgs(BaseClient):
             if not org:
                 raise ValueError(
                     'You must pass in the org ID or name as the first argument.')
-        kw, params = self._split_auth_params_from_kw(**kw)
+        kw, params = self._split_auth_params_from_kw(kw)
         url = self._format_url('orgs', org, 'users')
         return self._request('POST', url, data=kw, params=params)
 
@@ -319,7 +322,7 @@ class Settings(BaseClient):
             if not isinstance(kw.get('value'), basestring):
                 kw['value'] = obj_to_json(kw['value'])
 
-        kw, params = self._split_auth_params_from_kw(**kw)
+        kw, params = self._split_auth_params_from_kw(kw)
 
         url = self._format_url('settings')
         return self._request('POST', url, data=kw, params=params)
@@ -333,7 +336,7 @@ class Settings(BaseClient):
             if not isinstance(kw.get('value'), basestring):
                 kw['value'] = obj_to_json(kw['value'])
 
-        kw, params = self._split_auth_params_from_kw(**kw)
+        kw, params = self._split_auth_params_from_kw(kw)
 
         url = self._format_url('settings', name_id)
         return self._request('PUT', url, data=kw, params=params)
@@ -360,7 +363,7 @@ class Tags(BaseClient):
         """
         Create a tag
         """
-        kw, params = self._split_auth_params_from_kw(**kw)
+        kw, params = self._split_auth_params_from_kw(kw)
         url = self._format_url('tags')
         return self._request('POST', url, data=kw, params=params)
 
@@ -375,7 +378,7 @@ class Tags(BaseClient):
         """
         Update a tag
         """
-        kw, params = self._split_auth_params_from_kw(**kw)
+        kw, params = self._split_auth_params_from_kw(kw)
         url = self._format_url('tags', tag_id)
         return self._request('PUT', url, data=kw, params=params)
 
@@ -383,7 +386,7 @@ class Tags(BaseClient):
         """
         Delete a tag
         """
-        kw, params = self._split_auth_params_from_kw(**kw)
+        kw, params = self._split_auth_params_from_kw(kw)
         url = self._format_url('tags', tag_id)
         return self._request('DELETE', url, params=kw)
 
@@ -401,7 +404,7 @@ class Recipes(BaseClient):
         """
         Create a recipe
         """
-        kw, params = self._split_auth_params_from_kw(**kw)
+        kw, params = self._split_auth_params_from_kw(kw)
         url = self._format_url('recipes')
         return self._request('POST', url, data=kw, params=params)
 
@@ -416,7 +419,7 @@ class Recipes(BaseClient):
         """
         Update a tag
         """
-        kw, params = self._split_auth_params_from_kw(**kw)
+        kw, params = self._split_auth_params_from_kw(kw)
         url = self._format_url('tags', tag_id)
         return self._request('PUT', url, data=kw, params=params)
 
@@ -424,7 +427,7 @@ class Recipes(BaseClient):
         """
         Delete a tag
         """
-        kw, params = self._split_auth_params_from_kw(**kw)
+        kw, params = self._split_auth_params_from_kw(kw)
         url = self._format_url('tags', tag_id)
         return self._request('DELETE', url, params=kw)
 
@@ -439,7 +442,7 @@ class Events(BaseClient):
         return self._request('GET', url, params=kw)
 
     def create(self, **kw):
-        kw, params = self._split_auth_params_from_kw(**kw)
+        kw, params = self._split_auth_params_from_kw(kw, incl=['only_content'])
         url = self._format_url('events')
         return self._request('POST', url, params=params, data=kw)
 
@@ -454,7 +457,7 @@ class Events(BaseClient):
         """
         Get an individual event.
         """
-        kw, params = self._split_auth_params_from_kw(**kw)
+        kw, params = self._split_auth_params_from_kw(kw)
         url = self._format_url('events', event_id)
         return self._request('PUT', url, data=kw, params=params)
 

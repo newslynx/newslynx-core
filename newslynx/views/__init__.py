@@ -7,7 +7,8 @@ from werkzeug.exceptions import HTTPException
 from newslynx.core import app, db, db_session
 from newslynx.exc import (
     AuthError, RequestError, ForbiddenError, NotFoundError,
-    SousChefSchemaError, ConfigError, SearchStringError)
+    SousChefSchemaError, ConfigError, SearchStringError,
+    UnprocessableEntityError)
 from newslynx.lib.serialize import jsonify
 from newslynx.views.util import register_blueprints
 from newslynx.views import api
@@ -73,6 +74,13 @@ def handle_forbidden_error(error):
 
 @app.errorhandler(NotFoundError)
 def handle_not_found_error(error):
+    response = jsonify(error)
+    response.status_code = error.status_code
+    return response
+
+
+@app.errorhandler(UnprocessableEntityError)
+def handle_unprocessable_entity_error(error):
     response = jsonify(error)
     response.status_code = error.status_code
     return response

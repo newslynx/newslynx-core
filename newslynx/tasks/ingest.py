@@ -7,7 +7,7 @@ from newslynx import settings
 from newslynx.models import (
     url_cache, Event, Thing, Tag,
     Recipe)
-from newslynx.exc import RequestError
+from newslynx.exc import RequestError, UnprocessableEntityError
 from newslynx.models.util import (
     split_meta, get_table_columns,
     fetch_by_id_or_field)
@@ -32,7 +32,7 @@ EXTRACTORS = {
 def event(o,
           url_fields=['title', 'content', 'description'],
           requires=['org_id', 'content'],
-          only_things=False):
+          only_content=False):
     """
     Ingest an Event.
     """
@@ -85,6 +85,12 @@ def event(o,
 
     # else, update it
     else:
+        # if it's deleted, issue a message.
+        if e.status == 'deleted':
+            raise UnprocessableEntityError(
+                'Event {} already exists and has been previously deleted.'
+                .format(e.id))
+
         for k, v in o.items():
             setattr(e, k, v)
         e.updated = dates.now()
@@ -129,8 +135,8 @@ def event(o,
 
     # dont commit event if we're only looking
     # for events that link to things
-    if not has_things and only_things:
-        return
+    if not has_things and only_content:
+        return None
 
     db.session.add(e)
     db.session.commit()
@@ -146,16 +152,8 @@ def _extract_urls(obj, fields, source=None):
     for f in fields:
         v = obj.get(f)
         if v:
-            v = str(v)
-            print "V", v
-            if html.is_html(v):
-                for u in url.from_html(v, source):
-                    print "HERE"
-                    print u
-                    raw_urls.add(u)
-            else:
-                for u in url.from_string(v, source):
-                    raw_urls.add(u)
+            for u in url.from_any(str(v), source=source):
+                raw_urls.add(u)
 
     clean_urls = set()
     for u in url_extract_pool.imap_unordered(url_cache.get, list(raw_urls)):
@@ -225,7 +223,7 @@ def _event_provenance(o, org_id):
     multiple child recipes of the same
     sous-chef
     """
-    if 'recipe_id' not in o:
+    if 'recipe_id' not in o or not o['recipe_id']:
         o['source_id'] = "manual:{}".format(gen_uuid())
         o['provenance'] = 'manual'
         o['recipe_id'] = None

@@ -40,7 +40,7 @@ class URLCache(object):
                 url = raw_url
 
             # shorten
-            self.rds.set(key, url, ex=self.ttl)
+            # self.rds.set(key, url, ex=self.ttl)
 
         return url
 

@@ -34,3 +34,5 @@ requests_log.setLevel(logging.ERROR)
 
 urllib3_log = logging.getLogger("urllib3")
 urllib3_log.setLevel(logging.ERROR)
+iso8601_log = logging.getLogger("iso8601")
+iso8601_log.setLevel(logging.ERROR)

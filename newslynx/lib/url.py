@@ -57,7 +57,6 @@ def prepare(url, source=None, canonicalize=True, keep_params=('id', 'p', 'v')):
 
     All urls that enter `merlynne` are first treated with this function.
     """
-
     # reconcile embeds:
     url = reconcile_embed(url)
 
@@ -118,7 +117,7 @@ def unshorten(orig_url, **kw):
 
     if not orig_url.startswith('http://'):
         orig_url = "http://" + orig_url
-
+    print orig_url
     u = copy.copy(orig_url)
     while attempts < max_attempts:
         u = _unshorten(u)

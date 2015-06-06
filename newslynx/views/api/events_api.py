@@ -78,7 +78,6 @@ def apply_event_filters(q, **kw):
             .filter(Tag.category.in_(kw['include_categories']))\
             .all()
         tag_ids = [t[0] for t in tag_ids]
-        pprint(tag_ids)
         q = q.filter(Event.tags.any(Tag.id.in_(tag_ids)))
 
     if len(kw['exclude_categories']):
@@ -86,7 +85,6 @@ def apply_event_filters(q, **kw):
             .filter(Tag.category.in_(kw['exclude_categories']))\
             .all()
         tag_ids = [t[0] for t in tag_ids]
-        pprint(tag_ids)
         q = q.filter(~Event.tags.any(Tag.id.in_(tag_ids)))
 
     if len(kw['include_levels']):
@@ -94,7 +92,6 @@ def apply_event_filters(q, **kw):
             .filter(Tag.level.in_(kw['include_levels']))\
             .all()
         tag_ids = [t[0] for t in tag_ids]
-        pprint(tag_ids)
         q = q.filter(Event.tags.any(Tag.id.in_(tag_ids)))
 
     if len(kw['exclude_levels']):
@@ -102,7 +99,6 @@ def apply_event_filters(q, **kw):
             .filter(Tag.level.in_(kw['exclude_levels']))\
             .all()
         tag_ids = [t[0] for t in tag_ids]
-        pprint(tag_ids)
         q = q.filter(~Event.tags.any(Tag.id.in_(tag_ids)))
 
     # apply tags filter
@@ -209,6 +205,7 @@ def search_events(user, org):
         status=arg_str('status', default='all'),
         provenance=arg_str('provenance', default=None),
         facets=arg_list('facets', default=[], typ=str),
+        incl_content=arg_bool('incl_content', False),
         include_categories=include_categories,
         exclude_categories=exclude_categories,
         include_levels=include_levels,
@@ -293,7 +290,7 @@ def search_events(user, org):
     if kw['fields']:
         events = [dict(zip(kw['fields'], r)) for r in events.items]
     else:
-        events = events.items
+        events = [e.to_dict(incl_content=kw['incl_content']) for e in events.items]
 
     resp = {
         'events': events,
@@ -316,7 +313,7 @@ def create_event(user, org):
     """
     req_data = request_data()
     req_data['org_id'] = org.id
-    e = ingest.event(req_data)
+    e = ingest.event(req_data, only_content=arg_bool('only_content', False))
     return jsonify(e)
 
 
@@ -360,12 +357,16 @@ def event_update(user, org, event_id):
     if len(tag_ids) and len(thing_ids):
 
         approve = True
-        tags = Tag.query.filter(Tag.id.in_(tag_ids)).all()
+        tags = Tag.query\
+            .filter_by(org_id=org.id)\
+            .filter(Tag.id.in_(tag_ids)).all()
         if not len(tags):
             raise RequestError(
                 'Tag(s) with ID(s) {} do(es) not exist.'.format(tag_ids))
 
-        things = Thing.query.filter(Thing.id.in_(thing_ids)).all()
+        things = Thing.query\
+            .filter_by(org_id=org.id)\
+            .filter(Thing.id.in_(thing_ids)).all()
         if not len(things):
             raise RequestError(
                 'Thing(s) with ID(s) {} do(es) not exist.'.format(tag_ids))
@@ -440,6 +441,11 @@ def event_delete(user, org, event_id):
         raise NotFoundError(
             'An Event with ID {} does not exist.'.format(event_id))
 
+    if arg_bool('force', False):
+        db.session.delete(e)
+        db.session.commit()
+        return delete_response()
+
     # remove associations
     # from
     # http://stackoverflow.com/questions/9882358/how-to-delete-rows-from-a-table-using-an-sqlalchemy-query-without-orm
@@ -458,7 +464,7 @@ def event_delete(user, org, event_id):
     db.session.commit()
 
     # return modified event
-    return jsonify(e)
+    return delete_response()
 
 
 @bp.route('/api/v1/events/<int:event_id>/tags/<int:tag_id>', methods=['PUT', 'PATCH'])
@@ -482,7 +488,6 @@ def event_add_tag(user, org, event_id, tag_id):
         raise RequestError(
             'Tag with ID {} does not exist.'.format(tag_id))
 
-    print(tag.to_dict())
     if tag.type != 'impact':
         raise RequestError('Events can only be assigned Impact Tags.')
 
