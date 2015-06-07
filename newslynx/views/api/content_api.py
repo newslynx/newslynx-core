@@ -63,7 +63,7 @@ def apply_content_item_filters(q, **kw):
     if kw['type'] != 'all':
         q = q.filter(ContentItem.type == kw['type'])
 
-    if kw['provenance'] != 'all':
+    if kw['provenance']:
         q = q.filter(ContentItem.provenance == kw['provenance'])
 
     # filter url by regex
