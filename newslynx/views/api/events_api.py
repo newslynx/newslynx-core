@@ -316,9 +316,9 @@ def create_event(user, org):
     Create an event.
     """
     req_data = request_data()
-    req_data['org_id'] = org.id
     e = ingest.event(
         req_data,
+        org_id=org.id,
         must_link=arg_bool('must_link', False))
     return jsonify(e)
 
@@ -337,7 +337,7 @@ def get_event(user, org, event_id):
         raise NotFoundError(
             'An Event with ID {} does not exist.'
             .format(event_id))
-    return jsonify(e)
+    return jsonify(e.to_dict(incl_body=True))
 
 
 @bp.route('/api/v1/events/<int:event_id>', methods=['PUT', 'PATCH'])
@@ -464,8 +464,7 @@ def event_delete(user, org, event_id):
         return delete_response()
 
     # remove associations
-    # from
-    # http://stackoverflow.com/questions/9882358/how-to-delete-rows-from-a-table-using-an-sqlalchemy-query-without-orm
+    # from: http://stackoverflow.com/questions/9882358/how-to-delete-rows-from-a-table-using-an-sqlalchemy-query-without-orm
     d = events_tags\
         .delete(events_tags.c.event_id == event_id)
     db.session.execute(d)

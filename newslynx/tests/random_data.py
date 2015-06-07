@@ -314,10 +314,15 @@ def gen_events(org, recipes, impact_tags, content_items, n_events):
         r = choice(recipes)
         authors = random_authors(4)
 
+        if provenance == 'manual':
+            prefix = 'manual'
+        else:
+            prefix = r.slug
+
         e = Event(
             org_id=org.id,
             recipe_id=r.id,
-            source_id="{}:{}".format(provenance, str(uuid.uuid1())),
+            source_id="{}:{}".format(prefix, str(uuid.uuid1())),
             title=random_text(20),
             description=random_text(100),
             url=random_url(),

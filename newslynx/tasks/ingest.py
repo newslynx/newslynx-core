@@ -25,8 +25,9 @@ url_cache_pool = Pool(settings.URL_CACHE_POOL_SIZE)
 
 
 def event(o,
+          org_id,
           url_fields=['title', 'body', 'description'],
-          requires=['org_id', 'title'],
+          requires=['title'],
           must_link=False):
     """
     Ingest an Event.
@@ -38,12 +39,19 @@ def event(o,
     # keep track if we detected content_items
     has_content_items = False
 
-    # get org_id
-    org_id = o.get('org_id')
+    # check if the org_id is in the body
+    # TODO: I don't think this is necessary.
+    org_id = o.pop('org_id', org_id)
+
+    # get rid of ``id`` if it somehow got in here.
+    o.pop('id', None)
 
     # validate status
     if 'status' in o:
         validate_event_status(o['status'])
+        if o['status'] == 'deleted':
+            raise RequestError(
+                'You cannot create an Event with status "deleted."')
 
     # normalize the url
     o['url'] = _prepare_url(o, 'url')
@@ -250,7 +258,7 @@ def _event_provenance(o, org_id):
 
         # reformant source id.
         o['source_id'] = "{}:{}"\
-            .format(r.sous_chef.slug, str(o['source_id']))
+            .format(str(r.slug), str(o['source_id']))
 
         # set this event as non-manual
         o['provenance'] = 'recipe'

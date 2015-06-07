@@ -125,10 +125,10 @@ class JSONEncoder(json.JSONEncoder):
             return [o for o in obj]
         if isinstance(obj, Counter):
             return dict(obj)
-        if self.refs and hasattr(obj, 'to_ref'):
-            return obj.to_ref()
         if isinstance(obj, SearchString):
             return obj.raw
+        if self.refs and hasattr(obj, 'to_ref'):
+            return obj.to_ref()
         if hasattr(obj, 'to_dict'):
             return obj.to_dict()
         if hasattr(obj, 'to_json'):
@@ -151,7 +151,7 @@ class JSONEncoder(json.JSONEncoder):
 
 
 def jsonify(obj, status=200, headers=None, refs=False, encoder=JSONEncoder, is_req=True):
-    """ Custom JSONificaton to support obj.to_dict protocol. 
+    """ Custom JSONificaton to support obj.to_dict protocol.
         Taken from: https://github.com/pudo/apikit"""
 
     if encoder is JSONEncoder:

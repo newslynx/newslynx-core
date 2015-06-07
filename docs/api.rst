@@ -1894,10 +1894,17 @@ Params
 |                    | preface with **-** to sort     |                  | false          |
 |                    | descending                     |                  |                |
 +--------------------+--------------------------------+------------------+----------------+
+| ``recipes``        | A comma-separated list of      | null             |                |
+|                    | recipe ids or slugs to query by|                  | false          |
+|                    | Each element can be prefaced by|                  |                |
+|                    | with **-** or **!** to exclude |                  |                | 
+|                    | it.                            |                  |                |
++--------------------+--------------------------------+------------------+----------------+
 | ``sous_chefs``     | A comma-separated list of sous-| null             |                |
 |                    | chefs that recipes belong to.  |                  | false          |
 |                    | Each element can be prefaced by|                  |                |
-|                    | with **-** to exclude it.      |                  |                |
+|                    | with **-** or **!** to exclude |                  |                | 
+|                    | it.                            |                  |                |
 +--------------------+--------------------------------+------------------+----------------+
 
 Returns
@@ -4291,6 +4298,8 @@ Event JSON
 
 All methods, unless otherwise specified, will return one or many Event objects of the following ``json`` schema:
 
+**NOTE** : Event's with a ``status`` of deleted mean that these events have been manually deleted by a user or by a recipe. Such events are kept in the database for 7 days and can be restored at any point.  After 7 days these events are permanently deleted.
+
 .. code-block:: javascript
 
     {
@@ -4319,11 +4328,11 @@ All methods, unless otherwise specified, will return one or many Event objects o
       "meta": {
         "followers": 78
       },
-      "source_id": "recipe:d25cb405-0c98-11e5-b5c0-6c4008aeb606",
+      "source_id": "facebook-page-to-event:d25cb405-0c98-11e5-b5c0-6c4008aeb606",
       "img_url": "http://example.com/d25cc021-0c98-11e5-b0a9-6c4008aeb606.png"
     }
 
-.. _endpoints-recipes-list:
+.. _endpoints-events-search:
 
 **GET** ``/events``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -4515,10 +4524,405 @@ Search Events and only return ``id`` and ``title``:
     
     curl http://localhost:5000/api/v1/events\?org\=1\&apikey\=$NEWSLYNX_API_KEY\&q=foobar&fields=id,title&per_page=100
 
+.. _endpoints-events-create:
+
+**POST** ``/events``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Create an event.
+
+Params
+******
+
++--------------------+--------------------------------+------------------+----------------+
+| Parameter          |  Description                   |  Default         |  Required      |
++====================+================================+==================+================+
+| ``apikey``         | Your apikey                    | null             | true           |
++--------------------+--------------------------------+------------------+----------------+
+| ``org``            | The organization's             | null             | true           |
+|                    | ``id`` or ``slug`` you         |                  |                |
+|                    | wish to access.                |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+| ``must_link``      | Only create if the event       | false            | false          |
+|                    | contains links to one or more  |                  |                |
+|                    | Content Items.                 |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+
+Body
+*******
+
+A :ref:`endpoints-recipes-json` object, but the only required field is ``title``. You can also include the following special fields:
+
+* ``tag_ids`` - An array of tags to assign to this event.
+* ``content_item_ids`` - An array of content items to associate with this event.
+* ``links`` - An array of links you'd like to include when checking for matching Content Items
+
+Links
+++++++
+
+While you can explicity set ``content_item_ids`` and ``links``, this method will also parse out
+all urls from the Event's ``body``, ``title``, and ``description`` and attempt to reconcile these
+with your organization's Content Items. Through this process, all short_urls will be unshortened and links will be canonicalized according to NewsLynx's standards.  In practice this means that Recipes that create Events don't need to worry too much about extracting links as this process will be handled by this method.
+
+Source IDs
+++++++++++++
+
+If you're creating an event that's associated with a ``recipe_id``, it's also imperative that you pass in a ``source_id``. We use this field to ensure that no duplicate events are created and also 
+to make sure that Events that have been previously ``deleted`` are not re-created by a recipe which polls a data source. If you include a ``recipe_id`` in the post of the body, the ``source_id`` you pass in will be prefixed by the slug of this Recipe to ensure that events created by recipes which generate similar source_ids do not conflict.
+
+Dates
+++++++++++++
+
+If you wish to specify a ``created`` for an event, just pass it in as `ISO 8601`_ date string. If you include a UTC-Offset, it will be properly convered to UTC. Otherwise it will be assumed to be UTC. If you don't pass in a ``created`` field, it will be set as the time the Event was created.
+
+Provenance
+++++++++++++
+
+Events created by recipes (AKA: Events that pass a ``recipe_id`` to the method) will be assigned a ``provenacnce`` of ``recipe``. All other events are assumed to have been created manually and will be assigned a ``provenance`` of ``manual``
+
+Meta Fields
+++++++++++++
+
+All fields passed to this method that are not part of the :ref:`endpoints-events-json` object will be inserted into the ``meta`` field.
+
+Returns
+********
+
+A newly-created :ref:`endpoints-events-json` object. If you specify ``must_link=true`` and there is no matching ContentItem in the request body, then this method will return ``null``.
+
+Examples
+********
+
+Create a ``pending`` event with a ``provenance`` of ``manual`` 
+
+.. code-block:: bash
+    
+    curl --data "title=Something Happened" \
+      http://localhost:5000/api/v1/events\?apikey=$NEWSLYNX_API_KEY\&org=1
+
+
+Create a ``pending`` event with a ``provenance`` of ``recipe`` 
+
+.. code-block:: bash
+    
+    curl --data "title=Something Happened&recipe_id=1&source_id=dlakjdalfds" \
+      http://localhost:5000/api/v1/events\?apikey=$NEWSLYNX_API_KEY\&org=1
+
+Create a ``pending`` event with a ``provenance`` of ``recipe`` and a ``meta`` field 
+
+.. code-block:: bash
+    
+  curl --data "title=Something Happened&recipe_id=1&source_id=dlakjdalfds&some_field=foo" \
+  http://localhost:5000/api/v1/events\?apikey=$NEWSLYNX_API_KEY\&org=1
 
 
 
+Create an ``approved`` event associated with specific ``content_item_ids`` and ``tag_ids`` 
+
+First, create a file like this and save it as ``event.json``
+
+.. code-block:: javascript
+
+    {
+      "source_id": "fdslakfjdaslkfjasdlkaf",
+      "recipe_id": 1,
+      "title": "Something else happened.",
+      "description": "This was crazy!",
+      "body": "<p> This is the transcript of what happend</p>",
+      "tag_ids": [1,2],
+      "content_item_ids": [1,2]
+    }
+
+
+Now run this command:
+
+.. code-block:: bash
+    
+  curl -X POST \
+       -H 'Content-Type:application/json' \
+       --data-binary @event.json \
+       http://localhost:5000/api/v1/events\?apikey=$NEWSLYNX_API_KEY\&org=1
+
+The ``status`` returned should be ``approved``.
+
+.. _endpoints-events-get:
+
+**GET** ``/events/:event_id``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Fetch an individual event.
+
+Params
+******
+
++--------------------+--------------------------------+------------------+----------------+
+| Parameter          |  Description                   |  Default         |  Required      |
++====================+================================+==================+================+
+| ``apikey``         | Your apikey                    | null             | true           |
++--------------------+--------------------------------+------------------+----------------+
+| ``org``            | The organization's             | null             | true           |
+|                    | ``id`` or ``slug`` you         |                  |                |
+|                    | wish to access.                |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+
+Returns
+********
+
+An :ref:`endpoints-events-json` object with the ``body`` included.
+
+Example
+********
+
+.. code-block:: bash
+    
+    curl http://localhost:5000/api/v1/events/1\?org\=1\&apikey\=$NEWSLYNX_API_KEY
+
+.. _endpoints-events-update:
+
+**PUT | PATCH** ``/events/:event_id``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Update an individual event.
+
+**NOTE**
+  - When passing in ``tag_ids`` and ``content_item_ids``, this method will upsert pre-exising associations rather than replacing them.
+
+Params
+******
+
++--------------------+--------------------------------+------------------+----------------+
+| Parameter          |  Description                   |  Default         |  Required      |
++====================+================================+==================+================+
+| ``apikey``         | Your apikey                    | null             | true           |
++--------------------+--------------------------------+------------------+----------------+
+| ``org``            | The organization's             | null             | true           |
+|                    | ``id`` or ``slug`` you         |                  |                |
+|                    | wish to access.                |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+
+Returns
+********
+
+An updated :ref:`endpoints-events-json` object.
+
+Examples
+********
+
+Update an event's ``description``.
+
+.. code-block:: bash
+    
+  curl -X PUT -d "description=This is what happened" \
+  http://localhost:5000/api/v1/events/1\?apikey=$NEWSLYNX_API_KEY\&org=1
+
+Update  event by associating it with specific ``content_item_ids`` and ``tag_ids``. If you provide 
+these fields you don't need to include a ``status`` since it will be assumed that you're "approving" it.
+
+First, create a file like this and save it as ``event.json``
+
+.. code-block:: javascript
+
+    {
+      "tag_ids": [3,4],
+      "content_item_ids": [1,2]
+    }
+
+Now run this command:
+
+.. code-block:: bash
+    
+  curl -X PUT \
+       -H 'Content-Type:application/json' \
+       --data-binary @event.json \
+       http://localhost:5000/api/v1/events/1\?apikey=$NEWSLYNX_API_KEY\&org=1
+
+.. _endpoints-events-delete:
+
+**DELETE** ``/events/:event_id``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Set an Event's ``status`` as deleted and remove it's associations with Tags and Content Items. Permanently delete an ``event`` by adding the parameter ``force=true``.
+
+Params
+******
+
++--------------------+--------------------------------+------------------+----------------+
+| Parameter          |  Description                   |  Default         |  Required      |
++====================+================================+==================+================+
+| ``apikey``         | Your apikey                    | null             | true           |
++--------------------+--------------------------------+------------------+----------------+
+| ``org``            | The organization's             | null             | true           |
+|                    | ``id`` or ``slug`` you         |                  |                |
+|                    | wish to access.                |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+| ``force``          | Whether or not to permanently  | null             | true           |
+|                    | delete this event.             |                  |                |
+|                    | wish to access.                |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+
+Returns
+********
+
+``STATUS_CODE`` - ``204``
+
+Examples
+********
+
+Set an Event's ``status`` to ``deleted``
+
+.. code-block:: bash
+    
+    curl -X DELETE http://localhost:5000/api/v1/events/1\?org\=1\&apikey\=$NEWSLYNX_API_KEY
+
+Permanently delete an Event.
+
+.. code-block:: bash
+    
+    curl -X DELETE http://localhost:5000/api/v1/events/1\?org\=1\&force\=true\&apikey\=$NEWSLYNX_API_KEY
+
+.. _endpoints-events-add-tag:
+
+**PUT** ``/events/:event_id/tag/:tag_id``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Add a tag to an event.
+
+**NOTE**
+  - Events must first be "approved" before adding additional Tags.
+
+Params
+******
+
++--------------------+--------------------------------+------------------+----------------+
+| Parameter          |  Description                   |  Default         |  Required      |
++====================+================================+==================+================+
+| ``apikey``         | Your apikey                    | null             | true           |
++--------------------+--------------------------------+------------------+----------------+
+| ``org``            | The organization's             | null             | true           |
+|                    | ``id`` or ``slug`` you         |                  |                |
+|                    | wish to access.                |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+
+Returns
+********
+
+An updated :ref:`endpoints-events-json` object.
+
+Example
+********
+
+.. code-block:: bash
+    
+    curl -X PUT http://localhost:5000/api/v1/events/2/content/1\?org\=1\&apikey\=$NEWSLYNX_API_KEY
+
+.. _endpoints-events-remove-tag:
+
+**DELETE** ``/events/:event_id/tags/:tag_id``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Remove an associated Content Item from an Event.
+
+**NOTE**
+  - Events must first be "approved" before removing Tags.
+
+Params
+******
+
++--------------------+--------------------------------+------------------+----------------+
+| Parameter          |  Description                   |  Default         |  Required      |
++====================+================================+==================+================+
+| ``apikey``         | Your apikey                    | null             | true           |
++--------------------+--------------------------------+------------------+----------------+
+| ``org``            | The organization's             | null             | true           |
+|                    | ``id`` or ``slug`` you         |                  |                |
+|                    | wish to access.                |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+
+Returns
+********
+
+An updated :ref:`endpoints-events-json` object.
+
+Example
+********
+
+.. code-block:: bash
+    
+    curl -X DELETE http://localhost:5000/api/v1/events/2/tags/1\?org\=1\&apikey\=$NEWSLYNX_API_KEY
+
+
+.. _endpoints-events-add-content-item:
+
+**PUT** ``/events/:event_id/content/:content_item_id``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Associate an Event with a Content Item.
+
+**NOTE**
+  - Events must first be "approved" before adding additional Content Items.
+
+Params
+******
+
++--------------------+--------------------------------+------------------+----------------+
+| Parameter          |  Description                   |  Default         |  Required      |
++====================+================================+==================+================+
+| ``apikey``         | Your apikey                    | null             | true           |
++--------------------+--------------------------------+------------------+----------------+
+| ``org``            | The organization's             | null             | true           |
+|                    | ``id`` or ``slug`` you         |                  |                |
+|                    | wish to access.                |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+
+Returns
+********
+
+An updated :ref:`endpoints-events-json` object.
+
+Example
+********
+
+.. code-block:: bash
+    
+    curl -X PUT http://localhost:5000/api/v1/events/2/content/1\?org\=1\&apikey\=$NEWSLYNX_API_KEY
+
+.. _endpoints-events-remove-content-item:
+
+**DELETE** ``/events/:event_id/content/:content_item_id``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Remove an associated Content Item from an Event.
+
+**NOTE**
+  - Events must first be "approved" before removing Content Items.
+
+Params
+******
+
++--------------------+--------------------------------+------------------+----------------+
+| Parameter          |  Description                   |  Default         |  Required      |
++====================+================================+==================+================+
+| ``apikey``         | Your apikey                    | null             | true           |
++--------------------+--------------------------------+------------------+----------------+
+| ``org``            | The organization's             | null             | true           |
+|                    | ``id`` or ``slug`` you         |                  |                |
+|                    | wish to access.                |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+
+Returns
+********
+
+An updated :ref:`endpoints-events-json` object.
+
+Example
+********
+
+.. code-block:: bash
+    
+    curl -X DELETE http://localhost:5000/api/v1/events/2/content/1\?org\=1\&apikey\=$NEWSLYNX_API_KEY
 
 
 
 .. _Postgres Search docs: http://www.postgresql.org/docs/9.1/static/textsearch-tables.html#TEXTSEARCH-TABLES-SEARCH
+
+.. _ISO 8601: http://www.w3.org/TR/NOTE-datetime

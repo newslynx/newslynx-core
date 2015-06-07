@@ -30,8 +30,7 @@ def list_recipes(user, org):
     include_sous_chefs, exclude_sous_chefs = \
         arg_list('sous_chefs', default=[], typ=str, exclusions=True)
     include_recipes, exclude_recipes = \
-        arg_list('recipe_ids', default=[], typ=str, exclusions=True)
-
+        arg_list('recipes', default=[], typ=str, exclusions=True)
 
     # validate sort fields are part of Recipe object.
     if sort_field:
@@ -53,6 +52,32 @@ def list_recipes(user, org):
     if len(exclude_sous_chefs):
         recipe_query = recipe_query\
             .filter(~Recipe.sous_chef.has(SousChef.slug.in_(exclude_sous_chefs)))
+
+    if len(include_recipes):
+        rids = []
+        for rid in include_recipes:
+            r = fetch_by_id_or_field(Recipe, 'slug', rid, org_id=org.id)
+            if not r:
+                raise RequestError(
+                    'A recipe with ID/slug {} does not exist.'
+                    .format(rid))
+            rids.append(r.id)
+
+        recipe_query = recipe_query\
+            .filter(Recipe.id.in_(rids))
+
+    if len(exclude_recipes):
+        rids = []
+        for rid in exclude_recipes:
+            r = fetch_by_id_or_field(Recipe, 'slug', rid, org_id=org.id)
+            if not r:
+                raise RequestError(
+                    'A recipe with ID/slug {} does not exist.'
+                    .format(rid))
+            rids.append(r.id)
+
+        recipe_query = recipe_query\
+            .filter(~Recipe.id.in_(include_recipes))
 
     if scheduled is not None:
         recipe_query = recipe_query\
