@@ -2308,9 +2308,9 @@ Params
 |                    | faceted counts to include      |                  |                |
 |                    | in the response. Choose from   |                  |                |
 |                    | ``tags``, ``content_items``,   |                  |                |
-|                    |  ``levels``,  ``categories``,  |                  |                |
+|                    | ``levels``,  ``categories``,   |                  |                |
 |                    | ``sous_chefs``, ``recipes``,   |                  |                |
-|                    | ``statuses``, ``provenances``  |                  |                |
+|                    | ``statuses``, ``provenances``, |                  |                |
 |                    | or ``all``.                    |                  |                |
 +--------------------+--------------------------------+------------------+----------------+
 |``page``            |The page number of the results. | 1                | false          |
