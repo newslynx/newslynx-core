@@ -4850,7 +4850,7 @@ Example
 
 .. _endpoints-events-add-content-item:
 
-**PUT** ``/events/:event_id/content/:content_item_id``
+**PUT** ``/events/:event_id/content/:content_id``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Associate an Event with a Content Item.
@@ -4885,7 +4885,7 @@ Example
 
 .. _endpoints-events-remove-content-item:
 
-**DELETE** ``/events/:event_id/content/:content_item_id``
+**DELETE** ``/events/:event_id/content/:content_id``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Remove an associated Content Item from an Event.
