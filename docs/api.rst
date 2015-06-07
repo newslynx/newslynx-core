@@ -2232,6 +2232,11 @@ Params
 |                    | `Postgres Search docs`_ for    |                  |                |
 |                    | details on query syntax.       |                  |                |
 +--------------------+--------------------------------+------------------+----------------+
+| ``search``         | The field to search on. Either:| ``all``          |                |
+|                    | ``body``, ``authors``,         |                  | false          |
+|                    | ``title``, ``description``,    |                  |                |
+|                    | ``meta``, or ``all``.          |                  |                |
++--------------------+--------------------------------+------------------+----------------+
 | ``fields``         | A comma-separated list of      | null             | false          |
 |                    | fields to include in the       |                  |                | 
 |                    | response.                      |                  |                |
@@ -2263,10 +2268,9 @@ Params
 |                    | ``approved``, ``deleted`` or   |                  |                |
 |                    | ``all``.                       |                  |                |
 +--------------------+--------------------------------+------------------+----------------+
-| ``provenance``     | A provenance to filter         | ``all``          | false          |
+| ``provenance``     | A provenance to filter         | null             | false          |
 |                    | results by. Choose from        |                  |                |
-|                    | ``manual``, ``recipe``, or     |                  |                |
-|                    | ``all``.                       |                  |                |
+|                    | ``manual`` or ``recipe``.      |                  |                |
 +--------------------+--------------------------------+------------------+----------------+
 | ``tag_ids``        | A comma-separated list of      | null             | false          |
 |                    | ``tag_ids`` to filter results  |                  |                |

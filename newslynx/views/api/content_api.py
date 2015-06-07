@@ -7,7 +7,7 @@ from sqlalchemy import distinct
 
 from newslynx.core import db
 from newslynx.exc import NotFoundError
-from newslynx.models import ContentItem
+from newslynx.models import ContentItem, Author
 from newslynx.lib.serialize import jsonify
 from newslynx.views.decorators import load_user, load_org
 from newslynx.tasks import facet
@@ -43,7 +43,21 @@ def apply_content_item_filters(q, **kw):
             sort = True
         else:
             sort = False
-        q = q.search(kw['search_query'], sort=sort)
+        if kw['search_vector'] == 'all':
+            vector = ContentItem.title_search_vector | \
+                ContentItem.description_search_vector | \
+                ContentItem.body_search_vector | \
+                Author.search_vector | \
+                ContentItem.meta_search_vector
+
+        elif kw['search_vector'] == 'authors':
+            vector = Author.search_vector
+
+        else:
+            vname = "{}_search_vector".format(kw['search_vector'])
+            vector = getattr(ContentItem, vname)
+
+        q = q.search(kw['search_query'], vector=vector, sort=sort)
 
     # apply status filter
     if kw['type'] != 'all':
@@ -222,6 +236,7 @@ def search_content(user, org):
 
     kw = dict(
         search_query=arg_str('q', default=None),
+        search_vector=arg_str('search', default='all'),
         domain=arg_str('domain', default=None),
         fields=arg_list('fields', default=None),
         page=arg_int('page', default=1),
@@ -269,6 +284,7 @@ def search_content(user, org):
     validate_tag_levels(kw['exclude_levels'])
     validate_content_item_types(kw['type'])
     validate_content_item_provenances(kw['provenance'])
+    validate_content_item_search_vector(kw['search_vector'])
 
     # base query
     content_query = ContentItem.query
@@ -327,7 +343,6 @@ def search_content(user, org):
         for by, result in content_facet_pool.imap_unordered(fx, kw['facets']):
             facets[by] = result
 
-    # paginate content_query
     content = content_query\
         .paginate(kw['page'], kw['per_page'], False)
 

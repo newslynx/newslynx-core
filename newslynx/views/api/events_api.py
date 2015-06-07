@@ -40,7 +40,17 @@ def apply_event_filters(q, **kw):
             sort = True
         else:
             sort = False
-        q = q.search(kw['search_query'], sort=sort)
+        if kw['search_vector'] == 'all':
+            vector = Event.title_search_vector | \
+                Event.description_search_vector | \
+                Event.body_search_vector | \
+                Event.authors_search_vector | \
+                Event.meta_search_vector
+        else:
+            vname = "{}_search_vector".format(kw['search_vector'])
+            vector = getattr(Event, vname)
+
+        q = q.search(kw['search_query'], vector=vector, sort=sort)
 
     # apply status filter
     if kw['status'] != 'all':
@@ -142,6 +152,7 @@ def search_events(user, org):
     """
     args:
         q                | search query
+        search           | a search vector to search on, choose from authors, title, description, body, meta, or all, default=all
         fields           | a comma-separated list of fields to include in response
         page             | page number
         per_page         | number of items per page.
@@ -193,6 +204,7 @@ def search_events(user, org):
 
     kw = dict(
         search_query=arg_str('q', default=None),
+        search_vector=arg_str('search', default='all'),
         fields=arg_list('fields', default=None),
         page=arg_int('page', default=1),
         per_page=arg_limit('per_page'),
@@ -238,6 +250,7 @@ def search_events(user, org):
     validate_tag_levels(kw['exclude_levels'])
     validate_event_status(kw['status'])
     validate_event_provenances(kw['provenance'])
+    validate_event_search_vector(kw['search_vector'])
 
     # base query
     event_query = Event.query
@@ -464,7 +477,8 @@ def event_delete(user, org, event_id):
         return delete_response()
 
     # remove associations
-    # from: http://stackoverflow.com/questions/9882358/how-to-delete-rows-from-a-table-using-an-sqlalchemy-query-without-orm
+    # from:
+    # http://stackoverflow.com/questions/9882358/how-to-delete-rows-from-a-table-using-an-sqlalchemy-query-without-orm
     d = events_tags\
         .delete(events_tags.c.event_id == event_id)
     db.session.execute(d)

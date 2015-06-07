@@ -366,7 +366,6 @@ def gen_content_item(org, recipes, subject_tags, authors):
         updated=random_date(1, 9),
         domain='example.com',
         title=random_text(20),
-        byline='By {}'.format(c.name),
         description=random_text(100),
         body=random_text(500),
         img_url=random_url(ext='jpg'),

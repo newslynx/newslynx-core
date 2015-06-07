@@ -151,7 +151,7 @@ Exception KeyError: KeyError(4332017936,) in <module 'threading' from '/System/L
     - [ ] Create gevent worker class to avoid reliance on
           os.fork
     - [ ] Figure out how to rate limit requests.
-- [ ] Implement Modular SousChefs
+- [x] Implement Modular SousChefs Class
 - [x] Figure out how best to use OAuth tokens in SousChefs. Ideally these should not be exposed to users.
 - [x] Implement API client
 - [ ] Re-implement SousChefs

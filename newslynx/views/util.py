@@ -303,19 +303,6 @@ def validate_content_item_types(values):
             .format(', '.join(bad_values), msg, content_item_TYPES))
 
 
-def validate_content_item_provenances(value):
-    """
-    check a list of values against ContentItem provenances.
-    """
-    if not value:
-        return
-    provenances = CONTENT_ITEM_PROVENANCES + ['all']
-    if value not in provenances:
-        raise RequestError(
-            "'{}' is not a valid ContentItem provenance. Choose from {}."
-            .format(value, provenances))
-
-
 def validate_event_status(value):
     """
     check a list of values against event statuses.
@@ -327,13 +314,24 @@ def validate_event_status(value):
             .format(value, statuses))
 
 
+def validate_event_search_vector(value):
+    """
+    check a list of values against event statuses.
+    """
+    search_vector = EVENT_SEARCH_VECTORS
+    if value not in search_vector:
+        raise RequestError(
+            "'{}' is not a valid Event search vector. Choose from {}."
+            .format(value, search_vector))
+
+
 def validate_event_provenances(value):
     """
     check a list of values against event provenances.
     """
     if not value:
         return
-    provenances = CONTENT_ITEM_PROVENANCES + ['all']
+    provenances = EVENT_PROVENANCES
     if value not in provenances:
         raise RequestError(
             "'{}' is not a valid Event provenance. Choose from {}."
@@ -383,6 +381,17 @@ def validate_content_item_facets(values):
             "'{}' {}. Choose from: {}."
             .format(', '.join(bad_values), msg, facets))
 
+def validate_content_item_provenances(value):
+    """
+    check a list of values against ContentItem provenances.
+    """
+    if not value:
+        return
+    provenances = CONTENT_ITEM_PROVENANCES
+    if value not in provenances:
+        raise RequestError(
+            "'{}' is not a valid ContentItem provenance. Choose from {}."
+            .format(value, provenances))
 
 def validate_sous_chef_creates(values):
     """
@@ -403,6 +412,17 @@ def validate_sous_chef_creates(values):
             msg = 'are not valid ContentItem facets.'
         raise RequestError("'{}' {}. Choose from: {}."
                            .format(', '.join(bad_values), msg, facets))
+
+
+def validate_content_item_search_vector(value):
+    """
+    check a list of values against event statuses.
+    """
+    search_vector = CONTENT_ITEM_SEARCH_VECTORS
+    if value not in search_vector:
+        raise RequestError(
+            "'{}' is not a valid Event search vector. Choose from {}."
+            .format(value, search_vector))
 
 
 def validate_hex_code(value):

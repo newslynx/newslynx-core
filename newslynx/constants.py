@@ -26,6 +26,10 @@ EVENT_FACETS = [
     'recipes', 'statuses', 'provenances'
 ]
 
+EVENT_SEARCH_VECTORS = [
+    'meta', 'body', 'title', 'authors', 'description', 'all'
+]
+
 
 # THINGS
 
@@ -47,6 +51,10 @@ CONTENT_ITEM_FACETS = [
     ] + CONTENT_ITEM_EVENT_FACETS
 
 CONTENT_ITEM_PROVENANCES = ['manual', 'recipe']
+
+CONTENT_ITEM_SEARCH_VECTORS = [
+    'meta', 'body', 'title', 'authors', 'description', 'all'
+]
 
 # SOUS CHEFS
 

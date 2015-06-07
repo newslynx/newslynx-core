@@ -40,9 +40,12 @@ class Event(db.Model):
     authors = db.Column(ARRAY(String))
     meta = db.Column(JSON)
 
-    # our search vector
-    search_vector = db.Column(
-        TSVectorType('title', 'description', 'body', 'authors', 'meta'))
+    # search vectors
+    title_search_vector = db.Column(TSVectorType('title'))
+    description_search_vector = db.Column(TSVectorType('description'))
+    body_search_vector = db.Column(TSVectorType('body'))
+    authors_search_vector = db.Column(TSVectorType('authors'))
+    meta_search_vector = db.Column(TSVectorType('meta'))
 
     # relations
     tags = db.relationship('Tag',
@@ -55,8 +58,16 @@ class Event(db.Model):
     __table_args__ = (
         db.UniqueConstraint(
             'source_id', 'org_id', name='event_unique_constraint'),
-        Index('events_search_vector_idx',
-              'search_vector', postgresql_using='gin')
+        Index('events_title_search_vector_idx',
+              'title_search_vector', postgresql_using='gin'),
+        Index('events_description_search_vector_idx',
+              'description_search_vector', postgresql_using='gin'),
+        Index('events_body_search_vector_idx',
+              'body_search_vector', postgresql_using='gin'),
+        Index('events_authors_search_vector_idx',
+              'authors_search_vector', postgresql_using='gin'),
+        Index('events_meta_search_vector_idx',
+              'meta_search_vector', postgresql_using='gin')
     )
 
     def __init__(self, **kw):

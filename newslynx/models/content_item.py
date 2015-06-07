@@ -39,15 +39,10 @@ class ContentItem(db.Model):
     created = db.Column(db.DateTime(timezone=True), default=dates.now)
     updated = db.Column(db.DateTime(timezone=True), onupdate=dates.now, default=dates.now)
     img_url = db.Column(db.Text)
-    byline = db.Column(db.Text)
     title = db.Column(db.Text)
     description = db.Column(db.Text)
     body = db.Column(db.Text)
     meta = db.Column(JSON)
-
-    # our search vector
-    search_vector = db.Column(
-        TSVectorType('title', 'description', 'body', 'type', 'byline', 'meta'))
 
     # relations
     tags = db.relationship(
@@ -72,14 +67,26 @@ class ContentItem(db.Model):
         backref=db.backref("in_links", lazy='dynamic'),
         lazy='dynamic')
 
+    # search vectors
+    title_search_vector = db.Column(TSVectorType('title'))
+    body_search_vector = db.Column(TSVectorType('body'))
+    description_search_vector = db.Column(TSVectorType('description'))
+    meta_search_vector = db.Column(TSVectorType('meta'))
+
     # content_items should be unique to org, url, and type.
     # IE there might be multiple content_items per url -
     # an article, a video, a podcast, etc.
     __table_args__ = (
         db.UniqueConstraint(
             'org_id', 'url', 'type', name='content_item_unique_constraint'),
-        Index('content_item_search_vector_idx',
-              'search_vector', postgresql_using='gin')
+        Index('content_item_title_search_vector_idx',
+              'title_search_vector', postgresql_using='gin'),
+        Index('content_item_body_search_vector_idx',
+              'body_search_vector', postgresql_using='gin'),
+        Index('content_item_description_search_vector_idx',
+              'description_search_vector', postgresql_using='gin'),
+        Index('content_item_meta_search_vector_idx',
+              'meta_search_vector', postgresql_using='gin')
     )
 
     def __init__(self, **kw):
@@ -91,7 +98,6 @@ class ContentItem(db.Model):
         self.domain = kw.get('domain')
         self.created = kw.get('created', dates.now())
         self.img_url = kw.get('img_url')
-        self.byline = kw.get('byline')  # TODO: Autoformat.
         self.title = kw.get('title')
         self.description = kw.get('description')
         self.body = kw.get('body')
@@ -162,4 +168,4 @@ class ContentItem(db.Model):
         return d
 
     def __repr__(self):
-        return '<ContentItem %r /  >' % (self.url, self.type)
+        return '<ContentItem %r /  %r >' % (self.url, self.type)
