@@ -26,8 +26,13 @@ redis_url: redis://localhost:6379/0
 scheduler_refresh_interval: 60
 
 # url cache
-url_cache_prefix: url-cache
+url_cache_prefix: newslynx-url-cache
 url_cache_ttl: 259200 # 3 days
+url_cache_pool_size: 5
+
+# extraction cache
+extract_cache_prefix: newslynx-extract-cache
+extract_cache_ttl: 259200 # 3 days
 
 # browser
 browser_user_agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10; rv:33.0) Gecko/20100101 Firefox/33.0

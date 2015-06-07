@@ -242,7 +242,7 @@ def get_query_string(url, **kw):
     return urlparse(url, **kw).query
 
 
-def get_filetype(url):
+def get_filetype(url, **kw):
     """
     Input a URL and output the filetype of the file
     specified by the url. Returns None for no filetype.

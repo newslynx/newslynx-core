@@ -34,19 +34,23 @@ def extract(source_url):
     # something failed.
     if not page_html:
         log.warning("Failed to extract html from {}".format(source_url))
-        return {}
+        return None
 
     soup = BeautifulSoup(page_html)
 
     # get canonical url
     canonical_url = meta.canonical_url(soup)
     if not canonical_url:
-        canonical_url = url.prepare(source_url, source=source_url, canonicalize=False)
+        canonical_url = url.prepare(
+            source_url, source=source_url, canonicalize=False)
+
+    # domain
+    domain = url.get_domain(canonical_url)
 
     # get meta tags + other data
     data = {
         'url': canonical_url,
-        'domain': url.get_domain(canonical_url),
+        'domain': domain,
         'title': meta.title(soup, canonical_url),
         'description': meta.description(soup, canonical_url),
         'img_url': meta.img_url(soup, canonical_url),
@@ -77,10 +81,25 @@ def extract(source_url):
         data['authors'] = author.extract(raw_html, tags=author.OPTIMISTIC_TAGS)
 
     # get links from raw_html + content
-    data['links'] = [u for u in url.from_any(data['body']) if source_url not in u]
+    links = [u for u in url.from_any(data['body']) if source_url not in u]
     for u in url.from_any(raw_html, source=source_url):
-        if u not in data['links'] and source_url not in u:
-            data['links'].append(u)
+        if u not in links and u != source_url:
+            links.append(u)
+
+    # split out internal / external links / article links
+    data['links'] = {
+        'external': [],
+        'internal': [],
+        'articles': []
+    }
+    for l in links:
+        link_domain = url.get_domain(l)
+        if domain in link_domain or link_domain in domain:
+            data['links']['internal'].append(l)
+        else:
+            data['links']['external'].append(l)
+        if url.is_article(l):
+            data['links']['articles'].append(l)
 
     # add in short urls
     if settings.BITLY_ENABLED:

@@ -61,7 +61,6 @@ PUBLISH_DATE_TAGS = [
     {'tag': 'meta', 'attr': 'name', 'val': 'article:published_time', 'data': ['content', 'datetime', 'date']},
     {'tag': 'meta', 'attr': 'property', 'val': 'rnews:datePublished', 'data': ['content', 'datetime', 'date']},
     {'tag': 'meta', 'attr': 'name', 'val': 'OriginalPublicationDate', 'data': ['content', 'datetime', 'date']},
-    {'tag': 'meta', 'attr': 'itemprop', 'val': 'datePublished', 'data': 'datetime'},
     {'tag': 'meta', 'attr': 'itemprop', 'val': 'datePublished', 'data': ['content', 'datetime', 'date']},
     {'tag': 'meta', 'attr': 'property', 'val': 'og:published_time', 'data': ['content', 'datetime', 'date']},
     {'tag': 'meta', 'attr': 'name', 'val': 'article_date_original', 'data': ['content', 'datetime', 'date']},

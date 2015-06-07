@@ -8,6 +8,7 @@ from uuid import UUID
 from decimal import Decimal
 from inspect import isgenerator
 from collections import Counter
+import pickle
 import gzip
 import zlib
 import cStringIO
@@ -51,6 +52,35 @@ def obj_to_json(obj):
     obj > jsonstring
     """
     return jsonify(obj, is_req=False)
+
+
+def jsongz_to_obj(s):
+    """
+    json.gz > obj
+    """
+
+    return json_to_obj(gz_to_string(s))
+
+
+def obj_to_jsongz(obj):
+    """
+    obj > json.gz
+    """
+    return string_to_gz(obj_to_json(obj))
+
+
+def pickle_to_obj(s):
+    """
+    pickle > obj
+    """
+    return pickle.loads(s)
+
+
+def obj_to_pickle(obj):
+    """
+    obj > pickle
+    """
+    return pickle.dumps(obj)
 
 
 def string_to_zip(s):
@@ -168,13 +198,6 @@ def jsonify(obj, status=200, headers=None, refs=False, encoder=JSONEncoder, is_r
         if 'callback' in request.args:
             cb = request.args.get('callback')
             data = '%s && %s(%s)' % (cb, cb, data)
-
-        # gzip compression
-        # format = request.args.get('format', 'json')
-
-        # check for gzippish requests
-        # if format in ['json.gz', 'gzip', 'gz']:
-        #     headers.update({''})
 
         return Response(data, headers=headers,
                         status=status,
