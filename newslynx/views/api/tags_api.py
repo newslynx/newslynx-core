@@ -128,6 +128,12 @@ def create_tag(user, org):
         validate_tag_categories(req_data['category'])
         validate_tag_levels(req_data['level'])
 
+    elif req_data['type'] == 'subject':
+        for k in ['level', 'category']:
+            if k in req_data:
+                raise RequestError(
+                    'Categories and Levels can only be set for Impact Tags.')
+
     # create the tag
     tag = Tag(org_id=org.id, **req_data)
 

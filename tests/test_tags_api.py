@@ -29,6 +29,13 @@ class TestTagsAPI(unittest.TestCase):
         t = self.api.tags.create(name=n, type='impact', color='#fc0', category='promotion', level='media')
         assert(t.name == n)
 
+    def test_create_subject_tag_error(self):
+        n = fake.name()
+        try:
+            t = self.api.tags.create(name=n, type='subject', color='#fc0', category='promotion', level='media')
+        except Exception as e:
+            assert e.status_code == 400
+
     def test_update_tag(self):
         n = fake.name()
         t1 = self.api.tags.create(name=n, type='impact', color='#fc0', category='promotion', level='media')

@@ -132,10 +132,16 @@ class TestEventsAPI(unittest.TestCase):
             self.api.events.delete(r.id, force=True)
 
     def test_error_on_create_deleted_events(self):
-        event = self.api.events.search(status='deleted', incl_body=True)
+        event = self.api.events.search(status='deleted', provenance='recipe')
         e = event.events[0]
-        resp = self.api.events.create(**e)
-        assert(resp.status_code == 422)
+        e.pop('status', None)
+        e['source_id'] = e['source_id'].split(':')[1]
+        try:
+            self.api.events.create(**e)
+        except Exception as e:
+            assert(e.status_code == 422)
+        else:
+            assert False
 
     def test_null_on_create_event_with_no_content_items(self):
         event = self.api.events.search(status='pending', incl_body=True)
@@ -162,8 +168,12 @@ class TestEventsAPI(unittest.TestCase):
         event = res.events[0]
         event['content_item_ids'] = [1, 2]
         event['status'] = 'approved'
-        resp = self.api.events.update(event.id, **event)
-        assert(resp.status_code == 400)
+        try:
+            self.api.events.update(event.id, **event)
+        except Exception as e:
+            assert(e.status_code == 400)
+        else:
+            assert False
 
     def test_event_update_error_no_content_items(self):
         res = self.api.events.search(
@@ -171,8 +181,12 @@ class TestEventsAPI(unittest.TestCase):
         event = res.events[0]
         event['tag_ids'] = [1, 2]
         event['status'] = 'approved'
-        resp = self.api.events.update(event.id, **event)
-        assert(resp.status_code == 400)
+        try:
+            self.api.events.update(event.id, **event)
+        except Exception as e:
+            assert(e.status_code == 400)
+        else:
+            assert False
 
     def test_event_delete_no_force(self):
         res = self.api.events.search(status='pending')
@@ -188,8 +202,12 @@ class TestEventsAPI(unittest.TestCase):
         event = res.events[0]
         resp = self.api.events.delete(event.id, force=True)
         assert(resp)
-        resp = self.api.events.get(event.id)
-        assert(resp.status_code == 404)
+        try:
+            self.api.events.update(event.id, **event)
+        except Exception as e:
+            assert(e.status_code == 404)
+        else:
+            assert False
 
     def test_event_add_delete_tag(self):
         res = self.api.events.search(status='approved', per_page=1)

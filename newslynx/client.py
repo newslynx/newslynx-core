@@ -7,11 +7,26 @@ from urlparse import urljoin
 
 from newslynx import settings
 from newslynx.lib.serialize import obj_to_json
-from newslynx.exc import ClientError
+from newslynx.exc import *
 
 RET_CODES = [200, 201]
 GOOD_CODES = RET_CODES + [204]
 
+# a lookup of error name to exception object
+ERRORS = {
+    "RequestError": RequestError,
+    "AuthError": AuthError,
+    "ForbiddenError": ForbiddenError,
+    "NotFoundError": NotFoundError,
+    "ConflictError": ConflictError,
+    "UnprocessableEntityError": UnprocessableEntityError,
+    "InternalServerError": InternalServerError,
+    "SousChefSchemaError": SousChefSchemaError,
+    "RecipeSchemaError": RecipeSchemaError,
+    "SearchStringError": SearchStringError,
+    "ConfigError": ConfigError,
+    "ClientError": ClientError
+}
 
 class BaseClient(object):
 
@@ -102,9 +117,15 @@ class BaseClient(object):
         if err:
             raise err
 
-        # # check status codes
-        # elif resp.status_code not in GOOD_CODES:
-        #     raise ClientError(resp.content)
+        # check status codes
+        elif resp.status_code not in GOOD_CODES:
+            try:
+                d = resp.json()
+            except:
+                raise ClientError(resp.content)
+
+            err = ERRORS.get(d['error'])
+            raise err(**d)
 
     def _format_response(self, resp):
         """

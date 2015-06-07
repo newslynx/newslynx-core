@@ -8,7 +8,7 @@ class APIError(Exception):
     A generic error for throwing api errors.
     """
 
-    def __init__(self, message, status_code=None, payload=None):
+    def __init__(self, message, status_code=None, payload=None, **kw):
         Exception.__init__(self)
         self.message = message
         if status_code is not None:
@@ -84,6 +84,6 @@ class ConfigError(Exception):
 
 class ClientError(Exception):
     """
-    An error in the API Client.
+    An error that's thrown when something is wrong on the API Client side.
     """
     status_code = 500
