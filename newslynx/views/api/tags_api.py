@@ -69,6 +69,7 @@ def get_tags(user, org):
     tag_cols = ['id', 'org_id', 'name', 'slug', 'type', 'level',
                 'category', 'color', 'created', 'updated',
                 'event_count', 'thing_count']
+    
     tags = [dict(zip(tag_cols, r)) for r in tag_query.all()]
 
     # just compute facets via python rather
@@ -186,8 +187,8 @@ def update_tag(user, org, tag_id):
         # if tag type is "impact" ensure a proper category and
         # level are included
         if req_data['type'] == 'impact':
-            validate_tag_categories(tag['category'])
-            validate_tag_levels(tag['level'])
+            validate_tag_categories(req_data['category'])
+            validate_tag_levels(req_data['level'])
 
     # check if levels + categories are being assigned to
     # subject tags
@@ -208,8 +209,6 @@ def update_tag(user, org, tag_id):
     # update attributes
     for k, v in req_data.items():
         setattr(tag, k, v)
-
-    tag.updated = dates.now()
 
     db.session.add(tag)
 
