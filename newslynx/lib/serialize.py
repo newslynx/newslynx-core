@@ -127,12 +127,12 @@ class JSONEncoder(json.JSONEncoder):
             return dict(obj)
         if self.refs and hasattr(obj, 'to_ref'):
             return obj.to_ref()
+        if isinstance(obj, SearchString):
+            return obj.raw
         if hasattr(obj, 'to_dict'):
             return obj.to_dict()
         if hasattr(obj, 'to_json'):
             return obj.to_json()
-        if isinstance(obj, SearchString):
-            return obj.raw
         try:
             from sqlalchemy.orm import Query
             from sqlalchemy.ext.associationproxy import _AssociationList

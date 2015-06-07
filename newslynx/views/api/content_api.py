@@ -347,7 +347,7 @@ def search_content(user, org):
                    for t in content.items]
 
     resp = {
-        'content': content,
+        'content_items': content,
         'pagination': pagination,
         'total': total
     }

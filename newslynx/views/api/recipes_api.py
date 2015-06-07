@@ -29,6 +29,9 @@ def list_recipes(user, org):
     sort_field, direction = arg_sort('sort', default='-created')
     include_sous_chefs, exclude_sous_chefs = \
         arg_list('sous_chefs', default=[], typ=str, exclusions=True)
+    include_recipes, exclude_recipes = \
+        arg_list('recipe_ids', default=[], typ=str, exclusions=True)
+
 
     # validate sort fields are part of Recipe object.
     if sort_field:
@@ -134,6 +137,8 @@ def update_recipe(user, org, recipe_id):
                            .format(recipe_id))
 
     req_data = request_data()
+    if not 'options' in req_data:
+        req_data['options'] = {}
 
     # split out non schema fields:
     non_schema = [

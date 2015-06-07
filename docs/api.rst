@@ -82,6 +82,9 @@ Various status codes connote different categories of errors:
 +--------------------+------------------------------------------------------------+
 | 409 Conflict       | A unique constraint was violated                           |
 +--------------------+------------------------------------------------------------+
+| 422 Unprocessable  | The request was formatted correctly but could not be       |
+|     Entity         | processed                                                  |
++--------------------+------------------------------------------------------------+
 | 500 Internal Server| The server encountered an unexpected error while processing|
 |     Error          | the request                                                |
 +--------------------+------------------------------------------------------------+
@@ -765,7 +768,7 @@ Params
 | ``apikey``         | Your apikey                    | null             | true           |
 +--------------------+--------------------------------+------------------+----------------+
 | ``org``            | The organization's             | null             | true           |
-|                    | ``id`` or ``name`` you         |                  |                |
+|                    | ``id`` or ``slug`` you         |                  |                |
 |                    | wish to access.                |                  |                |
 +--------------------+--------------------------------+------------------+----------------+
 
@@ -799,7 +802,7 @@ Params
 | ``apikey``         | Your apikey                    | null             | true           |
 +--------------------+--------------------------------+------------------+----------------+
 | ``org``            | The organization's             | null             | true           |
-|                    | ``id`` or ``name`` you         |                  |                |
+|                    | ``id`` or ``slug`` you         |                  |                |
 |                    | wish to access.                |                  |                |
 +--------------------+--------------------------------+------------------+----------------+
 
@@ -851,7 +854,7 @@ Params
 | ``apikey``         | Your apikey                    | null             | true           |
 +--------------------+--------------------------------+------------------+----------------+
 | ``org``            | The organization's             | null             | true           |
-|                    | ``id`` or ``name`` you         |                  |                |
+|                    | ``id`` or ``slug`` you         |                  |                |
 |                    | wish to access.                |                  |                |
 +--------------------+--------------------------------+------------------+----------------+
 
@@ -887,7 +890,7 @@ Params
 | ``apikey``         | Your apikey                    | null             | true           |
 +--------------------+--------------------------------+------------------+----------------+
 | ``org``            | The organization's             | null             | true           |
-|                    | ``id`` or ``name`` you         |                  |                |
+|                    | ``id`` or ``slug`` you         |                  |                |
 |                    | wish to access.                |                  |                |
 +--------------------+--------------------------------+------------------+----------------+
 
@@ -932,7 +935,7 @@ Params
 | ``apikey``         | Your apikey                    | null             | true           |
 +--------------------+--------------------------------+------------------+----------------+
 | ``org``            | The organization's             | null             | true           |
-|                    | ``id`` or ``name`` you         |                  |                |
+|                    | ``id`` or ``slug`` you         |                  |                |
 |                    | wish to access.                |                  |                |
 +--------------------+--------------------------------+------------------+----------------+
 
@@ -1002,7 +1005,7 @@ Params
 | ``apikey``         | Your apikey                    | null             | true           |
 +--------------------+--------------------------------+------------------+----------------+
 | ``org``            | The organization's             | null             | true           |
-|                    | ``id`` or ``name`` you         |                  |                |
+|                    | ``id`` or ``slug`` you         |                  |                |
 |                    | wish to access.                |                  |                |
 +--------------------+--------------------------------+------------------+----------------+
 | ``redirect_uri``   | The url which you would like to| null             | false          |
@@ -1032,7 +1035,7 @@ Params
 | ``apikey``         | Your apikey                    | null             | true           |
 +--------------------+--------------------------------+------------------+----------------+
 | ``org``            | The organization's             | null             | true           |
-|                    | ``id`` or ``name`` you         |                  |                |
+|                    | ``id`` or ``slug`` you         |                  |                |
 |                    | wish to access.                |                  |                |
 +--------------------+--------------------------------+------------------+----------------+
 
@@ -1057,7 +1060,7 @@ Params
 | ``apikey``         | Your apikey                    | null             | true           |
 +--------------------+--------------------------------+------------------+----------------+
 | ``org``            | The organization's             | null             | true           |
-|                    | ``id`` or ``name`` you         |                  |                |
+|                    | ``id`` or ``slug`` you         |                  |                |
 |                    | wish to access.                |                  |                |
 +--------------------+--------------------------------+------------------+----------------+
 | ``redirect_uri``   | The url which you would like to| null             | false          |
@@ -1087,7 +1090,7 @@ Params
 | ``apikey``         | Your apikey                    | null             | true           |
 +--------------------+--------------------------------+------------------+----------------+
 | ``org``            | The organization's             | null             | true           |
-|                    | ``id`` or ``name`` you         |                  |                |
+|                    | ``id`` or ``slug`` you         |                  |                |
 |                    | wish to access.                |                  |                |
 +--------------------+--------------------------------+------------------+----------------+
 
@@ -1112,7 +1115,7 @@ Params
 | ``apikey``         | Your apikey                    | null             | true           |
 +--------------------+--------------------------------+------------------+----------------+
 | ``org``            | The organization's             | null             | true           |
-|                    | ``id`` or ``name`` you         |                  |                |
+|                    | ``id`` or ``slug`` you         |                  |                |
 |                    | wish to access.                |                  |                |
 +--------------------+--------------------------------+------------------+----------------+
 | ``redirect_uri``   | The url which you would like to| null             | false          |
@@ -1142,7 +1145,7 @@ Params
 | ``apikey``         | Your apikey                    | null             | true           |
 +--------------------+--------------------------------+------------------+----------------+
 | ``org``            | The organization's             | null             | true           |
-|                    | ``id`` or ``name`` you         |                  |                |
+|                    | ``id`` or ``slug`` you         |                  |                |
 |                    | wish to access.                |                  |                |
 +--------------------+--------------------------------+------------------+----------------+
 
@@ -1210,7 +1213,7 @@ Params
 | ``apikey``         | Your apikey                    | null             | true           |
 +--------------------+--------------------------------+------------------+----------------+
 | ``org``            | The organization's             | null             | true           |
-|                    | ``id`` or ``name`` you         |                  |                |
+|                    | ``id`` or ``slug`` you         |                  |                |
 |                    | wish to access.                |                  |                |
 +--------------------+--------------------------------+------------------+----------------+
 | ``type``           | A :ref:`taxonomy-tag-type` to  | null             | false          |
@@ -1302,7 +1305,7 @@ Params
 | ``apikey``         | Your apikey                    | null             | true           |
 +--------------------+--------------------------------+------------------+----------------+
 | ``org``            | The organization's             | null             | true           |
-|                    | ``id`` or ``name`` you         |                  |                |
+|                    | ``id`` or ``slug`` you         |                  |                |
 |                    | wish to access.                |                  |                |
 +--------------------+--------------------------------+------------------+----------------+
 
@@ -1353,7 +1356,7 @@ Params
 | ``apikey``         | Your apikey                    | null             | true           |
 +--------------------+--------------------------------+------------------+----------------+
 | ``org``            | The organization's             | null             | true           |
-|                    | ``id`` or ``name`` you         |                  |                |
+|                    | ``id`` or ``slug`` you         |                  |                |
 |                    | wish to access.                |                  |                |
 +--------------------+--------------------------------+------------------+----------------+
 
@@ -1389,7 +1392,7 @@ Params
 | ``apikey``         | Your apikey                    | null             | true           |
 +--------------------+--------------------------------+------------------+----------------+
 | ``org``            | The organization's             | null             | true           |
-|                    | ``id`` or ``name`` you         |                  |                |
+|                    | ``id`` or ``slug`` you         |                  |                |
 |                    | wish to access.                |                  |                |
 +--------------------+--------------------------------+------------------+----------------+
 
@@ -1432,7 +1435,7 @@ Params
 | ``apikey``         | Your apikey                    | null             | true           |
 +--------------------+--------------------------------+------------------+----------------+
 | ``org``            | The organization's             | null             | true           |
-|                    | ``id`` or ``name`` you         |                  |                |
+|                    | ``id`` or ``slug`` you         |                  |                |
 |                    | wish to access.                |                  |                |
 +--------------------+--------------------------------+------------------+----------------+
 
@@ -1610,7 +1613,7 @@ Params
 | ``apikey``         | Your apikey                    | null             | true           |
 +--------------------+--------------------------------+------------------+----------------+
 | ``org``            | The organization's             | null             | true           |
-|                    | ``id`` or ``name`` you         |                  |                |
+|                    | ``id`` or ``slug`` you         |                  |                |
 |                    | wish to access.                |                  |                |
 +--------------------+--------------------------------+------------------+----------------+
 | ``is_command``     | Whether this is runs a         |                  |                |
@@ -1675,7 +1678,7 @@ Params
 | ``apikey``         | Your apikey                    | null             | true           |
 +--------------------+--------------------------------+------------------+----------------+
 | ``org``            | The organization's             | null             | true           |
-|                    | ``id`` or ``name`` you         |                  |                |
+|                    | ``id`` or ``slug`` you         |                  |                |
 |                    | wish to access.                |                  |                |
 +--------------------+--------------------------------+------------------+----------------+
 
@@ -1740,7 +1743,7 @@ Params
 | ``apikey``         | Your apikey                    | null             | true           |
 +--------------------+--------------------------------+------------------+----------------+
 | ``org``            | The organization's             | null             | true           |
-|                    | ``id`` or ``name`` you         |                  |                |
+|                    | ``id`` or ``slug`` you         |                  |                |
 |                    | wish to access.                |                  |                |
 +--------------------+--------------------------------+------------------+----------------+
 
@@ -1780,7 +1783,7 @@ Params
 | ``apikey``         | Your apikey                    | null             | true           |
 +--------------------+--------------------------------+------------------+----------------+
 | ``org``            | The organization's             | null             | true           |
-|                    | ``id`` or ``name`` you         |                  |                |
+|                    | ``id`` or ``slug`` you         |                  |                |
 |                    | wish to access.                |                  |                |
 +--------------------+--------------------------------+------------------+----------------+
 
@@ -1877,7 +1880,7 @@ Params
 | ``apikey``         | Your apikey                    | null             | true           |
 +--------------------+--------------------------------+------------------+----------------+
 | ``org``            | The organization's             | null             | true           |
-|                    | ``id`` or ``name`` you         |                  |                |
+|                    | ``id`` or ``slug`` you         |                  |                |
 |                    | wish to access.                |                  |                |
 +--------------------+--------------------------------+------------------+----------------+
 | ``status``         | Filter recipes by their status.|                  |                |
@@ -1959,7 +1962,7 @@ Params
 | ``apikey``         | Your apikey                    | null             | true           |
 +--------------------+--------------------------------+------------------+----------------+
 | ``org``            | The organization's             | null             | true           |
-|                    | ``id`` or ``name`` you         |                  |                |
+|                    | ``id`` or ``slug`` you         |                  |                |
 |                    | wish to access.                |                  |                |
 +--------------------+--------------------------------+------------------+----------------+
 | ``sous_chef``      | The SousChef this recipe runs. | null             |                |
@@ -2026,7 +2029,7 @@ Params
 | ``apikey``         | Your apikey                    | null             | true           |
 +--------------------+--------------------------------+------------------+----------------+
 | ``org``            | The organization's             | null             | true           |
-|                    | ``id`` or ``name`` you         |                  |                |
+|                    | ``id`` or ``slug`` you         |                  |                |
 |                    | wish to access.                |                  |                |
 +--------------------+--------------------------------+------------------+----------------+
 
@@ -2064,7 +2067,7 @@ Params
 | ``apikey``         | Your apikey                    | null             | true           |
 +--------------------+--------------------------------+------------------+----------------+
 | ``org``            | The organization's             | null             | true           |
-|                    | ``id`` or ``name`` you         |                  |                |
+|                    | ``id`` or ``slug`` you         |                  |                |
 |                    | wish to access.                |                  |                |
 +--------------------+--------------------------------+------------------+----------------+
 | ``sous_chef``      | The sous-chef this recipe runs.| null             |                |
@@ -2111,7 +2114,2170 @@ Now run this command:
        --data-binary @recipe.json \
        http://localhost:5000/api/v1/recipes/1\?apikey=$NEWSLYNX_API_KEY\&org=1
 
+.. _endpoints-events:
+
+**Events**
+++++++++++++++++++
+
+The **Events** API enables the creation, querying, faceting, updating, and deleting of Events. Refer to the :ref:`Events docs <events>` for more details on what these are.
+
+.. _endpoints-events-json:
+
+Event JSON
+~~~~~~~~~~~~~~~~~
+
+All methods, unless otherwise specified, will return one or many Event objects of the following ``json`` schema:
+
+.. code-block:: javascript
+
+.. _api:
+
+NewsLynx API
+============
+
+All of **NewsLynx**'s functionality is exposed through a `REST <http://en.wikipedia.org/wiki/Representational_state_transfer>`_ API.  
+
+**Authentication**
+------------------
+
+.. _authentication-api-keys:
+
+API Keys
++++++++++
+
+All endpoints except for: :ref:`endpoints-user-login`, require an ``apikey`` passed in as a query-string parameter.  The ``apikey`` is used to ensure that the requesting user is registered and has access to the the requested resource. When a user is created, his/her ``apikey`` is randomnly generated. It can be refreshed at any time.
+
+
+.. _authentication-organizations:
+
+Organizaitons
++++++++++++++
+
+All endpoints unrelated to :ref:`endpoints-user` or :ref:`endpoints-orgs` require an ``org`` query-string parameter.  Since users can belong to multiple organizations, we use this parameter to ensure:
+
+1. That the requesting user is accessing resources related to his/her associated organization.
+2. That the requesting user has permission to access the requested resources.
+
+.. _status-codes:
+
+**Status Codes**
+------------------
+
+.. _http-responses-successes:
+
+Successes
++++++++++
+
+Successful responses from the API will only return the following status codes:
+
++----------------+------------------------------------------------------------+
+| HTTP status    |  Description                                               |
++================+============================================================+
+| 200 Success    | Standard response for successful HTTP requests.            |
+|                | The actual response will depend on the request method used.|
++----------------+------------------------------------------------------------+
+| 204 No Content | The server successfully processed the request, but is not  |
+|                | returning any content.                                     |
+|                | This response is only used for certain ``DELETE`` methods. |
++----------------+------------------------------------------------------------+
+
+.. _http-responses-errors:
+
+Errors
+++++++
+
+All errors share this common ``json`` schema:
+
+.. code-block:: javascript
+
+    {
+      "status_code": 401,
+      "error": "AuthError",
+      "message": "Invalid API Key."
+    }
+
+Various status codes connote different categories of errors:
+
++--------------------+------------------------------------------------------------+
+| HTTP status        |  Description                                               |
++====================+============================================================+
+| 400 Bad Request    | The server rejected the request as invalid.                |
++--------------------+------------------------------------------------------------+
+| 401 Unauthorized   | The authentication associated with the request is invalid  |
++--------------------+------------------------------------------------------------+
+| 403 Forbidden      | Authentication is valid, but user is not allowed to perform|
+|                    | this operation                                             |
++--------------------+------------------------------------------------------------+
+| 404 Not Found      | A required object for this operation was not found         |
++--------------------+------------------------------------------------------------+
+| 405 Invalid        | This method does not exist                                 |
++--------------------+------------------------------------------------------------+
+| 409 Conflict       | A unique constraint was violated                           |
++--------------------+------------------------------------------------------------+
+| 422 Unprocessable  | The request was formatted correctly but could not be       |
+|     Entity         | processed                                                  |
++--------------------+------------------------------------------------------------+
+| 500 Internal Server| The server encountered an unexpected error while processing|
+|     Error          | the request                                                |
++--------------------+------------------------------------------------------------+
+
+However, every error message will contain a highly-specific message for that particular error. In the case of Internal Server Errors, the server will respond with the error message generated by the responsible code.
+
+.. _name-spacing:
+
+**Namespacing**
+------------------
+
+All endpoints are prefaced by ``/api/:version``. The current (and only version) is ``v1``.
+
+
+.. _endpoints:
+
+**Endpoints**
+--------------
+
+All endpoints retunrn ``json``. If you'd like to follow along with these examples, go ahead and set your api key as an environment variables:
+
+.. code-block:: bash 
+
+    export NEWSLYNX_API_KEY='djljahflsdkfhasldkfhasldfa'
+
+
+.. _endpoints-user:
+
+**User**
++++++++++++++++
+
+The **User** API enables login and management of basic user settings (password, name, email, apikey, etc).
+
+.. _endpoints-user-json:
+
+User JSON
+~~~~~~~~~~~
+
+All methods (unless otherwise specified) return the following ``json`` object:
+
+
+.. code-block:: javascript
+
+    {
+      "organizations": [
+        {
+          "id": 1,
+          "name": "Xosy Media"
+        }
+      ],
+      "apikey": "djljahflsdkfhasldkfhasldfa",
+      "name": "Merlynne Jones",
+      "created": "2015-05-03T16:21:41.995821-04:00",
+      "admin": true,
+      "id": 1,
+      "email": "merlynne@newslynx.org"
+    }
+
+
+.. _endpoints-user-login:
+
+**POST** ``/login``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Enables authentication via ``email`` and ``password``.
+
+Body
+****
+
+.. code-block:: javascript
+
+    {
+      "email": "merylnne@newlsynx.org",
+      "password": "a-secure-p4ssw0rd"
+    }
+
+Returns
+*******
+
+A :ref:`endpoints-user-json` object.
+
+Example
+*******
+
+.. code-block:: bash
+    
+    curl --data "email=merlynne@newslynx.org&password=a-secure-password" \
+    http://localhost:5000/api/v1/login
+
+
+.. _endpoints-user-get-me:
+
+**GET** ``/me``
+~~~~~~~~~~~~~~~~~~~~~~
+
+Retrieves your user profile.
+
+Params
+******
+
++--------------------+------------------------+------------------+----------------+
+| Parameter          |  Description           |  Default         |  Required      |
++====================+========================+==================+================+
+| ``apikey``         | Your apikey            |  null            | true           |
++--------------------+------------------------+------------------+----------------+
+
+Returns
+*******
+
+A :ref:`endpoints-user-json` object.
+
+Example
+*******
+
+.. code-block:: bash
+    
+    curl http://localhost:5000/api/v1/me\?apikey=$NEWSLYNX_API_KEY
+
+    
+.. _endpoints-user-update-me:
+
+**PUT** | **PATCH** ``/me``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Update your ``name``, ``email``, ``apikey`` and/or ``password``.
+
+Params
+******
+
++--------------------+------------------------+------------------+----------------+
+| Parameter          |  Description           |  Default         |  Required      |
++====================+========================+==================+================+
+| ``apikey``         | Your apikey            |  null            | true           |
++--------------------+------------------------+------------------+----------------+
+| ``refresh_apikey`` | ``true`` / ``false``.  | false            | false          |
+|                    | If ``true``, your      |                  |                |
+|                    | ``apikey`` will be     |                  |                |
+|                    | refreshed.             |                  |                |
++--------------------+------------------------+------------------+----------------+
+
+Body
+****
+
+.. code-block:: javascript
+
+    {
+      "email": "merylnne2@newlsynx.org",
+      "old_password": "a-secure-p4ssw0rd",
+      "new_password": "a-more-secure-p4ssw0rd",
+      "name": "Meryl Jones"
+    }
+
+Returns
+*******
+
+An updated :ref:`endpoints-user-json` object.
+
+
+Examples
+********
+
+Change your ``name`` and ``email``.
+
+.. code-block:: bash
+    
+    curl -X PUT -d email=merlynne2@newslynx.org -d name="Meryl Jones" \
+    http://localhost:5000/api/v1/me\?apikey=$NEWSLYNX_API_KEY
+
+Change your ``password``.
+
+.. code-block:: bash
+    
+    curl -X PUT -d old_password="a-secure-p4ssw0rd" -d new_password="a-more-secure-p4ssw0rd" \
+    http://localhost:5000/api/v1/me\?apikey=$NEWSLYNX_API_KEY
+
+Refresh your ``apikey``
+
+.. code-block:: bash
+    
+    curl -X PUT http://localhost:5000/api/v1/me\?apikey=$NEWSLYNX_API_KEY\&refresh_apikey=true
+
+
+.. _endpoints-user-delete-me:
+
+**DELETE** ``/me``
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Delete your account.
+
+Params
+******
+
++--------------------+------------------------+------------------+----------------+
+| Parameter          |  Description           |  Default         |  Required      |
++====================+========================+==================+================+
+| ``apikey``         | Your apikey            |  null            | true           |
++--------------------+------------------------+------------------+----------------+
+
+Returns
+*******
+
+``STATUS_CODE`` - ``204``
+
+Example
+********
+
+.. code-block:: bash
+    
+    curl -X DELETE http://localhost:5000/api/v1/me\?apikey=$NEWSLYNX_API_KEY
+
+
+.. _endpoints-orgs:
+
+**Organizations**
+++++++++++++++++++
+
+The **Organizations** API enables the creation / updating / deleting of organizations, users and settings, as well as assigning / removing users from organizations. All **PUT**, **PATCH**, **POST**, and **DELETE** methods require that the requesting user is an admin. 
+
+
+.. _endpoints-orgs-json:
+
+Organization JSON
+~~~~~~~~~~~~~~~~~
+
+All methods, unless otherwise specified, will return one or many organization objects of the following ``json`` schema:
+
+.. code-block:: javascript
+
+  {
+    "users": [
+      {
+        "admin": true,
+        "email": "jon@example.com",
+        "created": "2015-04-28T01:28:52.172260-04:00",
+        "id": 2,
+        "name": "Jon Conroy"
+      },
+      {
+        "admin": true,
+        "email": "merlynne@newslynx.org",
+        "created": "2015-05-06T21:28:52.150736-04:00",
+        "id": 1,
+        "name": "Merlynne Jones"
+      }
+    ],
+    "settings": [...],
+    "auths": [...],
+    "id": 1,
+    "name": "liveqa"
+  }
+    
+
+.. _endpoints-orgs-list:
+
+**GET** ``/orgs``
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Fetch a list of organizations you have access to.
+
+Params
+******
+
++--------------------+------------------------+------------------+----------------+
+| Parameter          |  Description           |  Default         |  Required      |
++====================+========================+==================+================+
+| ``apikey``         | Your apikey            |  null            | true           |
++--------------------+------------------------+------------------+----------------+
+
+Returns
+*******
+
+A list of :ref:`endpoints-orgs-json` objects.
+
+Example
+*******
+
+.. code-block:: bash
+    
+    curl http://localhost:5000/api/v1/orgs\?apikey=$NEWSLYNX_API_KEY
+
+
+.. _endpoints-orgs-create:
+
+**POST** ``/orgs``
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Create an organization. This will also add the requesting user to that organization.
+
+**NOTE**: 
+    - Requires admin privileges.
+
+
+Params
+******
+
++--------------------+------------------------+------------------+----------------+
+| Parameter          |  Description           |  Default         |  Required      |
++====================+========================+==================+================+
+| ``apikey``         | Your apikey            |  null            | true           |
++--------------------+------------------------+------------------+----------------+
+
+Body
+****
+
+.. code-block:: javascript
+
+    {
+      "name": "ProPalpatine"
+    }
+
+Returns
+*******
+
+An :ref:`endpoints-orgs-json` object.
+
+Example
+*******
+
+.. code-block:: bash
+    
+    curl --data "name=ProPalpatine" \
+    http://localhost:5000/api/v1/orgs\?apikey=$NEWSLYNX_API_KEY
+
+
+.. _endpoints-orgs-get:
+
+**GET** ``/orgs/:org_id``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Fetch an organization object.
+
+**NOTE**: 
+    - You can pass in either an organization's ``id`` or it's ``slug`` to this endpoint.
+
+Params
+******
+
++--------------------+------------------------+------------------+----------------+
+| Parameter          |  Description           |  Default         |  Required      |
++====================+========================+==================+================+
+| ``apikey``         | Your apikey            |  null            | true           |
++--------------------+------------------------+------------------+----------------+
+
+Returns
+*******
+
+An :ref:`endpoints-orgs-json` object.
+
+Example
+*******
+
+.. code-block:: bash
+    
+    curl http://localhost:5000/api/v1/orgs/1\?apikey=$NEWSLYNX_API_KEY
+
+
+.. _endpoints-orgs-update:
+
+**PUT** | **PATCH** ``/orgs/:org_id``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Change an organization's ``name``.
+
+**NOTE**: 
+    - Requires admin privileges.
+    - You can pass in either an organization's ``id`` or it's (current) ``name`` to this endpoint.
+
+Params
+******
+
++--------------------+------------------------+------------------+----------------+
+| Parameter          |  Description           |  Default         |  Required      |
++====================+========================+==================+================+
+| ``apikey``         | Your apikey            |  null            | true           |
++--------------------+------------------------+------------------+----------------+
+
+Returns
+*******
+
+An updated :ref:`endpoints-orgs-json` object.
+
+Body
+****
+
+.. code-block:: javascript
+
+    {
+      "name": "ProPalpatine2"
+    }
+
+
+Example
+*******
+
+.. code-block:: bash
+    
+    curl -X PUT -d name=ProPalpatine2 \
+    http://localhost:5000/api/v1/orgs/2\?apikey=$NEWSLYNX_API_KEY
+
+
+.. _endpoints-orgs-delete:
+
+**DELETE** ``/orgs/:org_id``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Delete an organization and all of it's associated collections.
+
+**NOTE**: 
+    - Requires admin privileges.
+    - You can pass in either an organization's ``id`` or it's ``slug`` to this endpoint.
+
+**WARNING**:
+    - This method will delete all data associated with this organization, except for users.
+
+Params
+******
+
++--------------------+------------------------+------------------+----------------+
+| Parameter          |  Description           |  Default         |  Required      |
++====================+========================+==================+================+
+| ``apikey``         | Your apikey            |  null            | true           |
++--------------------+------------------------+------------------+----------------+
+
+Returns
+*******
+
+``STATUS_CODE``: ``204``
+
+
+Example
+*******
+
+.. code-block:: bash
+    
+    curl -X DELETE http://localhost:5000/api/v1/orgs/2\?apikey=$NEWSLYNX_API_KEY
+
+
+.. _endpoints-orgs-users-list:
+
+**GET** ``/orgs/:org_id/users``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Fetch all users associated with an organization.
+
+**NOTE**: 
+    - You can pass in either an organization's ``id`` or it's ``slug`` to this endpoint.
+
+Params
+******
+
++--------------------+------------------------+------------------+----------------+
+| Parameter          |  Description           |  Default         |  Required      |
++====================+========================+==================+================+
+| ``apikey``         | Your apikey            |  null            | true           |
++--------------------+------------------------+------------------+----------------+
+
+Returns
+*******
+
+A list of :ref:`endpoints-user-json` object.
+
+
+Example
+*******
+
+.. code-block:: bash
+    
+    curl http://localhost:5000/api/v1/orgs/2/users\?apikey=$NEWSLYNX_API_KEY
+
+
+.. _endpoints-orgs-users-create:
+
+**POST** ``/orgs/:org_id/users``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Create a new user under an organization.
+
+**NOTE**: 
+    - Requires admin privileges.
+    - You can pass in either an organization's ``id`` or it's ``slug`` to this endpoint.
+
+Params
+******
+
++--------------------+------------------------+------------------+----------------+
+| Parameter          |  Description           |  Default         |  Required      |
++====================+========================+==================+================+
+| ``apikey``         | Your apikey            |  null            | true           |
++--------------------+------------------------+------------------+----------------+
+
+Body
+****
+
+.. code-block:: javascript
+
+    {
+      "name": "Brian Abelson",
+      "email": "b@nytimes.cat",
+      "password": "l0l4k4t",
+      "admin": false
+    }
+
+
+Returns
+*******
+
+A :ref:`endpoints-user-json` object.
+
+
+Example
+*******
+
+.. code-block:: bash
+    
+    curl --data "name=Brian Abelson&email=b@nytimes.cat&password=l0l4k4t&admin=false" \
+    http://localhost:5000/api/v1/orgs/2/users\?apikey=$NEWSLYNX_API_KEY
+
+
+.. _endpoints-orgs-users-get-user:
+
+**GET** ``/orgs/:org_id/users/:user_id``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Fetch a user that belongs to a given organization.
+
+**NOTE**: 
+    - You can pass in either an organization's ``id`` or it's ``slug`` to this endpoint.
+    - You can pass in either an user's ``id`` or his/her ``email`` to this endpoint.
+
+Params
+******
+
++--------------------+------------------------+------------------+----------------+
+| Parameter          |  Description           |  Default         |  Required      |
++====================+========================+==================+================+
+| ``apikey``         | Your apikey            |  null            | true           |
++--------------------+------------------------+------------------+----------------+
+
+Returns
+*******
+
+A :ref:`endpoints-user-json` object.
+
+
+Example
+*******
+
+.. code-block:: bash
+    
+    curl http://localhost:5000/api/v1/orgs/2/users/b@nytimes.cat\?apikey=$NEWSLYNX_API_KEY
+
+
+.. _endpoints-orgs-users-add-user:
+
+**PUT** | **PATCH** ``/orgs/:org_id/users/:user_id``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Add an existing user to an organization.
+
+**NOTE**:
+    - Requires admin privileges. 
+    - You can pass in either an organization's ``id`` or it's ``slug`` to this endpoint.
+    - You can pass in either an user's ``id`` or his/her ``email`` to this endpoint.
+
+Params
+******
+
++--------------------+------------------------+------------------+----------------+
+| Parameter          |  Description           |  Default         |  Required      |
++====================+========================+==================+================+
+| ``apikey``         | Your apikey            |  null            | true           |
++--------------------+------------------------+------------------+----------------+
+
+Returns
+*******
+
+A :ref:`endpoints-user-json` object with a new organization affiliation.
+
+
+Example
+*******
+
+.. code-block:: bash
+    
+    curl -X PUT http://localhost:5000/api/v1/orgs/2/users/m@nytimes.cat\?apikey=$NEWSLYNX_API_KEY
+
+
+.. _endpoints-orgs-users-remove-user:
+
+**DELETE** ``/orgs/:org_id/users/:user_id``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Remove a user from an organization.
+
+**NOTE**:
+    - Requires admin privileges. 
+    - You can pass in either an organization's ``id`` or it's ``slug`` to this endpoint.
+    - You can pass in either an user's ``id`` or his/her ``email`` to this endpoint.
+
+Params
+******
+
++--------------------+------------------------+------------------+----------------+
+| Parameter          |  Description           |  Default         |  Required      |
++====================+========================+==================+================+
+| ``apikey``         | Your apikey            | null             | true           |
++--------------------+------------------------+------------------+----------------+
+| ``force``          | ``true`` / ``false``.  | false            | false          |
+|                    | If ``true``, the       |                  |                |
+|                    | user will be permanenly|                  |                |
+|                    | deleted. This option is|                  |                |
+|                    | only relevant if a user|                  |                |
+|                    | does not have other    |                  |                |
+|                    | organizational         |                  |                |
+|                    | affiliations.          |                  |                |
++--------------------+------------------------+------------------+----------------+
+
+
+Returns
+*******
+
+``STATUS_CODE`` - ``204``
+
+
+Example
+*******
+
+.. code-block:: bash
+    
+    curl -X DELETE http://localhost:5000/api/v1/orgs/2/users/m@nytimes.cat\?apikey=$NEWSLYNX_API_KEY
+
+
+.. _endpoints-settings:
+
+**Settings**
+++++++++++++++++++
+
+The **Settings** API enables the creation / updating / deleting of arbitrarty settings associated with an organization. The settings collection is key/value store which can grow with the complexity of the application. 
+
+
+.. _endpoints-settings-json:
+
+Setting JSON
+~~~~~~~~~~~~~~~~~
+
+All methods, unless otherwise specified, will return one or many setting objects of the following ``json`` schema:
+
+.. code-block:: javascript
+
+    {
+        "id": 1,
+        "name": "logo_image",
+        "value": "http://example.com/mylogo.png",
+        "json_value": false
+    }
+
+If a setting has been declared as having a ``json_value``, it will be parsed as such in the response:
+
+.. code-block:: javascript
+
+    {
+        "id": 1,
+        "name": "domains",
+        "value": ["propalpatine.org", "blog.propalpatine.org"],
+        "json_value": true
+    }
+
+.. _endpoints-settings-list:
+
+**GET** ``/settings``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Get a list of an organization's settings.
+
+Params
+******
+
++--------------------+--------------------------------+------------------+----------------+
+| Parameter          |  Description                   |  Default         |  Required      |
++====================+================================+==================+================+
+| ``apikey``         | Your apikey                    | null             | true           |
++--------------------+--------------------------------+------------------+----------------+
+| ``org``            | The organization's             | null             | true           |
+|                    | ``id`` or ``slug`` you         |                  |                |
+|                    | wish to access.                |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+
+Returns
+*******
+
+A list of :ref:`endpoints-settings-json` objects.
+
+
+Example
+*******
+
+.. code-block:: bash
+    
+    curl http://localhost:5000/api/v1/settings\?apikey=$NEWSLYNX_API_KEY\&org=2
+
+
+.. _endpoints-settings-create:
+
+**POST** ``/settings``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Add a setting to an organization.
+
+Params
+******
+
++--------------------+--------------------------------+------------------+----------------+
+| Parameter          |  Description                   |  Default         |  Required      |
++====================+================================+==================+================+
+| ``apikey``         | Your apikey                    | null             | true           |
++--------------------+--------------------------------+------------------+----------------+
+| ``org``            | The organization's             | null             | true           |
+|                    | ``id`` or ``slug`` you         |                  |                |
+|                    | wish to access.                |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+
+Body
+******
+
+A :ref:`endpoints-settings-json` object without an ``id``.
+
+Returns
+*******
+
+A newly-created :ref:`endpoints-settings-json` object with an ``id``.
+
+
+Examples
+********
+
+Create a simple setting.
+
+.. code-block:: bash
+    
+    curl --data "name=icon&value=http://example.com/mylogo.png" \
+    http://localhost:5000/api/v1/settings\?apikey=$NEWSLYNX_API_KEY\&org=2
+
+Create a ``json`` setting.
+
+.. code-block:: bash
+    
+    curl --data "name=short_urls&value=[\"prplt.in\"]&json_value=true" \
+    http://localhost:5000/api/v1/settings\?apikey=$NEWSLYNX_API_KEY\&org=2
+
+
+.. _endpoints-settings-get:
+
+**GET** ``/settings/:name``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Get an organization's setting by it's name.
+
+**NOTE**:
+    - You can pass in either a setting's ``id`` or it's ``name`` to this endpoint.
+
+Params
+******
+
++--------------------+--------------------------------+------------------+----------------+
+| Parameter          |  Description                   |  Default         |  Required      |
++====================+================================+==================+================+
+| ``apikey``         | Your apikey                    | null             | true           |
++--------------------+--------------------------------+------------------+----------------+
+| ``org``            | The organization's             | null             | true           |
+|                    | ``id`` or ``slug`` you         |                  |                |
+|                    | wish to access.                |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+
+Returns
+*******
+
+A :ref:`endpoints-settings-json` object.
+
+
+Example
+********
+
+.. code-block:: bash
+    
+    curl http://localhost:5000/api/v1/settings/icon\?apikey=$NEWSLYNX_API_KEY\&org=2
+
+.. _endpoints-settings-update:
+
+**PUT** | **PATCH** ``/settings/:name``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Add a setting to an organization.
+
+**NOTE**:
+    - You can pass in either a setting's ``id`` or it's ``name`` to this endpoint.
+
+Params
+******
+
++--------------------+--------------------------------+------------------+----------------+
+| Parameter          |  Description                   |  Default         |  Required      |
++====================+================================+==================+================+
+| ``apikey``         | Your apikey                    | null             | true           |
++--------------------+--------------------------------+------------------+----------------+
+| ``org``            | The organization's             | null             | true           |
+|                    | ``id`` or ``slug`` you         |                  |                |
+|                    | wish to access.                |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+
+Body
+******
+
+A partial or complete :ref:`endpoints-settings-json` object.
+
+Returns
+*******
+
+A modified :ref:`endpoints-settings-json` object.
+
+
+Examples
+********
+
+Update a setting.
+
+.. code-block:: bash
+
+    curl -X PUT -d "value=[\"zzzz.in\"]" -d "json_value=true" \
+    http://localhost:5000/api/v1/settings/short_urls\?apikey=$NEWSLYNX_API_KEY\&org=2
+
+
+.. _endpoints-settings-delete:
+
+**DELETE** ``/settings/:name``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Delete an organization's setting by it's name.
+
+**NOTE**:
+    - You can pass in either a setting's ``id`` or it's ``name`` to this endpoint.
+
+Params
+******
+
++--------------------+--------------------------------+------------------+----------------+
+| Parameter          |  Description                   |  Default         |  Required      |
++====================+================================+==================+================+
+| ``apikey``         | Your apikey                    | null             | true           |
++--------------------+--------------------------------+------------------+----------------+
+| ``org``            | The organization's             | null             | true           |
+|                    | ``id`` or ``slug`` you         |                  |                |
+|                    | wish to access.                |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+
+Returns
+*******
+
+``STATUS_CODE`` - ``204``
+
+
+Example
+********
+
+.. code-block:: bash
+    
+    curl -X DELETE http://localhost:5000/api/v1/settings/short_urls\?apikey=$NEWSLYNX_API_KEY\&org=2
+
+.. _endpoints-auth:
+
+**Authorizations**
++++++++++++++++++++
+
+The **Authorizations** API enables authorization with external platforms. Currently it supports
+
+* Google Analytics - Track site traffic
+* Twitter - Access tweets from individual users or lists.
+* Facebook - Access a organization's facebook page and, depending on the configuration of the associated Facebook application, collect Insights data.
+
+.. _endpoints-auth-json:
+
+Authorization JSON
+~~~~~~~~~~~~~~~~~~
+
+All methods (unless otherwise specified) return the following ``json`` object:
+
+
+.. code-block:: javascript
+
+    {
+      id: 2,
+      value: {
+        "oauth_token_secret": "ldsfkasdlfjasdlfa380257234",
+        "oauth_token": "2419585021-fdfdskadfjakjsdafjd"
+      },
+      name: "twitter"
+    }
+
+.. _endpoints-auth-google-analytics:
+
+**GET** ``/auth/google-analytics``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Authorizes Newslynx to access an organization's Google Analytics.
+
+**NOTE**
+
+This method will prompt a user to authenticate with Google Analytics. Upon successful authentication
+it will direct them to a form which they can use to select which properties and profiles they would like
+to grant Newslynx access to. If at any point a user would like to change these properties, he/she simply
+needs to access this method again - it's not necessary to revoke access first.
+
+Params
+******
+
++--------------------+--------------------------------+------------------+----------------+
+| Parameter          |  Description                   |  Default         |  Required      |
++====================+================================+==================+================+
+| ``apikey``         | Your apikey                    | null             | true           |
++--------------------+--------------------------------+------------------+----------------+
+| ``org``            | The organization's             | null             | true           |
+|                    | ``id`` or ``slug`` you         |                  |                |
+|                    | wish to access.                |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+| ``redirect_uri``   | The url which you would like to| null             | false          |
+|                    | send a user back to after an   |                  |                |
+|                    | authentication attempt         |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+
+Returns
+********
+
+An :ref:`endpoints-auth-json` object or, if a ``redirect_uri`` is provided, a redirection to that 
+location with the added query string parameter ``auth_success`` to indicate whether or not the authorization request was successful.
+
+.. _endpoints-auth-google-analytics-revoke:
+
+**GET | DELETE** ``/auth/google-analytics/revoke``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Revokes an organization's Google Analytics authorization.
+
+Params
+********
+
++--------------------+--------------------------------+------------------+----------------+
+| Parameter          |  Description                   |  Default         |  Required      |
++====================+================================+==================+================+
+| ``apikey``         | Your apikey                    | null             | true           |
++--------------------+--------------------------------+------------------+----------------+
+| ``org``            | The organization's             | null             | true           |
+|                    | ``id`` or ``slug`` you         |                  |                |
+|                    | wish to access.                |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+
+Returns
+********
+
+``STATUS_CODE`` - ``204``
+
+.. _endpoints-auth-twitter:
+
+**GET** ``/auth/twitter``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Authorizes Newslynx to access an organization's Twitter profile.
+
+Params
+*********
+
++--------------------+--------------------------------+------------------+----------------+
+| Parameter          |  Description                   |  Default         |  Required      |
++====================+================================+==================+================+
+| ``apikey``         | Your apikey                    | null             | true           |
++--------------------+--------------------------------+------------------+----------------+
+| ``org``            | The organization's             | null             | true           |
+|                    | ``id`` or ``slug`` you         |                  |                |
+|                    | wish to access.                |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+| ``redirect_uri``   | The url which you would like to| null             | false          |
+|                    | send a user back to after an   |                  |                |
+|                    | authentication attempt         |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+
+Returns
+********
+
+An :ref:`endpoints-auth-json` object or, if a ``redirect_uri`` is provided, a redirection to that 
+location with the added query string parameter ``auth_success`` to indicate whether or not the authorization request was successful.
+
+.. _endpoints-auth-twitter-revoke:
+
+**GET | DELETE** ``/auth/twitter/revoke``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Revokes an organization's Twitter authorization.
+
+Params
+********
+
++--------------------+--------------------------------+------------------+----------------+
+| Parameter          |  Description                   |  Default         |  Required      |
++====================+================================+==================+================+
+| ``apikey``         | Your apikey                    | null             | true           |
++--------------------+--------------------------------+------------------+----------------+
+| ``org``            | The organization's             | null             | true           |
+|                    | ``id`` or ``slug`` you         |                  |                |
+|                    | wish to access.                |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+
+Returns
+********
+
+``STATUS_CODE`` - ``204``
+
+.. _endpoints-auth-twitter:
+
+**GET** ``/auth/twitter``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Authorizes Newslynx to access an organization's Facebook profile.
+
+Params
+********
+
++--------------------+--------------------------------+------------------+----------------+
+| Parameter          |  Description                   |  Default         |  Required      |
++====================+================================+==================+================+
+| ``apikey``         | Your apikey                    | null             | true           |
++--------------------+--------------------------------+------------------+----------------+
+| ``org``            | The organization's             | null             | true           |
+|                    | ``id`` or ``slug`` you         |                  |                |
+|                    | wish to access.                |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+| ``redirect_uri``   | The url which you would like to| null             | false          |
+|                    | send a user back to after an   |                  |                |
+|                    | authentication attempt         |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+
+Returns
+********
+
+An :ref:`endpoints-auth-json` object or, if a ``redirect_uri`` is provided, a redirection to that 
+location with the added query string parameter ``auth_success`` to indicate whether or not the authorization request was successful.
+
+.. _endpoints-auth-twitter-revoke:
+
+**GET | DELETE** ``/auth/facebook/revoke``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Revokes an organization's Facebook authorization.
+
+Params
+******
+
++--------------------+--------------------------------+------------------+----------------+
+| Parameter          |  Description                   |  Default         |  Required      |
++====================+================================+==================+================+
+| ``apikey``         | Your apikey                    | null             | true           |
++--------------------+--------------------------------+------------------+----------------+
+| ``org``            | The organization's             | null             | true           |
+|                    | ``id`` or ``slug`` you         |                  |                |
+|                    | wish to access.                |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+
+Returns
+********
+
+``STATUS_CODE`` - ``204``
+
+
+.. _endpoints-tags:
+
+**Tags**
+++++++++++++++++++
+
+The **Tags** API enables the listing, creating, updating, and deleting of tags.
+
+.. _endpoints-tags-json:
+
+Tag JSON
+~~~~~~~~~~~~~~~~~
+
+All methods, unless otherwise specified, will return one or many tag objects of the following ``json`` schema. Refer to the :ref:`Taxonomy docs <taxonomy-tags>` for an explanation of this collection.
+
+A :ref:`taxonomy-subject-tags` takes the following schema:
+
+.. code-block:: javascript
+
+    {
+        "id": 1,
+        "org_id": 1,
+        "name": "Politics",
+        "slug": "politics",
+        "type": "subject",
+        "color": "#fc0"
+    }
+
+An :ref:`taxonomy-impact-tags` takes the following schema:
+
+.. code-block:: javascript
+
+    {
+        "id": 1,
+        "org_id": 1,
+        "name": "Social Media Share",
+        "slug": "social-media-share",
+        "type": "impact",
+        "color": "#0cf",
+        "category": "citation",
+        "level": "media"
+    }
+
+.. _endpoints-tags-list:
+
+**GET** ``/tags``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+List all tags associated with an organization, as well as helpful faceted counts.
+
+Params
+******
+
++--------------------+--------------------------------+------------------+----------------+
+| Parameter          |  Description                   |  Default         |  Required      |
++====================+================================+==================+================+
+| ``apikey``         | Your apikey                    | null             | true           |
++--------------------+--------------------------------+------------------+----------------+
+| ``org``            | The organization's             | null             | true           |
+|                    | ``id`` or ``slug`` you         |                  |                |
+|                    | wish to access.                |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+| ``type``           | A :ref:`taxonomy-tag-type` to  | null             | false          |
+|                    | filter by.                     |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+| ``category``       | An :ref:`taxonomy-tag-cat` to  | null             | false          |
+|                    | filter by.                     |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+| ``level``          | An :ref:`taxonomy-tag-level`   | null             | false          |
+|                    | to filter by.                  |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+| ``sort``           | Sort results by a tag    field.| -created         |                |
+|                    | preface with **-** to sort     |                  | false          |
+|                    | descending                     |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+
+Returns
+*******
+
+.. code-block:: javascript
+
+    {
+        "facets": {
+            "levels": {
+                "institution": 2,
+                "media": 3,
+                "individual": 1,
+                "internal": 2,
+                "community": 2
+            },
+            "categories": {
+                "other": 5,
+                "citation": 1,
+                "change": 2,
+                "achievement": 2
+            },
+            "types": {
+                "impact": 10,
+                "subject": 10
+            }
+        },
+        "tags": [
+            {
+                "thing_count": 0,
+                "name": "Politics",
+                "slug": "politics"
+                "color": "#13962A",
+                "org_id": 1,
+                "type": "subject",
+                "id": 14
+            },
+            {
+                "category": "change",
+                "name": "Legislative Change",
+                "slug": "legislative-change",
+                "level": "individual",
+                "color": "#43E1D8",
+                "event_count": 0,
+                "org_id": 1,
+                "type": "impact",
+                "id": 1
+            },
+            ...
+        ]
+    }
+
+
+Example
+********
+
+.. code-block:: bash
+    
+    curl http://localhost:5000/api/v1/tags\?apikey=$NEWSLYNX_API_KEY\&org=1
+
+
+.. _endpoints-tags-create:
+
+**POST** ``/tags``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Create a tag.
+
+Params
+******
+
++--------------------+--------------------------------+------------------+----------------+
+| Parameter          |  Description                   |  Default         |  Required      |
++====================+================================+==================+================+
+| ``apikey``         | Your apikey                    | null             | true           |
++--------------------+--------------------------------+------------------+----------------+
+| ``org``            | The organization's             | null             | true           |
+|                    | ``id`` or ``slug`` you         |                  |                |
+|                    | wish to access.                |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+
+Body
+*****
+
+A :ref:`endpoints-tags-json` object.
+
+Returns
+*******
+
+A newly-created :ref:`endpoints-tags-json` object.
+
+
+Example
+********
+
+Create a subject tag.
+
+.. code-block:: bash
+    
+    curl --data "name=foo&type=subject&color=#fc0" \
+    http://localhost:5000/api/v1/tags\?apikey=$NEWSLYNX_API_KEY\&org=1
+
+Create a impact tag.
+
+.. code-block:: bash
+    
+    curl --data "name=bar&type=subject&color=#0cf&level=media&category=change" \
+    http://localhost:5000/api/v1/tags\?apikey=$NEWSLYNX_API_KEY\&org=1
+
+.. _endpoints-tags-get:
+
+**GET** ``/tags/:tag_id``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Get an individual tag.
+
+**NOTE**
+  - This endpoint can accept either a tag ``id`` or ``slug``.
+
+Params
+******
+
++--------------------+--------------------------------+------------------+----------------+
+| Parameter          |  Description                   |  Default         |  Required      |
++====================+================================+==================+================+
+| ``apikey``         | Your apikey                    | null             | true           |
++--------------------+--------------------------------+------------------+----------------+
+| ``org``            | The organization's             | null             | true           |
+|                    | ``id`` or ``slug`` you         |                  |                |
+|                    | wish to access.                |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+
+Returns
+*******
+
+A :ref:`endpoints-tags-json` object.
+
+Example
+********
+
+.. code-block:: bash
+    
+    curl http://localhost:5000/api/v1/tags/21\?apikey=$NEWSLYNX_API_KEY\&org=1
+
+
+.. _endpoints-tags-update:
+
+**PUT** | **PATCH** ``/tags/:tag_id``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Update a tag.
+
+**NOTE**
+  - This endpoint can accept either a tag ``id`` or ``slug``.
+
+Params
+******
+
++--------------------+--------------------------------+------------------+----------------+
+| Parameter          |  Description                   |  Default         |  Required      |
++====================+================================+==================+================+
+| ``apikey``         | Your apikey                    | null             | true           |
++--------------------+--------------------------------+------------------+----------------+
+| ``org``            | The organization's             | null             | true           |
+|                    | ``id`` or ``slug`` you         |                  |                |
+|                    | wish to access.                |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+
+Body
+*****
+
+A complete or partial :ref:`endpoints-tags-json` object.
+
+Returns
+*******
+
+An updated :ref:`endpoints-tags-json` object.
+
+Example
+********
+
+.. code-block:: bash
+    
+    curl -X PUT -d "color=#fc0aaa" \
+    http://localhost:5000/api/v1/tags/21\?apikey=$NEWSLYNX_API_KEY\&org=1
+
+
+.. _endpoints-tags-delete:
+
+**DELETE** ``/tags/:tag_id``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Delete a tag.
+
+**NOTE**
+  - This endpoint can accept either a tag ``id`` or ``slug``.
+
+
+Params
+******
+
++--------------------+--------------------------------+------------------+----------------+
+| Parameter          |  Description                   |  Default         |  Required      |
++====================+================================+==================+================+
+| ``apikey``         | Your apikey                    | null             | true           |
++--------------------+--------------------------------+------------------+----------------+
+| ``org``            | The organization's             | null             | true           |
+|                    | ``id`` or ``slug`` you         |                  |                |
+|                    | wish to access.                |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+
+
+Returns
+*******
+
+``STATUS_CODE`` - ``204``
+
+Example
+********
+
+.. code-block:: bash
+    
+    curl -X DELETE http://localhost:5000/api/v1/tags/21\?apikey=$NEWSLYNX_API_KEY\&org=1
+
+
+.. _endpoints-tags-categories:
+
+**GET** ``/tags/categories``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Get a list of every :ref:`taxonomy-tag-cat`. This endpoint exists to aid in creating dynamic UIs.
+
+Returns
+*******
+
+A list of every :ref:`taxonomy-tag-cat`.
+
+Example
+********
+
+.. code-block:: bash
+    
+    curl http://localhost:5000/api/v1/tags/categories
+
+.. _endpoints-tags-levels:
+
+
+**GET** ``/tags/levels``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Get a list of every :ref:`taxonomy-tag-level`. This endpoint exists to aid in creating dynamic UIs.
+
+Returns
+*******
+
+A list of every :ref:`taxonomy-tag-level`.
+
+Example
+********
+
+.. code-block:: bash
+    
+    curl http://localhost:5000/api/v1/tags/levels
+
+.. _endpoints-sous-chefs:
+
+**SousChefs**
+++++++++++++++++++
+
+The **SousChefs** API enables the listing / creating / updating / deleting of modules for ingesting and modifying data in NewsLynx. Refer to the :ref:`SousChef docs <sous-chefs>` for more details. 
+
+.. _endpoints-sous-chefs-json:
+
+Sous Chef JSON
+~~~~~~~~~~~~~~~~~
+
+All methods, unless otherwise specified, will return one or many sous chef objects of the following ``json`` schema:
+
+.. code-block:: javascript
+
+    {
+      "id": 3,
+      "name": "Event from twitter user.",
+      "slug": "event-twitter-user",
+      "description": "Extracts events from a twitter user's timeline.",
+      "runs": "newslynx.sc.events.twitter.User",
+      "creates": "event",
+      "is_command": false,
+      "options": {
+        "screen_name": {
+          "required": true,
+          "type": "text",
+          "help": {
+            "placeholder": "cspan"
+          }
+        },
+        "search_query": {
+          "default": null,
+          "required": false,
+          "type": "searchstring",
+          "help": {
+            "placeholder": "~fracking | drilling"
+          }
+        },
+        "description": {
+          "required": false,
+          "type": "text",
+          "help": {
+            "placeholder": "A description of what this recipe does."
+          }
+        },
+        "interval": {
+          "default": 900,
+          "type": "number",
+          "help": {
+            "placeholder": "3600",
+            "description": "The frequency (in seconds) with which this recipe should run."
+          }
+        },
+        "set_event_type": {
+          "default": "alert",
+          "type": "text",
+          "options": [
+            "alert",
+            "promotion"
+          ]
+        },
+        "time_of_day": {
+          "default": null,
+          "type": "text",
+          "help": {
+            "placeholder": "12:00 AM",
+            "description": "The time of day at which this recipe should run daily."
+          },
+          "options": [
+            "12:00 AM",
+            ...
+          ]
+        },
+        "tag": {
+          "default": null,
+          "type": "text"
+        },
+        "set_event_status": {
+          "default": "pending",
+          "type": "text",
+          "options": [
+            "pending",
+            "approved"
+          ]
+        },
+        "slug": {
+          "required": true,
+          "type": "text",
+          "help": {
+            "placeholder": "A slug for viewing the recipe in a url."
+          }
+        },
+        "name": {
+          "required": true,
+          "type": "text",
+          "help": {
+            "placeholder": "The name of the Recipe."
+          }
+        }
+      }
+    }
+
+
+.. _endpoints-sous-chefs-list:
+
+**GET** ``/sous-chefs``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+List all SousChefs, as well as helpful faceted counts.
+
+Params
+******
+
++--------------------+--------------------------------+------------------+----------------+
+| Parameter          |  Description                   |  Default         |  Required      |
++====================+================================+==================+================+
+| ``apikey``         | Your apikey                    | null             | true           |
++--------------------+--------------------------------+------------------+----------------+
+| ``org``            | The organization's             | null             | true           |
+|                    | ``id`` or ``slug`` you         |                  |                |
+|                    | wish to access.                |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+| ``is_command``     | Whether this is runs a         |                  |                |
+|                    | non-python script              | null             | false          |
+|                    | See :ref:`sous-chefs-runners`  |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+| ``creates``        | The collection this SousChef   | all              | false          |
+|                    |  creates.                      |                  |                |
+|                    |  See :ref:`sous-chefs-creates` |                  |                |
+|                    |                                |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+
+Returns
+*******
+
+.. code-block:: javascript
+
+    {
+      "facets": {
+        "creates": {
+          "thing": 1,
+          "event": 3
+        },
+        "runners": {
+          "python": 4
+        }
+      },
+      "sous_chefs": [
+        ...
+      ]
+    }
+
+
+Example
+********
+
+Fetch all SousChefs:
+
+.. code-block:: bash
+    
+    curl http://localhost:5000/api/v1/sous-chefs\?apikey=$NEWSLYNX_API_KEY\&org=1
+
+Fetch all SousChefs that create ``events``:
+
+.. code-block:: bash
+    
+    curl http://localhost:5000/api/v1/sous-chefs\?apikey=$NEWSLYNX_API_KEY\&org=1\&creates=event
+
+.. _endpoints-sous-chefs-create:
+
+**POST** ``/sous-chefs``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Create individual SousChef.
+
+Params
+******
+
++--------------------+--------------------------------+------------------+----------------+
+| Parameter          |  Description                   |  Default         |  Required      |
++====================+================================+==================+================+
+| ``apikey``         | Your apikey                    | null             | true           |
++--------------------+--------------------------------+------------------+----------------+
+| ``org``            | The organization's             | null             | true           |
+|                    | ``id`` or ``slug`` you         |                  |                |
+|                    | wish to access.                |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+
+Body
+*******
+
+A valid :ref:`endpoints-sous-chefs-json` object.
+
+Returns
+*******
+
+A newly-created :ref:`endpoints-sous-chefs-json` object.
+
+
+Example
+********
+
+Create a file like this and save it as ``sous-chef.json``:
+
+.. code-block:: javascript
+
+    {
+        "slug": "event-twitter-user-2", 
+        "name": "Event from twitter user 2.",
+        "runs": "newslynx.sc.events.twitter.User", 
+        "description": "Extracts events from a twitter user's timeline.", 
+        "creates": "event", 
+        "options": {
+            "screen_name": {"required": true, 
+            "type": "text", 
+            "help": {"placeholder": "cspan"}} 
+        }
+    } 
+
+Now run this command:
+
+.. code-block:: bash
+    
+  curl -X POST \
+       -H 'Content-Type:application/json' \
+       --data-binary @sous-chef.json \
+       http://localhost:5000/api/v1/sous-chefs\?apikey=$NEWSLYNX_API_KEY\&org=1
+
+
+
+.. _endpoints-sous-chefs-get:
+
+**GET** ``/sous-chefs/:sous_chef_id``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Fetch an individual SousChef.
+
+**NOTE**
+  - This endpoint can accept either a sous-chef ``id`` or ``slug``.
+
+Params
+******
+
++--------------------+--------------------------------+------------------+----------------+
+| Parameter          |  Description                   |  Default         |  Required      |
++====================+================================+==================+================+
+| ``apikey``         | Your apikey                    | null             | true           |
++--------------------+--------------------------------+------------------+----------------+
+| ``org``            | The organization's             | null             | true           |
+|                    | ``id`` or ``slug`` you         |                  |                |
+|                    | wish to access.                |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+
+Returns
+*******
+
+A :ref:`endpoints-sous-chefs-json` object.
+
+
+Example
+********
+
+Fetch a SousChef
+
+.. code-block:: bash
+    
+    curl http://localhost:5000/api/v1/sous-chefs/event-twitter-user\?apikey=$NEWSLYNX_API_KEY\&org=1
+
+
+.. _endpoints-sous-chefs-update:
+
+
+**PUT** ``/sous-chefs/:sous-chef-id``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Update an individual SousChef.
+
+**NOTE**
+  - This endpoint can accept either a sous-chef ``id`` or ``slug``.
+
+Params
+******
+
++--------------------+--------------------------------+------------------+----------------+
+| Parameter          |  Description                   |  Default         |  Required      |
++====================+================================+==================+================+
+| ``apikey``         | Your apikey                    | null             | true           |
++--------------------+--------------------------------+------------------+----------------+
+| ``org``            | The organization's             | null             | true           |
+|                    | ``id`` or ``slug`` you         |                  |                |
+|                    | wish to access.                |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+
+Body
+*******
+
+A complete :ref:`endpoints-sous-chefs-json` object. Since a ``sous-chef`` can only run properly if all of it's options
+are properly validated, the API does not allow partial updates for now. TK: Allow for partial updates while sanitizing input.
+
+Returns
+*******
+
+A newly-updated :ref:`endpoints-sous-chefs-json` object.
+
+
+Example
+********
+
+Create a file like this and save it as ``sous-chef.json``:
+
+.. code-block:: javascript
+
+    {
+        "slug": "event-twitter-thing", 
+        "name": "Event from twitter user",
+        "runs": "newslynx.sc.events.twitter.User", 
+        "description": "Extracts events from a twitter user's timeline.", 
+        "creates": "thing", 
+        "options": {
+            "screen_name": {"required": false, 
+            "type": "text", 
+            "help": {"placeholder": "cspan"}} 
+        }
+    } 
+
+Now run this command:
+
+.. code-block:: bash
+    
+  curl -X PUT \
+       -H 'Content-Type:application/json' \
+       --data-binary @sous-chef.json \
+       http://localhost:5000/api/v1/sous-chefs/event-twitter-user\?apikey=$NEWSLYNX_API_KEY\&org=1
+
+
 .. _endpoints-recipes:
+
+**Recipes**
+++++++++++++++++++
+
+The **Recipes** API enables the configuration of SousChefs to be scheduled at regular intervals. Refer to the :ref:`Recipes docs <sous-chefs-recipes>` for more details. 
+
+.. _endpoints-recipes-json:
+
+Recipe JSON
+~~~~~~~~~~~~~~~~~
+
+All methods, unless otherwise specified, will return one or many Recipe objects of the following ``json`` schema:
+
+.. code-block:: javascript
+
+    {
+      "scheduled": false,
+      "status": "uninitialized",
+      "updated": "2015-05-14T19:58:07.853583-04:00",
+      "description": null,
+      "last_job": {},
+      "id": 1,
+      "sous_chef": "article-rss-feed",
+      "name": "Ingest Articles from an RSS Feed.",
+      "created": "2015-05-14T19:58:07.853557-04:00",
+      "interval": 1800,
+      "org_id": 1,
+      "slug": "article-rss-feed-k8wyx",
+      "options": {
+        "feed_url": null
+      }
+    }
+
+
+.. _endpoints-recipes-list:
+
+**GET** ``/recipes``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+List all Recipes, as well as helpful faceted counts.
+
+Params
+******
+
++--------------------+--------------------------------+------------------+----------------+
+| Parameter          |  Description                   |  Default         |  Required      |
++====================+================================+==================+================+
+| ``apikey``         | Your apikey                    | null             | true           |
++--------------------+--------------------------------+------------------+----------------+
+| ``org``            | The organization's             | null             | true           |
+|                    | ``id`` or ``slug`` you         |                  |                |
+|                    | wish to access.                |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+| ``status``         | Filter recipes by their status.|                  |                |
+|                    | Either running, error, stable, | null             | false          |
+|                    | or uninitialized               |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+| ``scheduled``      | Filter recipes by whether or   | null             |                |
+|                    | not they are scheduled         |                  | false          |
++--------------------+--------------------------------+------------------+----------------+
+| ``sort``           | Sort results by a recipe field.| -created         |                |
+|                    | preface with **-** to sort     |                  | false          |
+|                    | descending                     |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+| ``sous_chefs``     | A comma-separated list of sous-| null             |                |
+|                    | chefs that recipes belong to.  |                  | false          |
+|                    | Each element can be prefaced by|                  |                |
+|                    | with **-** to exclude it.      |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+
+Returns
+*******
+
+.. code-block:: javascript
+
+    {
+      "facets": {
+        "creates": {
+          "thing": 2,
+          "event": 2
+        },
+        "sous_chefs": {
+          "event-facebook-page": 1,
+          "event-twitter-list": 1,
+          "article-rss-feed": 1,
+          "event-twitter-thing": 1
+        },
+        "statuses": {
+          "uninitialized": 4
+        },
+        "schedules": {
+          "unscheduled": 4
+        }
+      },
+      "recipes": [
+        ...
+      ]
+    }
+
+
+Example
+********
+
+Fetch all Recipes:
+
+.. code-block:: bash
+    
+    curl http://localhost:5000/api/v1/recipes\?apikey=$NEWSLYNX_API_KEY\&org=1
+
+Fetch all Recipes that are not instances of ``article-rss-feed`` SousChefs:
+
+.. code-block:: bash
+    
+    curl http://localhost:5000/api/v1/recipes\?apikey=$NEWSLYNX_API_KEY\&org=1\&sous_chefs=-article-rss-feed
+
+
+.. _endpoints-recipes-create:
+
+**POST** ``/recipes``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Create a Recipe.
+
+Params
+******
+
++--------------------+--------------------------------+------------------+----------------+
+| Parameter          |  Description                   |  Default         |  Required      |
++====================+================================+==================+================+
+| ``apikey``         | Your apikey                    | null             | true           |
++--------------------+--------------------------------+------------------+----------------+
+| ``org``            | The organization's             | null             | true           |
+|                    | ``id`` or ``slug`` you         |                  |                |
+|                    | wish to access.                |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+| ``sous_chef``      | The SousChef this recipe runs. | null             |                |
+|                    | While not required as a param, |                  | false          |
+|                    | you must either pass this in   |                  |                |
+|                    | here or in the request body    |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+
+Body
+*******
+
+A valid :ref:`endpoints-recipes-json` object.
+
+Returns
+*******
+
+A newly-created :ref:`endpoints-recipes-json` object.
+
+
+Example
+********
+
+Create a file like this and save it as ``recipe.json``:
+
+.. code-block:: javascript
+
+    {
+      "sous_chef": "article-rss-feed",
+      "name": "Ingest Articles from an RSS Feed.",
+      "slug": "article-rss-feed-k8w2",
+      "options": {
+        "feed_url": "http://nytimes.cat/feed.xml"
+      }
+    }
+
+
+Now run this command:
+
+.. code-block:: bash
+    
+  curl -X POST \
+       -H 'Content-Type:application/json' \
+       --data-binary @recipe.json \
+       http://localhost:5000/api/v1/recipes\?apikey=$NEWSLYNX_API_KEY\&org=1
+
+
+
+.. _endpoints-recipes-get:
+
+**GET** ``/recipes/:recipe-id``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Fetch an individual Recipe.
+
+**NOTE**
+  - This endpoint can accept either a recipe ``id`` or ``slug``.
+
+Params
+******
+
++--------------------+--------------------------------+------------------+----------------+
+| Parameter          |  Description                   |  Default         |  Required      |
++====================+================================+==================+================+
+| ``apikey``         | Your apikey                    | null             | true           |
++--------------------+--------------------------------+------------------+----------------+
+| ``org``            | The organization's             | null             | true           |
+|                    | ``id`` or ``slug`` you         |                  |                |
+|                    | wish to access.                |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+
+Returns
+*******
+
+The Events search endpoint will always return helpful pagination infromation. Including
+
+* ``first`` - The first page of the response.
+* ``last`` - The last page of the response.
+* ``next`` - The next page of the response (unless the last page is returned)
+* ``prev`` - The previous page of the response (unless the first page is returned)
+* ``page`` - The current page.
+* ``per_page`` - The number of results per page.
+
+It will also always return the ``total`` number of results for all pages.
+
+.. code-block:: javascript
+    {
+      "pagination": {
+        "last": "http://localhost:5000/api/v1/events?org=1&apikey=key&page=5&provenance=recipe",
+        "total_pages": 5,
+        "next": "http://localhost:5000/api/v1/events?status=approved&org=1&apikey=key&page=2&provenance=recipe",
+        "per_page": 25,
+        "page": 1,
+        "first": "http://localhost:5000/api/v1/events?status=approved&org=1&apikey=key&page=1&provenance=recipe"
+      },
+      "total": 104,
+      "facets": {
+        "categories": {
+          ...
+        },
+        ...
+      }
+      "events": [
+        ...
+      ]
+    }
+
+
+Example
+********
+
+Fetch a Recipe
+
+.. code-block:: bash
+    
+    curl http://localhost:5000/api/v1/recipes/1\?apikey=$NEWSLYNX_API_KEY\&org=1
+
+.. _endpoints-sous-chefs-get:
+
+**PUT** ``/recipes/:recipe-id``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Update an individual Recipe.
+
+**NOTE**
+  - This endpoint can accept either a recipe ``id`` or ``slug``.
+
+Params
+******
+
++--------------------+--------------------------------+------------------+----------------+
+| Parameter          |  Description                   |  Default         |  Required      |
++====================+================================+==================+================+
+| ``apikey``         | Your apikey                    | null             | true           |
++--------------------+--------------------------------+------------------+----------------+
+| ``org``            | The organization's             | null             | true           |
+|                    | ``id`` or ``slug`` you         |                  |                |
+|                    | wish to access.                |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+| ``sous_chef``      | The sous-chef this recipe runs.| null             |                |
+|                    | While not required as a param, |                  | false          |
+|                    | you must either pass this in   |                  |                |
+|                    | here or in the request body    |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+
+Body
+*******
+
+A complete :ref:`endpoints-recipes-json` object. Since a Recipe can only run properly if all of it's options
+are properly validated, the API does not allow partial updates for now. TK: Allow for partial updates while sanitizing input.
+
+Returns
+*******
+
+A newly-updated :ref:`endpoints-recipes-json` object.
+
+
+Example
+********
+
+Create a file like this and save it as ``recipe.json``:
+
+.. code-block:: javascript
+
+    {
+      "sous_chef": "article-rss-feed",
+      "name": "Ingest Articles from an RSS Feed.",
+      "slug": "article-rss-feed-k8w2",
+      "options": {
+        "feed_url": "http://nytimes.cat/rss.xml"
+      }
+    }
+
+
+Now run this command:
+
+.. code-block:: bash
+    
+  curl -X PUT \
+       -H 'Content-Type:application/json' \
+       --data-binary @recipe.json \
+       http://localhost:5000/api/v1/recipes/1\?apikey=$NEWSLYNX_API_KEY\&org=1
+
+.. _endpoints-events:
 
 **Events**
 ++++++++++++++++++
@@ -2129,32 +4295,230 @@ All methods, unless otherwise specified, will return one or many Event objects o
 
     {
       "status": "approved",
-      "updated": "2015-06-06T15:55:57.849454+00:00",
-      "provenance": "manual",
-      "description": "pariatur aperiam veniam sint ea quaerat amet id qui et est ea quis est dicta officia eos laboriosam ",
-      "recipe_id": null,
-      "authors": [
-        "Kurtis Nolan"
-      ],
-      "id": 291,
-      "created": "2015-05-27T02:21:09.236835+00:00",
-      "url": "http://example.com/0e24032e-0b4b-11e5-8339-6c4008aeb606",
-      "things": [
+      "updated": "2015-06-06T22:10:22.137437+00:00",
+      "provenance": "recipe",
+      "description": "dolores iure eveniet harum dicta totam eos porro sint nisi quasi molestiae sit mollitia dignissimos ",
+      "content_items": [
         {
-          "url": "http://example.com/0aab2d94-0b4b-11e5-a4a5-6c4008aeb606",
-          "id": 96,
-          "title": "sint tempora eligend"
+          "url": "http://example.com/d0fe5387-0c98-11e5-963f-6c4008aeb606",
+          "id": 39,
+          "title": "veritatis eos nisi a"
         }
       ],
-      "title": "cum ipsa doloribus p",
-      "tag_ids": [
-        4
+      "recipe_id": 1,
+      "authors": [
+        "Anthony Roob"
       ],
-      "body": "minima sunt deserunt consequatur impedit voluptate officiis in sequi quia porro cumque perferendis aut voluptates nihil quod magni asperiores sed neque nam quia sunt iste dicta non et facilis autem ex aut et fugit rem et enim qui dolorem voluptatum quidem et similique fugiat dolore nobis a aut rerum itaque molestiae vero sint animi tenetur in nostrum saepe eos molestiae officia quam veritatis pariatur consequatur vel quo excepturi voluptas recusandae earum est ratione eligendi est commodi quaera",
+      "id": 173,
+      "created": "2015-05-27T23:10:20.852576+00:00",
+      "url": "http://example.com/d25cbf6b-0c98-11e5-9e0f-6c4008aeb606",
+      "title": "ut odio eos asperior",
+      "tag_ids": [
+        5
+      ],
       "meta": {
-        "address": "669 Schultz Inlet Apt. 136"
+        "followers": 78
       },
-      "source_id": "0e23d88f-0b4b-11e5-82b4-6c4008aeb606",
-      "img_url": "http://example.com/0e2405e1-0b4b-11e5-92a9-6c4008aeb606.pg"
+      "source_id": "recipe:d25cb405-0c98-11e5-b5c0-6c4008aeb606",
+      "img_url": "http://example.com/d25cc021-0c98-11e5-b0a9-6c4008aeb606.png"
     }
 
+.. _endpoints-recipes-list:
+
+**GET** ``/events``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Search and filter all events and return helpful faceted counts.
+
+Params
+******
+
++--------------------+--------------------------------+------------------+----------------+
+| Parameter          |  Description                   |  Default         |  Required      |
++====================+================================+==================+================+
+| ``apikey``         | Your apikey                    | null             | true           |
++--------------------+--------------------------------+------------------+----------------+
+| ``org``            | The organization's             | null             | true           |
+|                    | ``id`` or ``slug`` you         |                  |                |
+|                    | wish to access.                |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+| ``q``              | A search query. Will search on | null             |                |
+|                    | ``body``, ``authors``,         |                  | false          |
+|                    | ``title``, ``description``, and|                  |                |
+|                    | ``meta``. Please refer to the  |                  |                |
+|                    | `Postgres Search docs`_ for    |                  |                |
+|                    | details on query syntax.       |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+| ``fields``         | A comma-separated list of      | null             | false          |
+|                    | fields to include in the       |                  |                | 
+|                    | response.                      |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+| ``incl_body``      |Whether or not to include the   | false            | false          |
+|                    | body of the event in the       |                  |                | 
+|                    | response.                      |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+| ``created_after``  | An ISO-8601 date to filter     |                  |                |
+|                    | results by.                    | null             | false          |
++--------------------+--------------------------------+------------------+----------------+
+| ``created_before`` | An ISO-8601 date to filter     |                  |                |
+|                    | results by.                    | null             | false          |
++--------------------+--------------------------------+------------------+----------------+
+| ``updated_after``  | An ISO-8601 date to filter     |                  |                |
+|                    | results by.                    | null             | false          |
++--------------------+--------------------------------+------------------+----------------+
+| ``updated_before`` | An ISO-8601 date to filter     |                  |                |
+|                    | results by.                    | null             | false          |
++--------------------+--------------------------------+------------------+----------------+
+| ``sort``           | Sort results by an event field.| -created.        |                |
+|                    | preface with **-** to sort     |                  | false          |
+|                    | descending. When submitting a  |                  |                |
+|                    | search query, use ``relevance``|                  |                |
+|                    | to sort by match rank.         |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+| ``status``         |A status to filter results by.  |                  |                |
+|                    |Choose from ``pending``,        | ``all``          | false          |
+|                    | ``approved``, ``deleted`` or   |                  |                |
+|                    | ``all``.                       |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+| ``provenance``     |A provenance to filter          | ``all``          | false          |
+|                    | results by. Choose from        |                  |                |
+|                    | ``manual``, ``recipe``, or     |                  |                |
+|                    | ``all``.                       |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+| ``tag_ids``        |A comma-separated list of       | null             | false          |
+|                    |``tag_ids`` to filter results by|                  |                |
+|                    |  Preface any element with      |                  |                |
+|                    | **!** or **-** to exclude it.  |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+|``levels``          |A comma-separated list of Tag   | null             | false          |
+|                    |``levels`` to filter            |                  |                |
+|                    | results by.                    |                  |                |
+|                    |  Preface any element with      |                  |                |
+|                    | **!** or **-** to exclude it.  |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+|``categories``      |A comma-separated list of Tag   | null             | false          |
+|                    |``categories`` to filter        |                  |                |
+|                    | results by.                    |                  |                |
+|                    |  Preface any element with      |                  |                |
+|                    | **!** or **-** to exclude it.  |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+|``content_item_ids``|A comma-separated list of       | null             | false          |
+|                    |``content_item_ids`` to filter  |                  |                |
+|                    | results by.                    |                  |                |
+|                    |  Preface any element with      |                  |                |
+|                    | **!** or **-** to exclude it.  |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+|``recipe_ids``      |A comma-separated list of       | null             | false          |
+|                    |``recipe_ids`` to filter        |                  |                |
+|                    | results by.                    |                  |                |
+|                    |  Preface any element with      |                  |                |
+|                    | **!** or **-** to exclude it.  |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+|``sous_chef_ids``   |A comma-separated list of       | null             | false          |
+|                    |``sous_chef_ids`` to filter     |                  |                |
+|                    | results by.                    |                  |                |
+|                    |  Preface any element with      |                  |                |
+|                    | **!** or **-** to exclude it.  |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+|``facets``          |A comma-separated list of       | null             | false          |
+|                    | faceted counts to include      |                  |                |
+|                    | in the response.               |                  |                |
+|                    |  Choose from ``tags``,         |                  |                |
+|                    | ``content_items``, ``levels``, |                  |                |
+|                    | ``categories``, 'sous_chefs',  |                  |                |
+|                    | ``recipes``, ``statuses``,     |                  |                |
+|                    | ``provenances`` or ``all``.    |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+|``page``            |The page number of the results. | 1                | false          |
++--------------------+--------------------------------+------------------+----------------+
+|``per_page``        |The number of results to return | 25               | false          |
+|                    | per page. Max is 100.          |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+
+
+Returns
+*******
+
+The Events search endpoint will always return helpful pagination infromation. Including
+
+* ``first`` - The first page of the response.
+* ``last`` - The last page of the response.
+* ``next`` - The next page of the response (unless the last page is returned)
+* ``prev`` - The previous page of the response (unless the first page is returned)
+* ``page`` - The current page.
+* ``per_page`` - The number of results per page.
+
+It will also always return the ``total`` number of results for all pages.
+
+.. code-block:: javascript
+    {
+      "pagination": {
+        "last": "http://localhost:5000/api/v1/events?org=1&apikey=key&page=5&provenance=recipe",
+        "total_pages": 5,
+        "next": "http://localhost:5000/api/v1/events?status=approved&org=1&apikey=key&page=2&provenance=recipe",
+        "per_page": 25,
+        "page": 1,
+        "first": "http://localhost:5000/api/v1/events?status=approved&org=1&apikey=key&page=1&provenance=recipe"
+      },
+      "total": 104,
+      "facets": {
+        "categories": {
+          ...
+        },
+        ...
+      }
+      "events": [
+        ...
+      ]
+    }
+
+Examples
+********
+
+List ``approved`` events by most recently created.
+
+.. code-block:: bash
+    
+    curl http://localhost:5000/api/v1/events\?org\=1\&apikey\=$NEWSLYNX_API_KEY\&status\=approved&sort=-created
+
+Search events created manually.
+
+.. code-block:: bash
+    
+    curl http://localhost:5000/api/v1/events\?org\=1\&apikey\=$NEWSLYNX_API_KEY\&provenance\=manual&q=foobar
+
+List recipes that only have certain tags and have *not* been created by certain recipes.
+
+.. code-block:: bash
+    
+    curl http://localhost:5000/api/v1/events\?org\=1\&apikey\=$NEWSLYNX_API_KEY\&recipes=-1&tag_ids=1,2,3
+
+List recipes that link to certain ``content_items`` and include the Event body in the response:
+
+.. code-block:: bash
+    
+    curl http://localhost:5000/api/v1/events\?org\=1\&apikey\=$NEWSLYNX_API_KEY\&content_item_ids=1,-2,3,-4\&incl_body=yes
+
+Facet events by tag levels:
+
+**PROTIP**: If you just want facets, use ``per_page=1`` to speed up the request.
+
+.. code-block:: bash
+    
+    curl http://localhost:5000/api/v1/events\?org\=1\&apikey\=$NEWSLYNX_API_KEY\&per_page=1&facets=levels
+
+Search Events and only return ``id`` and ``title``:
+
+**PROTIP**: Upping ``per_page`` parameter and limiting the ``fields`` returned when submitting a search query serves as an effected auto-complete endpoint. 
+
+.. code-block:: bash
+    
+    curl http://localhost:5000/api/v1/events\?org\=1\&apikey\=$NEWSLYNX_API_KEY\&q=foobar&fields=id,title&per_page=100
+
+
+
+
+
+
+
+.. _Postgres Search docs: http://www.postgresql.org/docs/9.1/static/textsearch-tables.html#TEXTSEARCH-TABLES-SEARCH
