@@ -189,7 +189,7 @@ Params
 +--------------------+------------------------+------------------+----------------+
 | Parameter          |  Description           |  Default         |  Required      |
 +====================+========================+==================+================+
-| ``apikey``         | Your apikey            |  null            | true           |
+| ``apikey``         | Your ``apikey``        |  null            | true           |
 +--------------------+------------------------+------------------+----------------+
 
 Returns
@@ -218,7 +218,7 @@ Params
 +--------------------+------------------------+------------------+----------------+
 | Parameter          |  Description           |  Default         |  Required      |
 +====================+========================+==================+================+
-| ``apikey``         | Your apikey            |  null            | true           |
+| ``apikey``         | Your ``apikey``        |  null            | true           |
 +--------------------+------------------------+------------------+----------------+
 | ``refresh_apikey`` | ``true`` / ``false``.  | false            | false          |
 |                    | If ``true``, your      |                  |                |
@@ -281,7 +281,7 @@ Params
 +--------------------+------------------------+------------------+----------------+
 | Parameter          |  Description           |  Default         |  Required      |
 +====================+========================+==================+================+
-| ``apikey``         | Your apikey            |  null            | true           |
+| ``apikey``         | Your ``apikey``        |  null            | true           |
 +--------------------+------------------------+------------------+----------------+
 
 Returns
@@ -351,7 +351,7 @@ Params
 +--------------------+------------------------+------------------+----------------+
 | Parameter          |  Description           |  Default         |  Required      |
 +====================+========================+==================+================+
-| ``apikey``         | Your apikey            |  null            | true           |
+| ``apikey``         | Your ``apikey``        |  null            | true           |
 +--------------------+------------------------+------------------+----------------+
 
 Returns
@@ -384,7 +384,7 @@ Params
 +--------------------+------------------------+------------------+----------------+
 | Parameter          |  Description           |  Default         |  Required      |
 +====================+========================+==================+================+
-| ``apikey``         | Your apikey            |  null            | true           |
+| ``apikey``         | Your ``apikey``        |  null            | true           |
 +--------------------+------------------------+------------------+----------------+
 
 Body
@@ -426,7 +426,7 @@ Params
 +--------------------+------------------------+------------------+----------------+
 | Parameter          |  Description           |  Default         |  Required      |
 +====================+========================+==================+================+
-| ``apikey``         | Your apikey            |  null            | true           |
+| ``apikey``         | Your ``apikey``        |  null            | true           |
 +--------------------+------------------------+------------------+----------------+
 
 Returns
@@ -459,7 +459,7 @@ Params
 +--------------------+------------------------+------------------+----------------+
 | Parameter          |  Description           |  Default         |  Required      |
 +====================+========================+==================+================+
-| ``apikey``         | Your apikey            |  null            | true           |
+| ``apikey``         | Your ``apikey``        |  null            | true           |
 +--------------------+------------------------+------------------+----------------+
 
 Returns
@@ -506,7 +506,7 @@ Params
 +--------------------+------------------------+------------------+----------------+
 | Parameter          |  Description           |  Default         |  Required      |
 +====================+========================+==================+================+
-| ``apikey``         | Your apikey            |  null            | true           |
+| ``apikey``         | Your ``apikey``        |  null            | true           |
 +--------------------+------------------------+------------------+----------------+
 
 Returns
@@ -539,7 +539,7 @@ Params
 +--------------------+------------------------+------------------+----------------+
 | Parameter          |  Description           |  Default         |  Required      |
 +====================+========================+==================+================+
-| ``apikey``         | Your apikey            |  null            | true           |
+| ``apikey``         | Your ``apikey``        |  null            | true           |
 +--------------------+------------------------+------------------+----------------+
 
 Returns
@@ -573,7 +573,7 @@ Params
 +--------------------+------------------------+------------------+----------------+
 | Parameter          |  Description           |  Default         |  Required      |
 +====================+========================+==================+================+
-| ``apikey``         | Your apikey            |  null            | true           |
+| ``apikey``         | Your ``apikey``        |  null            | true           |
 +--------------------+------------------------+------------------+----------------+
 
 Body
@@ -621,7 +621,7 @@ Params
 +--------------------+------------------------+------------------+----------------+
 | Parameter          |  Description           |  Default         |  Required      |
 +====================+========================+==================+================+
-| ``apikey``         | Your apikey            |  null            | true           |
+| ``apikey``         | Your ``apikey``        |  null            | true           |
 +--------------------+------------------------+------------------+----------------+
 
 Returns
@@ -656,7 +656,7 @@ Params
 +--------------------+------------------------+------------------+----------------+
 | Parameter          |  Description           |  Default         |  Required      |
 +====================+========================+==================+================+
-| ``apikey``         | Your apikey            |  null            | true           |
+| ``apikey``         | Your ``apikey``        |  null            | true           |
 +--------------------+------------------------+------------------+----------------+
 
 Returns
@@ -691,7 +691,7 @@ Params
 +--------------------+------------------------+------------------+----------------+
 | Parameter          |  Description           |  Default         |  Required      |
 +====================+========================+==================+================+
-| ``apikey``         | Your apikey            | null             | true           |
+| ``apikey``         | Your ``apikey``        | null             | true           |
 +--------------------+------------------------+------------------+----------------+
 | ``force``          | ``true`` / ``false``.  | false            | false          |
 |                    | If ``true``, the       |                  |                |
@@ -766,7 +766,7 @@ Params
 +--------------------+--------------------------------+------------------+----------------+
 | Parameter          |  Description                   |  Default         |  Required      |
 +====================+================================+==================+================+
-| ``apikey``         | Your apikey                    | null             | true           |
+| ``apikey``         | Your ``apikey``                | null             | true           |
 +--------------------+--------------------------------+------------------+----------------+
 | ``org``            | The organization's             | null             | true           |
 |                    | ``id`` or ``slug`` you         |                  |                |
@@ -800,7 +800,7 @@ Params
 +--------------------+--------------------------------+------------------+----------------+
 | Parameter          |  Description                   |  Default         |  Required      |
 +====================+================================+==================+================+
-| ``apikey``         | Your apikey                    | null             | true           |
+| ``apikey``         | Your ``apikey``                | null             | true           |
 +--------------------+--------------------------------+------------------+----------------+
 | ``org``            | The organization's             | null             | true           |
 |                    | ``id`` or ``slug`` you         |                  |                |
@@ -852,7 +852,7 @@ Params
 +--------------------+--------------------------------+------------------+----------------+
 | Parameter          |  Description                   |  Default         |  Required      |
 +====================+================================+==================+================+
-| ``apikey``         | Your apikey                    | null             | true           |
+| ``apikey``         | Your ``apikey``                | null             | true           |
 +--------------------+--------------------------------+------------------+----------------+
 | ``org``            | The organization's             | null             | true           |
 |                    | ``id`` or ``slug`` you         |                  |                |
@@ -888,7 +888,7 @@ Params
 +--------------------+--------------------------------+------------------+----------------+
 | Parameter          |  Description                   |  Default         |  Required      |
 +====================+================================+==================+================+
-| ``apikey``         | Your apikey                    | null             | true           |
+| ``apikey``         | Your ``apikey``                | null             | true           |
 +--------------------+--------------------------------+------------------+----------------+
 | ``org``            | The organization's             | null             | true           |
 |                    | ``id`` or ``slug`` you         |                  |                |
@@ -933,7 +933,7 @@ Params
 +--------------------+--------------------------------+------------------+----------------+
 | Parameter          |  Description                   |  Default         |  Required      |
 +====================+================================+==================+================+
-| ``apikey``         | Your apikey                    | null             | true           |
+| ``apikey``         | Your ``apikey``                | null             | true           |
 +--------------------+--------------------------------+------------------+----------------+
 | ``org``            | The organization's             | null             | true           |
 |                    | ``id`` or ``slug`` you         |                  |                |
@@ -1003,7 +1003,7 @@ Params
 +--------------------+--------------------------------+------------------+----------------+
 | Parameter          |  Description                   |  Default         |  Required      |
 +====================+================================+==================+================+
-| ``apikey``         | Your apikey                    | null             | true           |
+| ``apikey``         | Your ``apikey``                | null             | true           |
 +--------------------+--------------------------------+------------------+----------------+
 | ``org``            | The organization's             | null             | true           |
 |                    | ``id`` or ``slug`` you         |                  |                |
@@ -1033,7 +1033,7 @@ Params
 +--------------------+--------------------------------+------------------+----------------+
 | Parameter          |  Description                   |  Default         |  Required      |
 +====================+================================+==================+================+
-| ``apikey``         | Your apikey                    | null             | true           |
+| ``apikey``         | Your ``apikey``                | null             | true           |
 +--------------------+--------------------------------+------------------+----------------+
 | ``org``            | The organization's             | null             | true           |
 |                    | ``id`` or ``slug`` you         |                  |                |
@@ -1058,7 +1058,7 @@ Params
 +--------------------+--------------------------------+------------------+----------------+
 | Parameter          |  Description                   |  Default         |  Required      |
 +====================+================================+==================+================+
-| ``apikey``         | Your apikey                    | null             | true           |
+| ``apikey``         | Your ``apikey``                | null             | true           |
 +--------------------+--------------------------------+------------------+----------------+
 | ``org``            | The organization's             | null             | true           |
 |                    | ``id`` or ``slug`` you         |                  |                |
@@ -1088,7 +1088,7 @@ Params
 +--------------------+--------------------------------+------------------+----------------+
 | Parameter          |  Description                   |  Default         |  Required      |
 +====================+================================+==================+================+
-| ``apikey``         | Your apikey                    | null             | true           |
+| ``apikey``         | Your ``apikey``                | null             | true           |
 +--------------------+--------------------------------+------------------+----------------+
 | ``org``            | The organization's             | null             | true           |
 |                    | ``id`` or ``slug`` you         |                  |                |
@@ -1113,7 +1113,7 @@ Params
 +--------------------+--------------------------------+------------------+----------------+
 | Parameter          |  Description                   |  Default         |  Required      |
 +====================+================================+==================+================+
-| ``apikey``         | Your apikey                    | null             | true           |
+| ``apikey``         | Your ``apikey``                | null             | true           |
 +--------------------+--------------------------------+------------------+----------------+
 | ``org``            | The organization's             | null             | true           |
 |                    | ``id`` or ``slug`` you         |                  |                |
@@ -1143,7 +1143,7 @@ Params
 +--------------------+--------------------------------+------------------+----------------+
 | Parameter          |  Description                   |  Default         |  Required      |
 +====================+================================+==================+================+
-| ``apikey``         | Your apikey                    | null             | true           |
+| ``apikey``         | Your ``apikey``                | null             | true           |
 +--------------------+--------------------------------+------------------+----------------+
 | ``org``            | The organization's             | null             | true           |
 |                    | ``id`` or ``slug`` you         |                  |                |
@@ -1211,7 +1211,7 @@ Params
 +--------------------+--------------------------------+------------------+----------------+
 | Parameter          |  Description                   |  Default         |  Required      |
 +====================+================================+==================+================+
-| ``apikey``         | Your apikey                    | null             | true           |
+| ``apikey``         | Your ``apikey``                | null             | true           |
 +--------------------+--------------------------------+------------------+----------------+
 | ``org``            | The organization's             | null             | true           |
 |                    | ``id`` or ``slug`` you         |                  |                |
@@ -1303,7 +1303,7 @@ Params
 +--------------------+--------------------------------+------------------+----------------+
 | Parameter          |  Description                   |  Default         |  Required      |
 +====================+================================+==================+================+
-| ``apikey``         | Your apikey                    | null             | true           |
+| ``apikey``         | Your ``apikey``                | null             | true           |
 +--------------------+--------------------------------+------------------+----------------+
 | ``org``            | The organization's             | null             | true           |
 |                    | ``id`` or ``slug`` you         |                  |                |
@@ -1354,7 +1354,7 @@ Params
 +--------------------+--------------------------------+------------------+----------------+
 | Parameter          |  Description                   |  Default         |  Required      |
 +====================+================================+==================+================+
-| ``apikey``         | Your apikey                    | null             | true           |
+| ``apikey``         | Your ``apikey``                | null             | true           |
 +--------------------+--------------------------------+------------------+----------------+
 | ``org``            | The organization's             | null             | true           |
 |                    | ``id`` or ``slug`` you         |                  |                |
@@ -1390,7 +1390,7 @@ Params
 +--------------------+--------------------------------+------------------+----------------+
 | Parameter          |  Description                   |  Default         |  Required      |
 +====================+================================+==================+================+
-| ``apikey``         | Your apikey                    | null             | true           |
+| ``apikey``         | Your ``apikey``                | null             | true           |
 +--------------------+--------------------------------+------------------+----------------+
 | ``org``            | The organization's             | null             | true           |
 |                    | ``id`` or ``slug`` you         |                  |                |
@@ -1433,7 +1433,7 @@ Params
 +--------------------+--------------------------------+------------------+----------------+
 | Parameter          |  Description                   |  Default         |  Required      |
 +====================+================================+==================+================+
-| ``apikey``         | Your apikey                    | null             | true           |
+| ``apikey``         | Your ``apikey``                | null             | true           |
 +--------------------+--------------------------------+------------------+----------------+
 | ``org``            | The organization's             | null             | true           |
 |                    | ``id`` or ``slug`` you         |                  |                |
@@ -1611,7 +1611,7 @@ Params
 +--------------------+--------------------------------+------------------+----------------+
 | Parameter          |  Description                   |  Default         |  Required      |
 +====================+================================+==================+================+
-| ``apikey``         | Your apikey                    | null             | true           |
+| ``apikey``         | Your ``apikey``                | null             | true           |
 +--------------------+--------------------------------+------------------+----------------+
 | ``org``            | The organization's             | null             | true           |
 |                    | ``id`` or ``slug`` you         |                  |                |
@@ -1676,7 +1676,7 @@ Params
 +--------------------+--------------------------------+------------------+----------------+
 | Parameter          |  Description                   |  Default         |  Required      |
 +====================+================================+==================+================+
-| ``apikey``         | Your apikey                    | null             | true           |
+| ``apikey``         | Your ``apikey``                | null             | true           |
 +--------------------+--------------------------------+------------------+----------------+
 | ``org``            | The organization's             | null             | true           |
 |                    | ``id`` or ``slug`` you         |                  |                |
@@ -1741,7 +1741,7 @@ Params
 +--------------------+--------------------------------+------------------+----------------+
 | Parameter          |  Description                   |  Default         |  Required      |
 +====================+================================+==================+================+
-| ``apikey``         | Your apikey                    | null             | true           |
+| ``apikey``         | Your ``apikey``                | null             | true           |
 +--------------------+--------------------------------+------------------+----------------+
 | ``org``            | The organization's             | null             | true           |
 |                    | ``id`` or ``slug`` you         |                  |                |
@@ -1781,7 +1781,7 @@ Params
 +--------------------+--------------------------------+------------------+----------------+
 | Parameter          |  Description                   |  Default         |  Required      |
 +====================+================================+==================+================+
-| ``apikey``         | Your apikey                    | null             | true           |
+| ``apikey``         | Your ``apikey``                | null             | true           |
 +--------------------+--------------------------------+------------------+----------------+
 | ``org``            | The organization's             | null             | true           |
 |                    | ``id`` or ``slug`` you         |                  |                |
@@ -1879,7 +1879,7 @@ Params
 +--------------------+--------------------------------+------------------+----------------+
 | Parameter          |  Description                   |  Default         |  Required      |
 +====================+================================+==================+================+
-| ``apikey``         | Your apikey                    | null             | true           |
+| ``apikey``         | Your ``apikey``                | null             | true           |
 +--------------------+--------------------------------+------------------+----------------+
 | ``org``            | The organization's             | null             | true           |
 |                    | ``id`` or ``slug`` you         |                  |                |
@@ -1968,7 +1968,7 @@ Params
 +--------------------+--------------------------------+------------------+----------------+
 | Parameter          |  Description                   |  Default         |  Required      |
 +====================+================================+==================+================+
-| ``apikey``         | Your apikey                    | null             | true           |
+| ``apikey``         | Your ``apikey``                | null             | true           |
 +--------------------+--------------------------------+------------------+----------------+
 | ``org``            | The organization's             | null             | true           |
 |                    | ``id`` or ``slug`` you         |                  |                |
@@ -2035,7 +2035,7 @@ Params
 +--------------------+--------------------------------+------------------+----------------+
 | Parameter          |  Description                   |  Default         |  Required      |
 +====================+================================+==================+================+
-| ``apikey``         | Your apikey                    | null             | true           |
+| ``apikey``         | Your ``apikey``                | null             | true           |
 +--------------------+--------------------------------+------------------+----------------+
 | ``org``            | The organization's             | null             | true           |
 |                    | ``id`` or ``slug`` you         |                  |                |
@@ -2089,7 +2089,7 @@ Fetch a Recipe
     
     curl http://localhost:5000/api/v1/recipes/1\?apikey=$NEWSLYNX_API_KEY\&org=1
 
-.. _endpoints-sous-chefs-get:
+.. _endpoints-recipes-update:
 
 **PUT** ``/recipes/:recipe-id``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -2105,7 +2105,7 @@ Params
 +--------------------+--------------------------------+------------------+----------------+
 | Parameter          |  Description                   |  Default         |  Required      |
 +====================+================================+==================+================+
-| ``apikey``         | Your apikey                    | null             | true           |
+| ``apikey``         | Your ``apikey``                | null             | true           |
 +--------------------+--------------------------------+------------------+----------------+
 | ``org``            | The organization's             | null             | true           |
 |                    | ``id`` or ``slug`` you         |                  |                |
@@ -2219,7 +2219,7 @@ Params
 +--------------------+--------------------------------+------------------+----------------+
 | Parameter          |  Description                   |  Default         |  Required      |
 +====================+================================+==================+================+
-| ``apikey``         | Your apikey                    | null             | true           |
+| ``apikey``         | Your ``apikey``                | null             | true           |
 +--------------------+--------------------------------+------------------+----------------+
 | ``org``            | The organization's             | null             | true           |
 |                    | ``id`` or ``slug`` you         |                  |                |
@@ -2236,7 +2236,7 @@ Params
 |                    | fields to include in the       |                  |                | 
 |                    | response.                      |                  |                |
 +--------------------+--------------------------------+------------------+----------------+
-| ``incl_body``      |Whether or not to include the   | false            | false          |
+| ``incl_body``      | Whether or not to include the  | false            | false          |
 |                    | body of the event in the       |                  |                | 
 |                    | response.                      |                  |                |
 +--------------------+--------------------------------+------------------+----------------+
@@ -2258,59 +2258,60 @@ Params
 |                    | search query, use ``relevance``|                  |                |
 |                    | to sort by match rank.         |                  |                |
 +--------------------+--------------------------------+------------------+----------------+
-| ``status``         |A status to filter results by.  |                  |                |
-|                    |Choose from ``pending``,        | ``all``          | false          |
+| ``status``         | A status to filter results by. |                  |                |
+|                    | Choose from ``pending``,       | ``all``          | false          |
 |                    | ``approved``, ``deleted`` or   |                  |                |
 |                    | ``all``.                       |                  |                |
 +--------------------+--------------------------------+------------------+----------------+
-| ``provenance``     |A provenance to filter          | ``all``          | false          |
+| ``provenance``     | A provenance to filter         | ``all``          | false          |
 |                    | results by. Choose from        |                  |                |
 |                    | ``manual``, ``recipe``, or     |                  |                |
 |                    | ``all``.                       |                  |                |
 +--------------------+--------------------------------+------------------+----------------+
-| ``tag_ids``        |A comma-separated list of       | null             | false          |
-|                    |``tag_ids`` to filter results by|                  |                |
-|                    |  Preface any element with      |                  |                |
-|                    | **!** or **-** to exclude it.  |                  |                |
+| ``tag_ids``        | A comma-separated list of      | null             | false          |
+|                    | ``tag_ids`` to filter results  |                  |                |
+|                    | results by. Preface any element|                  |                |
+|                    | with **!** or **-** to exclude |                  |                |
+|                    | it.                            |                  |                |
 +--------------------+--------------------------------+------------------+----------------+
-|``levels``          |A comma-separated list of Tag   | null             | false          |
-|                    |``levels`` to filter            |                  |                |
-|                    | results by.                    |                  |                |
-|                    |  Preface any element with      |                  |                |
-|                    | **!** or **-** to exclude it.  |                  |                |
+|``levels``          | A comma-separated list of Tag  | null             | false          |
+|                    | ``levels`` to filter           |                  |                |
+|                    | results by. Preface any element|                  |                |
+|                    | with **!** or **-** to exclude |                  |                |
+|                    | it.                            |                  |                |
 +--------------------+--------------------------------+------------------+----------------+
-|``categories``      |A comma-separated list of Tag   | null             | false          |
-|                    |``categories`` to filter        |                  |                |
-|                    | results by.                    |                  |                |
-|                    |  Preface any element with      |                  |                |
-|                    | **!** or **-** to exclude it.  |                  |                |
+|``categories``      | A comma-separated list of Tag  | null             | false          |
+|                    | ``categories`` to filter       |                  |                |
+|                    | results by. Preface any element|                  |                |
+|                    | with **!** or **-** to exclude |                  |                |
+|                    | it.                            |                  |                |
 +--------------------+--------------------------------+------------------+----------------+
-|``content_item_ids``|A comma-separated list of       | null             | false          |
-|                    |``content_item_ids`` to filter  |                  |                |
-|                    | results by.                    |                  |                |
-|                    |  Preface any element with      |                  |                |
-|                    | **!** or **-** to exclude it.  |                  |                |
+|``content_item_ids``| A comma-separated list of      | null             | false          |
+|                    | ``content_item_ids`` to filter |                  |                |
+|                    | results by. Preface any element|                  |                |
+|                    | with **!** or **-** to exclude |                  |                |
+|                    | it.                            |                  |                |
 +--------------------+--------------------------------+------------------+----------------+
-|``recipe_ids``      |A comma-separated list of       | null             | false          |
-|                    |``recipe_ids`` to filter        |                  |                |
-|                    | results by.                    |                  |                |
-|                    |  Preface any element with      |                  |                |
-|                    | **!** or **-** to exclude it.  |                  |                |
+|``recipe_ids``      | A comma-separated list of      | null             | false          |
+|                    | ``recipe_ids`` to filter       |                  |                |
+|                    | results by. Preface any element|                  |                |
+|                    | with **!** or **-** to exclude |                  |                |
+|                    | it.                            |                  |                |
 +--------------------+--------------------------------+------------------+----------------+
 |``sous_chef_ids``   | A comma-separated list of      | null             | false          |
-|                    |``sous_chef_ids`` to filter     |                  |                |
-|                    | results by.                    |                  |                |
-|                    |  Preface any element with      |                  |                |
-|                    | **!** or **-** to exclude it.  |                  |                |
+|                    | ``sous_chef_ids`` to filter    |                  |                |
+|                    | results by. Preface any element|                  |                |
+|                    | with **!** or **-** to exclude |                  |                |
+|                    | it.                            |                  |                |
 +--------------------+--------------------------------+------------------+----------------+
 |``facets``          | A comma-separated list of      | null             | false          |
 |                    | faceted counts to include      |                  |                |
-|                    | in the response.               |                  |                |
-|                    |  Choose from ``tags``,         |                  |                |
-|                    | ``content_items``, ``levels``, |                  |                |
-|                    | ``categories``, ``sous_chefs``,|                  |                |
-|                    | ``recipes``, ``statuses``,     |                  |                |
-|                    | ``provenances`` or ``all``.    |                  |                |
+|                    | in the response. Choose from   |                  |                |
+|                    | ``tags``, ``content_items``,   |                  |                |
+|                    |  ``levels``,  ``categories``,  |                  |                |
+|                    | ``sous_chefs``, ``recipes``,   |                  |                |
+|                    | ``statuses``, ``provenances``  |                  |                |
+|                    | or ``all``.                    |                  |                |
 +--------------------+--------------------------------+------------------+----------------+
 |``page``            |The page number of the results. | 1                | false          |
 +--------------------+--------------------------------+------------------+----------------+
@@ -2412,7 +2413,7 @@ Params
 +--------------------+--------------------------------+------------------+----------------+
 | Parameter          |  Description                   |  Default         |  Required      |
 +====================+================================+==================+================+
-| ``apikey``         | Your apikey                    | null             | true           |
+| ``apikey``         | Your ``apikey``                | null             | true           |
 +--------------------+--------------------------------+------------------+----------------+
 | ``org``            | The organization's             | null             | true           |
 |                    | ``id`` or ``slug`` you         |                  |                |
@@ -2528,7 +2529,7 @@ Params
 +--------------------+--------------------------------+------------------+----------------+
 | Parameter          |  Description                   |  Default         |  Required      |
 +====================+================================+==================+================+
-| ``apikey``         | Your apikey                    | null             | true           |
+| ``apikey``         | Your ``apikey``                | null             | true           |
 +--------------------+--------------------------------+------------------+----------------+
 | ``org``            | The organization's             | null             | true           |
 |                    | ``id`` or ``slug`` you         |                  |                |
@@ -2563,7 +2564,7 @@ Params
 +--------------------+--------------------------------+------------------+----------------+
 | Parameter          |  Description                   |  Default         |  Required      |
 +====================+================================+==================+================+
-| ``apikey``         | Your apikey                    | null             | true           |
+| ``apikey``         | Your ``apikey``                | null             | true           |
 +--------------------+--------------------------------+------------------+----------------+
 | ``org``            | The organization's             | null             | true           |
 |                    | ``id`` or ``slug`` you         |                  |                |
@@ -2619,7 +2620,7 @@ Params
 +--------------------+--------------------------------+------------------+----------------+
 | Parameter          |  Description                   |  Default         |  Required      |
 +====================+================================+==================+================+
-| ``apikey``         | Your apikey                    | null             | true           |
+| ``apikey``         | Your ``apikey``                | null             | true           |
 +--------------------+--------------------------------+------------------+----------------+
 | ``org``            | The organization's             | null             | true           |
 |                    | ``id`` or ``slug`` you         |                  |                |
@@ -2666,7 +2667,7 @@ Params
 +--------------------+--------------------------------+------------------+----------------+
 | Parameter          |  Description                   |  Default         |  Required      |
 +====================+================================+==================+================+
-| ``apikey``         | Your apikey                    | null             | true           |
+| ``apikey``         | Your ``apikey``                | null             | true           |
 +--------------------+--------------------------------+------------------+----------------+
 | ``org``            | The organization's             | null             | true           |
 |                    | ``id`` or ``slug`` you         |                  |                |
@@ -2701,7 +2702,7 @@ Params
 +--------------------+--------------------------------+------------------+----------------+
 | Parameter          |  Description                   |  Default         |  Required      |
 +====================+================================+==================+================+
-| ``apikey``         | Your apikey                    | null             | true           |
+| ``apikey``         | Your ``apikey``                | null             | true           |
 +--------------------+--------------------------------+------------------+----------------+
 | ``org``            | The organization's             | null             | true           |
 |                    | ``id`` or ``slug`` you         |                  |                |
@@ -2737,7 +2738,7 @@ Params
 +--------------------+--------------------------------+------------------+----------------+
 | Parameter          |  Description                   |  Default         |  Required      |
 +====================+================================+==================+================+
-| ``apikey``         | Your apikey                    | null             | true           |
+| ``apikey``         | Your ``apikey``                | null             | true           |
 +--------------------+--------------------------------+------------------+----------------+
 | ``org``            | The organization's             | null             | true           |
 |                    | ``id`` or ``slug`` you         |                  |                |
@@ -2772,7 +2773,7 @@ Params
 +--------------------+--------------------------------+------------------+----------------+
 | Parameter          |  Description                   |  Default         |  Required      |
 +====================+================================+==================+================+
-| ``apikey``         | Your apikey                    | null             | true           |
+| ``apikey``         | Your ``apikey``                | null             | true           |
 +--------------------+--------------------------------+------------------+----------------+
 | ``org``            | The organization's             | null             | true           |
 |                    | ``id`` or ``slug`` you         |                  |                |
