@@ -72,7 +72,7 @@ Exception KeyError: KeyError(4332017936,) in <module 'threading' from '/System/L
 - [x] Re-implement Settings API
 - [x] Re-implement Events API
     - [x] Implement Postgres-based search
-- [x] Re-implement Things API (aka Articles)
+- [ ] Re-implement Things API (aka Articles)
     - [x] Implement Postgres-based search
 - [x] Re-implement Tags API
 - [x] Write out SousChefs JSONSchema
@@ -91,7 +91,9 @@ Exception KeyError: KeyError(4332017936,) in <module 'threading' from '/System/L
 - [x] Implement SousChefs API 
 - [x] Implement Recipes API
 - [ ] Implement Thing Creation API
-- [ ] Implement Event Creation API
+- [ ] Implement SQL Query API
+- [ ] Implement Extraction API
+- [x] Implement Event Creation API
 - [ ] Implement Metrics API:
     - [x] Figure out how to use `tablefunc` for pivot tables. DO WE ACTUALLY NEED THIS?
     - [ ] Create metrics table which contains information

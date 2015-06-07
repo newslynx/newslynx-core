@@ -4,7 +4,7 @@
 NewsLynx API
 ============
 
-All of **NewsLynx**'s functionality is exposed through a `REST <http://en.wikipedia.org/wiki/Representational_state_transfer>`_ API.  
+All of **NewsLynx**'s functionality is exposed through a `RESTful <http://en.wikipedia.org/wiki/Representational_state_transfer>`_ API.  
 
 **Authentication**
 ------------------
@@ -22,7 +22,7 @@ All endpoints except for: :ref:`endpoints-user-login`, require an ``apikey`` pas
 Organizaitons
 +++++++++++++
 
-All endpoints unrelated to :ref:`endpoints-user` or :ref:`endpoints-orgs` require an ``org`` query-string parameter.  Since users can belong to multiple organizations, we use this parameter to ensure:
+All endpoints unrelated to :ref:`endpoints-orgs` require an ``org`` query-string parameter.  Since users can belong to multiple organizations, we use this parameter to ensure:
 
 1. That the requesting user is accessing resources related to his/her associated organization.
 2. That the requesting user has permission to access the requested resources.
