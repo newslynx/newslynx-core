@@ -15,7 +15,7 @@ class CacheResponse(object):
     A class that we return from a cache request.
     """
 
-    def __init__(self, key, value, last_modified, is_cached):
+    def __init__(self, key, value, last_modified):
         self.key = key
         self.value = value
         self.last_modified = last_modified
@@ -116,9 +116,6 @@ class Cache(object):
         # if it doesn't exist, proceed with work
         if not obj:
 
-            # not cached
-            is_cached = False
-
             obj = self.work(*args, **kw)
 
             # if the worker returns None, break out
@@ -134,8 +131,6 @@ class Cache(object):
             self.redis.set(lm_key, last_modified.isoformat(), ex=ttl)
 
         else:
-            # is cached
-            is_cached = True
 
             # if it does exist, deserialize it.
             obj = self.deserialize(obj)
@@ -143,7 +138,7 @@ class Cache(object):
             # get the cached last modified time
             last_modified = dates.parse_iso(self.redis.get(lm_key))
 
-        return CacheResponse(key, obj, last_modified, is_cached)
+        return CacheResponse(key, obj, last_modified)
 
 
 class URLCache(Cache):
