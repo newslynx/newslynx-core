@@ -1765,7 +1765,6 @@ Fetch a SousChef
 
 .. _endpoints-sous-chefs-update:
 
-
 **PUT** ``/sous-chefs/:sous-chef-id``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -2128,7 +2127,7 @@ Now run this command:
 
 The **Events** API enables the creation, querying, faceting, updating, and deleting of Events. Refer to the :ref:`Events docs <events>` for more details on what these are.
 
-.. _endpoints-events-json:
+.. _endpoint-events-json:
 
 Event JSON
 ~~~~~~~~~~~~~~~~~
@@ -4187,6 +4186,7 @@ The Events search endpoint will always return helpful pagination infromation. In
 It will also always return the ``total`` number of results for all pages.
 
 .. code-block:: javascript
+
     {
       "pagination": {
         "last": "http://localhost:5000/api/v1/events?org=1&apikey=key&page=5&provenance=recipe",
@@ -4291,7 +4291,8 @@ Now run this command:
 
 The **Events** API enables the creation, querying, faceting, updating, and deleting of Events. Refer to the :ref:`Events docs <events>` for more details on what these are.
 
-.. _endpoints-events-json:
+
+.. _endpoint-events-json:
 
 Event JSON
 ~~~~~~~~~~~~~~~~~
@@ -4460,6 +4461,7 @@ The Events search endpoint will always return helpful pagination infromation. In
 It will also always return the ``total`` number of results for all pages.
 
 .. code-block:: javascript
+
     {
       "pagination": {
         "last": "http://localhost:5000/api/v1/events?org=1&apikey=key&page=5&provenance=recipe",
@@ -4551,44 +4553,39 @@ Params
 Body
 *******
 
-A :ref:`endpoints-recipes-json` object, but the only required field is ``title``. You can also include the following special fields:
+A :ref:`endpoint-events-json` object, but the only required field is ``title``. You can also include the following special fields:
 
 * ``tag_ids`` - An array of tags to assign to this event.
 * ``content_item_ids`` - An array of content items to associate with this event.
 * ``links`` - An array of links you'd like to include when checking for matching Content Items
 
-Links
-++++++
+**Links**
 
 While you can explicity set ``content_item_ids`` and ``links``, this method will also parse out
 all urls from the Event's ``body``, ``title``, and ``description`` and attempt to reconcile these
 with your organization's Content Items. Through this process, all short_urls will be unshortened and links will be canonicalized according to NewsLynx's standards.  In practice this means that Recipes that create Events don't need to worry too much about extracting links as this process will be handled by this method.
 
-Source IDs
-++++++++++++
+**Source IDs**
 
 If you're creating an event that's associated with a ``recipe_id``, it's also imperative that you pass in a ``source_id``. We use this field to ensure that no duplicate events are created and also 
 to make sure that Events that have been previously ``deleted`` are not re-created by a recipe which polls a data source. If you include a ``recipe_id`` in the post of the body, the ``source_id`` you pass in will be prefixed by the slug of this Recipe to ensure that events created by recipes which generate similar source_ids do not conflict.
 
-Dates
-++++++++++++
+**Dates**
 
 If you wish to specify a ``created`` for an event, just pass it in as `ISO 8601`_ date string. If you include a UTC-Offset, it will be properly convered to UTC. Otherwise it will be assumed to be UTC. If you don't pass in a ``created`` field, it will be set as the time the Event was created.
 
-Provenance
-++++++++++++
+**Provenance**
 
 Events created by recipes (AKA: Events that pass a ``recipe_id`` to the method) will be assigned a ``provenacnce`` of ``recipe``. All other events are assumed to have been created manually and will be assigned a ``provenance`` of ``manual``
 
-Meta Fields
-++++++++++++
+**Meta Fields**
 
-All fields passed to this method that are not part of the :ref:`endpoints-events-json` object will be inserted into the ``meta`` field.
+All fields passed to this method that are not part of the :ref:`endpoint-events-json` object will be inserted into the ``meta`` field.
 
 Returns
 ********
 
-A newly-created :ref:`endpoints-events-json` object. If you specify ``must_link=true`` and there is no matching ContentItem in the request body, then this method will return ``null``.
+A newly-created :ref:`endpoint-events-json` object. If you specify ``must_link=true`` and there is no matching ContentItem in the request body, then this method will return ``null``.
 
 Examples
 ********
@@ -4668,7 +4665,7 @@ Params
 Returns
 ********
 
-An :ref:`endpoints-events-json` object with the ``body`` included.
+An :ref:`endpoint-events-json` object with the ``body`` included.
 
 Example
 ********
@@ -4703,7 +4700,7 @@ Params
 Returns
 ********
 
-An updated :ref:`endpoints-events-json` object.
+An updated :ref:`endpoint-events-json` object.
 
 Examples
 ********
@@ -4806,7 +4803,7 @@ Params
 Returns
 ********
 
-An updated :ref:`endpoints-events-json` object.
+An updated :ref:`endpoint-events-json` object.
 
 Example
 ********
@@ -4841,7 +4838,7 @@ Params
 Returns
 ********
 
-An updated :ref:`endpoints-events-json` object.
+An updated :ref:`endpoint-events-json` object.
 
 Example
 ********
@@ -4854,7 +4851,7 @@ Example
 .. _endpoints-events-add-content-item:
 
 **PUT** ``/events/:event_id/content/:content_item_id``
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Associate an Event with a Content Item.
 
@@ -4877,7 +4874,7 @@ Params
 Returns
 ********
 
-An updated :ref:`endpoints-events-json` object.
+An updated :ref:`endpoint-events-json` object.
 
 Example
 ********
@@ -4889,7 +4886,7 @@ Example
 .. _endpoints-events-remove-content-item:
 
 **DELETE** ``/events/:event_id/content/:content_item_id``
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Remove an associated Content Item from an Event.
 
@@ -4912,7 +4909,7 @@ Params
 Returns
 ********
 
-An updated :ref:`endpoints-events-json` object.
+An updated :ref:`endpoint-events-json` object.
 
 Example
 ********
