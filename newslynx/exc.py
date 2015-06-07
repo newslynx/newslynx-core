@@ -39,6 +39,10 @@ class NotFoundError(APIError):
     status_code = 404
 
 
+class ConflictError(APIError):
+    status_code = 409
+
+
 class UnprocessableEntityError(APIError):
     status_code = 422
 

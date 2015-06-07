@@ -4,17 +4,17 @@ from sqlalchemy import func
 from flask import Blueprint
 
 from newslynx.core import db
-from newslynx.exc import RequestError, NotFoundError
 from newslynx.models import Tag
 from newslynx.models.relations import events_tags, content_items_tags
 from newslynx.models.util import fetch_by_id_or_field
 from newslynx.lib.serialize import jsonify
 from newslynx.views.decorators import load_user, load_org
 from newslynx.models.util import get_table_columns
-from newslynx.lib import dates
 from newslynx.views.util import *
 from newslynx.constants import (
     IMPACT_TAG_CATEGORIES, IMPACT_TAG_LEVELS)
+from newslynx.exc import (
+    RequestError, NotFoundError, ConflictError)
 
 # blueprint
 bp = Blueprint('tags', __name__)
@@ -137,7 +137,7 @@ def create_tag(user, org):
     try:
         db.session.commit()
     except Exception as err:
-        raise RequestError(err.message)
+        raise ConflictError(err.message)
 
     return jsonify(tag)
 

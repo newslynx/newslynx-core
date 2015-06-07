@@ -32,7 +32,7 @@ class TestTagsAPI(unittest.TestCase):
     def test_update_tag(self):
         n = fake.name()
         t1 = self.api.tags.create(name=n, type='impact', color='#fc0', category='promotion', level='media')
-        t2 = self.api.tags.update(t1.id, color='#cf0')
+        t2 = self.api.tags.update(t1.id, color='#cf0', category='change', level='institution')
         assert t1.color != t2.color
 
     def test_delete_tag(self):
