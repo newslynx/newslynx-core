@@ -2376,7 +2376,7 @@ List recipes that only have certain tags and have *not* been created by certain 
 
 .. code-block:: bash
     
-    curl http://localhost:5000/api/v1/events\?org\=1\&apikey\=$NEWSLYNX_API_KEY\&recipes=-1&tag_ids=1,2,3
+    curl http://localhost:5000/api/v1/events\?org\=1\&apikey\=$NEWSLYNX_API_KEY\&recipes=-1\&tag_ids=1,2,3
 
 List recipes that link to certain ``content_items`` and include the Event body in the response:
 
