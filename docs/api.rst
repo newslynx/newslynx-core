@@ -2398,11 +2398,11 @@ Facet events by tag levels:
 
 Search Events and only return ``id`` and ``title``:
 
-**PROTIP**: Upping ``per_page`` parameter and limiting the ``fields`` returned when submitting a search query serves as an effected auto-complete endpoint. 
+**PROTIP**: when submitting a search query , upping the ``per_page`` limit, limiting the ``fields`` returned, and limiting the field to search on serves as an effective auto-complete endpoint. 
 
 .. code-block:: bash
     
-    curl http://localhost:5000/api/v1/events\?org\=1\&apikey\=$NEWSLYNX_API_KEY\&q=foobar&fields=id,title&per_page=100
+    curl http://localhost:5000/api/v1/events\?org\=1\&apikey\=$NEWSLYNX_API_KEY\&q=foobar&fields=id,title&per_page=100&search=title
 
 .. _endpoints-events-create:
 
