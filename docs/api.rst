@@ -4295,7 +4295,7 @@ The **Events** API enables the creation, querying, faceting, updating, and delet
 .. _endpoint-events-json:
 
 Event JSON
-~~~~~~~~~~~~~~~~~
+************
 
 All methods, unless otherwise specified, will return one or many Event objects of the following ``json`` schema:
 
