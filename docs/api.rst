@@ -2170,7 +2170,9 @@ Event JSON
 
 All methods, unless otherwise specified, will return one or many Event objects of the following ``json`` schema:
 
-**NOTE** : Event's with a ``status`` of deleted mean that these events have been manually deleted by a user or by a recipe. Such events are kept in the database for 7 days and can be restored at any point.  After 7 days these events are permanently deleted.
+**NOTE** 
+
+- Events with a ``status`` of ``deleted`` mean that these Cvents have been manually deleted by a user or by a recipe. Such events are kept in the database for 7 days and can be restored at any point.  After 7 days these events are permanently deleted.
 
 .. code-block:: javascript
 
