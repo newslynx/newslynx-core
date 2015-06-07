@@ -72,8 +72,10 @@ Exception KeyError: KeyError(4332017936,) in <module 'threading' from '/System/L
 - [x] Re-implement Settings API
 - [x] Re-implement Events API
     - [x] Implement Postgres-based search
+    - [ ] Make multiple search vectors
 - [ ] Re-implement Things API (aka Articles)
     - [x] Implement Postgres-based search
+    - [ ] Make multiple search vectors
 - [x] Re-implement Tags API
 - [x] Write out SousChefs JSONSchema
 - [x] Write out initial schemas:
@@ -207,6 +209,8 @@ Exception KeyError: KeyError(4332017936,) in <module 'threading' from '/System/L
 #### Rate Limiting in Flask.
 * [http://flask.pocoo.org/snippets/70/](http://flask.pocoo.org/snippets/70/)
 
+#### Postgres Search Configuration
+* [http://sqlalchemy-searchable.readthedocs.org/en/latest/configuration.html](http://sqlalchemy-searchable.readthedocs.org/en/latest/configuration.html)
 
 ## License
 
