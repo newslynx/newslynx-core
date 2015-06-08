@@ -54,8 +54,10 @@ URL_ATTRS = ['href', 'src']
 MAX_LEN = 150
 MIN_LEN = 11
 
-IMG_FILETYPES = frozenset(
-    ['png', 'jpg', 'jpeg', 'gif', 'bmp', 'webp', 'tiff', 'svg'])
+IMG_FILETYPES = frozenset([
+    'png', 'jpg', 'jpeg', 'gif',
+    'bmp', 'webp', 'tiff', 'svg', 'ico'
+])
 
 REDIRECT_QUERY_PARAMS = ['url', 'u']
 
