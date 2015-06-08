@@ -19,7 +19,6 @@ from flask.ext.migrate import Migrate
 from flask.ext.compress import Compress
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
-# from werkzeug.contrib.cache import RedisCache
 import redis
 from embedly import Embedly
 import bitly_api as bitly
@@ -77,19 +76,13 @@ rds = redis.from_url(settings.REDIS_URL)
 # migrations
 migrate = Migrate(app, db)
 
-# Caching Layer
-# cache = RedisCache()
-
-# Migration
-migrate = Migrate(app, db)
-
 # gzip compression
 Compress(app)
 
 # optional bitly api for shortening
 if settings.BITLY_ENABLED:
     bitly_api = bitly.Connection(
-        access_token=settings.BITLY_API_KEY)
+        access_token=settings.BITLY_ACCESS_TOKEN)
 
 # optional embedly api for shortening
 if settings.EMBEDLY_ENABLED:

@@ -528,7 +528,17 @@ class Content(BaseClient):
         return self._request('GET', url, params=kw)
 
 
-class Creators(BaseClient):
+class Extract(BaseClient):
+
+    def get(self, **kw):
+        """
+        Extract articles from urls.
+        """
+        url = self._format_url('content', content_id)
+        return self._request('GET', url, params=kw)
+
+
+class Authors(BaseClient):
     pass
 
 
@@ -561,4 +571,5 @@ class API(BaseClient):
         self.content = Content(**kw)
         self.metrics = Metrics(**kw)
         self.reports = Reports(**kw)
-        self.creators = Creators(**kw)
+        self.authors = Authors(**kw)
+        self.extract = Extract(**kw)

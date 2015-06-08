@@ -4,7 +4,7 @@ from newslynx.lib.serialize import jsonify
 from newslynx.models import ExtractCache
 from newslynx.views.util import arg_str, arg_bool
 from newslynx.views.decorators import load_user
-from newslynx.exc import RequestError
+from newslynx.exc import RequestError, InternalServerError
 
 # bp
 bp = Blueprint('extract', __name__)
@@ -27,6 +27,10 @@ def extract(user):
         extract_cache.debug = True
 
     cr = extract_cache.get(url, type)
+    if not cr:
+        extract_cache.invalidate(url, type)
+        raise InternalServerError('Something went wrong. Try again.')
+
     resp = {
         'cache': cr,
         'data': cr.value

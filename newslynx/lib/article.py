@@ -63,8 +63,8 @@ def extract(source_url):
     }
 
     # extract body from embedly + readability
-    if settings.EMBEDLY_ENABLED:
-        data['body'] = body_via_embedly(canonical_url)
+    # if settings.EMBEDLY_ENABLED:
+    #     data['body'] = body_via_embedly(canonical_url)
 
     if not data['body']:
         data['body'] = body_via_readability(page_html, canonical_url)
@@ -87,25 +87,8 @@ def extract(source_url):
             links.append(u)
 
     # split out internal / external links / article links
-    data['links'] = {
-        'external': [],
-        'internal': [],
-        'articles': []
-    }
-    for l in links:
-        link_domain = url.get_domain(l)
-        if domain in link_domain or link_domain in domain:
-            data['links']['internal'].append(l)
-        else:
-            data['links']['external'].append(l)
-        if url.is_article(l):
-            data['links']['articles'].append(l)
+    data['links'] = url.categorize_links(links, domain)
 
-    # add in short urls
-    if settings.BITLY_ENABLED:
-        short_data = url.shorten(canonical_url)
-        if short_data:
-            data.update(short_data)
     return data
 
 

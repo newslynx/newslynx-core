@@ -110,6 +110,8 @@ def get_html(url, config=None, response=None):
     to ISO-8859-1 if it doesn't find one. This results in incorrect character
     encoding in a lot of cases.
     """
+    session = requests.Session()
+
     FAIL_ENCODING = 'ISO-8859-1'
     useragent = settings.BROWSER_USER_AGENT
     timeout = settings.BROWSER_TIMEOUT
@@ -120,7 +122,7 @@ def get_html(url, config=None, response=None):
         return response.content
 
     html = None
-    response = requests.get(
+    response = session.get(
         url=url, **get_request_kwargs(timeout, useragent))
     if response.encoding != FAIL_ENCODING:
         html = response.text

@@ -9,4 +9,4 @@ from .tag import Tag
 from .content_item import ContentItem
 from .user import User
 from .sous_chef import SousChef, validate_sous_chef
-from .cache import URLCache, ExtractCache
+from .redis_cache import URLCache, ExtractCache

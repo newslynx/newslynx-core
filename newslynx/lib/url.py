@@ -8,7 +8,6 @@ import time
 from urlparse import (
     urlparse, urljoin, urlsplit, urlunsplit, parse_qs
 )
-import logging
 
 import requests
 import tldextract
@@ -35,7 +34,8 @@ GOOD_PATHS = [
 BAD_CHUNKS = [
     'careers', 'contact', 'about', 'faq', 'terms', 'privacy',
     'advert', 'preferences', 'feedback', 'info', 'browse', 'howto',
-    'account', 'subscribe', 'donate', 'shop', 'admin'
+    'account', 'subscribe', 'donate', 'shop', 'admin', 'author', 'topic',
+    'comments'
 ]
 
 BAD_DOMAINS = [
@@ -43,9 +43,21 @@ BAD_DOMAINS = [
     'facebook', 'pinterest', 'google',
 ]
 
+VIDEO_DOMAINS = [
+    'youtube', 'vimeo', 'dailymotion', 'kewego', 'brightcove'
+]
+
 URL_TAGS = ['a', 'embed', 'video', 'iframe']
 
 URL_ATTRS = ['href', 'src']
+
+MAX_LEN = 150
+MIN_LEN = 11
+
+IMG_FILETYPES = frozenset(
+    ['png', 'jpg', 'jpeg', 'gif', 'bmp', 'webp', 'tiff', 'svg'])
+
+REDIRECT_QUERY_PARAMS = ['url', 'u']
 
 
 def prepare(url, source=None, canonicalize=True, keep_params=('id', 'p', 'v')):
@@ -109,7 +121,6 @@ def unshorten(orig_url, **kw):
     """
 
     # set vars
-    pattern = kw.get('pattern', None)
     max_attempts = kw.get('max_attempts', 3)
     interval = kw.get('interval', 0.5)
     factor = kw.get('factor', 2)
@@ -382,8 +393,41 @@ def is_article(url, pattern=None):
 
     return False
 
-# SHORT DOMAINS #
 
+def is_video(url):
+    """
+    A really stupid test for whether a url is a video.
+    """
+    domain = get_domain(url)
+    if not domain:
+        return False
+    for video_domain in VIDEO_DOMAINS:
+        if video_domain in domain:
+            return True
+    return False
+
+
+def is_internal(url, source_domain):
+    """
+    determine interal vs. external urls.
+    """
+    link_domain = get_domain(url)
+    if source_domain in link_domain or link_domain in source_domain:
+        return True
+    return False
+
+
+def is_image(url):
+    """
+    determine if a url is an image.
+    """
+    ext = get_filetype(url)
+    if not ext:
+        return False
+    return ext in IMG_FILETYPES
+
+
+# SHORT DOMAINS #
 
 def is_shortened(url, pattern=None):
     """
@@ -416,10 +460,14 @@ def is_abs(url):
     return bool(get_domain(url))
 
 
-def from_string(string, dedupe=True, source=None):
+def from_string(string, **kw):
     """
     get urls from input string
     """
+
+    dedupe = kw.get('dedupe', True)
+    source = kw.get('source', None)
+    exclude_images = kw.get('excl_img', True)
 
     if not string:
         return []
@@ -434,7 +482,7 @@ def from_string(string, dedupe=True, source=None):
                 url = urljoin(source, url)
             urls.append(url)
     else:
-        urls = raw_urls
+        urls = [u for u in raw_urls if is_valid(u)]
 
     # make sure short url regex doesn't create partial dupes.
     for u in short_urls:
@@ -444,16 +492,27 @@ def from_string(string, dedupe=True, source=None):
     # combine
     urls += short_urls
 
+    # remove images.
+    if exclude_images:
+        urls = [u for u in urls if not is_image(u)]
+
+    # remove invalid urls
+    urls = [u for u in urls if is_valid(u)]
+
     if dedupe:
         return list(set(urls))
     return urls
 
 
-def from_html(htmlstring, source=None, dedupe=True):
+def from_html(htmlstring, **kw):
     """
     Extract urls from htmlstring, optionally reconciling
     relative urls + embeds + redirects.
     """
+    dedupe = kw.get('dedupe', True)
+    source = kw.get('source', None)
+    exclude_images = kw.get('excl_img', True)
+
     if not htmlstring:
         return []
     final_urls = []
@@ -470,7 +529,12 @@ def from_html(htmlstring, source=None, dedupe=True):
                         url = redirect_back(url, source_domain)
                         if not is_abs(url):
                             url = urljoin(source, url)
-                    final_urls.append(url)
+                    if is_valid(url):
+                        if exclude_images:
+                            if not is_image(url):
+                                final_urls.append(url)
+                        else:
+                            final_urls.append(url)
     if dedupe:
         return list(set(final_urls))
     else:
@@ -522,9 +586,9 @@ def redirect_back(url, source_domain=None):
         return url
 
     query_item = parse_qs(query)
-    if query_item.get('url'):
-        return query_item['url'][0]
-
+    for k in REDIRECT_QUERY_PARAMS:
+        if query_item.get(k):
+            return query_item[k][0]
     return url
 
 
@@ -559,11 +623,11 @@ def reconcile_embed(url):
     return url
 
 
-def _is_valid(url):
+def is_valid(url):
     """
     method just for checking weird results from `_get_location` in `_unshorten`
     """
-    return len(url) > 11 and 'localhost' not in url
+    return MIN_LEN < len(url) < MAX_LEN and 'localhost' not in url
 
 
 @network.retry(attempts=2)
@@ -619,7 +683,7 @@ def _unshorten(url, pattern=None):
     # method 1, get location
     url = get_location(url)
 
-    if not _is_valid(url):
+    if not is_valid(url):
         return orig_url
 
     # check if there's a bitly warning.
@@ -630,5 +694,47 @@ def _unshorten(url, pattern=None):
 
     return url
 
-if __name__ == '__main__':
-    print unshorten('bit.ly/aaaaaa')
+
+def categorize_links(links, source_domain):
+    """
+    Take in a list of links and categorize them into
+    internal / external / articles / videos
+    """
+    data = {
+        'external': [],
+        'internal': [],
+        'articles': {
+            'external': [],
+            'internal': [],
+        },
+        'videos': [],
+        'shortened': []
+    }
+
+    for l in links:
+
+        # check it it's internal / external
+        internal = is_internal(l, source_domain)
+
+        # is it shortened
+        if is_shortened(l):
+            data['shortened'].append(l)
+
+        # is it an article
+        elif is_article(l):
+            if internal:
+                data['articles']['internal'].append(l)
+            else:
+                data['articles']['external'].append(l)
+
+        # is it a video
+        elif is_video(l):
+            data['videos'].append(l)
+
+        # fallback on internal / external.
+        elif internal:
+            data['internal'].append(l)
+        else:
+            data['external'].append(l)
+
+    return data

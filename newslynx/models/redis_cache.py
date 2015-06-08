@@ -15,20 +15,24 @@ class CacheResponse(object):
     A class that we return from a cache request.
     """
 
-    def __init__(self, key, value, last_modified):
+    def __init__(self, key, value, last_modified, is_cached):
         self.key = key
         self.value = value
         self.last_modified = last_modified
+        self.is_cached = is_cached
 
     @property
-    def cache_age(self):
-        return (dates.now() - self.last_modified).seconds
+    def age(self):
+        if self.is_cached:
+            return (dates.now() - self.last_modified).seconds
+        return 0
 
     def to_dict(self):
         return {
             'key': self.key,
             'last_modified': self.last_modified,
-            'age': self.cache_age
+            'age': self.age,
+            'is_cached': self.is_cached
         }
 
 
@@ -73,11 +77,11 @@ class Cache(object):
             if k.startswith(cls.key_prefix):
                 cls.redis.delete(k)
 
-    def invalidate(self, key):
+    def invalidate(self, *args, **kw):
         """
         Remove a key from the cache.
         """
-        self.redis.delete(key)
+        self.redis.delete(self._format_key(*args, **kw))
 
     def _format_key(self, *args, **kw):
         """
@@ -85,7 +89,7 @@ class Cache(object):
         """
         hash_keys = []
 
-        for a in args:
+        for a in sorted(args):
             hash_keys.append(str(a))
         for v in sorted(kw.values()):
             hash_keys.append(str(v))
@@ -97,7 +101,6 @@ class Cache(object):
         """
         The main get/cache function.
         """
-
         # get a custom ttl, fallback on default
         ttl = kw.pop('ttl', self.ttl)
 
@@ -116,6 +119,9 @@ class Cache(object):
         # if it doesn't exist, proceed with work
         if not obj:
 
+            # not cached
+            is_cached = False
+
             obj = self.work(*args, **kw)
 
             # if the worker returns None, break out
@@ -131,6 +137,8 @@ class Cache(object):
             self.redis.set(lm_key, last_modified.isoformat(), ex=ttl)
 
         else:
+            # is cached
+            is_cached = True
 
             # if it does exist, deserialize it.
             obj = self.deserialize(obj)
@@ -138,7 +146,7 @@ class Cache(object):
             # get the cached last modified time
             last_modified = dates.parse_iso(self.redis.get(lm_key))
 
-        return CacheResponse(key, obj, last_modified)
+        return CacheResponse(key, obj, last_modified, is_cached)
 
 
 class URLCache(Cache):
