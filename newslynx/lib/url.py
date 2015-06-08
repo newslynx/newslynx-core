@@ -1,4 +1,6 @@
 """
+All things related to url parsing.
+
 Most of the code here was modified from newspaper's module for cleaning urls.
 From: https://github.com/codelucas/newspaper/blob/master/newspaper/urls.py
 """

@@ -1,3 +1,7 @@
+"""
+All things related to text formatting.
+"""
+
 from unidecode import unidecode
 
 from newslynx.lib.regex import re_whitespace

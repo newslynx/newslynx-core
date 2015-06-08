@@ -1,6 +1,8 @@
 """
 Multi-Method Article Extraction
 """
+
+
 import logging
 
 from readability.readability import Document

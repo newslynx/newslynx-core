@@ -1,6 +1,7 @@
 """
 All things related to metadata parsing
 """
+
 from urlparse import urlparse
 from urlparse import urljoin
 

@@ -1,3 +1,7 @@
+"""
+All things related to stats / numbers.
+"""
+
 
 def parse_number(n):
     """

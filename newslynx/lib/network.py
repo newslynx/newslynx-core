@@ -1,6 +1,7 @@
 """
-All things related to requests
+All things related to network requests
 """
+
 from functools import wraps
 import logging
 import time
@@ -8,8 +9,12 @@ import time
 import requests
 
 from newslynx import settings
+from newslynx.lib.serialize import json_to_obj
+
 
 log = logging.getLogger(__name__)
+
+FAIL_ENCODING = 'ISO-8859-1'
 
 
 def retry(*dargs, **dkwargs):
@@ -27,6 +32,7 @@ def retry(*dargs, **dkwargs):
     backoff = dkwargs.get('backoff', settings.BROWSER_BACKOFF)
     verbose = dkwargs.get('verbose', True)
     raise_uncaught_errors = dkwargs.get('raise_uncaught_errors', False)
+    null_value = dkwargs.get('null_value', None)
 
     # wrapper
     def wrapper(f):
@@ -35,7 +41,7 @@ def retry(*dargs, **dkwargs):
         def wrapped_func(*args, **kw):
 
             # defaults
-            r = None
+            r = null_value
             tries = 0
             err = True
 
@@ -90,19 +96,19 @@ def retry(*dargs, **dkwargs):
     return wrapper
 
 
-def get_request_kwargs(timeout, useragent):
+def get_request_kwargs(timeout=None, useragent=None):
     """This Wrapper method exists b/c some values in req_kwargs dict
     are methods which need to be called every time we make a request
     """
     return {
-        'headers': {'User-Agent': useragent},
-        'timeout': timeout,
+        'headers': {'User-Agent': useragent or settings.BROWSER_USER_AGENT},
+        'timeout': timeout or settings.BROWSER_TIMEOUT,
         'allow_redirects': True
     }
 
 
 @retry(attempts=2)
-def get_html(url, config=None, response=None):
+def get_html(_u, **params):
     """Retrieves the html for either a url or a response object. All html
     extractions MUST come from this method due to some intricies in the
     requests module. To get the encoding, requests only uses the HTTP header
@@ -116,14 +122,9 @@ def get_html(url, config=None, response=None):
     useragent = settings.BROWSER_USER_AGENT
     timeout = settings.BROWSER_TIMEOUT
 
-    if response is not None:
-        if response.encoding != FAIL_ENCODING:
-            return response.text
-        return response.content
-
     html = None
     response = session.get(
-        url=url, **get_request_kwargs(timeout, useragent))
+        url=_u, params=params, **get_request_kwargs(timeout, useragent))
     if response.encoding != FAIL_ENCODING:
         html = response.text
     else:
@@ -131,3 +132,23 @@ def get_html(url, config=None, response=None):
     if html is None:
         html = ''
     return html
+
+
+@retry(attempts=2)
+def get_json(_u, **params):
+    """
+    Fetches json from a url.
+    """
+    session = requests.Session()
+    response = session.get(url=_u, params=params, **get_request_kwargs())
+    obj = None
+    if response.encoding != FAIL_ENCODING:
+        content = response.text
+    else:
+        content = response.content
+    try:
+        obj = json_to_obj(content)
+    except Exception as e:
+        log.warning('Unable to parse json from {}. Messsage: {}'.format(url, e.message))
+        return obj
+    return obj

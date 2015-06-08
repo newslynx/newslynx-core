@@ -89,7 +89,7 @@ def ingest_event(
             setattr(e, k, v)
         e.updated = dates.now()
 
-    # extract urls asynchronously.
+    # extract urls and normalize urls asynchronously.
     urls = ingest_util.extract_urls(
         o,
         url_fields,

@@ -2,6 +2,7 @@
 Parsing Authors from html meta-tags and strings
 This module was adapted from newspaper: http://github.com/codelucas/newspaper
 """
+
 from bs4 import BeautifulSoup
 
 from newslynx.lib import html
