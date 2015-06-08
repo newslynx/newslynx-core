@@ -65,8 +65,8 @@ def extract(source_url):
     }
 
     # extract body from embedly + readability
-    # if settings.EMBEDLY_ENABLED:
-    #     data['body'] = body_via_embedly(canonical_url)
+    if settings.EMBEDLY_ENABLED:
+        data['body'] = body_via_embedly(canonical_url)
 
     if not data['body']:
         data['body'] = body_via_readability(page_html, canonical_url)

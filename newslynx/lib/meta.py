@@ -50,6 +50,10 @@ IMG_TAGS = [
     {'tag': 'meta', 'attr': 'property', 'val': 'twitter:image', 'data': 'content'},
     {'tag': 'meta', 'attr': 'property', 'val': 'twitter:image:src', 'data': 'content'},
     {'tag': 'meta', 'attr': 'itemprop', 'val': 'image', 'data': 'content'},
+    {'tag': 'meta', 'attr': 'name', 'val': 'og:image', 'data': 'content'},
+    {'tag': 'meta', 'attr': 'name', 'val': 'twitter:image', 'data': 'content'},
+    {'tag': 'meta', 'attr': 'name', 'val': 'twitter:image:src', 'data': 'content'},
+    {'tag': 'meta', 'attr': 'name', 'val': 'image', 'data': 'content'},
 ]
 
 FAVICON_TAGS = [
@@ -195,7 +199,8 @@ def favicon(soup, source_url=None):
     for tag in FAVICON_TAGS:
         data = _extract_tag_data(soup, tag)
         if data:
-            return data
+            if not data.startswith('/'):
+                return data
 
     # fallback on usual location.
     if source_url:

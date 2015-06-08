@@ -652,7 +652,7 @@ def is_valid(url):
     """
     method just for checking weird results from `_get_location` in `_unshorten`
     """
-    return MIN_LEN < len(url) < MAX_LEN and 'localhost' not in url
+    return MIN_LEN < len(url) < MAX_LEN and 'localhost' not in url and 'mailto:' not in url
 
 
 def categorize_links(links, source_domain):
