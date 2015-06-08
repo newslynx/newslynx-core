@@ -4,6 +4,7 @@ All utilities related to dates, times, and timezones.
 
 
 from datetime import datetime, time
+from copy import copy
 
 from dateutil import parser
 import pytz
@@ -21,6 +22,55 @@ def now(ts=False):
     if ts:
         return int(dt.strftime('%s'))
     return dt
+
+
+def floor(dt, unit='hour', value=1, tz=pytz.utc):
+    """
+    Floor a datetime object. Defaults to using `now`
+    """
+
+    if unit not in ['month', 'hour', 'day', 'month']:
+        raise ValueError('"unit" must be month, day, hour, or minute')
+
+    second = 0
+    minute = copy(dt.minute)
+    hour = copy(dt.hour)
+    month = copy(dt.month)
+    day = copy(dt.month)
+    year = copy(dt.year)
+
+    if unit == 'minute':
+        minute = dt.minute - (dt.minute % value)
+
+    if unit == 'hour':
+        minute = 0
+        hour = dt.hour - (dt.hour % value)
+
+    if unit == 'day':
+        minute = 0
+        hour = 0
+
+    if unit == 'month':
+        minute = 0
+        hour = 0
+        day = 0
+
+    return datetime(
+        year=year,
+        month=month,
+        day=day,
+        hour=hour,
+        minute=minute,
+        second=second,
+        tzinfo=tz
+    )
+
+
+def floor_now(**kw):
+    """
+    Same as above but with dt set to now()
+    """
+    return floor(now(), **kw)
 
 
 def parse_iso(ds):

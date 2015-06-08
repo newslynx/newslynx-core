@@ -46,7 +46,7 @@ BAD_DOMAINS = [
 ]
 
 VIDEO_DOMAINS = [
-    'youtube', 'vimeo', 'dailymotion', 'kewego', 'brightcove'
+    'youtube', 'vimeo', 'dailymotion', 'kewego'
 ]
 
 URL_TAGS = ['a', 'embed', 'video', 'iframe']
@@ -271,6 +271,8 @@ def get_filetype(url, **kw):
     if path.endswith('/'):
         path = path[:-1]
     path_chunks = [x for x in path.split('/') if len(x) > 0]
+    if not len(path_chunks):
+        return None
     last_chunk = path_chunks[-1].split('.')  # last chunk == file usually
     file_type = last_chunk[-1] if len(last_chunk) >= 2 else None
     return file_type or None
@@ -602,6 +604,19 @@ def redirect_back(url, source_domain=None):
     return url
 
 
+def get_query_param(url, param):
+    """
+    Get the value of a query parameter
+    from a url.
+    """
+    p = urlparse(url)
+    query_items = parse_qs(p.query)
+    v = query_items.get(param)
+    if not v or not len(v):
+        return None
+    return v[0]
+
+
 def add_query_params(url, **kw):
     """
     Add/update query strings to a url.
@@ -638,71 +653,6 @@ def is_valid(url):
     method just for checking weird results from `_get_location` in `_unshorten`
     """
     return MIN_LEN < len(url) < MAX_LEN and 'localhost' not in url
-
-
-@network.retry(attempts=2)
-def get_location(url):
-    """
-    most efficient method for unshortening a url.
-    """
-    r = requests.head(url)
-    if r.status_code / 100 == 3 and 'Location' in r.headers:
-        return r.headers['Location']
-    return url
-
-
-def _long_url(url):
-    """
-    hit long url's api to unshorten a url
-    """
-
-    r = requests.get(
-        'http://api.longurl.org/v2/expand',
-        params={
-            'url':  url,
-            'format': 'json'
-        }
-    )
-
-    if r.status_code == 200:
-        return r.json().get('long-url', url)
-
-    # DONT FAIL
-    return url
-
-
-def _bypass_bitly_warning(url):
-    """
-    Sometime bitly blocks unshorten attempts, this bypasses that.
-    """
-    html_string = network.get_html(url)
-    soup = BeautifulSoup(html_string)
-    a = soup.find('a', {'id': 'clickthrough'})
-    if a:
-        return a.attrs.get('href')
-    return url
-
-
-@network.retry(attempts=2)
-def _unshorten(url, pattern=None):
-    """
-    dual-method approach to unshortening a url
-    """
-    orig_url = copy.copy(url)
-
-    # method 1, get location
-    url = get_location(url)
-
-    if not is_valid(url):
-        return orig_url
-
-    # check if there's a bitly warning.
-    if re_bitly_warning.search(url):
-        url = _bypass_bitly_warning(url)
-        if not is_shortened(url, pattern=pattern):
-            return url
-
-    return url
 
 
 def categorize_links(links, source_domain):
@@ -748,3 +698,57 @@ def categorize_links(links, source_domain):
             data['external'].append(l)
 
     return data
+
+
+# def _long_url(url):
+#     """
+#     hit long url's api to unshorten a url
+#     """
+
+#     r = requests.get(
+#         'http://api.longurl.org/v2/expand',
+#         params={
+#             'url':  url,
+#             'format': 'json'
+#         }
+#     )
+
+#     if r.status_code == 200:
+#         return r.json().get('long-url', url)
+
+#     # DONT FAIL
+#     return url
+
+
+def _bypass_bitly_warning(url):
+    """
+    Sometime bitly blocks unshorten attempts, this bypasses that.
+    """
+    html_string = network.get_html(url)
+    soup = BeautifulSoup(html_string)
+    a = soup.find('a', {'id': 'clickthrough'})
+    if a:
+        return a.attrs.get('href')
+    return url
+
+
+@network.retry(attempts=2)
+def _unshorten(url, pattern=None):
+    """
+    dual-method approach to unshortening a url
+    """
+    orig_url = copy.copy(url)
+
+    # method 1, get location
+    url = network.get_location(url)
+
+    if not is_valid(url):
+        return orig_url
+
+    # check if there's a bitly warning.
+    if re_bitly_warning.search(url):
+        url = _bypass_bitly_warning(url)
+        if not is_shortened(url, pattern=pattern):
+            return url
+
+    return url

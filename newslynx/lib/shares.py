@@ -229,20 +229,20 @@ class ShareCounts(object):
         self.googleplus = GooglePlus().count
 
 
-def count(url, sources=DEFAULT_SOURCES):
+def count(url, sources='all'):
     """
     Count shares for multiple sources.
     """
     # init class
     sc = ShareCounts()
 
-    # get all
-    if sources == 'all':
-        sources = copy(ALL_SOURCES)
-
     # listify
-    elif not isinstance(sources, list):
+    if not isinstance(sources, list):
         sources = [sources]
+
+    # get all
+    if 'all' in sources:
+        sources = copy(ALL_SOURCES)
 
     # if both facebook and facebookfql are included
     # only use facebookfql

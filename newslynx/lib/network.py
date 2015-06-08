@@ -135,6 +135,17 @@ def get_html(_u, **params):
 
 
 @retry(attempts=2)
+def get_location(url):
+    """
+    most efficient method for unshortening a url.
+    """
+    r = requests.head(url)
+    if r.status_code / 100 == 3 and 'Location' in r.headers:
+        return r.headers['Location']
+    return url
+
+
+@retry(attempts=2)
 def get_json(_u, **params):
     """
     Fetches json from a url.
