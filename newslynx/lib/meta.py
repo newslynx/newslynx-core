@@ -121,9 +121,8 @@ def site_name(soup, source_url=None):
         if data:
             # handle twitter site which is actually
             # twitter username.
-            if data.startswith('@'):
-                return data[1:].title()
-            return data
+            if not data.startswith('@'):
+                return data
 
     # fallback to extracting and title casing simplified domain
     if source_url:

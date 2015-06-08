@@ -11,7 +11,6 @@ from urlparse import (
     urlparse, urljoin, urlsplit, urlunsplit, parse_qs
 )
 
-import requests
 import tldextract
 from bs4 import BeautifulSoup
 

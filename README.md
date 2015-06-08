@@ -1,9 +1,9 @@
 # newslynx
 
-V2 of NewsLynx's API and data collection modules.  This is still a WIP and we should be officially open-sourcing the codebase in late June/July 2015. Partially-completed docs are [here](http://newslynx.readthedocs.org/en/latest/).
+*This is still a WIP and we should be officially open-sourcing the codebase in late June/July 2015. Partially-completed docs are [here](http://newslynx.readthedocs.org/en/latest/).*
 
 For now, please read [the report](http://towcenter.org/research/the-newslynx-impact-tracker-produced-these-key-ideas/) we published for the [TowCenter](http://towcenter.org) on our prototype.
-
+ 
 
 ## (Re)Setting up the dev environment
 

@@ -1,5 +1,5 @@
 from flask import Blueprint
-from jinja2 import Template 
+from jinja2 import Template
 
 from newslynx.lib.serialize import jsonify
 from newslynx.lib import dates
@@ -20,6 +20,7 @@ extract_cache = ExtractCache()
 # This may be a #wontfix since we only need this page.
 templ_file = here(__file__, 'templates/urls_extract.html')
 EXTRACT_TMPL = Template(open(templ_file).read())
+
 
 @bp.route('/api/v1/urls/extract', methods=['GET'])
 @load_user
