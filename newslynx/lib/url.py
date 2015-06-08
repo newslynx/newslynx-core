@@ -522,19 +522,25 @@ def from_html(htmlstring, **kw):
         source_domain = get_domain(source)
     soup = BeautifulSoup(htmlstring)
     for tag in URL_TAGS:
+
         for el in soup.find_all(tag):
+
             for attr in URL_ATTRS:
                 href = el.attrs.get(attr, None)
+
                 if href:
                     url = reconcile_embed(href)
+
                     if source:
                         url = redirect_back(url, source_domain)
                         if not is_abs(url):
                             url = urljoin(source, url)
+
                     if is_valid(url):
                         if exclude_images:
                             if not is_image(url):
                                 final_urls.append(url)
+
                         else:
                             final_urls.append(url)
     if dedupe:

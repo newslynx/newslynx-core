@@ -28,6 +28,7 @@ ERRORS = {
     "ClientError": ClientError
 }
 
+
 class BaseClient(object):
 
     """
