@@ -14,13 +14,13 @@ AND => must match both searchstrings
 OR => can match either term
 | => can match either term
 
-TK: chained search strings can be grouped with parentheses and subsequently chained, IE:
+TODO: chained search strings can be grouped with parentheses and subsequently chained, IE:
 
 (~term OR /.*term.*/) AND (/.*term.*/ AND "term1 term2")
 
 you cannot use punctuation in terms.
-
 """
+
 import re
 import string
 

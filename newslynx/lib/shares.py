@@ -5,6 +5,7 @@ NOTE: All urls should be canonicalized before using these methods.
 
 This code was adapted from: https://github.com/debrouwere/social-shares
 """
+
 from gevent.monkey import patch_all
 patch_all()
 from gevent.pool import Pool
@@ -202,14 +203,6 @@ class GooglePlus(ShareCount):
         return {
             'googleplus_shares': cnt
         }
-
-
-def parse(response):
-    if response.status_code != 200:
-        raise IOError()
-
-    data = response.json()
-    return int(data['result']['metadata']['globalCounts']['count'])
 
 
 class ShareCounts(object):
