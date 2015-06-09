@@ -30,7 +30,19 @@ if settings.TWT_ENABLED:
 
 
 # TWITTER OAUTH ENDPOINTS #
-@bp.route('/api/v1/auth/twitter', methods=['GET'])
+@bp.route('/api/v1/auths/twitter', methods=['GET'])
+@load_user
+@load_org
+def get_ga_auth(user, org):
+    token = Auth.query\
+        .filter_by(org_id=org.id, name='twitter')\
+        .first()
+    obj_or_404(token,
+               'You have not authenticated yet with twitter.')
+    return jsonify(token)
+
+
+@bp.route('/api/v1/auths/twitter/grant', methods=['GET'])
 @load_user
 @load_org
 def twt_auth(user, org):
@@ -63,7 +75,7 @@ def twt_auth(user, org):
     return redirect(auth_url)
 
 
-@bp.route('/api/v1/auth/twitter/callback')
+@bp.route('/api/v1/auths/twitter/callback')
 def twt_callback():
 
     # get redirect uri
@@ -131,7 +143,7 @@ def twt_callback():
     return jsonify(twt_token)
 
 
-@bp.route('/api/v1/auth/twitter/revoke', methods=['GET', 'DELETE'])
+@bp.route('/api/v1/auths/twitter/revoke', methods=['GET'])
 @load_user
 @load_org
 def twt_revoke(user, org):

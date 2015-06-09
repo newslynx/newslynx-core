@@ -48,7 +48,20 @@ def fb_extend_oauth_token(temp_access_token):
     return token
 
 
-@bp.route('/api/v1/auth/facebook', methods=['GET'])
+# GOOGLE ANALYTICS OAUTH ENDPOINTS #
+@bp.route('/api/v1/auths/facebook', methods=['GET'])
+@load_user
+@load_org
+def get_ga_auth(user, org):
+    token = Auth.query\
+        .filter_by(org_id=org.id, name='facebook')\
+        .first()
+    obj_or_404(token,
+               'You have not authenticated yet with facebook.')
+    return jsonify(token)
+
+
+@bp.route('/api/v1/auths/facebook/grant', methods=['GET'])
 @load_user
 @load_org
 def fb_auth(user, org):
@@ -71,7 +84,7 @@ def fb_auth(user, org):
     return redirect(fb_oauth.get_authorize_url(**params))
 
 
-@bp.route('/api/v1/auth/facebook/callback')
+@bp.route('/api/v1/auths/facebook/callback')
 def fb_callback():
 
     org_id = session.pop('org_id')
@@ -119,7 +132,7 @@ def fb_callback():
     return jsonify(facebook_settings)
 
 
-@bp.route('/api/v1/auth/facebook/revoke', methods=['GET', 'DELETE'])
+@bp.route('/api/v1/auths/facebook/revoke', methods=['GET'])
 @load_user
 @load_org
 def fb_revoke(user, org):

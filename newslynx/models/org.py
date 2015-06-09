@@ -73,8 +73,8 @@ class Org(db.Model):
         # parse kwargs
         incl_users = kw.get('incl_users', True)
         incl_settings = kw.get('incl_settings', True)
-        incl_auths = kw.get('incl_auths', True)
         incl_tags = kw.get('incl_tags', False)
+        incl_auths = kw.get('incl_auths', True)
         settings_as_dict = kw.get('settings_dict', True)
 
         d = {

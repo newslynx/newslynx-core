@@ -2,6 +2,8 @@ from urlparse import urljoin
 
 # TODO: remove reliance on this library for oauth
 import googleanalytics
+from urllib2 import HTTPError
+
 from googleanalytics.auth import Credentials
 from jinja2 import Template
 from flask import (
@@ -34,7 +36,7 @@ if settings.GA_ENABLED:
         settings.GOOGLE_ANALYTICS_CLIENT_SECRET,
         redirect_uri=urljoin(
             settings.API_URL,
-            '/api/v1/auth/google-analytics/callback'))
+            '/api/v1/auths/google-analytics/callback'))
 
 
 # oauth utilities #
@@ -67,7 +69,19 @@ def ga_properties(tokens):
 
 
 # GOOGLE ANALYTICS OAUTH ENDPOINTS #
-@bp.route('/api/v1/auth/google-analytics', methods=['GET'])
+@bp.route('/api/v1/auths/google-analytics', methods=['GET'])
+@load_user
+@load_org
+def get_ga_auth(user, org):
+    token = Auth.query\
+        .filter_by(org_id=org.id, name='google-analytics')\
+        .first()
+    obj_or_404(token,
+               'You have not authenticated yet with Google Analytics.')
+    return jsonify(token)
+
+
+@bp.route('/api/v1/auths/google-analytics/grant', methods=['GET'])
 @load_user
 @load_org
 def ga_auth(user, org):
@@ -94,7 +108,7 @@ def ga_auth(user, org):
 
 
 # callback
-@bp.route('/api/v1/auth/google-analytics/callback')
+@bp.route('/api/v1/auths/google-analytics/callback')
 def ga_callback():
 
     # get session vars
@@ -138,7 +152,10 @@ def ga_callback():
         tokens.pop('properties', None)
 
     # get properties
-    properties = ga_properties(tokens)
+    try:
+        properties = ga_properties(tokens)
+    except HTTPError as e:
+        raise RequestError(e.message)
 
     # now we can pop the client id + secret.
     tokens.pop('client_secret')
@@ -158,7 +175,7 @@ def ga_callback():
         postback_url=postback_url)
 
 
-@bp.route('/api/v1/auth/google-analytics/properties', methods=['POST'])
+@bp.route('/api/v1/auths/google-analytics/properties', methods=['POST'])
 @load_user
 @load_org
 def ga_save_properties(user, org):
@@ -201,10 +218,10 @@ def ga_save_properties(user, org):
         uri = url.add_query_params(redirect_uri, auth_success='true')
         redirect(uri)
 
-    return jsonify(tokens)
+    return jsonify(ga_token)
 
 
-@bp.route('/api/v1/auth/google-analytics/revoke', methods=['GET', 'DELETE'])
+@bp.route('/api/v1/auths/google-analytics/revoke', methods=['GET'])
 @load_user
 @load_org
 def ga_revoke(user, org):

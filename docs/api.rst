@@ -983,9 +983,59 @@ All methods (unless otherwise specified) return the following ``json`` object:
       name: "twitter"
     }
 
-.. _endpoints-auth-google-analytics:
+.. _endpoints-auth-list:
 
-**GET** ``/auth/google-analytics``
+**GET** ``/auths``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Fetches a list of an organization's authorizations.
+
+Params
+********
+
++--------------------+--------------------------------+------------------+----------------+
+| Parameter          |  Description                   |  Default         |  Required      |
++====================+================================+==================+================+
+| ``apikey``         | Your ``apikey``                | null             | true           |
++--------------------+--------------------------------+------------------+----------------+
+| ``org``            | The organization's             | null             | true           |
+|                    | ``id`` or ``slug`` you         |                  |                |
+|                    | wish to access.                |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+
+Returns
+********
+
+A list of :ref:`endpoints-auth-json` objects.
+
+.. _endpoints-auth-google-analytics-get:
+
+**GET** ``/auths/google-analytics``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Fetches an organization's Google Analytics authorization.
+
+Params
+********
+
++--------------------+--------------------------------+------------------+----------------+
+| Parameter          |  Description                   |  Default         |  Required      |
++====================+================================+==================+================+
+| ``apikey``         | Your ``apikey``                | null             | true           |
++--------------------+--------------------------------+------------------+----------------+
+| ``org``            | The organization's             | null             | true           |
+|                    | ``id`` or ``slug`` you         |                  |                |
+|                    | wish to access.                |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+
+Returns
+********
+
+An :ref:`endpoints-auth-json` object 
+
+.. _endpoints-auth-google-analytics-grant:
+
+**GET** ``/auths/google-analytics/grant``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Authorizes Newslynx to access an organization's Google Analytics.
@@ -1022,7 +1072,7 @@ location with the added query string parameter ``auth_success`` to indicate whet
 
 .. _endpoints-auth-google-analytics-revoke:
 
-**GET | DELETE** ``/auth/google-analytics/revoke``
+**GET** ``/auths/google-analytics/revoke``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Revokes an organization's Google Analytics authorization.
@@ -1045,9 +1095,34 @@ Returns
 
 ``STATUS_CODE`` - ``204``
 
-.. _endpoints-auth-twitter:
+.. _endpoints-auth-twitter-get:
 
-**GET** ``/auth/twitter``
+**GET** ``/auths/twitter``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Fetches an organization's Twitter authorization.
+
+Params
+********
+
++--------------------+--------------------------------+------------------+----------------+
+| Parameter          |  Description                   |  Default         |  Required      |
++====================+================================+==================+================+
+| ``apikey``         | Your ``apikey``                | null             | true           |
++--------------------+--------------------------------+------------------+----------------+
+| ``org``            | The organization's             | null             | true           |
+|                    | ``id`` or ``slug`` you         |                  |                |
+|                    | wish to access.                |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+
+Returns
+********
+
+An :ref:`endpoints-auth-json` object
+
+.. _endpoints-auth-twitter-grant:
+
+**GET** ``/auths/twitter/grant``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Authorizes Newslynx to access an organization's Twitter profile.
@@ -1077,7 +1152,7 @@ location with the added query string parameter ``auth_success`` to indicate whet
 
 .. _endpoints-auth-twitter-revoke:
 
-**GET | DELETE** ``/auth/twitter/revoke``
+**GET** ``/auths/twitter/revoke``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Revokes an organization's Twitter authorization.
@@ -1100,9 +1175,34 @@ Returns
 
 ``STATUS_CODE`` - ``204``
 
-.. _endpoints-auth-facebook:
+.. _endpoints-auth-facebook-get:
 
-**GET** ``/auth/facebook``
+**GET** ``/auths/facebook``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Fetches an organization's Facebook authorization.
+
+Params
+********
+
++--------------------+--------------------------------+------------------+----------------+
+| Parameter          |  Description                   |  Default         |  Required      |
++====================+================================+==================+================+
+| ``apikey``         | Your ``apikey``                | null             | true           |
++--------------------+--------------------------------+------------------+----------------+
+| ``org``            | The organization's             | null             | true           |
+|                    | ``id`` or ``slug`` you         |                  |                |
+|                    | wish to access.                |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+
+Returns
+********
+
+An :ref:`endpoints-auth-json` object
+
+.. _endpoints-auth-facebook-grant:
+
+**GET** ``/auths/facebook/grant``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Authorizes Newslynx to access an organization's Facebook profile.
@@ -1132,7 +1232,7 @@ location with the added query string parameter ``auth_success`` to indicate whet
 
 .. _endpoints-auth-facebook-revoke:
 
-**GET | DELETE** ``/auth/facebook/revoke``
+**GET** ``/auths/facebook/revoke``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Revokes an organization's Facebook authorization.
