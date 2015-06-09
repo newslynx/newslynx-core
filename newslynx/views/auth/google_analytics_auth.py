@@ -180,8 +180,8 @@ def ga_callback():
 @load_org
 def ga_save_properties(user, org):
 
-    redirect_uri = session.pop('redirect_uri')
     tokens = session.pop('tokens')
+    redirect_uri = session.get('redirect_uri')
 
     # PARSE HACKY FORM
     req_data = request_data()
@@ -216,7 +216,7 @@ def ga_save_properties(user, org):
     # redirect to app
     if redirect_uri:
         uri = url.add_query_params(redirect_uri, auth_success='true')
-        redirect(uri)
+        return redirect(uri)
 
     return jsonify(ga_token)
 
