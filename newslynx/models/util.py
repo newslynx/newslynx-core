@@ -32,15 +32,3 @@ def fetch_by_id_or_field(model, field, value, org_id=None):
             return model.query.filter(f == value)\
                         .filter_by(org_id=org_id)\
                         .first()
-
-
-def split_meta(obj, cols):
-    """
-    Split out meta fields from core columns.
-    """
-    meta = obj.pop('meta', {})
-    for k in obj.keys():
-        if k not in cols:
-            meta[k] = obj.pop(k)
-    obj['meta'] = meta
-    return obj

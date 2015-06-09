@@ -36,7 +36,8 @@ class Report(db.Model):
             'data': self.data
         }
 
-    def render(self):
+    @property
+    def html(self):
         """
         Render the data as html.
         """

@@ -10,8 +10,8 @@ from newslynx.constants import (
 class Tag(db.Model):
 
     """
-    A tag is an arbitrary label (with arbitrary attributes)
-    which we can assign to a thing or an event.
+    A tag is an arbitrary label which we can assign
+    to a content-item or an event.
     """
 
     __tablename__ = 'tags'

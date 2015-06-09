@@ -2,11 +2,10 @@ from sqlalchemy import or_
 
 from newslynx.core import db
 from newslynx.util import gen_uuid
-from newslynx.lib import dates
 from newslynx.models import (
     Event, ContentItem, Tag, Recipe)
 from newslynx.models.util import (
-    split_meta, get_table_columns,
+    get_table_columns,
     fetch_by_id_or_field)
 from newslynx.views.util import validate_event_status
 from newslynx.exc import RequestError, UnprocessableEntityError
@@ -14,7 +13,7 @@ from newslynx.tasks import ingest_util
 
 
 def ingest_event(
-        o,
+        obj,
         org_id,
         url_fields=['title', 'body', 'description'],
         requires=['title'],
@@ -24,58 +23,58 @@ def ingest_event(
     """
 
     # check required fields
-    ingest_util.check_requires(o, requires, type='Event')
+    ingest_util.check_requires(obj, requires, type='Event')
 
     # keep track if we detected content_items
     has_content_items = False
 
     # check if the org_id is in the body
     # TODO: I don't think this is necessary.
-    org_id = o.pop('org_id', org_id)
+    org_id = obj.pop('org_id', org_id)
 
     # get rid of ``id`` if it somehow got in here.
-    o.pop('id', None)
+    obj.pop('id', None)
 
     # validate status
-    if 'status' in o:
-        validate_event_status(o['status'])
-        if o['status'] == 'deleted':
+    if 'status' in obj:
+        validate_event_status(obj['status'])
+        if obj['status'] == 'deleted':
             raise RequestError(
                 'You cannot create an Event with status "deleted."')
 
     # normalize the url
-    o['url'] = ingest_util.prepare_url(o, 'url')
+    obj['url'] = ingest_util.prepare_url(obj, 'url')
 
     # sanitize creation date
-    o['created'] = ingest_util.prepare_date(o, 'created')
+    obj['created'] = ingest_util.prepare_date(obj, 'created')
 
     # sanitize text/html fields
-    o['title'] = ingest_util.prepare_str(o, 'title', o['url'])
-    o['description'] = ingest_util.prepare_str(o, 'description', o['url'])
-    o['body'] = ingest_util.prepare_str(o, 'body', o['url'])
+    obj['title'] = ingest_util.prepare_str(obj, 'title', obj['url'])
+    obj['description'] = ingest_util.prepare_str(obj, 'description', obj['url'])
+    obj['body'] = ingest_util.prepare_str(obj, 'body', obj['url'])
 
     # split out tags_ids + content_item_ids
-    tag_ids = o.pop('tag_ids', [])
-    content_item_ids = o.pop('content_item_ids', [])
-    links = o.pop('links', [])
+    tag_ids = obj.pop('tag_ids', [])
+    content_item_ids = obj.pop('content_item_ids', [])
+    links = obj.pop('links', [])
 
     # determine event provenance
-    o = _event_provenance(o, org_id)
+    obj = _event_provenance(obj, org_id)
 
     # split out meta fields
-    o = split_meta(o, get_table_columns(Event))
+    obj = ingest_util.split_meta(obj, get_table_columns(Event))
 
     # see if the event already exists.
     e = Event.query\
         .filter_by(org_id=org_id)\
-        .filter_by(source_id=o['source_id'])\
+        .filter_by(source_id=obj['source_id'])\
         .first()
 
     # if not, create it
     if not e:
 
         # create event
-        e = Event(**o)
+        e = Event(**obj)
 
     # else, update it
     else:
@@ -85,55 +84,24 @@ def ingest_event(
                 'Event {} already exists and has been previously deleted.'
                 .format(e.id))
 
-        for k, v in o.items():
+        for k, v in obj.items():
             setattr(e, k, v)
-        e.updated = dates.now()
 
     # extract urls and normalize urls asynchronously.
     urls = ingest_util.extract_urls(
-        o,
+        obj,
         url_fields,
-        source=o.get('url'),
+        source=obj.get('url'),
         links=links)
 
     # detect content_items
     if len(urls):
-        content_items = ContentItem.query\
-            .filter(or_(ContentItem.url.in_(urls),
-                        ContentItem.id.in_(content_item_ids)))\
-            .filter(ContentItem.org_id == org_id)\
-            .all()
-
-        if len(content_items):
-            has_content_items = True
-
-            # upsert content_items.
-            for t in content_items:
-                if t.id not in e.content_item_ids:
-                    e.content_items.append(t)
+        e, has_content_items = \
+            _associate_content_items(e, org_id, urls, content_item_ids)
 
     # associate tags
     if len(tag_ids):
-        for tid in tag_ids:
-            tag = fetch_by_id_or_field(Tag, 'slug', tid, org_id)
-            if not tag:
-                raise RequestError(
-                    'Tag with id/slug {} does not exist.'
-                    .format(tid))
-
-            if tag:
-                if tag.type != 'impact':
-                    raise RequestError(
-                        'Only impact tags can be associated with Events. '
-                        'Tag {} is of type {}'
-                        .format(tag.id, tag.type))
-
-            # if there are tags, the status is approved
-            e.status = 'approved'
-
-            # upsert
-            if tag.id not in e.tag_ids:
-                e.tags.append(tag)
+        e = _associate_tags(e, org_id, tag_ids)
 
     # dont commit event if we're only looking
     # for events that link to content_items
@@ -188,3 +156,52 @@ def _event_provenance(o, org_id):
         o['provenance'] = 'recipe'
 
     return o
+
+
+def _associate_content_items(e, org_id, urls, content_item_ids):
+    """
+    Check if event has associations with content items.
+    """
+    has_content_items = False
+
+    content_items = ContentItem.query\
+        .filter(or_(ContentItem.url.in_(urls),
+                    ContentItem.id.in_(content_item_ids)))\
+        .filter(ContentItem.org_id == org_id)\
+        .all()
+
+    if len(content_items):
+        has_content_items = True
+
+        # upsert content_items.
+        for t in content_items:
+            if t.id not in e.content_item_ids:
+                e.content_items.append(t)
+    return e, has_content_items
+
+
+def _associate_tags(e, org_id, tag_ids):
+    """
+    Associate tags with event ids.
+    """
+    for tid in tag_ids:
+        tag = fetch_by_id_or_field(Tag, 'slug', tid, org_id)
+        if not tag:
+            raise RequestError(
+                'Tag with id/slug {} does not exist.'
+                .format(tid))
+
+        if tag:
+            if tag.type != 'impact':
+                raise RequestError(
+                    'Only impact tags can be associated with Events. '
+                    'Tag {} is of type {}'
+                    .format(tag.id, tag.type))
+
+        # if there are tags, the status is approved
+        e.status = 'approved'
+
+        # upsert
+        if tag.id not in e.tag_ids:
+            e.tags.append(tag)
+    return e

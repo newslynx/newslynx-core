@@ -86,3 +86,15 @@ def check_requires(o, requires, type='Event'):
             raise RequestError(
                 "Missing '{}'. An {} Requires {}"
                 .format(k, type, requires))
+
+
+def split_meta(obj, cols):
+    """
+    Split out meta fields from core columns.
+    """
+    meta = obj.pop('meta', {})
+    for k in obj.keys():
+        if k not in cols:
+            meta[k] = obj.pop(k)
+    obj['meta'] = meta
+    return obj

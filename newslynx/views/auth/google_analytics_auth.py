@@ -32,8 +32,9 @@ if settings.GA_ENABLED:
     ga_oauth = googleanalytics.auth.Flow(
         settings.GOOGLE_ANALYTICS_CLIENT_ID,
         settings.GOOGLE_ANALYTICS_CLIENT_SECRET,
-        redirect_uri=urljoin(settings.API_URL,
-                             '/api/v1/auth/google-analytics/callback'))
+        redirect_uri=urljoin(
+            settings.API_URL,
+            '/api/v1/auth/google-analytics/callback'))
 
 
 # oauth utilities #
@@ -136,13 +137,14 @@ def ga_callback():
         })
         tokens.pop('properties', None)
 
-    # remove client_id and client_secret
-    tokens.pop('client_secret')
-    tokens.pop('client_id')
-
     # get properties
     properties = ga_properties(tokens)
 
+    # now we can pop the client id + secret.
+    tokens.pop('client_secret')
+    tokens.pop('client_id')
+
+    # get the postback url.
     postback_url = url_for(
         'auth_google_analytics.ga_save_properties',
         org=org_id,

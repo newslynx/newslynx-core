@@ -66,7 +66,7 @@ class Org(db.Model):
 
     @property
     def user_ids(self):
-        return frozenset([u.id for u in self.users])
+        return [u.id for u in self.users]
 
     def to_dict(self, **kw):
 
