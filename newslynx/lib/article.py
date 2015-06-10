@@ -59,7 +59,7 @@ def extract(source_url):
         'created': meta.publish_date(soup, canonical_url),
         'favicon': meta.favicon(soup, canonical_url),
         'site_name': meta.site_name(soup, canonical_url),
-        'page_type': meta.page_type(soup, canonical_url),
+        # 'page_type': meta.page_type(soup, canonical_url),
         'authors': author.extract(soup),
         'body': None
     }
@@ -82,14 +82,20 @@ def extract(source_url):
     if not len(data['authors']) and raw_html:
         data['authors'] = author.extract(raw_html, tags=author.OPTIMISTIC_TAGS)
 
-    # get links from raw_html + content
-    links = [u for u in url.from_any(data['body']) if source_url not in u]
-    for u in url.from_any(raw_html, source=source_url):
-        if u not in links and u != source_url:
-            links.append(u)
+        # remove site name from authors
+        if data.get('site_name'):
+            data['authors'] = [
+                a.replace(data['site_name'].upper(), "").strip()
+                for a in data['authors']
+            ]
+    # # get links from raw_html + content
+    # links = [u for u in url.from_any(data['body']) if source_url not in u]
+    # for u in url.from_any(raw_html, source=source_url):
+    #     if u not in links and (u != source_url or not u.startswith(source_url)):
+    #         links.append(u)
 
-    # split out internal / external links / article links
-    data['links'] = url.categorize_links(links, domain)
+    # # split out internal / external links / article links
+    # data['links'] = url.categorize_links(links, domain)
 
     return data
 

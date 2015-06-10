@@ -21,19 +21,10 @@ def ingest_event(
     """
     Ingest an Event.
     """
+    has_content_items = False
 
     # check required fields
     ingest_util.check_requires(obj, requires, type='Event')
-
-    # keep track if we detected content_items
-    has_content_items = False
-
-    # check if the org_id is in the body
-    # TODO: I don't think this is necessary.
-    org_id = obj.pop('org_id', org_id)
-
-    # get rid of ``id`` if it somehow got in here.
-    obj.pop('id', None)
 
     # validate status
     if 'status' in obj:
@@ -42,15 +33,25 @@ def ingest_event(
             raise RequestError(
                 'You cannot create an Event with status "deleted."')
 
+    # check if the org_id is in the body
+    # TODO: I don't think this is necessary.
+    org_id = obj.pop('org_id', org_id)
+
+    # get rid of ``id`` if it somehow got in here.
+    obj.pop('id', None)
+
     # normalize the url
     obj['url'] = ingest_util.prepare_url(obj, 'url')
 
     # sanitize creation date
     obj['created'] = ingest_util.prepare_date(obj, 'created')
+    if not obj['created']:
+        obj.pop('created')
 
     # sanitize text/html fields
     obj['title'] = ingest_util.prepare_str(obj, 'title', obj['url'])
-    obj['description'] = ingest_util.prepare_str(obj, 'description', obj['url'])
+    obj['description'] = ingest_util.prepare_str(
+        obj, 'description', obj['url'])
     obj['body'] = ingest_util.prepare_str(obj, 'body', obj['url'])
 
     # split out tags_ids + content_item_ids
@@ -74,7 +75,7 @@ def ingest_event(
     if not e:
 
         # create event
-        e = Event(**obj)
+        e = Event(org_id=org_id, **obj)
 
     # else, update it
     else:

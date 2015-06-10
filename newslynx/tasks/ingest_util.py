@@ -27,7 +27,8 @@ def extract_urls(obj, fields, source=None, links=[]):
         v = obj.get(f)
         if v:
             for u in url.from_any(str(v), source=source):
-                raw_urls.add(u)
+                if source and (source not in u or source != u):
+                    raw_urls.add(u)
 
     clean_urls = set()
     for cache_response in url_cache_pool.imap_unordered(url_cache.get, list(raw_urls)):
@@ -64,7 +65,7 @@ def prepare_date(o, field):
     return dt
 
 
-def prepare_url(o, field):
+def prepare_url(o, field, source=None):
     """
     Prepare a url
     """
@@ -72,7 +73,9 @@ def prepare_url(o, field):
         return None
     if o[field] is None:
         return None
-    cache_response = url_cache.get(o[field])
+    # prepare it first before the sending to the canoncilation cache
+    u = url.prepare(o[field], source=source, canonicalize=False, expand=False)
+    cache_response = url_cache.get(u)
     return cache_response.value
 
 

@@ -63,7 +63,7 @@ IMG_FILETYPES = frozenset([
 REDIRECT_QUERY_PARAMS = ['url', 'u']
 
 
-def prepare(url, source=None, canonicalize=True, keep_params=('id', 'p', 'v')):
+def prepare(url, source=None, canonicalize=True, expand=True, keep_params=('id', 'p', 'v')):
     """
     Operations that unshorten a url, reconcile embeds,
     resolves redirects, strip parameters (with optional
@@ -90,8 +90,9 @@ def prepare(url, source=None, canonicalize=True, keep_params=('id', 'p', 'v')):
                 url = urljoin(source, url)
 
     # check short urls
-    if is_shortened(url):
-        url = unshorten(url, attempts=1)
+    if expand:
+        if is_shortened(url):
+            url = unshorten(url, attempts=1)
 
     # canonicalize
     if canonicalize:

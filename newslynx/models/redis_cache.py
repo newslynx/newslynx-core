@@ -77,6 +77,12 @@ class Cache(object):
             if k.startswith(cls.key_prefix):
                 cls.redis.delete(k)
 
+    def exists(self, *args, **kw):
+        """
+        Check if an item exists in the cache.
+        """
+        return self.redis.get(self._format_key(*args, **kw)) is not None
+
     def invalidate(self, *args, **kw):
         """
         Remove a key from the cache.

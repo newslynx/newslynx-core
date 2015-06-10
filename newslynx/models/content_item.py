@@ -38,6 +38,8 @@ class ContentItem(db.Model):
     domain = db.Column(db.Text, index=True)
     created = db.Column(db.DateTime(timezone=True), default=dates.now)
     updated = db.Column(db.DateTime(timezone=True), onupdate=dates.now, default=dates.now)
+    site_name = db.Column(db.Text, index=True)
+    favicon = db.Column(db.Text)
     img_url = db.Column(db.Text)
     title = db.Column(db.Text)
     description = db.Column(db.Text)
@@ -59,13 +61,13 @@ class ContentItem(db.Model):
         'Author', secondary=relations.content_items_authors,
         backref=db.backref('content_items', lazy='dynamic'), lazy='joined')
 
-    # in/out links
-    out_links = db.relationship(
-        'ContentItem', secondary=relations.content_items_content_items,
-        primaryjoin=relations.content_items_content_items.c.from_content_item_id == id,
-        secondaryjoin=relations.content_items_content_items.c.to_content_item_id == id,
-        backref=db.backref("in_links", lazy='dynamic'),
-        lazy='dynamic')
+    # # in/out links
+    # out_links = db.relationship(
+    #     'ContentItem', secondary=relations.content_items_content_items,
+    #     primaryjoin=relations.content_items_content_items.c.from_content_item_id == id,
+    #     secondaryjoin=relations.content_items_content_items.c.to_content_item_id == id,
+    #     backref=db.backref("in_links", lazy='dynamic'),
+    #     lazy='dynamic')
 
     # search vectors
     title_search_vector = db.Column(TSVectorType('title'))
@@ -97,6 +99,8 @@ class ContentItem(db.Model):
         self.provenance = kw.get('provenance', 'recipe')
         self.domain = kw.get('domain')
         self.created = kw.get('created')
+        self.site_name = kw.get('site_name')
+        self.favicon = kw.get('favicon')
         self.img_url = kw.get('img_url')
         self.title = kw.get('title')
         self.description = kw.get('description')
@@ -107,40 +111,44 @@ class ContentItem(db.Model):
     def simple_authors(self):
         return [{"id": c.id, "name": c.name} for c in self.authors]
 
-    @property
-    def out_link_ids(self):
-        out_links = db.session.query(relations.content_items_content_items.c.to_content_item_id)\
-            .filter(relations.content_items_content_items.c.from_content_item_id == self.id)\
-            .all()
-        return [o[0] for o in out_links]
+    # @property
+    # def out_link_ids(self):
+    #     out_links = db.session.query(relations.content_items_content_items.c.to_content_item_id)\
+    #         .filter(relations.content_items_content_items.c.from_content_item_id == self.id)\
+    #         .all()
+    #     return [o[0] for o in out_links]
 
-    @property
-    def in_link_ids(self):
-        in_links = db.session.query(relations.content_items_content_items.c.from_content_item_id)\
-            .filter(relations.content_items_content_items.c.to_content_item_id == self.id)\
-            .all()
-        return [o[0] for o in in_links]
+    # @property
+    # def in_link_ids(self):
+    #     in_links = db.session.query(relations.content_items_content_items.c.from_content_item_id)\
+    #         .filter(relations.content_items_content_items.c.to_content_item_id == self.id)\
+    #         .all()
+    #     return [o[0] for o in in_links]
 
-    @property
-    def out_link_display(self):
-        out_links = self.out_links\
-            .with_entities(ContentItem.id, ContentItem.title)\
-            .all()
-        return [dict(zip(['id', 'title'], l)) for l in out_links]
+    # @property
+    # def out_link_display(self):
+    #     out_links = self.out_links\
+    #         .with_entities(ContentItem.id, ContentItem.title)\
+    #         .all()
+    #     return [dict(zip(['id', 'title'], l)) for l in out_links]
 
-    @property
-    def in_link_display(self):
-        in_links = self.in_links\
-            .with_entities(ContentItem.id, ContentItem.title)\
-            .all()
-        return [dict(zip(['id', 'title'], l)) for l in in_links]
+    # @property
+    # def in_link_display(self):
+    #     in_links = self.in_links\
+    #         .with_entities(ContentItem.id, ContentItem.title)\
+    #         .all()
+    #     return [dict(zip(['id', 'title'], l)) for l in in_links]
 
     @property
     def tag_ids(self):
         return [t.id for t in self.tags]
 
+    @property
+    def author_ids(self):
+        return [t.id for t in self.authors]
+
     def to_dict(self, **kw):
-        incl_links = kw.get('incl_links', False)
+        # incl_links = kw.get('incl_links', False)
         incl_body = kw.get('incl_body', False)
 
         d = {
@@ -153,16 +161,18 @@ class ContentItem(db.Model):
             'type': self.type,
             'created': self.created,
             'updated': self.updated,
+            'favicon': self.favicon,
+            'site_name': self.site_name,
             'img_url': self.img_url,
-            'creators': self.simple_authors,
+            'authors': self.simple_authors,
             'title': self.title,
             'description': self.description,
             'tag_ids': self.tag_ids,
             'meta': self.meta
         }
-        if incl_links:
-            d['in_links'] = self.in_link_display
-            d['out_links'] = self.out_link_display
+        # if incl_links:
+        #     d['in_links'] = self.in_link_display
+        #     d['out_links'] = self.out_link_display
         if incl_body:
             d['body'] = self.body
         return d

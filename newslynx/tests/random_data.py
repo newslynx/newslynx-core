@@ -452,13 +452,13 @@ def main(
     if verbose:
         print "generating {} events".format(n_events)
 
-    # generate links
-    if verbose:
-        print "generating in/out links"
+    # # generate links
+    # if verbose:
+    #     print "generating in/out links"
 
-    for content_item in content_items:
-        t = choice(content_items)
-        content_item.out_links.append(t)
+    # for content_item in content_items:
+    #     t = choice(content_items)
+    #     content_item.out_links.append(t)
 
     # generate events
     gen_events(org, recipes, impact_tags, content_items, n_events)

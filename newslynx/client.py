@@ -1,5 +1,6 @@
 import os
 import copy
+import logging 
 
 from requests import Session, Request
 from addict import Dict
@@ -8,6 +9,9 @@ from urlparse import urljoin
 from newslynx import settings
 from newslynx.lib.serialize import obj_to_json
 from newslynx.exc import *
+from newslynx import logs
+
+log = logging.getLogger(__name__)
 
 RET_CODES = [200, 201]
 GOOD_CODES = RET_CODES + [204]
@@ -126,6 +130,7 @@ class BaseClient(object):
                 raise ClientError(resp.content)
 
             err = ERRORS.get(d['error'])
+            log.error("Status Code: {status_code} - ({error}) - {message}".format(**d))
             raise err(**d)
 
     def _format_response(self, resp):
@@ -527,6 +532,11 @@ class Content(BaseClient):
         """
         url = self._format_url('content', content_id)
         return self._request('GET', url, params=kw)
+
+    def create(self, **kw):
+        kw, params = self._split_auth_params_from_kw(kw, kw_incl=['extract'])
+        url = self._format_url('content')
+        return self._request('POST', url, params=params, data=kw)
 
 
 class Extract(BaseClient):

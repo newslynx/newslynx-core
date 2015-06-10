@@ -3,7 +3,7 @@ from gevent.pool import Pool
 from copy import copy
 
 from flask import Blueprint
-from sqlalchemy import distinct
+from sqlalchemy import distinct, text
 
 from newslynx.core import db
 from newslynx.exc import NotFoundError
@@ -11,6 +11,7 @@ from newslynx.models import ContentItem, Author
 from newslynx.lib.serialize import jsonify
 from newslynx.views.decorators import load_user, load_org
 from newslynx.tasks import facet
+from newslynx.tasks.ingest_content_item import ingest_content_item
 from newslynx.models.relations import content_items_events
 from newslynx.views.util import *
 from newslynx.constants import (
@@ -373,10 +374,26 @@ def search_content(user, org):
     return jsonify(resp)
 
 
+@bp.route('/api/v1/content', methods=['POST'])
+@load_user
+@load_org
+def create_event(user, org):
+    """
+    Create an event.
+    """
+    req_data = request_data()
+    extract = arg_bool('extract', default=True)
+    c = ingest_content_item(
+        req_data,
+        org_id=org.id,
+        extract=extract)
+    return jsonify(c.to_dict(incl_links=True, incl_body=True))
+
+
 @bp.route('/api/v1/content/<int:content_item_id>', methods=['GET'])
 @load_user
 @load_org
-def content_items(user, org, content_item_id):
+def get_content_item(user, org, content_item_id):
     """
     Fetch an individual content-item.
     """
