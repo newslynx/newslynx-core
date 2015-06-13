@@ -1,10 +1,8 @@
 sous_chef: twitter-list-to-event
-name: Twitter List to Promotion Event
+name: Staff Twitter List to Promotion Event
 slug: twitter-list-to-event-promotion
 status: uninitialized
 options:
-    list_owner_screen_name: null
-    list_slug: null
     set_event_status: approved
     tag: promotion-internal
     interval: 900
