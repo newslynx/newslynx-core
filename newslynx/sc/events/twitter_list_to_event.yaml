@@ -17,7 +17,7 @@ options:
         help:
             placeholder: members-of-congress
     
-    min_folowers:
+    min_followers:
         type: number
         default: null
         required: false

@@ -25,7 +25,7 @@ class TestSousChefJSONSchema(unittest.TestCase):
                         "placeholder": "cspan"
                     },
                 },
-                "min_folowers": {
+                "min_followers": {
                     "type": "number",
                     "help": {
                         "placeholder": "Show from people with X followers, e.g. 5000",
@@ -66,7 +66,7 @@ class TestSousChefJSONSchema(unittest.TestCase):
                         "placeholder": "cspan"
                     },
                 },
-                "min_folowers": {
+                "min_followers": {
                     "type": "number",
                     "help": {
                         "placeholder": "Show from people with X followers, e.g. 5000",
@@ -108,7 +108,7 @@ class TestSousChefJSONSchema(unittest.TestCase):
                         "placeholder": "cspan"
                     },
                 },
-                "min_folowers": {
+                "min_followers": {
                     "type": "number",
                     "help": {
                     }
@@ -149,7 +149,7 @@ class TestSousChefJSONSchema(unittest.TestCase):
                         "placeholder": "cspan"
                     },
                 },
-                "min_folowers": {
+                "min_followers": {
                     "type": "number",
                     "help": {
                         "placeholder": "yo"
