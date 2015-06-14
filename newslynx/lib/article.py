@@ -59,7 +59,7 @@ def extract(source_url):
         'created': meta.publish_date(soup, canonical_url),
         'favicon': meta.favicon(soup, canonical_url),
         'site_name': meta.site_name(soup, canonical_url),
-        # 'page_type': meta.page_type(soup, canonical_url),
+        'page_type': meta.page_type(soup, canonical_url),
         'authors': author.extract(soup),
         'body': None
     }

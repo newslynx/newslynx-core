@@ -6,45 +6,70 @@ creates: events
 options:
     
     list_owner_screen_name:
-        type: text
+        input_type: text
+        value_types:
+            - string
         required: true
         help:
             placeholder: cspan
     
     list_slug:
-        type: text
+        input_type: text
+        value_types:
+            - string
         required: true
         help:
             placeholder: members-of-congress
     
     min_folowers:
-        type: number
+        input_type: number
+        value_types:
+            - numeric
+            - nulltype
         default: null
         required: false
         help:
             placeholder: "Show from people with X followers, e.g. 5000."
 
     search_query:
-        type: searchstring
+        input_type: text
+        value_types:
+            - searchstring
+            - nulltype
         default: null
         required: false
         help:
             placeholder: "~fracking | drilling"
 
     set_event_status:
-        type: text
-        default: pending
-        options:
+        input_type: select
+        input_options:
             - pending
             - approved
-
-    tag:
-        type: text
-        default: null
+        value_types: 
+            - string
+        default: pending
+        help:
+            placeholder: "pending"
+    
+    tag_ids:
+        input_type: checkbox
+        accepts_list: true 
+        value_types:
+            - string 
+            - numeric 
+        default: []
+        help:
+            description: |
+                A list of Tag IDs or slugs to automatically
+                apply to events created by this recipe.
+            placeholder: "pending"
 
     # internal options
     interval:
-        type: number
+        input_type: number
+        value_types:
+            - numeric
         default: 900
 
 

@@ -123,11 +123,6 @@ def handle_search_string_error(error):
 
 
 @app.before_request
-def set_timezone_to_utc():
-    db.session.execute('SET TIMEZONE TO UTC')
-
-
-@app.before_request
 def begin_timing():
     request._begin_time = time()
 

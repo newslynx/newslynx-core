@@ -6,40 +6,54 @@ creates: events
 options:
     
     screen_name:
-        type: text
+        input_type: text
+        value_types: 
+            - string
+        allow_multiple: true
         required: true
         help:
             placeholder: cspan
     
     search_query:
-        type: searchstring
+        input_type: text
+        value_types:
+            - searchstring
+            - nulltype
         default: null
         required: false
         help:
             placeholder: "~fracking | drilling"
 
-    set_event_type:
-        type: text
-        default: alert
-        options: 
-            - alert
-            - promotion
-
     set_event_status:
-        type: text
-        default: pending
-        options:
+        input_type: select
+        input_options:
             - pending
             - approved
-
-    tag:
-        type: text
-        default: null
-
+        value_types: 
+            - string
+        default: pending
+        help:
+            placeholder: "pending"
+    
+    tag_ids:
+        input_type: checkbox
+        accepts_list: true 
+        value_types:
+            - string 
+            - numeric 
+        default: []
+        help:
+            description: |
+                A list of Tag IDs or slugs to automatically
+                apply to events created by this recipe.
+            placeholder: "pending"
+        
 
     # internal options
     interval:
-        type: number
+        input_type: number
+        value_types:
+            - numeric
         default: 900
 
 

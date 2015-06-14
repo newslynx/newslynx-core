@@ -1,34 +1,44 @@
 name:
-    type: text
+    input_type: text
+    value_types:
+        - string
     required: true
     help:
         placeholder: The name of the Recipe.
 
 slug:
-    type: text
-    required: true
+    input_type: text
+    value_types:
+        - string
+    required: false
     help:
-        placeholder: A slug for viewing the recipe in a url.
+        placeholder: The recipe slug. Lowercase and separated with '-'.
 
 description: 
-    type: text
+    input_type: paragraph
+    value_types:
+        - string
+        - nulltype
+    required: false
     help: 
         placeholder: A description of what this recipe does.
 
 interval:
-    type: number
+    input_type: number
+    value_types:
+        - numeric
+        - nulltype
     default: null
+    required: false
     help:
-        placeholder: '3600'
-        description: The frequency (in seconds) with which this recipe should run.
+        placeholder: 3600
+        description: |
+            The frequency (in seconds) at which 
+            this recipe should run.
 
 time_of_day:
-    type: text
-    default: null
-    help:
-        placeholder: '12:00 AM'
-        description: The time of day at which this recipe should run daily.
-    options:
+    input_type: select
+    input_options:
         - '12:00 AM'
         - '12:30 AM'
         - '1:00 AM'
@@ -77,3 +87,11 @@ time_of_day:
         - '10:30 PM'
         - '11:00 PM'
         - '11:30 PM'
+    value_types:
+        - string 
+        - nulltype
+    default: null
+    required: false
+    help:
+        placeholder: '12:00 AM'
+        description: The time of day at which this recipe should run daily.

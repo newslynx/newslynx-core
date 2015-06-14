@@ -20,11 +20,11 @@ OPTIMISTIC_TAGS = [
     'a', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'span', 'p', 'meta', 'div'
 ]
 TAG_ATTRS = [
-    'name', 'rel', 'itemprop', 'class', 'id'
+    'name', 'rel', 'itemprop', 'class', 'id', 'property'
 ]
 TAG_VALS = [
     'author', 'byline', 'byl', 'byline-author', 'post-byline',
-    'parsely-author'
+    'parsely-author', 'storybyline'
 ]
 
 # tokens indicative of non-authors (usually photographers)

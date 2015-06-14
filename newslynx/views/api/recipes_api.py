@@ -5,11 +5,12 @@ from flask import Blueprint
 from newslynx.core import db
 from newslynx.exc import RequestError
 from newslynx.models import SousChef, Recipe
-from newslynx.models.recipe import validate_recipe
-from newslynx.models.util import get_table_columns, fetch_by_id_or_field
+from newslynx.models import recipe_schema
+from newslynx.models.util import fetch_by_id_or_field
 from newslynx.lib.serialize import jsonify
 from newslynx.views.decorators import load_user, load_org
 from newslynx.views.util import *
+from newslynx.tasks import facet
 
 
 # blueprint
@@ -87,8 +88,14 @@ def list_recipes(user, org):
         sort_obj = eval('Recipe.{}.{}'.format(sort_field, direction))
         recipe_query = recipe_query.order_by(sort_obj())
 
+    # get all recipe ids:
+    recipe_ids = [re[0] for re in recipe_query.with_entities(Recipe.id).all()]
+
+    event_count_lookup = facet.event_statuses_by_recipes(recipe_ids)
+
     # process query, compute facets.
     clean_recipes = []
+
     facets = defaultdict(Counter)
     for r in recipe_query.all():
         facets['statuses'][r.status] += 1
@@ -101,8 +108,7 @@ def list_recipes(user, org):
             facets['schedules']['unscheduled'] += 1
 
         recipe = r.to_dict()
-        recipe['event_count'] = r.events.count()
-        recipe['content_item_count'] = r.content_items.count()
+        recipe['event_counts'] = event_count_lookup.get(recipe['id'])
         clean_recipes.append(recipe)
 
     resp = {
@@ -129,11 +135,9 @@ def create_recipe(user, org):
         raise RequestError(
             'A SousChef does not exist with ID/slug {}'.format(sous_chef))
 
-    if not 'status' not in req_data:
-        req_data['status'] = 'stable'
-
-    r = Recipe(sc, user_id=user.id, org_id=org.id, **req_data)
-
+    # validate the recipe and add it to the database.
+    recipe = recipe_schema.validate(req_data, sc.to_dict())
+    r = Recipe(sc, user_id=user.id, org_id=org.id, **recipe)
     db.session.add(r)
     db.session.commit()
 
@@ -151,7 +155,7 @@ def get_recipe(user, org, recipe_id):
     return jsonify(r)
 
 
-@bp.route('/api/v1/recipes/<recipe_id>', methods=['PUT'])
+@bp.route('/api/v1/recipes/<recipe_id>', methods=['PUT', 'PATCH'])
 @load_user
 @load_org
 def update_recipe(user, org, recipe_id):
@@ -161,33 +165,24 @@ def update_recipe(user, org, recipe_id):
         raise RequestError('Recipe with id/slug {} does not exist.'
                            .format(recipe_id))
 
+    # fetch request date and update / validate.
     req_data = request_data()
-    if not 'options' in req_data:
-        req_data['options'] = {}
+    new_recipe = recipe_schema.update(r, req_data, r.sous_chef.to_dict())
 
-    # split out non schema fields:
-    non_schema = [
-        'id', 'sous_chef_id', 'user_id', 'org_id',
-        'last_run', 'status', 'created', 'updated',
-        'scheduled', 'last_run', 'status', 'last_job'
-    ]
-    for k in non_schema:
-        req_data.pop(k, None)
-
-    recipe, parsed_options = validate_recipe(
-        r.sous_chef.to_dict(), req_data)
-
-    cols = get_table_columns(Recipe)
-    for name, value in recipe.items():
-        if name in cols:
-            setattr(r, name, value)
-
-    # initialize default recipes
-    if r.status == 'uninitialized':
+    # if the requesting user hasn't initializied this recipe,
+    # do it for them:
+    status = new_recipe.get('status', 'uninitialized')
+    if r.status == 'uninitialized' and status == 'uninitialized':
         r.status = 'stable'
+        new_recipe['status'] = 'stable'
 
     # update pickled options
-    r.set_pickle_opts(parsed_options)
+    new_opts = new_recipe.pop('options')
+    r.set_options(new_opts)
+
+    # update all other fields
+    for col, val in new_recipe.items():
+        setattr(r, col, val)
 
     db.session.add(r)
     db.session.commit()
@@ -204,8 +199,15 @@ def delete_recipe(user, org, recipe_id):
     if not r:
         raise RequestError('Recipe with id/slug {} does not exist.'
                            .format(recipe_id))
-
-    db.session.delete(r)
+    force = arg_bool('force', default=False)
+    if force:
+        db.session.delete(r)
+    else:
+        r.status = 'inactive'
+        cmd = """
+        UPDATE events SET status='deleted' WHERE recipe_id = {};
+        """.format(r.id)
+        db.session.execute(cmd)
+        db.session.add(r)
     db.session.commit()
-
     return delete_response()

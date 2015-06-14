@@ -4,7 +4,7 @@ from flask import Blueprint
 
 from newslynx.core import db
 from newslynx.models import SousChef
-from newslynx.models.sous_chef import validate_sous_chef
+from newslynx.models import sous_chef_schema
 from newslynx.lib.serialize import jsonify
 from newslynx.views.decorators import load_user, load_org
 from newslynx.models.util import fetch_by_id_or_field
@@ -12,7 +12,7 @@ from newslynx.views.util import *
 
 
 # blueprint
-bp = Blueprint('sous_chefs', __name__)
+bp = Blueprint('sous_chefs', __name__, )
 
 
 # utils
@@ -63,8 +63,11 @@ def create_sous_chef(user, org):
 
     req_data = request_data()
 
-    # inititializing a sous chef effectively validates it.
-    sc = SousChef(**req_data)
+    # validate the sous chef
+    sc = sous_chef_schema.validate(req_data)
+
+    # add it to the database
+    sc = SousChef(**sc)
     db.session.add(sc)
     try:
         db.session.commit()
@@ -88,9 +91,8 @@ def get_sous_chef(user, org, sous_chef):
     return jsonify(sc)
 
 
-@bp.route('/api/v1/sous-chefs/<sous_chef>', methods=['PUT'])
+@bp.route('/api/v1/sous-chefs/<sous_chef>', methods=['PUT', 'PATCH'])
 @load_user
-@load_org
 def update_sous_chef(user, org, sous_chef):
 
     sc = fetch_by_id_or_field(SousChef, 'slug', sous_chef)
@@ -101,21 +103,22 @@ def update_sous_chef(user, org, sous_chef):
 
     req_data = request_data()
 
-    # split out non schema fields:
-    for k in ['id', 'is_command']:
-        req_data.pop(k, None)
-
     # validate the schema
-    sous_chef = validate_sous_chef(req_data)
+    new_sous_chef = sous_chef_schema.update(sc, req_data)
 
     # udpate
-    cols = get_table_columns(SousChef)
-    for name, value in sous_chef.items():
-        if name in cols:
-            setattr(sc, name, value)
-
+    for name, value in new_sous_chef.items():
+        setattr(sc, name, value)
     db.session.add(sc)
-    db.session.commit()
+
+    try:
+        db.session.commit()
+
+    except Exception as e:
+        raise RequestError(
+            "An error occurred while updating SousChef '{}'. "
+            "Here's the error message: {}"
+            .format(sc.slug, e.message))
 
     return jsonify(sc)
 

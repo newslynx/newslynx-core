@@ -1,3 +1,5 @@
+from collections import defaultdict, Counter
+
 from sqlalchemy import func, desc
 
 from newslynx.models import Event, Recipe, Tag, SousChef, ContentItem
@@ -150,6 +152,27 @@ def events(by, event_ids):
         'provenances': events_by_provenances
     }
     return fx_lookup.get(by)(event_ids)
+
+
+def event_statuses_by_recipes(recipe_ids):
+    """
+    Count the number of content_items associated with sous chefs.
+    """
+    event_counts = db.session\
+        .query(Event.recipe_id, Event.status, func.count(Event.status))\
+        .filter(Event.recipe_id.in_(recipe_ids))\
+        .group_by(Event.recipe_id, Event.status).all()
+
+    # explicitly shutdown session started in greenlet
+    db.session.remove()
+    event_counts = [dict(zip(['recipe_id', 'status', 'count'], c)) for c in event_counts]
+    d = defaultdict(dict)
+    for ec in event_counts:
+        if ec['recipe_id'] not in d:
+            d[ec['recipe_id']]['total'] = 0
+        d[ec['recipe_id']][ec['status']] = ec['count']
+        d[ec['recipe_id']]['total'] += ec['count']
+    return d
 
 
 # content_items

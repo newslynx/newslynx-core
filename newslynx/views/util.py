@@ -7,6 +7,7 @@ import re
 from flask import request, Response, url_for
 from flask import Blueprint
 
+from newslynx.core import db
 from newslynx.exc import NotFoundError, RequestError
 from newslynx.lib import dates
 from newslynx.lib.serialize import json_to_obj
@@ -14,7 +15,6 @@ from newslynx import settings
 from newslynx.models.util import get_table_columns
 from newslynx.constants import *
 
-BOOL_TRUISH = ['true', '1', 'yes', 'y', 't', 'on']
 
 RE_HEX_CODE = re.compile(r'^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$')
 
@@ -59,7 +59,11 @@ def arg_bool(name, default=False):
     v = request.args.get(name, '')
     if not len(v):
         return default
-    return v.lower() in BOOL_TRUISH
+    if v.lower() in TRUE_VALUES:
+        return True
+    if v.lower() in FALSE_VALUES:
+        return False
+    return default
 
 
 def arg_date(name, default=None):
@@ -381,6 +385,7 @@ def validate_content_item_facets(values):
             "'{}' {}. Choose from: {}."
             .format(', '.join(bad_values), msg, facets))
 
+
 def validate_content_item_provenances(value):
     """
     check a list of values against ContentItem provenances.
@@ -392,6 +397,7 @@ def validate_content_item_provenances(value):
         raise RequestError(
             "'{}' is not a valid ContentItem provenance. Choose from {}."
             .format(value, provenances))
+
 
 def validate_sous_chef_creates(values):
     """
@@ -491,6 +497,18 @@ def obj_or_404(obj, message):
     """
     if obj is None:
         raise NotFoundError(message)
+
+
+# Localization
+def localize(org):
+    """
+    Localize a session to an org's settings.
+    """
+    localize = arg_bool('localize', default=False)
+    if localize:
+        db.session.execute("SET TIMEZONE TO '{}'".format(org.timezone))
+    else:
+        db.session.execute("SET TIMEZONE TO UTC")
 
 
 # Blueprints

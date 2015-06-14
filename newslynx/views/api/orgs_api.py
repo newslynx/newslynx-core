@@ -8,9 +8,11 @@ from newslynx.exc import (
     AuthError, RequestError, ForbiddenError, NotFoundError)
 from newslynx.views.decorators import load_user
 from newslynx.views.util import (
-    request_data, BOOL_TRUISH, delete_response, arg_bool)
+    request_data, delete_response, arg_bool, localize)
 from newslynx.init import load_default_tags, load_default_recipes
 from newslynx.exc import RecipeSchemaError
+from newslynx.constants import TRUE_VALUES, FALSE_VALUES
+
 
 # bp
 bp = Blueprint('orgs', __name__)
@@ -28,6 +30,10 @@ def org_create(user):
 
     req_data = request_data()
 
+    if 'name' not in req_data or 'timezone' not in req_data:
+        raise RequestError(
+            "An Org requires a 'name' and 'timezone'.")
+
     if not user.admin:
         raise ForbiddenError(
             'You must be an admin to create or update an Org')
@@ -43,7 +49,7 @@ def org_create(user):
             .format(req_data['name']))
 
     # add the requesting user to the org
-    org = Org(name=req_data['name'])
+    org = Org(name=req_data['name'], timezone=req_data['timezone'])
     org.users.append(user)
     db.session.add(org)
     db.session.commit()
@@ -62,7 +68,7 @@ def org_create(user):
         sous_chef_slug = recipe.pop('sous_chef')
         if not sous_chef_slug:
             raise RecipeSchemaError(
-                'Default recipe "{}" is missing a "sous_chef" slug.'
+                "Default recipe '{}' is missing a 'sous_chef' slug."
                 .format(recipe.get('name', '')))
 
         sc = SousChef.query\
@@ -99,6 +105,9 @@ def org(user, org_id_slug):
         raise ForbiddenError(
             'You are not allowed to access this Org')
 
+    # localize
+    localize(org)
+
     return jsonify(org)
 
 
@@ -107,10 +116,6 @@ def org(user, org_id_slug):
 def org_update(user, org_id_slug):
 
     req_data = request_data()
-
-    if not user.admin:
-        raise ForbiddenError(
-            'You must be an admin to create or update an Org')
 
     # fetch org
     org = fetch_by_id_or_field(Org, 'slug', org_id_slug)
@@ -124,6 +129,9 @@ def org_update(user, org_id_slug):
         raise ForbiddenError(
             "You are not allowed to access this Org.")
 
+    # localize
+    localize(org)
+
     # update the requesting user to the org
     if 'name' in req_data:
         org.name = req_data['name']
@@ -131,8 +139,17 @@ def org_update(user, org_id_slug):
     if 'slug' in req_data:
         org.slug = req_data['slug']
 
-    db.session.add(org)
-    db.session.commit()
+    if 'timezone' in req_data:
+        org.timezone = req_data['timezone']
+
+    try:
+        db.session.add(org)
+        db.session.commit()
+    except Exception as e:
+        raise RequestError(
+            "An error occurred while updating this Org '{}'. "
+            "Here's the error message: {}"
+            .format(org.name, e.message))
 
     return jsonify(org)
 
@@ -152,6 +169,9 @@ def org_delete(user, org_id_slug):
     if not org:
         raise NotFoundError(
             'This Org does not exist.')
+
+    # localize
+    localize(org)
 
     # ensure the active user can edit this Org
     if user.id not in org.user_ids:
@@ -177,6 +197,9 @@ def org_users(user, org_id_slug):
         raise NotFoundError(
             'This Org does not exist.')
 
+    # localize
+    localize(org)
+
     # ensure the active user can edit this Org
     if user.id not in org.user_ids:
         raise ForbiddenError(
@@ -201,7 +224,7 @@ def org_create_user(user, org_id_slug):
     name = req_data.get('name')
     admin = req_data.get('admin', False)
     if not isinstance(admin, bool):
-        if str(admin) in BOOL_TRUISH:
+        if str(admin).lower() in TRUE_VALUES:
             admin = True
 
     if not all([email, password, name]):
@@ -214,6 +237,9 @@ def org_create_user(user, org_id_slug):
     # if it still doesn't exist, raise an error.
     if not org:
         raise NotFoundError('This Org does not exist.')
+
+    # localize
+    localize(org)
 
     # ensure the active user can edit this Org
     if user.id not in org.user_ids:
@@ -253,6 +279,9 @@ def org_user(user, org_id_slug, user_email):
         raise ForbiddenError(
             'You are not allowed to access this Org')
 
+    # localize
+    localize(org)
+
     # get this new user by id / email
     org_user = fetch_by_id_or_field(User, 'email', user_email)
 
@@ -289,6 +318,9 @@ def org_add_user(user, org_id_slug, user_email):
         raise ForbiddenError(
             'You are not allowed to edit this Org.')
 
+    # localize
+    localize(org)
+
     # get this new user by id / email
     new_org_user = fetch_by_id_or_field(User, 'email', user_email)
 
@@ -321,6 +353,9 @@ def org_remove_user(user, org_id_slug, user_email):
     # if it still doesn't exist, raise an error.
     if not org:
         raise NotFoundError('This Org does not exist.')
+
+    # localize
+    localize(org)
 
     # ensure the active user can edit this Org
     if user.id not in org.user_ids:

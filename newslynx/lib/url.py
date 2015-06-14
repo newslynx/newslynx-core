@@ -437,7 +437,7 @@ def is_image(url):
 
 def is_shortened(url, pattern=None):
     """
-    test url for short links, allow str / list / retype's and passing in custom urls
+    test url for short links.
     """
     # pass in specific regexes
     if pattern:
@@ -446,14 +446,14 @@ def is_shortened(url, pattern=None):
         # because of this
         if pattern.match(url):
             return True
-
-    # test against bitly-ish short url pattern
-    if re_short_url.search(url):
-        return True
-
+ 
     # test against known short domains
     domain = get_domain(url)
     if re_short_domains.search(domain):
+        return True
+
+    # test against bitly-ish short url pattern
+    if re_short_url.search(url):
         return True
 
     return False
@@ -653,6 +653,15 @@ def is_valid(url):
     method just for checking weird results from `_get_location` in `_unshorten`
     """
     return MIN_LEN < len(url) < MAX_LEN and 'localhost' not in url and 'mailto:' not in url
+
+
+def validate(url):
+    """
+    Check if a url is valid (for form inputs).
+    """
+    if re_url.search(url) is None:
+        return False
+    return is_valid(url)
 
 
 def categorize_links(links, source_domain):

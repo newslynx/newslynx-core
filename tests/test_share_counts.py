@@ -17,7 +17,7 @@ class TestShareCounts(unittest.TestCase):
         self.assertIn('facebook_comments', counts)
         self.assertIn('facebook_likes', counts)
 
-    def test_google(self):
+    def test_googleplus(self):
         counts = shares.count(url, sources='googleplus')
         self.assertIn('googleplus_shares', counts)
 

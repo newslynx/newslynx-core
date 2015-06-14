@@ -2,7 +2,6 @@ import uuid
 import hashlib
 from datetime import datetime, timedelta
 import random
-import copy
 from random import choice
 
 from faker import Faker
@@ -13,9 +12,10 @@ from newslynx.init import (
     load_sous_chefs)
 from newslynx.models import *
 from newslynx.core import db_session
+from newslynx.lib import dates
+from newslynx.lib.serialize import obj_to_json
 from newslynx.constants import *
 from newslynx.exc import RecipeSchemaError
-from newslynx.tasks import view
 
 # fake factory
 fake = Faker()
@@ -31,59 +31,67 @@ AUTHORS = ['Michael Keller', 'Brian Abelson', 'Merlynne Jones']
 METRICS = [
     {
         'name': 'pageviews',
-        'category': 'performance',
+        'display_name': 'Pageviews',
         'level': 'content_item',
+        'aggregation': 'sum',
         'timeseries': True,
-        'cumulative': False
+        'cumulative': False,
+        'faceted': False
     },
     {
-        'name': 'on_homepage',
-        'category': 'promotion',
+        'name': 'time_on_homepage',
+        'display_name': 'Time on homepage',
         'level': 'content_item',
+        'aggregation': 'sum',
         'timeseries': True,
-        'cumulative': False
+        'cumulative': False,
+        'faceted': False
     },
     {
         'name': 'twitter_shares',
-        'category': 'performance',
+        'display_name': 'Twitter Shares',
         'level': 'content_item',
+        'aggregation': 'sum',
         'timeseries': True,
-        'cumulative': False
+        'cumulative': True,
+        'faceted': False
     },
     {
         'name': 'external_pageviews',
-        'category': 'performance',
+        'display_name': 'External Pageviews',
         'level': 'content_item',
+        'aggregation': 'sum',
         'timeseries': False,
-        'cumulative': False
+        'cumulative': False,
+        'faceted': False
     },
     {
-        'name': 'pageviews_by_referrer__google_com',
-        'category': 'performance',
+        'name': 'pageviews_by_referrer',
+        'display_name': 'Pageviews by Referrer',
         'level': 'content_item',
+        'aggregation': 'sum',
         'timeseries': False,
-        'cumulative': False
-    },
-    {
-        'name': 'pageviews_by_referrer__reddit_com',
-        'category': 'performance',
-        'level': 'content_item',
-        'timeseries': False,
-        'cumulative': False
+        'cumulative': False,
+        'faceted': True
     },
     {
         'name': 'facebook_page_likes',
-        'category': 'performance',
+        'display_name': 'Facebook Page Likes',
         'level': 'org',
+        'aggregation': 'sum',
         'timeseries': True,
-        'cumulative': False
+        'cumulative': True,
+        'faceted': False
     },
     {
         'name': 'twitter_followers',
-        'category': 'performance',
+        'display_name': 'Twitter Followers',
         'level': 'org',
+        'aggregation': 'sum',
         'timeseries': True,
-        'cumulative': False
+        'cumulative': True,
+        'faceted': False
+
     }
 ]
 
@@ -178,7 +186,7 @@ def gen_user():
 
 # Org
 def gen_org(users):
-    o = Org(name=fake.company())
+    o = Org(name=fake.company(), timezone='America/New_York')
     o.users.extend(users)
     db_session.add(o)
     db_session.commit()
@@ -213,14 +221,15 @@ def gen_built_in_recipes(org):
             raise RecipeSchemaError(
                 'Default recipe "{}" is missing a "sous_chef" slug.'
                 .format(recipe.get('name', '')))
-
-        sc = SousChef.query.filter_by(slug=sous_chef_slug).first()
+        sc = SousChef.query\
+            .filter_by(slug=sous_chef_slug)\
+            .first()
         if not sc:
             raise RecipeSchemaError(
                 '"{}" is not a valid SousChef slug or the SousChef does not yet exist.'
-                .format(recipe['name']))
+                .format(sous_chef_slug))
         r = db_session.query(Recipe)\
-            .filter_by(org_id=org.id, name=recipe['name'])\
+            .filter_by(org_id=org.id, slug=recipe['slug'])\
             .first()
         if not r:
 
@@ -383,30 +392,64 @@ def gen_content_item(org, recipes, subject_tags, authors):
 # METRICS
 
 
-def gen_metrics(org, content_item, recipe, metric, n=100):
-    for i in xrange(n):
-
-        if metric['cumulative']:
-            value = i * 1.25
-        else:
-            value = random_int(10, 10000)
-
-        if metric['timeseries']:
-            created = datetime.utcnow() - timedelta(days=(n - i))
-            created += timedelta(hours=random_int(0, 48))
-            created += timedelta(minutes=random_int(0, 120))
-        else:
-            created = None
+def gen_metrics(org, recipes):
+    _metrics = []
+    for metric in METRICS:
+        r = choice(recipes)
 
         m = Metric(
             org_id=org.id,
-            recipe_id=recipe.id,
-            content_item_id=content_item.id,
-            value=value,
-            created=created,
-            meta=random_meta(),
+            recipe_id=r.id,
             **metric)
         db_session.add(m)
+        _metrics.append(m)
+    db_session.commit()
+    return _metrics
+
+
+def gen_content_metric_timeseries(org, content_items, metrics, n_content_item_timeseries_metrics=1000):
+    for _ in xrange(n_content_item_timeseries_metrics):
+        _metrics = {}
+        for m in metrics:
+            if m.level == 'content_item':
+                _metrics[m.name] = random_int(1, 1000)
+
+        cmd_kwargs = {
+            'org_id': org.id,
+            'content_item_id': choice(content_items).id,
+            'datetime': dates.floor(random_date(1, 7), unit='hour', value=1),
+            'metrics': obj_to_json(_metrics)
+        }
+        # upsert command
+        cmd = """SELECT upsert_content_metric_timeseries(
+                    {org_id},
+                    {content_item_id},
+                    '{datetime}',
+                    '{metrics}');
+               """.format(**cmd_kwargs)
+        db_session.execute(cmd)
+    db_session.commit()
+
+
+def gen_org_metric_timeseries(org, metrics, n_org_timeseries_metrics=1000):
+    for _ in xrange(n_org_timeseries_metrics):
+        _metrics = {}
+        for m in metrics:
+            if m.level == 'org':
+                _metrics[m.name] = random_int(1, 7)
+
+        cmd_kwargs = {
+            'org_id': org.id,
+            'datetime': dates.floor(random_date(1, 5), unit='hour', value=1),
+            'metrics': obj_to_json(_metrics)
+        }
+        # upsert command
+        cmd = """SELECT upsert_org_metric_timeseries(
+                    {org_id},
+                    '{datetime}',
+                    '{metrics}');
+               """.format(**cmd_kwargs)
+        db_session.execute(cmd)
     db_session.commit()
 
 
@@ -417,7 +460,8 @@ def main(
         n_subject_tags=10,
         n_impact_tags=10,
         n_events=500,
-        n_metrics_per_content_item=5,
+        n_content_item_timeseries_metrics=1000,
+        n_org_timeseries_metrics=1000,
         n_content_items=50,
         verbose=True):
 
@@ -432,43 +476,44 @@ def main(
     recipes = gen_built_in_recipes(org)
 
     # generate content_items + metrics
+    if verbose:
+        print "generating {} content items".format(n_content_items)
     content_items = []
     for i in xrange(n_content_items):
-
         content_item = gen_content_item(org, recipes, subject_tags, authors)
         content_items.append(content_item)
-        for metric in METRICS:
-            recipe = choice(recipes)
-            if not metric['timeseries']:
-                n_metrics = 1
-            else:
-                n_metrics = copy.copy(n_metrics_per_content_item)
-            if verbose:
-                print "generating {} {} for content_item {} of {}"\
-                    .format(n_metrics, metric['name'], i, n_content_items)
-
-            gen_metrics(org, content_item, recipe, metric, n_metrics)
 
     if verbose:
         print "generating {} events".format(n_events)
 
-    # # generate links
-    # if verbose:
-    #     print "generating in/out links"
+    metrics = gen_metrics(org, recipes)
 
-    # for content_item in content_items:
-    #     t = choice(content_items)
-    #     content_item.out_links.append(t)
+    if verbose:
+        print "generating {} content item timeseries metrics"\
+            .format(n_content_item_timeseries_metrics)
+
+    gen_content_metric_timeseries(
+        org,
+        content_items,
+        metrics,
+        n_content_item_timeseries_metrics)
+
+    if verbose:
+        print "generating {} org timeseries metrics"\
+            .format(n_org_timeseries_metrics)
+
+    gen_org_metric_timeseries(
+        org,
+        metrics,
+        n_org_timeseries_metrics)
+
+    if verbose:
+        print "generating {} events"\
+            .format(n_events)
 
     # generate events
     gen_events(org, recipes, impact_tags, content_items, n_events)
     db_session.commit()
-
-    if verbose:
-        print "generating views."
-    # generate views
-    # view.content_item_timeseries()
-    # view.org_timeseries()
 
 
 def run(**kw):

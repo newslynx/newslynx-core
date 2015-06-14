@@ -1,9 +1,6 @@
-from flask import Blueprint
-from jinja2 import Template
+from flask import Blueprint, render_template
 
 from newslynx.lib.serialize import jsonify
-from newslynx.lib import dates
-from newslynx.lib import shares
 from newslynx.models import ExtractCache
 from newslynx.views.util import arg_str, arg_bool
 from newslynx.views.decorators import load_user
@@ -11,18 +8,14 @@ from newslynx.exc import RequestError, InternalServerError
 from newslynx.util import here
 
 # bp
-bp = Blueprint('urls', __name__)
+tmpl_folder = here(__file__, 'templates/')
+bp = Blueprint('extract', __name__, template_folder=tmpl_folder)
 
 # a cache to optimize calls to this api
 extract_cache = ExtractCache()
 
-# TODO: Figure out how to properly implement templates in flask blueprints.
-# This may be a #wontfix since we only need this page.
-templ_file = here(__file__, 'templates/urls_extract.html')
-EXTRACT_TMPL = Template(open(templ_file).read())
 
-
-@bp.route('/api/v1/urls/extract', methods=['GET'])
+@bp.route('/api/v1/extract', methods=['GET'])
 @load_user
 def extract(user):
     url = arg_str('url', default=None)
@@ -45,15 +38,10 @@ def extract(user):
         'cache': cr,
         'data': cr.value
     }
+
     if format == 'html':
-        return EXTRACT_TMPL.render(data=resp)
+        return render_template(
+            'extract_preview.html',
+            data=resp)
+
     return jsonify(resp)
-
-
-@bp.route('/api/v1/urls/share-counts', methods=['GET'])
-@load_user
-def share_counts(user):
-    url = arg_str('url', default=None)
-    data = shares.count(url)
-    data['datetime'] = dates.floor_now()
-    return jsonify(data)

@@ -179,7 +179,7 @@ class URLCache(Cache):
 class ExtractCache(Cache):
 
     """
-    A redis cache of source_url > extracted data.
+    A redis cache of source_url => extracted data.
     """
     key_prefix = settings.EXTRACT_CACHE_PREFIX
     ttl = settings.EXTRACT_CACHE_TTL

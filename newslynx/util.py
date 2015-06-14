@@ -7,11 +7,6 @@ import random
 from uuid import uuid4
 from hashlib import md5
 
-from hashids import Hashids
-
-# a constructor of short hashes.
-hashids = Hashids()
-
 
 def here(f, *args):
     """
@@ -24,31 +19,27 @@ def recursive_listdir(directory):
     """
     Recursively list files under a directory.
     """
-    return (os.path.join(dp, f) for dp, dn, fn in os.walk(os.path.expanduser(directory)) for f in fn)
+    return (os.path.join(dp, f) for dp, dn, fn in
+            os.walk(os.path.expanduser(directory)) for f in fn)
 
 
-def update_nested_dict(d, u):
+def update_nested_dict(d, u, overwrite=False):
     """
     Recursively update a nested dictionary.
     From: http://stackoverflow.com/questions/3232943/update-value-of-a-nested-dictionary-of-varying-depth
     """
     for k, v in u.iteritems():
         if isinstance(v, collections.Mapping):
-            r = update_nested_dict(d.get(k, {}), v)
+            r = update_nested_dict(d.get(k, {}), v, overwrite)
             d[k] = r
         else:
-            if not d.get(k):
+            # only add it if it doesn't already exist
+            if not overwrite:
+                if not d.get(k):
+                    d[k] = u[k]
+            else:
                 d[k] = u[k]
     return d
-
-
-def gen_hash_id(n=None):
-    """
-    Generate a short hash id.
-    """
-    if not n:
-        n = random.choice(range(1, 10000))
-    return hashids.encode(n)
 
 
 def gen_uuid():
@@ -59,14 +50,24 @@ def gen_uuid():
     return md5(s).hexdigest()
 
 
-def check_plugin(m, *plugins):
+def gen_short_uuid(n=6):
+    """
+    Generate a short hash id.
+    """
+    uuid = gen_uuid()
+    start = random.choice(range(1, (len(uuid) - n)+1))
+    end = start + n
+    return uuid[start:end]
+
+
+def check_plugin(m, *args):
     """"
     Check if a plugin has been activated.
     """
     tests = []
-    for p in plugins:
+    for a in args:
         # check for optional plugins
-        if hasattr(m, p) and getattr(m, p, None):
+        if hasattr(m, a) and getattr(m, a, None):
             tests.append(True)
         else:
             tests.append(False)

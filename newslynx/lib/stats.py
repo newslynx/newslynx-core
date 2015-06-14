@@ -13,4 +13,6 @@ def parse_number(n):
         try:
             return int(n)
         except ValueError:
-            raise ValueError
+            raise ValueError(
+                '"{}" is not a valid number.'
+                .format(n))

@@ -90,28 +90,21 @@ Exception KeyError: KeyError(4332017936,) in <module 'threading' from '/System/L
 - [x] Update create org endpoint to generate default recipes + tags.
 - [x] Implement SousChefs API 
 - [x] Implement Recipes API
-- [ ] Implement Thing Creation API
+- [x] Implement Thing Creation API
 - [ ] Implement SQL Query API
-- [ ] Implement Extraction API
+- [x] Implement Extraction API
 - [x] Implement Event Creation API
 - [ ] Implement Metrics API:
-    - [x] Figure out how to use `tablefunc` for pivot tables. DO WE ACTUALLY NEED THIS?
-    - [ ] Create metrics table which contains information
+    - [x] Create metrics table which contains information
           on each metric (name, timeseries agg method,
           summary agg method, cumulative, metric 
           category, level, etc)
-    - [ ] Faceted metrics only need to declare the facet 
+    - [x] Faceted metrics only need to declare the facet 
           name, not all their potential facet values.
     - [ ] Sous Chefs that create metrics must declare
           which metrics they create.
     - [ ] When a recipe is created for a sous chef that 
           creates metrics, these metrics should be created for the associated organization
-    - [ ] When an org adds/modifies a calculated metric 
-          these metrics must be immediately created and 
-          all of their views / reports must be immediately refreshed. This will obviously 
-          happen in a background task.
-    - [ ] Upon subsequent view refreshes, calculated
-          metrics must be included.
     - [ ] Timeseries Metrics for things will only be   
           collected 30 days after publication. After 
           this period an article moves into an "archived"
@@ -121,20 +114,24 @@ Exception KeyError: KeyError(4332017936,) in <module 'threading' from '/System/L
           functionalites:
           - [ ] Timeseries Aggregations
              - [ ] Thing level 
-                - [ ] By hour + day
-             - [ ] Tag Level (subsequent aggregations of things)
-                - [ ] By hour + day, month
+                - [ ] By hour + day.
+             - [ ] Subject Tag Level (subsequent aggregations of things)
+                - [ ] By day.
+             - [ ] Impact Tag Level (aggregations of events => non customizable.)
+                - [ ] By day.
              - [ ] Org Level (This should include 
                    summaries of thing-level statistics,
                    tag-level statistics, and event-level 
                    statistics)
-                - [ ] By hour + day, month
+                - [ ] By day, month
              - [ ] optionally return cumulative sums when
                    appropriate
           - [ ] Summary Stats
-            - [ ] Thing Level
-            - [ ] Tag Level
+            - [ ] Impact Tag Level
+            - [ ] Subject Tag Level
+            - [ ] Impact Tag Level
             - [ ] Organization Level
+            - [ ] These should be Archived Every day. and percent changes should be computed over time periods.
 
 - [ ] Implement Reports API (Are these just metrics?)
     - [ ] reports are json objects
@@ -173,6 +170,7 @@ Exception KeyError: KeyError(4332017936,) in <module 'threading' from '/System/L
     - [ ] Search Things => Tag 
     - [ ] Meltwater Emails => Event
     - [ ] Newsletter Email Promotions => Metric
+    - [ ] Calculated Metric? SQL API.
 - [x] Implement Recipe scheduler
 - [ ] Implement Admin Panel
 - [ ] Migrate Core Prototype Users.

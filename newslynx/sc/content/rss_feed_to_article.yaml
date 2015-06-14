@@ -4,12 +4,19 @@ description: Extracts articles from an RSS Feed.
 runs: newslynx.sc.content.rss_feed.Article
 creates: content
 options:
+
+    # custom options
     feed_url:
-        type: text
+        input_type: text
+        value_types:
+            - url
         required: true
         help:
             placeholder: http://propalpatine.org/feed.xml
-    # internal options
+    
+    # default options
     interval:
-        type: number
+        input_type: number
+        value_types:
+            - numeric
         default: 1800

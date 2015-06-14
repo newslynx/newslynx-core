@@ -107,29 +107,29 @@ def fb_callback():
     tokens = fb_extend_oauth_token(temp_access_token)
 
     # upsert settings
-    facebook_settings = Auth.query\
+    facebook_token = Auth.query\
         .filter_by(name='facebook', org_id=org_id)\
         .first()
 
-    if not facebook_settings:
+    if not facebook_token:
 
         # create settings object
-        facebook_settings = Auth(
+        facebook_token = Auth(
             org_id=org_id,
             name='facebook',
             value=tokens)
 
     else:
-        facebook_settings.value = tokens
+        facebook_token.value = tokens
 
-    db.session.add(facebook_settings)
+    db.session.add(facebook_token)
     db.session.commit()
 
     if redirect_uri:
         uri = url.add_query_params(redirect_uri, auth_success='true')
         return redirect(uri)
 
-    return jsonify(facebook_settings)
+    return jsonify(facebook_token)
 
 
 @bp.route('/api/v1/auths/facebook/revoke', methods=['GET'])

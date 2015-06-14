@@ -6,9 +6,12 @@ from newslynx.lib import dates
 from newslynx.lib import url
 from newslynx.lib import text
 from newslynx.lib import html
+from newslynx.lib import stats
+from newslynx.lib.serialize import obj_to_json
 from newslynx.models import URLCache
 from newslynx import settings
 from newslynx.exc import RequestError
+from newslynx.constants import METRIC_FACET_KEYS
 
 # the url cache object
 url_cache = URLCache()
@@ -57,7 +60,7 @@ def prepare_date(o, field):
         return None
     if o[field] is None:
         return None
-    dt = dates.parse_any(o[field])
+    dt = dates.parse_iso(o[field])
     if not dt:
         raise RequestError(
             '{}: {} is an invalid date.'
@@ -100,4 +103,48 @@ def split_meta(obj, cols):
         if k not in cols:
             meta[k] = obj.pop(k)
     obj['meta'] = meta
+    return obj
+
+
+def prepare_metrics(
+        obj,
+        org_metric_lookup,
+        valid_levels=[],
+        parent_obj='ContentItem',
+        check_timeseries=True
+        ):
+    """
+    Validate a metric.
+    """
+    # check if metrics exist and are properly formatted.
+    for k in obj.keys():
+        m = org_metric_lookup.get(k)
+        if not m:
+            raise RequestError(
+                "Metric '{}' does not exist."
+                .format(k))
+
+        if check_timeseries and not m['timeseries']:
+            raise RequestError(
+                "Metric '{}' is not a timeseries metric."
+                .format(k))
+
+        if m['level'] not in valid_levels:
+            raise RequestError(
+                "Metric '{}' cannot be applied to a {}."
+                .format(k, parent_obj))
+
+        if m['faceted'] and not isinstance(obj[k], list):
+            raise RequestError(
+                "Metric '{}' is faceted but was not passed in as a list."
+                .format(k))
+
+        if m['faceted'] and not set(obj[k][0].keys()) == set(METRIC_FACET_KEYS):
+            raise RequestError(
+                "Metric '{}' is faceted, but it\'s elements are not properly formatted. "
+                "Each facet must be a dictionary of '{\"facet\":\"facet_name\", \"value\": 1234}"
+                .format(k))
+
+        # parse number
+        obj[k] = stats.parse_number(obj[k])
     return obj

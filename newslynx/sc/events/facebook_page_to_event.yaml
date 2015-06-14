@@ -6,37 +6,52 @@ creates: events
 options:
     
     page_name:
-        type: text
+        input_type: text
+        value_types:
+            - string
         required: true
         help:
             placeholder: propalpatine
 
     search_query:
-        type: searchstring
+        input_type: text
+        value_types:
+            - searchstring
         default: null
         required: false
         help:
+            description: |
+                A search query to apply to the 
             placeholder: "~fracking | drilling"
 
-    set_event_type:
-        type: text
-        default: alert
-        options: 
-            - alert
-            - promotion
-
     set_event_status:
-        type: text
-        default: pending
-        options:
+        input_type: select
+        input_options:
             - pending
             - approved
+        value_types: 
+            - string
+        default: pending
+        help:
+            placeholder: "pending"
+    
+    tag_ids:
+        input_type: checkbox
+        accepts_list: true 
+        value_types:
+            - string 
+            - numeric 
+        default: []
+        help:
+            description: |
+                A list of Tag IDs or slugs to automatically
+                apply to events created by this recipe.
+            placeholder: "pending"
 
-    tag:
-        type: text
-        default: null
 
     # internal options
     interval:
-        type: number
+        input_type: number
+        value_types:
+            - numeric
         default: 7200

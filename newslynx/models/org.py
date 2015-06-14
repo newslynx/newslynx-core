@@ -1,4 +1,5 @@
 import copy
+from sqlalchemy.dialects.postgresql import ENUM
 
 from slugify import slugify
 
@@ -15,6 +16,7 @@ class Org(db.Model):
     id = db.Column(db.Integer, unique=True, index=True, primary_key=True)
     name = db.Column(db.Text, unique=True, index=True)
     slug = db.Column(db.Text, unique=True, index=True)
+    timezone = db.Column(ENUM(*list(dates.TIMEZONES), name='org_timezones_enum'))
     created = db.Column(db.DateTime(timezone=True), default=dates.now)
     updated = db.Column(db.DateTime(timezone=True), onupdate=dates.now, default=dates.now)
 
@@ -29,28 +31,20 @@ class Org(db.Model):
                                cascade="all, delete-orphan")
 
     # dynamic relations
-    users = db.relationship('User',
-                            secondary=orgs_users,
-                            backref=db.backref('orgs', lazy='joined'),
-                            lazy='joined')
-    events = db.relationship('Event',
-                             lazy='dynamic',
-                             cascade='all')
-    content_items = db.relationship('ContentItem',
-                                    lazy='dynamic',
-                                    cascade='all')
-    metrics = db.relationship('Metric',
-                              lazy='dynamic',
-                              cascade='all')
-    recipes = db.relationship('Recipe',
-                              lazy='dynamic',
-                              cascade='all')
+    users = db.relationship(
+        'User', secondary=orgs_users,
+        backref=db.backref('orgs', lazy='joined'),
+        lazy='joined')
+    events = db.relationship('Event', lazy='dynamic', cascade='all')
+    content_items = db.relationship('ContentItem', lazy='dynamic', cascade='all')
+    metrics = db.relationship('Metric', lazy='dynamic', cascade='all')
+    recipes = db.relationship('Recipe', lazy='dynamic', cascade='all')
     authors = db.relationship('Author', lazy='dynamic')
-
     tags = db.relationship('Tag', lazy='dynamic', cascade='all')
 
     def __init__(self, **kw):
         self.name = kw.get('name')
+        self.timezone = kw.get('timezone', 'UTC')
         self.slug = kw.get('slug', slugify(kw['name']))
 
     @property
@@ -63,6 +57,15 @@ class Org(db.Model):
                 v = copy.copy(s.value)
             settings[s.name] = v
         return settings
+
+    @property
+    def metrics_lookup(self):
+        lookup = {}
+        for m in self.metrics:
+            m = m.to_dict()
+            name = m.pop('name')
+            lookup[name] = m
+        return lookup
 
     @property
     def user_ids(self):
@@ -80,6 +83,7 @@ class Org(db.Model):
         d = {
             'id': self.id,
             'name': self.name,
+            'timezone': self.timezone,
             'slug': self.slug,
             'created': self.created,
             'updated': self.updated

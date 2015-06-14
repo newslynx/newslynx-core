@@ -20,7 +20,7 @@ from newslynx.lib.serialize import json_to_obj, obj_to_json
 
 ALL_SOURCES = [
     'twitter', 'facebookfql', 'reddit', 'linkedin',
-    'delicious', 'facebook', 'pinterest', 'googleplus'
+    'facebook', 'pinterest', 'googleplus'
 ]
 
 DEFAULT_SOURCES = [
@@ -65,17 +65,17 @@ class ShareCount(object):
         return self.parse(data)
 
 
-class Delicious(ShareCount):
+# class Delicious(ShareCount):
 
-    endpoint = 'http://feeds.delicious.com/v2/json/urlinfo/data'
+#     endpoint = 'http://feeds.delicious.com/v2/json/urlinfo/data'
 
-    def parse(self, data):
-        if not len(data):
-            return {'delicious_shares': 0}
+#     def parse(self, data):
+#         if not len(data):
+#             return {'delicious_shares': 0}
 
-        return {
-            'delicious_shares': data[0]['count'],
-        }
+#         return {
+#             'delicious_shares': data[0]['count'],
+#         }
 
 
 class Facebook(ShareCount):
@@ -215,7 +215,7 @@ class ShareCounts(object):
         self.twitter = Twitter().count
         self.facebook = Facebook().count
         self.facebookfql = FacebookFQL().count
-        self.delicious = Delicious().count
+        # self.delicious = Delicious().count
         self.reddit = Reddit().count
         self.pinterest = Pinterest().count
         self.linkedin = LinkedIn().count

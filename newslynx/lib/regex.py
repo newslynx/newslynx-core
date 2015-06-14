@@ -4,6 +4,9 @@ A big ugly library of regexes
 
 import re
 
+# hack to check for regex type
+RE_TYPE = type(re.compile(r''))
+
 # ETC #
 re_whitespace = re.compile(r'\n|\t|\r|\s+')
 

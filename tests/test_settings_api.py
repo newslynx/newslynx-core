@@ -2,7 +2,6 @@ import unittest
 from faker import Faker
 
 from newslynx.client import API
-from newslynx import settings
 
 fake = Faker()
 
@@ -15,6 +14,13 @@ class TestSettingsAPI(unittest.TestCase):
         n = fake.name()
         s = self.api.settings.create(name=n, value='bar')
         assert s.name == n
+
+    def test_timezone_hack(self):
+        n = 'timezone'
+        s = self.api.settings.create(name=n, value='UTC')
+        assert s.name == n
+        org = self.api.orgs.get(self.org)
+        assert org.timezone == 'America/New_York'
 
     def test_create_json_value(self):
         n = fake.name()
@@ -41,13 +47,13 @@ class TestSettingsAPI(unittest.TestCase):
         s2 = self.api.settings.get(n)
         assert s1.name == s2.name
 
-    # def test_list(self):
-    #     n = fake.name()
-    #     s = self.api.settings.create(name=n, value='bar')
-    #     assert s.name == n
-    #     s = self.api.settings.list()
-    #     assert(isinstance(s, list))
-    #     assert('bar' in [ss.name for ss in s])
+    def test_list(self):
+        n = fake.name()
+        s = self.api.settings.create(name=n, value='bar')
+        assert s.name == n
+        s = self.api.settings.list()
+        assert(isinstance(s, list))
+        assert(n in [ss.name for ss in s])
 
 if __name__ == '__main__':
     unittest.main()

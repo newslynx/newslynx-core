@@ -12,7 +12,7 @@ from newslynx.models import User, SousChef
 from newslynx.init import load_sous_chefs
 from newslynx.lib.serialize import obj_to_json
 from newslynx import settings
-from newslynx.tests import random_data
+from newslynx.dev import random_data
 from newslynx.init import load_sql
 
 

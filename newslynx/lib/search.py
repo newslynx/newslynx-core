@@ -23,6 +23,7 @@ you cannot use punctuation in terms.
 
 import re
 import string
+from copy import copy
 
 import jellyfish
 from unidecode import unidecode
@@ -108,7 +109,7 @@ def ngrams(text, n):
     """
     split ngrams
     """
-    input_list = text.split()
+    input_list = text.split(" ")
     return zip(*[input_list[i:] for i in range(n)])
 
 
@@ -120,7 +121,7 @@ def phrase_grams(term):
 
 
 # ngram tokenizer
-def tokenizer(text, n=1):
+def tokenizer(text, n):
     """
     Tokenize text.
     """
@@ -163,6 +164,7 @@ class SearchString(object):
         if not text:
             return False
 
+        raw = copy(text)
         text = self._process_text(text, **kw)
         tests = []
 
@@ -175,7 +177,7 @@ class SearchString(object):
                 tests.append(self._fuzzy_match(term['term'], text))
 
             else:
-                tests.append(self._simple_match(term['term'], text))
+                tests.append(self._simple_match(term['term'], text, raw))
 
         return self.operator(tests)
 
@@ -185,11 +187,15 @@ class SearchString(object):
             "terms": self.terms
         }
 
-    def _simple_match(self, term, text):
+    def _simple_match(self, term, text, raw):
         """
         just check for a term or phrase.
         """
-        return term in text
+        if term in text:
+            return True
+        elif term in raw.lower():
+            return True
+        return False
 
     def _fuzzy_match(self, term, text):
         """

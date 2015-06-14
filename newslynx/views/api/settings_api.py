@@ -7,7 +7,8 @@ from newslynx.lib.serialize import jsonify, json_to_obj
 from newslynx.exc import RequestError, NotFoundError
 from newslynx.views.decorators import load_user, load_org
 from newslynx.views.util import (
-    request_data, BOOL_TRUISH, delete_response)
+    request_data, delete_response)
+from newslynx.constants import TRUE_VALUES
 
 # bp
 bp = Blueprint('settings', __name__)
@@ -63,6 +64,19 @@ def create_setting(user, org):
         db.session.commit()
     except Exception as e:
         raise RequestError(e.message)
+
+    # temporary hack for 'timezone' setting
+    if 'name' == 'timezone':
+        org.timezone = value
+
+        try:
+            db.session.add(org)
+            db.session.commit()
+        except Exception as e:
+            raise RequestError(
+                "An error occurred while updating the timezone. "
+                "Here's the error message: {}"
+                .format(org.name, e.message))
 
     return jsonify(s)
 
@@ -120,7 +134,7 @@ def update_setting(user, org, name_id):
 
     if json_value:
         if not isinstance(json_value, bool):
-            if str(json_value) in BOOL_TRUISH:
+            if str(json_value).lower() in TRUE_VALUES:
                 json_value = True
             else:
                 json_value = False

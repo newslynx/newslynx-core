@@ -5,9 +5,9 @@ import googleanalytics
 from urllib2 import HTTPError
 
 from googleanalytics.auth import Credentials
-from jinja2 import Template
 from flask import (
-    Blueprint, request, session, redirect, url_for
+    Blueprint, request, session, redirect, url_for,
+    render_template
 )
 
 from newslynx import settings
@@ -21,13 +21,10 @@ from newslynx.views.util import (
 from newslynx.lib import url
 from newslynx.util import here
 
-# TODO: Figure out how to properly implement templates in flask blueprints.
-# This may be a #wontfix since we only need this page.
-templ_file = here(__file__, 'templates/ga_properties.html')
-GA_PROP_TMPL = Template(open(templ_file).read())
-
 # blueprint
-bp = Blueprint('auth_google_analytics', __name__)
+tmpl_folder = here(__file__, 'templates/')
+bp = Blueprint('auth_google_analytics', __name__,
+               template_folder=tmpl_folder)
 
 if settings.GA_ENABLED:
     # auth flow #
@@ -170,7 +167,8 @@ def ga_callback():
     session['tokens'] = tokens
 
     # render customization form
-    return GA_PROP_TMPL.render(
+    return render_template(
+        'ga_properties.html',
         properties=properties,
         postback_url=postback_url)
 

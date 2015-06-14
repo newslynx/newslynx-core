@@ -3,6 +3,7 @@ from functools import wraps
 from flask import request
 
 from newslynx.models.util import fetch_by_id_or_field
+from newslynx.views.util import localize
 from newslynx.models import User, Org
 from newslynx.exc import (
     AuthError, ForbiddenError, NotFoundError)
@@ -67,6 +68,9 @@ def load_org(f):
             raise ForbiddenError(
                 'User "{}" is not allowed to access Org "{}".'
                 .format(user.name, org.name))
+
+        # check if we should localize this request
+        localize(org)
 
         kw['org'] = org
         return f(*args, **kw)

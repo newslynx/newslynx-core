@@ -1,6 +1,6 @@
 import os
 import copy
-import logging 
+import logging
 
 from requests import Session, Request
 from addict import Dict
@@ -110,6 +110,8 @@ class BaseClient(object):
             params['apikey'] = kw.pop('apikey')
         if 'org' in kw:
             params['org'] = kw.pop('org')
+        if 'localize' in kw:
+            params['localize'] = kw.pop('localize')
         for i in kw_incl:
             if i in kw:
                 params[i] = kw.pop(i)
@@ -435,27 +437,27 @@ class Recipes(BaseClient):
         url = self._format_url('recipes')
         return self._request('POST', url, data=kw, params=params)
 
-    def get(self, tag_id, **kw):
+    def get(self, recipe_id, **kw):
         """
         Get a tag
         """
-        url = self._format_url('tags', tag_id)
+        url = self._format_url('recipes', recipe_id)
         return self._request('GET', url, data=kw, params=kw)
 
-    def update(self, tag_id, **kw):
+    def update(self, recipe_id, **kw):
         """
         Update a tag
         """
         kw, params = self._split_auth_params_from_kw(kw)
-        url = self._format_url('tags', tag_id)
+        url = self._format_url('recipes', recipe_id)
         return self._request('PUT', url, data=kw, params=params)
 
-    def delete(self, tag_id, **kw):
+    def delete(self, recipe_id, **kw):
         """
         Delete a tag
         """
         kw, params = self._split_auth_params_from_kw(kw)
-        url = self._format_url('tags', tag_id)
+        url = self._format_url('recipes', recipe_id)
         return self._request('DELETE', url, params=kw)
 
 
@@ -566,7 +568,6 @@ class Reports(BaseClient):
 
 
 class API(BaseClient):
-
     """
     A class for interacting with the TenderEngine API.
     """
