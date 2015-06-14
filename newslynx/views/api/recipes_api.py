@@ -205,7 +205,7 @@ def delete_recipe(user, org, recipe_id):
     else:
         r.status = 'inactive'
         cmd = """
-        UPDATE events SET status='deleted' WHERE recipe_id = {};
+        UPDATE events SET status='deleted' WHERE recipe_id = {} AND status='pending';
         """.format(r.id)
         db.session.execute(cmd)
         db.session.add(r)
