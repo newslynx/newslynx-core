@@ -2,4 +2,5 @@ sous_chef: rss-feed-to-article
 name: Ingest Articles from an RSS Feed
 slug: rss-feed-to-article
 status: uninitialized
-options: {}
+options: 
+    name: 'Ingest Articles from an RSS Feed'
