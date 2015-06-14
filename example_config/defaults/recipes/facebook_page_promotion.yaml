@@ -1,12 +1,8 @@
 sous_chef: facebook-page-to-event
-name: Facebook Page to Promotion Event
+name: Staff Facebook Page to Promotion Event
 slug: facebook-page-to-event-promotion
 status: uninitialized
 options:
-    page_name: null
     set_event_status: approved
-    tag: promotion-internal
+    tag_ids: ['internal-promotion']
     interval: 900
-
-
-

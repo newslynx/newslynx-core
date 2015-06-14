@@ -21,12 +21,12 @@ options:
         help:
             placeholder: members-of-congress
     
-    min_folowers:
+    min_followers:
         input_type: number
         value_types:
             - numeric
             - nulltype
-        default: null
+        default: 0
         required: false
         help:
             placeholder: "Show from people with X followers, e.g. 5000."

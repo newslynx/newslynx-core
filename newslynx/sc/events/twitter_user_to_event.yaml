@@ -1,4 +1,4 @@
-name: Event from twitter user.
+name: Twitter User To Event
 slug: twitter-user-to-event
 description: Extracts events from a twitter user's timeline.
 runs: newslynx.sc.events.twitter.User
@@ -47,6 +47,16 @@ options:
                 A list of Tag IDs or slugs to automatically
                 apply to events created by this recipe.
             placeholder: "pending"
+
+    min_followers:
+        input_type: number
+        value_types:
+            - numeric
+            - nulltype
+        default: 0
+        required: false
+        help:
+            placeholder: "Show from people with X followers, e.g. 5000."
         
 
     # internal options
