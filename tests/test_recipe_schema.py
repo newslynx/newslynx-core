@@ -99,6 +99,7 @@ good_recipe = {
     "owner_screen_name": ["foobar", "uqbar"],
     "description": "This is what my cool twitter list recipe does.",
     "time_of_day": "9:30 AM",
+    "event_counts": {},
     "start_date": "2015-07-08",
     "interval": "null",
     "search_query": "~fracking | drilling",
@@ -155,6 +156,9 @@ class TestRecipeSchema(unittest.TestCase):
 
         # make sure interval was parsed to null properly
         assert(r['interval'] is None)
+
+        # make sure event counts is parsed to null
+        assert('event_counts' not in o)
 
         # make sure regex is parsed.
         assert(isinstance(o['user_regex'], RE_TYPE))
