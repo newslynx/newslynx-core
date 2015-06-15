@@ -301,6 +301,11 @@ class RecipeSchema(object):
                key != 'options':
                 self.recipe['options'][key] = self.recipe.pop(key)
 
+        # make sure no non-sc fields are in options
+        for key in self.recipe['options'].keys():
+            if key not in self.sous_chef_opts:
+                self.recipe['options'].pop(key, None)
+
     def update_sous_chef_defaults(self):
         """
         Merge in sous chef defaults.
