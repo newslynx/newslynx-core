@@ -54,10 +54,12 @@ options:
     
     tag_ids:
         input_type: checkbox
+        input_options:
+            - ''
         accepts_list: true 
         value_types:
             - string 
-            - numeric 
+            - numeric
         default: []
         help:
             description: |

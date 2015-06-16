@@ -1,0 +1,109 @@
+name: Share Counts
+slug: share-counts-to-content-metrics-timeseries
+description: |
+    Computes a timeseries of share counts for an organization's 
+    content items.
+runs: newslynx.sc.metrics.shares.TimeseriesCounts
+creates: metrics
+options:
+    
+    max_age:
+        input_type: number
+        value_types:
+            - numeric
+        default: 30
+        help:
+            placeholder: 30
+            description: |
+                The number of days past a content item's creation date
+                after which we will stop computing these counts.
+
+    content_item_types:
+        input_type: text
+        input_options:
+            - video
+            - article
+            - slideshow
+            - interactive
+            - podcast
+            - all
+        value_types:
+            - string
+        default: all
+        help:
+            placeholder: all
+            description: |
+                The content item types to calculate share counts for.
+
+    interval: 
+        input_type: number
+        value_types:
+            - numeric
+        default: 3600
+
+
+metrics:
+
+    facebook_shares:
+        display_name: Twitter Shares
+        aggregation: sum
+        level: all
+        cumulative: true
+        faceted: false
+        timeseries: true
+
+    facebook_likes:
+        display_name: Facebook Likes
+        aggregation: sum
+        level: all
+        cumulative: true
+        faceted: false
+        timeseries: true
+
+    facebook_comments:
+        display_name: Facebook Comments
+        aggregation: sum
+        level: all
+        cumulative: true
+        faceted: false
+        timeseries: true
+
+    linkedin_shares:
+        display_name: LinkedIn Shares
+        aggregation: sum
+        level: all
+        cumulative: true
+        faceted: false
+        timeseries: true
+
+    pinterest_shares:
+        display_name: Pinterest Shares
+        aggregation: sum
+        level: all
+        cumulative: true
+        faceted: false
+        timeseries: true
+
+    reddit_upvotes:
+        display_name: Reddit UpVotes
+        aggregation: sum
+        level: all
+        cumulative: true
+        faceted: false
+        timeseries: true
+
+    reddit_downvotes:
+        display_name: Reddit DownVotes
+        aggregation: sum
+        level: all
+        cumulative: true
+        faceted: false
+        timeseries: true
+
+    twitter_shares:
+        display_name: Twitter Shares
+        aggregation: sum
+        level: all
+        cumulative: true
+        faceted: false
+        timeseries: true

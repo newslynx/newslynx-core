@@ -15,7 +15,7 @@ from newslynx.models.sous_chef_schema import SOUS_CHEF_DEFAULT_OPTIONS
 from newslynx.constants import (
     TRUE_VALUES, FALSE_VALUES, NULL_VALUES,
     RECIPE_REMOVE_FIELDS, RECIPE_INTERNAL_FIELDS
-    )
+)
 
 # order type checking from most to least
 # finnicky
@@ -201,7 +201,7 @@ class RecipeSchema(object):
         if mail.validate(opt):
             return opt
         return RecipeSchemaError(
-            "{} can be a 'url' field but was passed '{}'."
+            "{} can be an 'email' field but was passed '{}'."
             .format(key, opt))
 
     def valid_regex(self, key, opt):
@@ -212,7 +212,7 @@ class RecipeSchema(object):
             return re.compile(opt)
         except:
             return RecipeSchemaError(
-                "{} can be a 'url' field but was passed '{}'."
+                "{} can be a 'regex' field but was passed '{}'."
                 .format(key, opt))
 
     def validate_type(self, key, opt, type):
@@ -299,6 +299,7 @@ class RecipeSchema(object):
             if key not in SOUS_CHEF_DEFAULT_OPTIONS.keys() and\
                key not in RECIPE_INTERNAL_FIELDS and\
                key != 'options':
+
                 self.recipe['options'][key] = self.recipe.pop(key)
 
         # make sure no non-sc fields are in options

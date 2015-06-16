@@ -436,11 +436,11 @@ def gen_org_metric_timeseries(org, metrics, n_org_timeseries_metrics=1000):
         _metrics = {}
         for m in metrics:
             if m.level == 'org':
-                _metrics[m.name] = random_int(1, 7)
+                _metrics[m.name] = random_int(1, 120)
 
         cmd_kwargs = {
             'org_id': org.id,
-            'datetime': dates.floor(random_date(1, 5), unit='hour', value=1),
+            'datetime': dates.floor(random_date(1, 120), unit='hour', value=1),
             'metrics': obj_to_json(_metrics)
         }
         # upsert command
@@ -460,8 +460,8 @@ def main(
         n_subject_tags=10,
         n_impact_tags=10,
         n_events=500,
-        n_content_item_timeseries_metrics=1000,
-        n_org_timeseries_metrics=1000,
+        n_content_item_timeseries_metrics=10000,
+        n_org_timeseries_metrics=10000,
         n_content_items=50,
         verbose=True):
 

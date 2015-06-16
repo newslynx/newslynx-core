@@ -30,6 +30,7 @@ from unidecode import unidecode
 
 from newslynx.exc import SearchStringError
 from newslynx.lib.regex import re_whitespace
+from newslynx.lib import html
 
 # sets for text cleaning.
 punct = frozenset(string.punctuation)
@@ -181,12 +182,6 @@ class SearchString(object):
 
         return self.operator(tests)
 
-    def to_dict(self):
-        return {
-            "operator": self.op,
-            "terms": self.terms
-        }
-
     def _simple_match(self, term, text, raw):
         """
         just check for a term or phrase.
@@ -229,6 +224,10 @@ class SearchString(object):
         # optionally remove digits
         if kw.get('remove_digits', True):
             text = "".join(map(lambda x: x if x not in digits else " ", text))
+
+        # optionally remove whitespace
+        if kw.get('remove_html', True):
+            text = html.strip_tags(text)
 
         # optionally remove whitespace
         if kw.get('remove_whitespace', True):

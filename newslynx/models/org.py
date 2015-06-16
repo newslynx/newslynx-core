@@ -7,6 +7,7 @@ from newslynx.core import db
 from newslynx.lib import dates
 from newslynx.lib.serialize import json_to_obj
 from newslynx.models.relations import orgs_users
+from newslynx.models import Metric
 
 
 class Org(db.Model):
@@ -16,9 +17,11 @@ class Org(db.Model):
     id = db.Column(db.Integer, unique=True, index=True, primary_key=True)
     name = db.Column(db.Text, unique=True, index=True)
     slug = db.Column(db.Text, unique=True, index=True)
-    timezone = db.Column(ENUM(*list(dates.TIMEZONES), name='org_timezones_enum'))
+    timezone = db.Column(
+        ENUM(*list(dates.TIMEZONES), name='org_timezones_enum'))
     created = db.Column(db.DateTime(timezone=True), default=dates.now)
-    updated = db.Column(db.DateTime(timezone=True), onupdate=dates.now, default=dates.now)
+    updated = db.Column(
+        db.DateTime(timezone=True), onupdate=dates.now, default=dates.now)
 
     # joins
     auths = db.relationship('Auth',
@@ -36,7 +39,8 @@ class Org(db.Model):
         backref=db.backref('orgs', lazy='joined'),
         lazy='joined')
     events = db.relationship('Event', lazy='dynamic', cascade='all')
-    content_items = db.relationship('ContentItem', lazy='dynamic', cascade='all')
+    content_items = db.relationship(
+        'ContentItem', lazy='dynamic', cascade='all')
     metrics = db.relationship('Metric', lazy='dynamic', cascade='all')
     recipes = db.relationship('Recipe', lazy='dynamic', cascade='all')
     authors = db.relationship('Author', lazy='dynamic')
@@ -58,14 +62,17 @@ class Org(db.Model):
             settings[s.name] = v
         return settings
 
-    @property
-    def metrics_lookup(self):
-        lookup = {}
-        for m in self.metrics:
-            m = m.to_dict()
-            name = m.pop('name')
-            lookup[name] = m
-        return lookup
+    def content_timeseries_metrics(self):
+        return self.metrics\
+            .filter(Metric.level.in_(['all', 'content_item']))\
+            .filter(Metric.timeseries)\
+            .all()
+
+    def timeseries_metrics(self):
+        return self.metrics\
+            .filter(Metric.level.in_(['all', 'org']))\
+            .filter(Metric.timeseries)\
+            .all()
 
     @property
     def user_ids(self):

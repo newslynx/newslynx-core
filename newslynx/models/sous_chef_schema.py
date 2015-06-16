@@ -1,4 +1,5 @@
 import os
+import re
 import importlib
 
 from jsonschema import Draft4Validator
@@ -21,6 +22,9 @@ SOUS_CHEF_DEFAULT_OPTIONS = yaml_to_obj(
 
 # a json-schema validator for a sous chef.
 SOUS_CHEF_VALIDATOR = Draft4Validator(SOUS_CHEF_JSON_SCHEMA)
+
+# a regex for validation option + metric names
+re_opt_name = re.compile(r'^[a-z][a-z_]+[a-z]$')
 
 
 def validate(sc):
@@ -88,6 +92,12 @@ def _validate_input_and_value_types(sc):
     """
     opts = sc.get('options', {})
     for k, v in opts.items():
+
+        if not re_opt_name.match(k):
+            raise SousChefSchemaError(
+                "SousChef option '{}' is invalid. "
+                "Options must follow the naming convention of '{}'."
+                .format(re_opt_name.pattern))
 
         if k in SOUS_CHEF_RESERVED_FIELDS:
             raise SousChefSchemaError(
@@ -157,6 +167,12 @@ def _validate_metrics_sous_chef(sc):
     # check special metrics edge cases.
     for name, config in metrics.items():
 
+        if not re_opt_name.match(name):
+            raise SousChefSchemaError(
+                "SousChef metric '{}' is invalid. "
+                "Metrics must follow the naming convention of '{}'."
+                .format(re_opt_name.pattern))
+
         # cumulative metrics must be timeseries metrics
         if config.get('cumulative', False) \
            and not config.get('timeseries', True):
@@ -185,7 +201,7 @@ def _validate_sous_chef_json_schema(sc):
     if len(schema_errors):
         message = "This SousChef config is improperly formatted. Here are the errors:"
         for error in schema_errors:
-            message += "\n{} - {}".format(error.path, error.message)
+            message += "\n{} - {}".format(".".join([str(i) for i in error.path]), error.message)
         raise SousChefSchemaError(message)
 
 
@@ -204,7 +220,7 @@ def _validate_python_sous_chef(sc):
         if not sous_chef:
             raise SousChefSchemaError(
                 '{} does not exist in module {}.'
-                .format(m, c))
+                .format(c, module))
 
     except ImportError:
         raise SousChefSchemaError(

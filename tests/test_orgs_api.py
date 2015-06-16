@@ -23,7 +23,7 @@ class TestOrgAPI(unittest.TestCase):
 
     def test_create(self):
         n = fake.name()
-        org1 = self.api.orgs.create(name=n)
+        org1 = self.api.orgs.create(name=n, timezone='America/New_York')
         assert org1.name == n
         self.api.orgs.delete(org1.id)
 
@@ -34,7 +34,7 @@ class TestOrgAPI(unittest.TestCase):
 
     def test_delete(self):
         n = fake.name()
-        org1 = self.api.orgs.create(name=n)
+        org1 = self.api.orgs.create(name=n, timezone='America/New_York')
         resp = self.api.orgs.delete(org=org1.id)
         assert resp
         orgs = self.api.orgs.list()

@@ -24,8 +24,7 @@ class TestSousChefJSONSchema(unittest.TestCase):
                         "placeholder": "cspan"
                     },
                 },
-<<<<<<< HEAD
-                "min_folowers": {
+                "min_followers": {
                     "input_type": "number",
                     "value_types": ["numeric"],
                     "accepts_list": False,
@@ -126,15 +125,7 @@ class TestSousChefJSONSchema(unittest.TestCase):
                     "value_types": ["numeric", "nulltype"],
                     "accepts_list": False,
                     "required": False,
-                    "default": None,
-=======
-                "min_followers": {
-                    "type": "number",
->>>>>>> 266356b4062faa25c24bc8e4b20f7d08d2345361
-                    "help": {
-                        "description": "The age of content-items (in days) which metrics will be pulled for.",
-                        "placeholder": "cspan"
-                    }
+                    "default": None
                 }
             }
         }
@@ -296,21 +287,6 @@ class TestSousChefJSONSchema(unittest.TestCase):
                     "required": True,
                     "help": {
                         "placeholder": "cspan"
-                    },
-                },
-<<<<<<< HEAD
-                "min_folowers": {
-                    "input_type": "number",
-                    "value_types": ["number"],
-                    "accepts_list": False,
-                    "required": False,
-                    "default": 0,
-=======
-                "min_followers": {
-                    "type": "number",
->>>>>>> 266356b4062faa25c24bc8e4b20f7d08d2345361
-                    "help": {
-                        "placeholder": 1000
                     }
                 }
             }
@@ -354,7 +330,7 @@ class TestSousChefJSONSchema(unittest.TestCase):
                         "placeholder": "cspan"
                     },
                 },
-                "min_folowers": {
+                "min_followers": {
                     "input_type": "number",
                     "value_types": ["number"],
                     "accepts_list": False,
@@ -390,7 +366,7 @@ class TestSousChefJSONSchema(unittest.TestCase):
                         "placeholder": "cspan"
                     },
                 },
-                "min_folowers": {
+                "min_followers": {
                     "input_type": "number",
                     "value_types": ["number"],
                     "accepts_list": False,
@@ -426,7 +402,7 @@ class TestSousChefJSONSchema(unittest.TestCase):
                         "placeholder": "cspan"
                     },
                 },
-                "min_folowers": {
+                "min_followers": {
                     "input_type": "number",
                     "value_types": ["number"],
                     "accepts_list": False,
@@ -462,20 +438,12 @@ class TestSousChefJSONSchema(unittest.TestCase):
                         "placeholder": "cspan"
                     },
                 },
-<<<<<<< HEAD
                 "min_folowers": {
                     "input_type": "number",
                     "value_types": ["number"],
                     "accepts_list": False,
                     "required": False,
-                    "default": 0,
-=======
-                "min_followers": {
-                    "type": "number",
->>>>>>> 266356b4062faa25c24bc8e4b20f7d08d2345361
-                    "help": {
-                        "placeholder": 1000
-                    }
+                    "default": 0
                 }
             }
         }
@@ -503,7 +471,7 @@ class TestSousChefJSONSchema(unittest.TestCase):
                         "placeholder": "cspan"
                     },
                 },
-                "min_folowers": {
+                "min_followers": {
                     "input_type": "number",
                     "value_types": ["number"],
                     "accepts_list": False,
@@ -575,7 +543,7 @@ class TestSousChefJSONSchema(unittest.TestCase):
                         "placeholder": "cspan"
                     }
                 },
-                "min_folowers": {
+                "min_followers": {
                     "input_type": "number",
                     "value_types": ["number"],
                     "accepts_list": False,
@@ -611,7 +579,7 @@ class TestSousChefJSONSchema(unittest.TestCase):
                         "placeholder": "cspan"
                     }
                 },
-                "min_folowers": {
+                "min_followers": {
                     "input_type": "number",
                     "value_types": ["number"],
                     "accepts_list": False,
@@ -647,20 +615,12 @@ class TestSousChefJSONSchema(unittest.TestCase):
                         "placeholder": "cspan"
                     },
                 },
-<<<<<<< HEAD
                 "min_folowers": {
                     "input_type": "number",
                     "value_types": ["numeric"],
                     "accepts_list": False,
                     "required": False,
-                    "default": 0,
-=======
-                "min_followers": {
-                    "type": "number",
->>>>>>> 266356b4062faa25c24bc8e4b20f7d08d2345361
-                    "help": {
-                        "placeholder": 1000
-                    }
+                    "default": 0
                 }
             }
         }
@@ -691,7 +651,7 @@ class TestSousChefJSONSchema(unittest.TestCase):
                         "placeholder": "cspan"
                     },
                 },
-                "min_folowers": {
+                "min_followers": {
                     "input_type": "number",
                     "value_types": ["numeric"],
                     "accepts_list": False,

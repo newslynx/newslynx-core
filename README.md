@@ -94,17 +94,19 @@ Exception KeyError: KeyError(4332017936,) in <module 'threading' from '/System/L
 - [ ] Implement SQL Query API
 - [x] Implement Extraction API
 - [x] Implement Event Creation API
+- [ ] Create thumbnails for images.
+   - [ ] Add thumbnail worker redis cache.
 - [ ] Implement Metrics API:
     - [x] Create metrics table which contains information
           on each metric (name, timeseries agg method,
           summary agg method, cumulative, metric 
           category, level, etc)
-    - [x] Faceted metrics only need to declare the facet 
+    - [x] Faceted metrics only need to declare their name 
           name, not all their potential facet values.
-    - [ ] Sous Chefs that create metrics must declare
+    - [x] Sous Chefs that create metrics must declare
           which metrics they create.
     - [ ] When a recipe is created for a sous chef that 
-          creates metrics, these metrics should be created for the associated organization
+          creates metrics, these metrics should be created for the associated organization.
     - [ ] Timeseries Metrics for things will only be   
           collected 30 days after publication. After 
           this period an article moves into an "archived"
@@ -135,7 +137,7 @@ Exception KeyError: KeyError(4332017936,) in <module 'threading' from '/System/L
 
 - [ ] Implement Reports API (Are these just metrics?)
     - [ ] reports are json objects
-    - [ ] reports can be rendered with html templates
+    - [ ] reports can be rendered with Jinja templates
     - [ ] reports can be rendered as pdfs 
         * see: https://pypi.python.org/pypi/pdfkit or
          http://stackoverflow.com/questions/23359083/how-to-convert-webpage-into-pdf-by-using-python 

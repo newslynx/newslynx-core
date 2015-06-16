@@ -439,6 +439,16 @@ def validate_hex_code(value):
         raise RequestError("'{}' is not a valid hex code.".format(value))
 
 
+def validate_ts_unit(value):
+    """
+    check a list of values against ContentItem types.
+    """
+    if value not in METRIC_TS_UNITS:
+        raise RequestError(
+            "'{}' is not a valid timeseries unit. Choose from {}."
+            .format(value, METRIC_TS_UNITS))
+
+
 # Pagination
 
 def urls_for_pagination(handler, total_results, **kw):

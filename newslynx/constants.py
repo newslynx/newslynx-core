@@ -16,6 +16,10 @@ METRIC_FACET_KEYS = [
     'facet', 'value'
 ]
 
+METRIC_TS_UNITS = [
+    'hour', 'day', 'month'
+]
+
 # EVENTS
 EVENT_STATUSES = [
     'approved', 'pending', 'deleted'

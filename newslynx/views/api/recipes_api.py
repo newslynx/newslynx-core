@@ -3,8 +3,8 @@ from collections import defaultdict, Counter
 from flask import Blueprint
 
 from newslynx.core import db
-from newslynx.exc import RequestError
-from newslynx.models import SousChef, Recipe
+from newslynx.exc import RequestError, ConflictError
+from newslynx.models import SousChef, Recipe, Metric
 from newslynx.models import recipe_schema
 from newslynx.models.util import fetch_by_id_or_field
 from newslynx.lib.serialize import jsonify
@@ -128,18 +128,39 @@ def create_recipe(user, org):
     sous_chef = req_data.pop('sous_chef', arg_str('sous_chef', None))
     if not sous_chef:
         raise RequestError(
-            'You must pass in a sous_chef ID or slug to create a recipe')
+            'You must pass in a SousChef ID or slug to create a recipe.')
 
     sc = fetch_by_id_or_field(SousChef, 'slug', sous_chef)
     if not sc:
         raise RequestError(
-            'A SousChef does not exist with ID/slug {}'.format(sous_chef))
+            'A SousChef does not exist with ID/slug {}'
+            .format(sous_chef))
 
     # validate the recipe and add it to the database.
     recipe = recipe_schema.validate(req_data, sc.to_dict())
     r = Recipe(sc, user_id=user.id, org_id=org.id, **recipe)
     db.session.add(r)
     db.session.commit()
+
+    # if the recipe creates metrics add them in here.
+    if sc.creates == 'metrics':
+        for name, params in sc.options.get('metrics', {}):
+            m = Metric(
+                name=name,
+                recipe_id=r.id,
+                org_id=org.id,
+                **params)
+
+            db.session.add(m)
+    try:
+        db.session.commit()
+
+    except Exception as e:
+        raise ConflictError(
+            "You tried to create a metric that already exists. "
+            "Here's the exact error:\n{}"
+            .format(e.message)
+        )
 
     return jsonify(r)
 
@@ -152,6 +173,8 @@ def get_recipe(user, org, recipe_id):
     if not r:
         raise RequestError('Recipe with id/slug {} does not exist.'
                            .format(recipe_id))
+
+    # add in event counts.
     return jsonify(r)
 
 
@@ -173,7 +196,6 @@ def update_recipe(user, org, recipe_id):
     # do it for them:
     status = new_recipe.get('status', 'uninitialized')
     if r.status == 'uninitialized' and status == 'uninitialized':
-        r.status = 'stable'
         new_recipe['status'] = 'stable'
 
     # update pickled options
@@ -204,10 +226,13 @@ def delete_recipe(user, org, recipe_id):
         db.session.delete(r)
     else:
         r.status = 'inactive'
-        cmd = """
-        UPDATE events SET status='deleted' WHERE recipe_id = {} AND status='pending';
-        """.format(r.id)
-        db.session.execute(cmd)
         db.session.add(r)
+
+    # set the status of associated events to 'deleted'
+    cmd = """
+    UPDATE events SET status='deleted' WHERE recipe_id = {} AND status='pending';
+    """.format(r.id)
+    db.session.execute(cmd)
+
     db.session.commit()
     return delete_response()
