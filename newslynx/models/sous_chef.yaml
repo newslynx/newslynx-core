@@ -117,7 +117,6 @@ definitions:
                     If the input_type is radio, select, or checkbox, a list of possible
                     options to populate the dropdown.
                 type: array
-                minItems: 1
                 items:
                     type:
                         - string
