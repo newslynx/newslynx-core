@@ -4,10 +4,11 @@ from copy import copy
 
 from flask import Blueprint
 from sqlalchemy import distinct, text
+from sqlalchemy.types import Numeric
 
 from newslynx.core import db
 from newslynx.exc import NotFoundError
-from newslynx.models import ContentItem, Author
+from newslynx.models import ContentItem, Author, ContentMetricSummary
 from newslynx.lib.serialize import jsonify
 from newslynx.views.decorators import load_user, load_org
 from newslynx.tasks import facet
@@ -270,9 +271,39 @@ def search_content(user, org):
     # validate arguments
 
     # validate sort fields are part of Event object.
-    if kw['sort_field'] and kw['sort_field'] != 'relevance':
+    if kw['sort_field'] and \
+       kw['sort_field'] != 'relevance' and not \
+       kw['sort_field'].startswith('metrics'):
+
+        metric_sort = False
         validate_fields(
             ContentItem, fields=[kw['sort_field']], suffix='to sort by')
+
+    # validate metric sort fields
+    elif kw['sort_field'].startswith('metrics'):
+
+        metric_sort = True
+
+        parts = kw['sort_field'].split('.')
+        if len(parts) != 2:
+            raise RequestError(
+                "To sort by a metric, you must use the following "
+                "format: 'metrics.{metric_name}'. You input '{}'."
+                .format(kw['sort_field']))
+
+        # fetch metrics
+        metrics_names = org.content_metric_names()
+
+        # make sure this is a valid metric to sort by.
+        metric_name = parts[-1]
+
+        if metric_name not in metrics_names:
+            raise RequestError(
+                "'{}' is not a valid metric to sort by. "
+                "Choose from: {}"
+                .format(metric_name, metrics_names))
+
+        kw['sort_field'] = metric_name
 
     # validate select fields.
     if kw['fields']:
@@ -288,7 +319,7 @@ def search_content(user, org):
     validate_content_item_search_vector(kw['search_vector'])
 
     # base query
-    content_query = ContentItem.query
+    content_query = ContentItem.query.outerjoin(ContentMetricSummary)
 
     # apply filters
     content_query, event_ids = \
@@ -301,8 +332,13 @@ def search_content(user, org):
 
     # apply sort if we havent already sorted by query relevance.
     if kw['sort_field'] != 'relevance':
-        sort_obj = eval('ContentItem.{sort_field}.{direction}'.format(**kw))
-        content_query = content_query.order_by(sort_obj())
+
+        if not metric_sort:
+            p = "ContentItem.{sort_field}.{direction}"
+        else:
+            p = "ContentMetricSummary.metrics['{sort_field}'].cast(Numeric).{direction}"
+
+        content_query = content_query.order_by(eval(p.format(**kw))())
 
     # facets
     validate_content_item_facets(kw['facets'])
@@ -329,7 +365,7 @@ def search_content(user, org):
                     .all()
                 event_ids = [e[0] for e in event_ids]
 
-        # pooled facet function
+        # pooled faceting function
         def fx(by):
             if by in CONTENT_ITEM_EVENT_FACETS:
                 if by == 'event_statuses':
@@ -377,9 +413,9 @@ def search_content(user, org):
 @bp.route('/api/v1/content', methods=['POST'])
 @load_user
 @load_org
-def create_event(user, org):
+def create_content(user, org):
     """
-    Create an event.
+    Create a content item
     """
     req_data = request_data()
     extract = arg_bool('extract', default=True)

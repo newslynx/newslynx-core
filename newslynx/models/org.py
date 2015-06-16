@@ -68,6 +68,13 @@ class Org(db.Model):
             .filter(Metric.timeseries)\
             .all()
 
+    def content_metric_names(self):
+        metrics = self.metrics\
+            .filter(Metric.level.in_(['all', 'content_item']))\
+            .with_entities(Metric.name)\
+            .all()
+        return [m[0] for m in metrics]
+
     def timeseries_metrics(self):
         return self.metrics\
             .filter(Metric.level.in_(['all', 'org']))\

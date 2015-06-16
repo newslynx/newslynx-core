@@ -61,6 +61,8 @@ class ContentItem(db.Model):
         'Author', secondary=relations.content_items_authors,
         backref=db.backref('content_items', lazy='dynamic'), lazy='joined')
 
+    metrics = db.relationship('ContentMetricSummary', lazy='joined', uselist=False)
+
     # # in/out links
     # out_links = db.relationship(
     #     'ContentItem', secondary=relations.content_items_content_items,
@@ -150,6 +152,7 @@ class ContentItem(db.Model):
     def to_dict(self, **kw):
         # incl_links = kw.get('incl_links', False)
         incl_body = kw.get('incl_body', False)
+        incl_metrics = kw.get('incl_metrics', True)
 
         d = {
             'id': self.id,
@@ -175,6 +178,11 @@ class ContentItem(db.Model):
         #     d['out_links'] = self.out_link_display
         if incl_body:
             d['body'] = self.body
+        if incl_metrics:
+            if self.metrics:
+                d['metrics'] = self.metrics.metrics
+            else:
+                d['metrics'] = {}
         return d
 
     def __repr__(self):
