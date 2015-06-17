@@ -3,6 +3,13 @@ slug: rss-feed-to-article
 description: Extracts articles from an RSS Feed.
 runs: newslynx.sc.content.rss_feed.Article
 creates: content
+option_order:
+    - name
+    - slug
+    - description
+    - feed_url
+    - interval
+    - time_of_day
 options:
 
     # custom options

@@ -4,7 +4,7 @@ name:
         - string
     required: true
     help:
-        placeholder: The name of the Recipe.
+        description: The name of the Recipe.
 
 slug:
     input_type: text
@@ -12,7 +12,7 @@ slug:
         - string
     required: false
     help:
-        placeholder: The recipe slug. Lowercase and separated with '-'.
+        description: The recipe slug. Lowercase and separated with '-'.
 
 description: 
     input_type: paragraph
@@ -21,7 +21,7 @@ description:
         - nulltype
     required: false
     help: 
-        placeholder: A description of what this recipe does.
+        description: A description of what this recipe does.
 
 interval:
     input_type: number

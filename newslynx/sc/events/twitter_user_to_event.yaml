@@ -3,6 +3,7 @@ slug: twitter-user-to-event
 description: Extracts events from a twitter user's timeline.
 runs: newslynx.sc.events.twitter.User
 creates: events
+option_order: []
 options:
     
     screen_name:

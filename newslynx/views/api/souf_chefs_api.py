@@ -19,8 +19,7 @@ bp = Blueprint('sous_chefs', __name__, )
 
 @bp.route('/api/v1/sous-chefs', methods=['GET'])
 @load_user
-@load_org
-def list_sous_chefs(user, org):
+def list_sous_chefs(user):
 
     # optionally filter by type/level/category
     creates = arg_str('creates', default='all')
@@ -58,8 +57,7 @@ def list_sous_chefs(user, org):
 
 @bp.route('/api/v1/sous-chefs', methods=['POST'])
 @load_user
-@load_org
-def create_sous_chef(user, org):
+def create_sous_chef(user):
 
     req_data = request_data()
 
@@ -79,8 +77,7 @@ def create_sous_chef(user, org):
 
 @bp.route('/api/v1/sous-chefs/<sous_chef>', methods=['GET'])
 @load_user
-@load_org
-def get_sous_chef(user, org, sous_chef):
+def get_sous_chef(user, sous_chef):
 
     sc = fetch_by_id_or_field(SousChef, 'slug', sous_chef)
     if not sc:
@@ -93,7 +90,7 @@ def get_sous_chef(user, org, sous_chef):
 
 @bp.route('/api/v1/sous-chefs/<sous_chef>', methods=['PUT', 'PATCH'])
 @load_user
-def update_sous_chef(user, org, sous_chef):
+def update_sous_chef(user, sous_chef):
 
     sc = fetch_by_id_or_field(SousChef, 'slug', sous_chef)
     if not sc:
@@ -125,8 +122,7 @@ def update_sous_chef(user, org, sous_chef):
 
 @bp.route('/api/v1/sous-chefs/<sous_chef>', methods=['DELETE'])
 @load_user
-@load_org
-def delete_sous_chef(user, org, sous_chef):
+def delete_sous_chef(user, sous_chef):
 
     sc = fetch_by_id_or_field(SousChef, 'slug', sous_chef)
     if not sc:

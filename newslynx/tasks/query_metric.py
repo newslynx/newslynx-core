@@ -1,7 +1,7 @@
 from newslynx.core import db
 
 
-def content_ts(org, content_item_id, **kw):
+def content_item_ts(org, content_item_id, **kw):
     """
     Fetch a timeseries for a content_item
     """

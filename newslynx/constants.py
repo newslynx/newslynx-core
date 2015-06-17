@@ -9,7 +9,7 @@ METRIC_AGGREGATIONS = [
 ]
 
 METRIC_LEVELS = [
-    'org', 'content_item', 'all'
+    'org', 'content_item', 'content_event_tag', 'all'
 ]
 
 METRIC_FACET_KEYS = [

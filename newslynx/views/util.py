@@ -405,7 +405,7 @@ def validate_sous_chef_creates(values):
     """
     if not isinstance(values, list):
         values = [values]
-    facets = SOUS_CHF_CREATES + ['all']
+    facets = SOUS_CHEF_CREATES + ['all']
     bad_values = []
     for value in values:
         if value not in facets:
@@ -447,6 +447,27 @@ def validate_ts_unit(value):
         raise RequestError(
             "'{}' is not a valid timeseries unit. Choose from {}."
             .format(value, METRIC_TS_UNITS))
+
+
+def validate_recipe_statuses(values):
+    """
+    Validate recipe statuses.
+    """
+    if not isinstance(values, list):
+        values = [values]
+    statuses = RECIPE_STATUSES
+    bad_values = []
+    for value in values:
+        if value not in statuses:
+            bad_values.append(value)
+
+    if len(bad_values):
+        if len(bad_values) == 1:
+            msg = 'is not a valid Recipe status'
+        else:
+            msg = 'are not valid Recipe statuses'
+        raise RequestError("'{}' {}. Choose from: {}."
+                           .format(', '.join(bad_values), msg, ", ".join(statuses)))
 
 
 # Pagination

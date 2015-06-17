@@ -41,6 +41,10 @@ properties:
             - external
             - internal
 
+    option_order:
+        description: A list of option names in the the order they should be returned by the API.
+        type: array
+
     options:
         description: Options this sous-chef accepts.
         patternProperties: 

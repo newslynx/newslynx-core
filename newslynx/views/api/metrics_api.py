@@ -43,7 +43,7 @@ def get_content_timeseries(user, org, content_item_id):
     validate_ts_unit(unit)
 
     # execute query
-    ts = query_metric.content_ts(
+    ts = query_metric.content_item_ts(
         org,
         content_item_id,
         unit=unit,

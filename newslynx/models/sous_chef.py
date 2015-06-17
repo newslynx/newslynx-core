@@ -1,5 +1,6 @@
 from slugify import slugify
-from sqlalchemy.dialects.postgresql import JSON, ENUM
+from collections import OrderedDict
+from sqlalchemy.dialects.postgresql import JSON, ENUM, ARRAY
 
 from newslynx.core import db
 from newslynx.constants import SOUS_CHEF_CREATES
@@ -17,6 +18,7 @@ class SousChef(db.Model):
     is_command = db.Column(db.Boolean)
     creates = db.Column(
         ENUM(*SOUS_CHEF_CREATES, name='sous_chef_creates_enum'), index=True)
+    option_order = db.Column(ARRAY(db.Text))
     options = db.Column(JSON)
 
     def __init__(self, **kw):
@@ -28,6 +30,7 @@ class SousChef(db.Model):
         self.runs = kw.get('runs')
         self.is_command = kw.get('is_command')
         self.creates = kw.get('creates')
+        self.option_order = kw.get('option_order', [])
         self.options = kw.get('options', {})
 
     def to_dict(self, incl_options=True):
@@ -41,8 +44,18 @@ class SousChef(db.Model):
             'creates': self.creates
         }
         if incl_options:
-            d['options'] = self.options
+            d['options'] = self.ordered_options
         return d
+
+    @property
+    def ordered_options(self):
+        """
+        Optionally order by specific keys.
+        """
+        if len(self.option_order):
+            sort_order = {k: i for i, k in enumerate(self.option_order)}
+            return OrderedDict(sorted(self.options.items(), key=lambda k: sort_order.get(k[0], None)))
+        return self.options
 
     def __repr__(self):
         return '<SousChef %r >' % (self.slug)

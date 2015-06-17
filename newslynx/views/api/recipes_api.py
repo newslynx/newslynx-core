@@ -25,7 +25,10 @@ bp = Blueprint('recipes', __name__)
 def list_recipes(user, org):
 
     # optionally filter by type/level/category
-    status = arg_str('status', default=None)
+    include_statuses, exclude_statuses = \
+        arg_list('status', default=[], typ=str, exclusions=True)
+    include_creates, exclude_creates = \
+        arg_list('creates', default=[], typ=str, exclusions=True)
     scheduled = arg_bool('scheduled', default=None)
     sort_field, direction = arg_sort('sort', default='-created')
     include_sous_chefs, exclude_sous_chefs = \
@@ -41,15 +44,36 @@ def list_recipes(user, org):
     recipe_query = db.session.query(Recipe)\
         .filter_by(org_id=org.id)
 
-    # apply filters
-    if status:
+    # include statuses
+    if len(include_statuses):
+        validate_recipe_statuses(include_statuses)
         recipe_query = recipe_query\
-            .filter_by(status=status)
+            .filter(Recipe.status.in_(include_statuses))
 
+    # exclude statuses
+    if len(exclude_statuses):
+        validate_recipe_statuses(exclude_statuses)
+        recipe_query = recipe_query\
+            .filter(~Recipe.status.in_(exclude_statuses))
+
+    # include creates
+    if len(include_creates):
+        validate_sous_chef_creates(include_creates)
+        recipe_query = recipe_query\
+            .filter(Recipe.sous_chef.has(SousChef.creates.in_(include_creates)))
+
+    # exclude creates
+    if len(exclude_creates):
+        validate_sous_chef_creates(exclude_creates)
+        recipe_query = recipe_query\
+            .filter(~Recipe.sous_chef.has(SousChef.creates.in_(exclude_creates)))
+
+    # include sous chefs
     if len(include_sous_chefs):
         recipe_query = recipe_query\
             .filter(Recipe.sous_chef.has(SousChef.slug.in_(include_sous_chefs)))
 
+    # exclude sous chefs
     if len(exclude_sous_chefs):
         recipe_query = recipe_query\
             .filter(~Recipe.sous_chef.has(SousChef.slug.in_(exclude_sous_chefs)))
