@@ -2,5 +2,5 @@ TODO Today:
 ==========
 - [ ] Write tests for sous chef API.
 - [ ] Write tests for recipe API.
-- [ ] Efficient Metric Rollups (every hour)
+- [x] Efficient Metric Rollups (every hour)
 - [ ] Turn metrics rollups into an API.

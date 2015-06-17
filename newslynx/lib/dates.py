@@ -138,6 +138,21 @@ def parse_any(ds):
     return force_datetime(dt, tz=pytz.utc)
 
 
+def from_struct_time(t, tz=pytz.utc):
+    """
+    struct_time => datetime.
+    """
+    return datetime(
+        year=t.tm_year,
+        month=t.tm_mon,
+        day=t.tm_mday,
+        hour=t.tm_hour,
+        minute=t.tm_min,
+        second=t.tm_sec,
+        tzinfo=tz
+    )
+
+
 def convert_to_utc(dt):
     """
     Convert a timzeone-aware datetime object to UTC.

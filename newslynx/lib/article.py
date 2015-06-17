@@ -14,6 +14,10 @@ from newslynx.lib import url
 from newslynx.lib import html
 from newslynx.lib import meta
 from newslynx.lib import author
+try:
+    from newslynx.core import embedly_api
+except ImportError:
+    pass
 
 log = logging.getLogger(__name__)
 
@@ -104,7 +108,6 @@ def body_via_embedly(source_url):
     """
     Use Embed.ly's API for content extraction.
     """
-    from newslynx.core import embedly_api
 
     # make request to embedly api
     e = embedly_api.extract(source_url)
