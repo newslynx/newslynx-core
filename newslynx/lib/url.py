@@ -96,7 +96,7 @@ def prepare(url, source=None, canonicalize=True, expand=True, keep_params=('id',
 
     # canonicalize
     if canonicalize:
-        page_html = network.get_html(url)
+        page_html = network.get(url)
         if page_html:
             soup = BeautifulSoup(page_html)
             canonical = meta.canonical_url(soup)
@@ -446,7 +446,7 @@ def is_shortened(url, pattern=None):
         # because of this
         if pattern.match(url):
             return True
- 
+
     # test against known short domains
     domain = get_domain(url)
     if re_short_domains.search(domain):
@@ -522,6 +522,7 @@ def from_html(htmlstring, **kw):
     if not htmlstring:
         return []
     final_urls = []
+    seen_urls = set()
     if source:
         source_domain = get_domain(source)
     soup = BeautifulSoup(htmlstring)
@@ -532,25 +533,25 @@ def from_html(htmlstring, **kw):
             for attr in URL_ATTRS:
                 href = el.attrs.get(attr, None)
 
-                if href:
-                    url = reconcile_embed(href)
+                if not href:
+                    continue
+                url = reconcile_embed(href)
 
-                    if source:
-                        url = redirect_back(url, source_domain)
-                        if not is_abs(url):
-                            url = urljoin(source, url)
+                if source:
+                    url = redirect_back(url, source_domain)
+                    if not is_abs(url):
+                        url = urljoin(source, url)
 
-                    if is_valid(url):
-                        if exclude_images:
-                            if not is_image(url):
-                                final_urls.append(url)
-
-                        else:
-                            final_urls.append(url)
-    if dedupe:
-        return list(set(final_urls))
-    else:
-        return final_urls
+                if not is_valid(url):
+                    continue
+                if exclude_images:
+                    if not is_image(url):
+                        seen_urls.add(url)
+                        final_urls.append(url)
+                else:
+                    seen_urls.add(url)
+                    final_urls.append(url)
+    return final_urls
 
 
 def from_any(html_or_string, **kw):
@@ -733,7 +734,7 @@ def _bypass_bitly_warning(url):
     """
     Sometime bitly blocks unshorten attempts, this bypasses that.
     """
-    html_string = network.get_html(url)
+    html_string = network.get(url)
     soup = BeautifulSoup(html_string)
     a = soup.find('a', {'id': 'clickthrough'})
     if a:

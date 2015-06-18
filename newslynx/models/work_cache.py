@@ -5,6 +5,7 @@ from newslynx import settings
 from newslynx.lib import url
 from newslynx.lib import article
 from newslynx.lib import dates
+from newslynx.lib import image
 from newslynx.lib.serialize import (
     obj_to_pickle, pickle_to_obj)
 
@@ -198,3 +199,18 @@ class ExtractCache(Cache):
         else:
             raise NotImplemented(
                 "NewsLynx only has support for Article Extraction.")
+
+
+class ThumbnailCache(Cache):
+
+    """
+    A redis cache of raw_url > normalized url
+    """
+    key_prefix = settings.THUMBNAIL_CACHE_PREFIX
+    ttl = settings.THUMBNAIL_CACHE_TTL
+
+    def work(self, img_url):
+        """
+        Grab an image and create a b64 encoded thumbnail.
+        """
+        return image.b64_thumbnail_from_url(img_url)

@@ -16,10 +16,14 @@ from newslynx.lib import dates
 from newslynx.lib.serialize import obj_to_json
 from newslynx.constants import *
 from newslynx.exc import RecipeSchemaError
+from newslynx.util import here
 
 # fake factory
 fake = Faker()
 
+fixtures_dir = here(__file__, 'fixtures')
+thumbnail = open('{}/thumbnail.txt'.format(fixtures_dir)).read()
+IMG_URL = 'https://www.propublica.org/images/ngen/gypsy_og_image/20150520-group-home-hearing-1200x630.jpg'
 
 IMPACT_TAG_NAMES = ['Media pickup', 'Media social share',
                     'Indv. social share', 'Comm. social share']
@@ -335,7 +339,8 @@ def gen_events(org, recipes, impact_tags, content_items, n_events):
             title=random_text(20),
             description=random_text(100),
             url=random_url(),
-            img_url=random_url(ext='png'),
+            img_url=IMG_URL,
+            thumbnail=thumbnail,
             body=random_text(500),
             created=random_date(10, 100),
             updated=random_date(1, 9),
@@ -377,7 +382,8 @@ def gen_content_item(org, recipes, subject_tags, authors):
         title=random_text(20),
         description=random_text(100),
         body=random_text(500),
-        img_url=random_url(ext='jpg'),
+        img_url=IMG_URL,
+        thumbnail=thumbnail,
         meta=random_meta())
 
     if provenance == 'manual':

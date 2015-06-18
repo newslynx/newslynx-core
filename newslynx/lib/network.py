@@ -108,7 +108,7 @@ def get_request_kwargs(timeout=None, useragent=None):
 
 
 @retry(attempts=2)
-def get_html(_u, **params):
+def get(_u, **params):
     """Retrieves the html for either a url or a response object. All html
     extractions MUST come from this method due to some intricies in the
     requests module. To get the encoding, requests only uses the HTTP header
@@ -119,12 +119,10 @@ def get_html(_u, **params):
     session = requests.Session()
 
     FAIL_ENCODING = 'ISO-8859-1'
-    useragent = settings.BROWSER_USER_AGENT
-    timeout = settings.BROWSER_TIMEOUT
 
     html = None
     response = session.get(
-        url=_u, params=params, **get_request_kwargs(timeout, useragent))
+        url=_u, params=params, **get_request_kwargs())
     if response.encoding != FAIL_ENCODING:
         html = response.text
     else:
@@ -160,6 +158,6 @@ def get_json(_u, **params):
     try:
         obj = json_to_obj(content)
     except Exception as e:
-        log.warning('Unable to parse json from {}. Messsage: {}'.format(url, e.message))
+        log.warning('Unable to parse json from {}. Messsage: {}'.format(_u, e.message))
         return obj
     return obj

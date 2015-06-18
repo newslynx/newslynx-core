@@ -246,17 +246,23 @@ def delete_recipe(user, org, recipe_id):
         raise RequestError('Recipe with id/slug {} does not exist.'
                            .format(recipe_id))
     force = arg_bool('force', default=False)
+
     if force:
         db.session.delete(r)
     else:
-        r.status = 'inactive'
-        db.session.add(r)
+        # just delete recipes with no approved events.
+        event_cnt = r.events.filter_by(status='approved').count()
+        if event_cnt > 0:
+            r.status = 'inactive'
+            db.session.add(r)
+        else:
+            db.session.delete(r)
 
     # set the status of associated events to 'deleted'
     cmd = """
     UPDATE events SET status='deleted' WHERE recipe_id = {} AND status='pending';
     """.format(r.id)
     db.session.execute(cmd)
-
     db.session.commit()
+
     return delete_response()

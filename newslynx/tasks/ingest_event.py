@@ -54,6 +54,9 @@ def ingest_event(
         obj, 'description', obj['url'])
     obj['body'] = ingest_util.prepare_str(obj, 'body', obj['url'])
 
+    # get thumbnail
+    obj['thumbnail'] = ingest_util.prepare_thumbnail(obj, 'img_url')
+
     # split out tags_ids + content_item_ids
     tag_ids = obj.pop('tag_ids', [])
     content_item_ids = obj.pop('content_item_ids', [])

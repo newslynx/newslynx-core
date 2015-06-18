@@ -2,7 +2,6 @@
 Multi-Method Article Extraction
 """
 
-
 import logging
 
 from readability.readability import Document
@@ -14,6 +13,8 @@ from newslynx.lib import url
 from newslynx.lib import html
 from newslynx.lib import meta
 from newslynx.lib import author
+from newslynx.lib import image
+
 try:
     from newslynx.core import embedly_api
 except ImportError:
@@ -30,12 +31,13 @@ def extract(source_url):
     3. If not canonical, prepare the url.
     4. Extract meta tags.
     5. If embedly is active, use it for content extraction.
-    6. If embedly doesnt return content, use readability
-    7. If readability doesnt return content, use meta tag.
+    6. If embedly doesnt return content or is not active, use readability
+    7. If readability doesnt return content, use article tag.
+    8. If authors aren't detcted from meta tags, detect them in article body.
     """
 
     # fetch page
-    page_html = network.get_html(source_url)
+    page_html = network.get(source_url)
 
     # something failed.
     if not page_html:
@@ -92,6 +94,7 @@ def extract(source_url):
                 a.replace(data['site_name'].upper(), "").strip()
                 for a in data['authors']
             ]
+
     # # get links from raw_html + content
     # links = [u for u in url.from_any(data['body']) if source_url not in u]
     # for u in url.from_any(raw_html, source=source_url):

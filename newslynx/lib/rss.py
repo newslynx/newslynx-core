@@ -1,7 +1,8 @@
 """
 All things related to rss parsing.  We make use of feedparser which
-we manage within this repository @ newslynx/lib/pkg/feedparser.py
+we manage within this repository => newslynx/lib/pkg/feedparser.py
 """
+
 from gevent.monkey import patch_all
 patch_all()
 from gevent.pool import Pool
@@ -14,6 +15,8 @@ from newslynx.lib import author
 from newslynx.lib import html
 from newslynx.lib import url
 from newslynx.lib import article
+from newslynx.lib import network
+from newslynx.lib import image
 
 
 # JSONPATH CANDIDATES
@@ -64,12 +67,26 @@ def extract_entries(feed_url, domains=[]):
     Parse entries from an rss feed and run article extraction
     an each
     """
+    entries = list(FeedExtractor(feed_url, domains).run())
+    urls = [e['url'] for e in entries if e.get('url')]
+    p = Pool(len(entries))
+    keys_to_merge = entries[0].keys()
+    for i, a in enumerate(p.imap_unordered(article.extract, urls)):
+        yield a
+
+
+def extract_articles(feed_url, domains=[]):
+    """
+    Parse entries from an rss feed, extract article urls, and
+    run article extraction an each
+    """
     entries = FeedExtractor(feed_url, domains).run()
     urls = [e['url'] for e in entries if e.get('url')]
     p = Pool(len(entries))
     keys_to_merge = entries[0].keys()
     for i, a in enumerate(p.imap_unordered(article.extract, urls)):
         yield a
+
 
 class FeedExtractor(object):
 
@@ -184,12 +201,23 @@ class FeedExtractor(object):
         return list(authors)
 
     # get images
-    def get_img_url(self, entry):
+    def get_img_url(self, entry, body):
         """
         Get the top image url.
         """
         img_urls = self.get_candidates(entry, IMG_CANDIDATE_JSONPATH)
-        img_urls = list(set(img_urls))
+        if len(img_urls):
+            return img_urls[0]
+        img_urls = image.from_html(body)
+
+        if len(self.domains):
+            for u in img_urls:
+                if any([d in u for d in self.domains]):
+                    return u
+
+        # gifs are usually tracking pixels
+        img_urls = [i for i in img_urls if not i.endswith('gif')]
+
         if len(img_urls):
             return img_urls[0]
 
@@ -220,11 +248,14 @@ class FeedExtractor(object):
         if len(candidates) == 0:
             return None
 
-        # test for valid urls:
-        urls = set()
-        for u in candidates:
-            if any([d in u for d in self.domains]):
-                urls.add(u)
+        # test for urls in domains.
+        if len(self.domains):
+            urls = set()
+            for u in candidates:
+                if any([d in u for d in self.domains]):
+                    urls.add(u)
+        else:
+            urls = set(candidates)
 
         # if we have one or more, update return the first.
         urls = list(urls)
@@ -234,7 +265,7 @@ class FeedExtractor(object):
 
         # if we STILL haven't found anything, just
         # return the first candidate that looks like a url.
-        return [u for u in urls if u.startswith('http')][0]
+        return [u for u in candidates if u.startswith('http')][0]
 
     def get_links(self, body, entry_url):
         """
@@ -247,32 +278,40 @@ class FeedExtractor(object):
         Parse an entry in an RSS feed.
         """
         entry_url = self.get_url(entry)
+
+        # merge description with body
         body = self.get_body(entry)
+        description = self.get_description(entry)
+        if not body:
+            body = description
+            description = None
 
         return {
             'url': entry_url,
             'body':  html.prepare(body, entry_url),
             'title': self.get_title(entry),
-            'description': self.get_description(entry),
-            # 'tags': self.get_tags(entry),
+            'description': html.prepare(description, entry_url),
+            'tags': self.get_tags(entry),
             'authors': self.get_authors(entry),
             'created': self.get_created(entry),
-            'img_url': self.get_img_url(body),
+            'img_url': self.get_img_url(entry, body),
             'links': self.get_links(body, entry_url),
         }
+
+    @network.retry(attempts=2)
+    def fetch_feed(self):
+        return feedparser.parse(self.feed_url)
 
     def run(self):
         """
         Parse an Rss Feed.
         """
         f = feedparser.parse(self.feed_url)
-        return map(self.parse_entry, f.entries)
+        if f:
+            for entry in f.entries:
+                yield self.parse_entry(entry)
 
 
 if __name__ == '__main__':
-    ex_entries = extract_entries('http://wisconsinwatch.org/feed/', ['wisconsinwatch.org'])
-    p_entries = parse_entries('http://wisconsinwatch.org/feed/', ['wisconsinwatch.org'])
-    for e, p in zip(ex_entries, p_entries):
-        print e['authors'], p['authors']
-        print e['url'], p['url']
-
+    for p in extract_entries('http://feeds.propublica.org/propublica/main', ['propublica.org']):
+        print p['img_url']

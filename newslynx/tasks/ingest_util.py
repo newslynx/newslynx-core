@@ -8,13 +8,14 @@ from newslynx.lib import text
 from newslynx.lib import html
 from newslynx.lib import stats
 from newslynx.lib.serialize import obj_to_json
-from newslynx.models import URLCache
+from newslynx.models import URLCache, ThumbnailCache
 from newslynx import settings
 from newslynx.exc import RequestError
 from newslynx.constants import METRIC_FACET_KEYS
 
 # the url cache object
 url_cache = URLCache()
+thumbnail_cache = ThumbnailCache()
 
 # a pool to multithread url_cache.
 url_cache_pool = Pool(settings.URL_CACHE_POOL_SIZE)
@@ -79,6 +80,21 @@ def prepare_url(o, field, source=None):
     # prepare it first before the sending to the canoncilation cache
     u = url.prepare(o[field], source=source, canonicalize=False, expand=False)
     cache_response = url_cache.get(u)
+    return cache_response.value
+
+
+def prepare_thubnail(o, field):
+    """
+    Prepare a url
+    """
+    if field not in o:
+        return None
+    if o[field] is None:
+        return None
+    u = o[field]
+
+    # create a thumbnail from an image.
+    cache_response = thumbnail_cache.get(u)
     return cache_response.value
 
 

@@ -37,10 +37,12 @@ class ContentItem(db.Model):
     url = db.Column(db.Text, index=True)
     domain = db.Column(db.Text, index=True)
     created = db.Column(db.DateTime(timezone=True), default=dates.now)
-    updated = db.Column(db.DateTime(timezone=True), onupdate=dates.now, default=dates.now)
+    updated = db.Column(
+        db.DateTime(timezone=True), onupdate=dates.now, default=dates.now)
     site_name = db.Column(db.Text, index=True)
     favicon = db.Column(db.Text)
     img_url = db.Column(db.Text)
+    thumbnail = db.Column(db.Text)
     title = db.Column(db.Text)
     description = db.Column(db.Text)
     body = db.Column(db.Text)
@@ -61,7 +63,8 @@ class ContentItem(db.Model):
         'Author', secondary=relations.content_items_authors,
         backref=db.backref('content_items', lazy='dynamic'), lazy='joined')
 
-    metrics = db.relationship('ContentMetricSummary', lazy='joined', uselist=False)
+    summary_metrics = db.relationship(
+        'ContentMetricSummary', lazy='joined', uselist=False)
 
     # # in/out links
     # out_links = db.relationship(
@@ -104,6 +107,7 @@ class ContentItem(db.Model):
         self.site_name = kw.get('site_name')
         self.favicon = kw.get('favicon')
         self.img_url = kw.get('img_url')
+        self.thumbnail = kw.get('thumbnail')
         self.title = kw.get('title')
         self.description = kw.get('description')
         self.body = kw.get('body')
@@ -153,6 +157,7 @@ class ContentItem(db.Model):
         # incl_links = kw.get('incl_links', False)
         incl_body = kw.get('incl_body', False)
         incl_metrics = kw.get('incl_metrics', True)
+        incl_thumbmail = kw.get('incl_thumbmail', True)
 
         d = {
             'id': self.id,
@@ -178,11 +183,16 @@ class ContentItem(db.Model):
         #     d['out_links'] = self.out_link_display
         if incl_body:
             d['body'] = self.body
+
         if incl_metrics:
             if self.metrics:
-                d['metrics'] = self.metrics.metrics
+                d['metrics'] = self.summary_metrics.metrics
             else:
                 d['metrics'] = {}
+
+        if incl_thumbmail:
+            d['thumbnail'] = self.thumbnail
+
         return d
 
     def __repr__(self):

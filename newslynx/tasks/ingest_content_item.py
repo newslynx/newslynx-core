@@ -63,6 +63,9 @@ def ingest_content_item(
         if not obj['created']:
             obj.pop('created')
 
+    # get thumbnail
+    obj['thumbnail'] = ingest_util.prepare_thumbnail(obj, 'img_url')
+
     # split out tags_ids + authors + links
     tag_ids = obj.pop('tag_ids', [])
     authors = obj.pop('authors', []) # accept ids too

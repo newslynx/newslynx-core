@@ -1,10 +1,12 @@
 from newslynx.core import db
 
 
-def content_item_ts(org, content_item_id, **kw):
+def content_item_ts(org, content_item_ids, **kw):
     """
     Fetch a timeseries for a content_item
     """
+    if not isinstance(content_item_ids, list):
+        content_item_ids = [content_item_ids]
 
     # get the org's content timeseries metrics
     metrics = org.content_timeseries_metrics()
@@ -12,6 +14,7 @@ def content_item_ts(org, content_item_id, **kw):
     sparse = kw.get('sparse', True)
     unit = kw.get('unit', 'hour')
     cumulative = kw.get('cumulative', False)
+    ret_query = kw.get('ret_query', False)
 
     cols = ['content_item_id', 'datetime']
 
@@ -23,8 +26,9 @@ def content_item_ts(org, content_item_id, **kw):
     cols += metric_columns
 
     # format kwargs for query
+    cids = ", ".join([str(c) for c in content_item_ids])
     qkw = {
-        'content_item_id': content_item_id,
+        'content_item_ids': "ARRAY[{}]".format(cids),
         'unit': unit,
         'select_statements': ",\n".join(sparse_statements)
     }
@@ -35,9 +39,9 @@ def content_item_ts(org, content_item_id, **kw):
             date_trunc('{unit}', datetime) as datetime,
             {select_statements}
         FROM content_metric_timeseries
-        WHERE content_item_id = {content_item_id}
+        WHERE content_item_id IN (select unnest({content_item_ids}))
         GROUP BY content_item_id, date_trunc('{unit}', datetime)
-        ORDER BY datetime ASC
+        ORDER BY datetime, content_item_id ASC
         """.format(**qkw)
 
     # if the timeseries should be filled in, update the query.
@@ -52,7 +56,7 @@ def content_item_ts(org, content_item_id, **kw):
                 {init_q}
             ),
             cal as (
-                select * from content_metric_calendar('1 {unit}s', {content_item_id})
+                select * from content_metric_calendar('1 {unit}s', {content_item_ids})
             )
             SELECT cal.content_item_id,
                    cal.datetime,
@@ -79,6 +83,10 @@ def content_item_ts(org, content_item_id, **kw):
             {init_q}
         ) t
         """.format(**qkw)
+
+    # just return the query
+    if ret_query:
+        return query
 
     # execute the query and format the results as a dictionary
     output = []
