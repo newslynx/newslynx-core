@@ -1,9 +1,9 @@
 -- A function for creating a lookup table to make timeseries non-sparse.
-CREATE OR REPLACE FUNCTION content_metric_calendar(text, int) 
+CREATE OR REPLACE FUNCTION content_metric_calendar(text, "c_ids" anyarray) 
 RETURNS TABLE(content_item_id int, datetime timestamp with time zone) AS
 $BODY$
 DECLARE
-   t_id int;
+   c_id int;
    bucket int;
    unit text;
 BEGIN
@@ -16,23 +16,27 @@ BEGIN
     unit := 'hour';
   END IF;
 
-  -- generate calendar
-  RETURN QUERY EXECUTE 
-    'WITH cal AS (
-        WITH mm AS (
-            SELECT 
-                MIN(date_trunc('''|| unit || ''', datetime)) AS minmin,
-                MAX(date_trunc('''|| unit || ''', datetime)) AS maxmax,
-                content_item_id
-            FROM content_metric_timeseries
-                WHERE content_item_id=' || $2 || '
-                GROUP BY content_item_id)
-        SELECT
-            content_item_id,
-            generate_series(mm.minmin , mm.maxmax , '''|| $1 || '''::interval) AS datetime
-        FROM mm
-        )
-   SELECT content_item_id, datetime FROM cal ORDER BY datetime ASC';
+  FOR c_id IN
+    SELECT unnest("c_ids")
+  LOOP
+    -- generate calendar
+    RETURN QUERY EXECUTE 
+      'WITH cal AS (
+          WITH mm AS (
+              SELECT 
+                  MIN(date_trunc('''|| unit || ''', datetime)) AS minmin,
+                  MAX(date_trunc('''|| unit || ''', datetime)) AS maxmax,
+                  content_item_id
+              FROM content_metric_timeseries
+                  WHERE content_item_id=' || c_id || '
+                  GROUP BY content_item_id)
+          SELECT
+              content_item_id,
+              generate_series(mm.minmin , mm.maxmax , '''|| $1 || '''::interval) AS datetime
+          FROM mm
+          )
+     SELECT content_item_id, datetime FROM cal ORDER BY datetime ASC';
+  END LOOP;
 END
 $BODY$
 LANGUAGE plpgsql;

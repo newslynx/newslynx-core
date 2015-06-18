@@ -32,6 +32,7 @@ class Event(db.Model):
         ENUM(*EVENT_PROVENANCES, name='event_provenance_enum'), index=True)
     url = db.Column(db.Text, index=True)
     img_url = db.Column(db.Text)
+    thumbnail = db.Column(db.Text)
     created = db.Column(db.DateTime(timezone=True), default=dates.now)
     updated = db.Column(db.DateTime(timezone=True), onupdate=dates.now, default=dates.now)
     title = db.Column(db.Text)
@@ -78,7 +79,8 @@ class Event(db.Model):
         self.provenance = kw.get('provenance', 'recipe')
         self.url = kw.get('url')
         self.img_url = kw.get('img_url')
-        self.created = kw.get('created', dates.now())
+        self.thumbnail = kw.get('thumbnail')
+        self.created = kw.get('created')
         self.title = kw.get('title')
         self.description = kw.get('description')
         self.body = kw.get('body')
@@ -128,6 +130,8 @@ class Event(db.Model):
         }
         if kw.get('incl_body', False):
             d['body'] = self.body
+        if kw.get('incl_thumbnail', True):
+            d['thumbnail'] = self.thumbnail
         return d
 
     def __repr__(self):

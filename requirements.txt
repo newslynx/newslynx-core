@@ -57,3 +57,4 @@ pyopenssl
 ndg-httpsclient
 pyasn1
 jsonpath-rw>=1.4.0
+pillow

@@ -96,7 +96,7 @@ def prepare(url, source=None, canonicalize=True, expand=True, keep_params=('id',
 
     # canonicalize
     if canonicalize:
-        page_html = network.get_html(url)
+        page_html = network.get(url)
         if page_html:
             soup = BeautifulSoup(page_html)
             canonical = meta.canonical_url(soup)
@@ -446,7 +446,7 @@ def is_shortened(url, pattern=None):
         # because of this
         if pattern.match(url):
             return True
- 
+
     # test against known short domains
     domain = get_domain(url)
     if re_short_domains.search(domain):
@@ -733,7 +733,7 @@ def _bypass_bitly_warning(url):
     """
     Sometime bitly blocks unshorten attempts, this bypasses that.
     """
-    html_string = network.get_html(url)
+    html_string = network.get(url)
     soup = BeautifulSoup(html_string)
     a = soup.find('a', {'id': 'clickthrough'})
     if a:

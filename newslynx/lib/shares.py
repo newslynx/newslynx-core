@@ -14,7 +14,7 @@ from copy import copy
 
 import requests
 
-from newslynx.lib.network import get_json, get_html
+from newslynx.lib import network
 from newslynx.lib.serialize import json_to_obj, obj_to_json
 
 
@@ -49,9 +49,15 @@ class ShareCount(object):
         return {'url': url, 'format': 'json'}
 
     def fetch(self, params):
-        return get_json(self.endpoint, **params)
+        """
+        Fetch the data.
+        """
+        return network.get_json(self.endpoint, **params)
 
     def parse(self, data):
+        """
+        Your custom parsing function.
+        """
         raise NotImplemented
 
     def count(self, url):
@@ -127,7 +133,7 @@ class Pinterest(ShareCount):
 
     # override the fetch method to handle jsonp
     def fetch(self, params):
-        text = get_html(self.endpoint, **params)
+        text = network.get(self.endpoint, **params)
         if not text:
             return None
         return self._parse_jsonp(text)

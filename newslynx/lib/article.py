@@ -14,6 +14,8 @@ from newslynx.lib import url
 from newslynx.lib import html
 from newslynx.lib import meta
 from newslynx.lib import author
+from newslynx.lib import image
+
 try:
     from newslynx.core import embedly_api
 except ImportError:
@@ -35,7 +37,7 @@ def extract(source_url):
     """
 
     # fetch page
-    page_html = network.get_html(source_url)
+    page_html = network.get(source_url)
 
     # something failed.
     if not page_html:
@@ -92,6 +94,7 @@ def extract(source_url):
                 a.replace(data['site_name'].upper(), "").strip()
                 for a in data['authors']
             ]
+
     # # get links from raw_html + content
     # links = [u for u in url.from_any(data['body']) if source_url not in u]
     # for u in url.from_any(raw_html, source=source_url):
