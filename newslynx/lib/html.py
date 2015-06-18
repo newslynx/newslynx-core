@@ -42,7 +42,7 @@ def is_html(htmlstring):
     return lxml.html.fromstring(htmlstring).find('.//*') is not None
 
 
-def prepare(htmlstring, source_url, safe_attrs=['src', 'href']):
+def prepare(htmlstring, source_url=None, safe_attrs=['src', 'href']):
     """
     Cleanse an htmlstring of it's attributes,
     absolutify images and links, ascii-dammify it,
@@ -66,17 +66,22 @@ def make_abs(htmlstring, source_url):
     # links
     for a in soup.find_all('a'):
         href = a.attrs.get('href')
-        if href:
-            if href.startswith('/'):
+        if not href:
+            continue
+        if href.startswith('/') or not href.startswith('http'):
+            if source_url:
                 a['href'] = urljoin(source_url, href)
-            elif href.startswith('#'):
-                a.attrs.pop('href')
+        elif href.startswith('#'):
+            a.attrs.pop('href')
 
     # images
     for img in soup.find_all('img'):
         src = img.attrs.get('src')
-        if src and src.startswith('/'):
-            img['src'] = urljoin(source_url, src)
+        if not src:
+            continue
+        if src.startswith('/') or not src.startswith('http'):
+            if source_url:
+                img['src'] = urljoin(source_url, src)
     return soup
 
 

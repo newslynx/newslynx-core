@@ -2,7 +2,6 @@
 Multi-Method Article Extraction
 """
 
-
 import logging
 
 from readability.readability import Document
@@ -32,8 +31,9 @@ def extract(source_url):
     3. If not canonical, prepare the url.
     4. Extract meta tags.
     5. If embedly is active, use it for content extraction.
-    6. If embedly doesnt return content, use readability
-    7. If readability doesnt return content, use meta tag.
+    6. If embedly doesnt return content or is not active, use readability
+    7. If readability doesnt return content, use article tag.
+    8. If authors aren't detcted from meta tags, detect them in article body.
     """
 
     # fetch page

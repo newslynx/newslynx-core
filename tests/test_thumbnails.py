@@ -13,7 +13,7 @@ class TestThumbnail(unittest.TestCase):
     def test_jpeg(self):
         b64 = image.b64_thumbnail_from_url(jpeg_url)
         data = b64.split(';')[0]
-        assert('jpg' in data or 'jpeg' in data)
+        assert('jpeg' in data)
 
     def test_gif(self):
         b64 = image.b64_thumbnail_from_url(gif_url)

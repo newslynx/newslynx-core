@@ -1,13 +1,17 @@
 import cStringIO
 import base64
 import mimetypes
+from urlparse import urljoin
 
 import requests
+from bs4 import BeautifulSoup
 from PIL import Image, ImageOps
 
 from newslynx.lib import network
-from newslynx.lib.url import get_filetype
+from newslynx.lib import url
 from newslynx import settings
+
+IMG_TAGS = [('img', 'src'), ('a', 'href')]
 
 
 def b64_thumbnail_from_url(img_url, **kw):
@@ -20,7 +24,7 @@ def b64_thumbnail_from_url(img_url, **kw):
     fmt = None
 
     # override fmt with default fmt
-    fmt = get_filetype(img_url)
+    fmt = url.get_filetype(img_url)
 
     # get the image
     resp = get_url(img_url)
@@ -42,10 +46,15 @@ def b64_thumbnail_from_url(img_url, **kw):
 
     # turn into Pillow object
     file = cStringIO.StringIO(data)
-    image = Image.open(file)
 
-    # fit to a thumbnail
-    thumb = ImageOps.fit(image, size, Image.ANTIALIAS)
+    # if this fails then it's not an image.
+    try:
+        image = Image.open(file)
+
+        # fit to a thumbnail
+        thumb = ImageOps.fit(image, size, Image.ANTIALIAS)
+    except:
+        return None
 
     # convert to base64
     img_buffer = cStringIO.StringIO()
@@ -80,3 +89,40 @@ def extension_from_mimetype(mimetype):
     if ext == 'jpe':
         return 'jpeg'
     return ext
+
+
+def from_html(htmlstring, source=None):
+    """
+    Extract all img urls from an html string
+    """
+    if not htmlstring:
+        return []
+    soup = BeautifulSoup(htmlstring)
+    seen_imgs = set()
+    out_imgs = []
+
+    for tag, attr in IMG_TAGS:
+
+        for el in soup.find_all(tag):
+
+            img_url = el.attrs.get(attr)
+            if not img_url:
+                continue
+
+            # only take images with known formats
+            fmt = url.is_image(img_url)
+            if not fmt:
+                continue
+
+            # absolutify images if we know their source.
+            if img_url.startswith('/') or not img_url.startswith('http'):
+                if source:
+                    img_url = urljoin(source, img_url)
+                else:
+                    continue
+
+            # dedupe images
+            if img_url not in seen_imgs:
+                seen_imgs.add(img_url)
+                out_imgs.append(img_url)
+    return out_imgs
