@@ -12,7 +12,7 @@ class TestSousChefJSONSchema(unittest.TestCase):
             .match('hello worlds')
         assert t
 
-    def test_missing_type(self):
+    def test_too_many_operators(self):
         """A valid search string cannot have more than two operators."""
         try:
             SearchString('~world & /.*ello.*/ OR yo')\
@@ -38,6 +38,18 @@ class TestSousChefJSONSchema(unittest.TestCase):
         """A valid search string should be able to partial match a URL"""
         t = SearchString('domain.com')\
             .match('http://www.domain.com/')
+        assert t
+
+    def test_list_url_search(self):
+        """A valid search string should be able to match on lists"""
+        t = SearchString('domain.com')\
+            .match(['http://www.foo.com/', 'http://www.bar.com/', 'subdomain.domain.com'])
+        assert t
+
+    def test_url_regex(self):
+        """A valid search string should be able to match on lists"""
+        t = SearchString('/.*domain\.com.*/')\
+            .match(['http://www.foo.com/', 'http://www.bar.com/', 'subdomain.domain.com'])
         assert t
 
 

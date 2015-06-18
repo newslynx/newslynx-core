@@ -86,6 +86,12 @@ sous_chef = {
             "input_type": "text",
             "value_types": ["regex", "nulltype"],
             "required": False
+        },
+        "set_content_items": {
+            "input_type": "checkbox",
+            "value_types": ["json"],
+            "accepts_list": True,
+            "required": False
         }
     }
 }
@@ -108,6 +114,7 @@ good_recipe = {
     "notify_email": "brianabelson@gmail.com",
     "tag_ids": [1, 'this-is-also-a-tag'],
     "filter_bots": "t",
+    "set_content_items": [{'id': 1, 'title': 'foo'}],
     "options": {}
 }
 
@@ -123,6 +130,7 @@ good_recipe_proper_nesting = {
         "link_url": "http://example.com/some-url",
         "notify_email": "brianabelson@gmail.com",
         "tag_ids": [1, 'this-is-also-a-tag'],
+        "set_content_items": [{'id': 1, 'title': 'foo'}],
         "filter_bots": "t"
     }
 }
@@ -180,6 +188,9 @@ class TestRecipeSchema(unittest.TestCase):
 
         # make sure search query is a SearchString
         assert(isinstance(o['search_query'], SearchString))
+
+        # make sure first instance of content_items is a dict
+        assert(isinstance(o['set_content_items'][0], dict))
 
         # make sure we can serialize this back to json.
         obj_to_json(r)
@@ -308,19 +319,22 @@ class TestRecipeSchema(unittest.TestCase):
         db_session.commit()
 
         old_recipe = recipe_schema.validate(old_recipe, sc.to_dict())
+        old_id = old_recipe['options']['set_content_items'][0]['id']
         r = Recipe(sc, **old_recipe)
         db_session.add(r)
         db_session.commit()
         new_recipe = {
             'owner_screen_name': 'johnoliver',
             'last_job': {'foo': 'bar'},
-            'status': 'stable'
+            'status': 'stable',
+            "set_content_items": [{'id': 2, 'title': 'foobar'}]
         }
         new_recipe = recipe_schema.update(
             r, new_recipe, sc.to_dict())
         assert(new_recipe['options']['owner_screen_name'] == 'johnoliver')
         assert(new_recipe['last_job']['foo'] == 'bar')
         assert(new_recipe['status'] == 'stable')
+        assert(new_recipe['options']['set_content_items'][0]['id'] != old_id)
         db_session.delete(r)
         db_session.delete(sc)
         db_session.commit()

@@ -10,6 +10,7 @@ from PIL import Image, ImageOps
 from newslynx.lib import network
 from newslynx.lib import url
 from newslynx import settings
+from newslynx.util import uniq
 
 IMG_TAGS = [('img', 'src'), ('a', 'href')]
 
@@ -98,7 +99,6 @@ def from_html(htmlstring, source=None):
     if not htmlstring:
         return []
     soup = BeautifulSoup(htmlstring)
-    seen_imgs = set()
     out_imgs = []
 
     for tag, attr in IMG_TAGS:
@@ -121,8 +121,5 @@ def from_html(htmlstring, source=None):
                 else:
                     continue
 
-            # dedupe images
-            if img_url not in seen_imgs:
-                seen_imgs.add(img_url)
-                out_imgs.append(img_url)
-    return out_imgs
+            out_imgs.append(img_url)
+    return uniq(out_imgs)

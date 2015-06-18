@@ -42,6 +42,22 @@ def update_nested_dict(d, u, overwrite=False):
     return d
 
 
+def uniq(seq, idfun=lambda x: x):
+    """
+    Order-preserving unique function.
+    """
+    # order preserving
+    seen = {}
+    result = []
+    for item in seq:
+        marker = idfun(item)
+        if marker in seen:
+            continue
+        seen[marker] = 1
+        result.append(item)
+    return result
+
+
 def gen_uuid():
     """
     Generate a UUID.

@@ -7,6 +7,8 @@ from gevent.monkey import patch_all
 patch_all()
 from gevent.pool import Pool
 
+from copy import copy
+
 import jsonpath_rw as jsonpath
 
 from newslynx.lib.pkg import feedparser
@@ -17,7 +19,7 @@ from newslynx.lib import url
 from newslynx.lib import article
 from newslynx.lib import network
 from newslynx.lib import image
-
+from newslynx.lib.util import uniq
 
 # JSONPATH CANDIDATES
 URL_CANDIDATE_JSONPATH = [
@@ -115,19 +117,28 @@ class FeedExtractor(object):
         and get all unique vals / lists
         of values
         """
-        candidates = set()
+        candidates = []
         for path in jsonpaths:
             path_candidates = self.get_jsonpath(obj, path)
 
             if isinstance(path_candidates, list):
                 for candidate in path_candidates:
                     if candidate:
-                        candidates.add(candidate)
+                        candidates.append(candidate)
 
             elif isinstance(path_candidates, str):
-                candidates.add(candidate)
+                candidates.append(candidate)
 
-        return list(candidates)
+        return uniq(candidates)
+
+    def pick_longest(self, candidates):
+        """
+        Pick the longest option of all candidates
+        """
+        if len(candidates) == 0:
+            return None
+        candidates.sort(key=len)
+        return candidates[-1]
 
     def get_created(self, obj):
         """
@@ -144,61 +155,28 @@ class FeedExtractor(object):
         """
         return all candidates, and parse unique
         """
-
-        titles = set()
-
-        candidates = self.get_candidates(entry, TITLE_CANDIDATE_JSONPATH)
-        for c in candidates:
-            titles.add(c)
-
-        titles = list(titles)
-
-        if len(titles) == 0:
-            return None
-
-        if len(titles) == 1:
-            return titles[0]
-
-        titles.sort(key=len)
-        return titles[-1]
+        titles = self.get_candidates(entry, TITLE_CANDIDATE_JSONPATH)
+        return self.pick_longest(titles)
 
     # get title
     def get_description(self, entry):
         """
         return all candidates, and parse unique
         """
-
-        descriptions = set()
-
-        candidates = self.get_candidates(entry, DESCRIPTION_CANDIDATE_JSONPATH)
-        for c in candidates:
-            descriptions.add(c)
-
-        descriptions = list(descriptions)
-
-        if len(descriptions) == 0:
-            return None
-
-        if len(descriptions) == 1:
-            return descriptions[0]
-
-        descriptions.sort(key=len)
-        return descriptions[-1]
+        descriptions = self.get_candidates(entry, DESCRIPTION_CANDIDATE_JSONPATH)
+        return self.pick_longest(descriptions)
 
     # get authors
     def get_authors(self, entry):
         """
         return all candidates, and parse unique
         """
-
-        authors = set()
-
+        authors = []
         candidates = self.get_candidates(entry, AUTHOR_CANDIDATE_JSONPATH)
         for c in candidates:
             for a in author.parse(c):
-                authors.add(a)
-
-        return list(authors)
+                authors.appnd(a)
+        return uniq(authors)
 
     # get images
     def get_img_url(self, entry, body):
@@ -226,16 +204,14 @@ class FeedExtractor(object):
         Get all body candidates and check which one is the longest.
         """
         candidates = self.get_candidates(entry, BODY_CANDIDATE_JSONPATH)
-        candidates.sort(key=len)
-        if len(candidates):
-            return candidates[-1]
+        return self.pick_longest(candidates)
 
     def get_tags(self, entry):
         """
         Get all tags.
         """
         tags = self.get_candidates(entry, TAG_CANDIDATE_JSONPATH)
-        return list(set([t.upper() for t in tags if t and t != ""]))
+        return uniq([t.upper() for t in tags if t and t.strip() != ""])
 
     def get_url(self, entry):
         """
@@ -250,12 +226,12 @@ class FeedExtractor(object):
 
         # test for urls in domains.
         if len(self.domains):
-            urls = set()
+            urls = []
             for u in candidates:
                 if any([d in u for d in self.domains]):
-                    urls.add(u)
+                    urls.append(u)
         else:
-            urls = set(candidates)
+            urls = copy(candidates)
 
         # if we have one or more, update return the first.
         urls = list(urls)
@@ -307,9 +283,8 @@ class FeedExtractor(object):
         Parse an Rss Feed.
         """
         f = feedparser.parse(self.feed_url)
-        if f:
-            for entry in f.entries:
-                yield self.parse_entry(entry)
+        for entry in f.entries:
+            yield self.parse_entry(entry)
 
 
 if __name__ == '__main__':

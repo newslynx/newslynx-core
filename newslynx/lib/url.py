@@ -18,6 +18,7 @@ from newslynx.lib.regex import *
 from newslynx.lib import network
 from newslynx.lib import meta
 from newslynx.lib import html
+from newslynx.util import uniq
 
 # url chunks
 ALLOWED_TYPES = [
@@ -471,7 +472,6 @@ def from_string(string, **kw):
     get urls from input string
     """
 
-    dedupe = kw.get('dedupe', True)
     source = kw.get('source', None)
     exclude_images = kw.get('excl_img', True)
 
@@ -505,9 +505,7 @@ def from_string(string, **kw):
     # remove invalid urls
     urls = [u for u in urls if is_valid(u)]
 
-    if dedupe:
-        return list(set(urls))
-    return urls
+    return uniq(urls)
 
 
 def from_html(htmlstring, **kw):
@@ -515,14 +513,12 @@ def from_html(htmlstring, **kw):
     Extract urls from htmlstring, optionally reconciling
     relative urls + embeds + redirects.
     """
-    dedupe = kw.get('dedupe', True)
     source = kw.get('source', None)
     exclude_images = kw.get('excl_img', True)
 
     if not htmlstring:
         return []
     final_urls = []
-    seen_urls = set()
     if source:
         source_domain = get_domain(source)
     soup = BeautifulSoup(htmlstring)
@@ -546,12 +542,10 @@ def from_html(htmlstring, **kw):
                     continue
                 if exclude_images:
                     if not is_image(url):
-                        seen_urls.add(url)
                         final_urls.append(url)
                 else:
-                    seen_urls.add(url)
                     final_urls.append(url)
-    return final_urls
+    return uniq(final_urls)
 
 
 def from_any(html_or_string, **kw):

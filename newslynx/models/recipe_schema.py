@@ -20,16 +20,17 @@ from newslynx.constants import (
 # order type checking from most to least
 # finnicky
 TYPE_SORT_ORDER = {
-    "email": 0,
-    "url": 1,
-    "crontab": 2,
-    "searchstring": 3,
-    "datetime": 4,
-    "regex": 5,
-    "numeric": 6,
-    "boolean": 7,
-    "string": 8,
-    "nulltype": 9
+    "json": 0,
+    "email": 1,
+    "url": 2,
+    "crontab": 3,
+    "searchstring": 4,
+    "datetime": 5,
+    "regex": 6,
+    "numeric": 7,
+    "boolean": 8,
+    "nulltype": 9,
+    "string": 10
 }
 
 
@@ -150,6 +151,18 @@ class RecipeSchema(object):
                 .format(key, opt))
         return v_opt
 
+    def valid_json(self, key, opt):
+        """
+        Validate a iso-datetime option.
+        """
+        try:
+            obj_to_json(opt)
+        except:
+            return RecipeSchemaError(
+                "{} should be a 'json' field but was passed '{}'."
+                .format(key, opt))
+        return opt
+
     def valid_searchstring(self, key, opt):
         """
         Validate a searchstring option.
@@ -238,6 +251,7 @@ class RecipeSchema(object):
             "string": self.valid_string,
             "numeric": self.valid_numeric,
             "crontab": self.valid_crontab,
+            "json": self.valid_json,
             "email": self.valid_email,
             "url": self.valid_url,
             "regex": self.valid_regex,

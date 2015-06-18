@@ -31,6 +31,7 @@ from unidecode import unidecode
 from newslynx.exc import SearchStringError
 from newslynx.lib.regex import re_whitespace
 from newslynx.lib import html
+from newslynx.util import uniq
 
 # sets for text cleaning.
 punct = frozenset(string.punctuation)
@@ -124,10 +125,10 @@ def phrase_grams(term):
 # ngram tokenizer
 def tokenizer(text, n):
     """
-    Tokenize text.
+    Tokenize unique ngrams.
     """
     grams = ngrams(text, n)
-    return list(set([" ".join(gram).decode('utf-8') for gram in grams]))
+    return uniq([" ".join(gram).decode('utf-8') for gram in grams])
 
 
 class SearchString(object):
@@ -162,24 +163,33 @@ class SearchString(object):
         """
         Apply searchstring logic to text.
         """
-        if not text:
+        if not text or not len(text):
             return False
+        if not isinstance(text, list):
+            text = [text]
 
-        raw = copy(text)
-        text = self._process_text(text, **kw)
-        tests = []
+        for t in text:
 
-        for term in self.terms:
+            raw = copy(t)
+            t = self._process_text(t, **kw)
+            tests = []
 
-            if term['is_regex']:
-                tests.append(self._regex_match(term['term'], text))
+            for term in self.terms:
 
-            elif term['is_fuzzy']:
-                tests.append(self._fuzzy_match(term['term'], text))
+                if term['is_regex']:
+                    tests.append(self._regex_match(term['term'], t, raw))
 
-            else:
-                tests.append(self._simple_match(term['term'], text, raw))
+                elif term['is_fuzzy']:
+                    tests.append(self._fuzzy_match(term['term'], t))
 
+                else:
+                    tests.append(self._simple_match(term['term'], t, raw))
+
+            # breakout if we found a match
+            if self.operator(tests):
+                return True
+
+        # test final match
         return self.operator(tests)
 
     def _simple_match(self, term, text, raw):
@@ -203,11 +213,15 @@ class SearchString(object):
                 return True
         return False
 
-    def _regex_match(self, term, text):
+    def _regex_match(self, term, text, raw):
         """
         Apply a regex
         """
-        return term.search(text) is not None
+        if term.search(text):
+            return True
+        if term.search(raw):
+            return True
+        return False
 
     def _process_text(self, text, **kw):
         """

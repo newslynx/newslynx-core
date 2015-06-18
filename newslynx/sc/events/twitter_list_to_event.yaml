@@ -95,16 +95,16 @@ options:
                 apply to events created by this recipe.
             placeholder: "pending"
 
-    set_event_content_item_ids:
+    set_event_content_items:
         input_type: checkbox
         input_options: []
         accepts_list: true 
         value_types:
-            - numeric 
+            - json
         default: []
         help:
             description: |
-                A list of Content Item IDs to automatically
+                A list of Content Item IDs and Titles to automatically
                 apply to events created by this Recipe.
             placeholder: "pending"
 

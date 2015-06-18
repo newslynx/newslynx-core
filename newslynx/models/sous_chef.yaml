@@ -137,6 +137,7 @@ definitions:
                     enum:
                         - datetime
                         - crontab
+                        - json
                         - regex
                         - boolean
                         - numeric
