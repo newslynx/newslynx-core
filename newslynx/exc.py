@@ -1,53 +1,37 @@
 
-# API ERRORS #
-
-
-class APIError(Exception):
-
+class Error(Exception):
     """
-    A generic error for throwing api errors.
+    A generic Exception with status_code
     """
-
-    def __init__(self, message, status_code=None, payload=None, **kw):
-        Exception.__init__(self)
-        self.message = message
-        if status_code is not None:
-            self.status_code = status_code
-        self.payload = payload
-
-    def to_dict(self):
-        rv = dict(self.payload or ())
-        rv['message'] = str(self.message)
-        rv['error'] = self.__class__.__name__
-        rv['status_code'] = self.status_code
-        return rv
+    def __init__(self, *args, **kw):
+        Exception.__init__(self, *args, **kw)
 
 
-class RequestError(APIError):
+class RequestError(Exception):
     status_code = 400
 
 
-class AuthError(APIError):
+class AuthError(Exception):
     status_code = 401
 
 
-class ForbiddenError(APIError):
+class ForbiddenError(Exception):
     status_code = 403
 
 
-class NotFoundError(APIError):
+class NotFoundError(Exception):
     status_code = 404
 
 
-class ConflictError(APIError):
+class ConflictError(Exception):
     status_code = 409
 
 
-class UnprocessableEntityError(APIError):
+class UnprocessableEntityError(Exception):
     status_code = 422
 
 
-class InternalServerError(APIError):
+class InternalServerError(Exception):
     status_code = 500
 
 

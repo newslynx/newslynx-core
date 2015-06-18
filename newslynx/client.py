@@ -132,8 +132,7 @@ class BaseClient(object):
                 raise ClientError(resp.content)
 
             err = ERRORS.get(d['error'])
-            log.error("Status Code: {status_code} - ({error}) - {message}".format(**d))
-            raise err(**d)
+            raise err(d['message'])
 
     def _format_response(self, resp):
         """

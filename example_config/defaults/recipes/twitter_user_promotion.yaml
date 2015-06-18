@@ -4,5 +4,5 @@ slug: twitter-user-to-event-promotion
 status: uninitialized
 options:
     set_event_status: approved
-    tag_ids: ['internal-promotion']
+    set_event_tag_ids: ['internal-promotion']
     interval: 900

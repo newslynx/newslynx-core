@@ -20,6 +20,7 @@ class SousChef(db.Model):
         ENUM(*SOUS_CHEF_CREATES, name='sous_chef_creates_enum'), index=True)
     option_order = db.Column(ARRAY(db.Text))
     options = db.Column(JSON)
+    metrics = db.Column(JSON)
 
     def __init__(self, **kw):
 
@@ -32,8 +33,11 @@ class SousChef(db.Model):
         self.creates = kw.get('creates')
         self.option_order = kw.get('option_order', [])
         self.options = kw.get('options', {})
+        self.metrics = kw.get('metrics', {})
 
-    def to_dict(self, incl_options=True):
+    def to_dict(self, **kw):
+        incl_options = kw.get('incl_options', True)
+
         d = {
             'id': self.id,
             'name': self.name,
@@ -46,6 +50,8 @@ class SousChef(db.Model):
         }
         if incl_options:
             d['options'] = self.ordered_options
+        if 'metrics' in self.creates:
+            d['metrics'] = self.metrics
         return d
 
     @property

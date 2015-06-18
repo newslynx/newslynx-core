@@ -10,7 +10,7 @@ from flask import Blueprint
 from newslynx.core import db
 from newslynx.exc import NotFoundError, RequestError
 from newslynx.lib import dates
-from newslynx.lib.serialize import json_to_obj
+from newslynx.lib.serialize import json_to_obj, jsonify
 from newslynx import settings
 from newslynx.models.util import get_table_columns
 from newslynx.constants import *
@@ -520,6 +520,21 @@ def delete_response():
     r = Response()
     r.status_code = 204
     return r
+
+
+def error_response(name, err):
+    """
+    Return an empty response from a delete request
+    with the proper status code.
+    """
+    resp = {
+        "error": name,
+        "message": err.message,
+        "status_code": err.status_code
+    }
+    response = jsonify(resp)
+    response.status_code = err.status_code
+    return response
 
 
 def obj_or_404(obj, message):

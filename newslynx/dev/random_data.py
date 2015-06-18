@@ -221,6 +221,9 @@ def gen_built_in_recipes(org):
         recipe['org_id'] = org.id
         recipe['status'] = 'uninitialized'
         sous_chef_slug = recipe.pop('sous_chef')
+        print "*"*60
+        print sous_chef_slug
+        print 
         if not sous_chef_slug:
             raise RecipeSchemaError(
                 'Default recipe "{}" is missing a "sous_chef" slug.'
@@ -236,11 +239,22 @@ def gen_built_in_recipes(org):
             .filter_by(org_id=org.id, slug=recipe['slug'])\
             .first()
         if not r:
-
             r = Recipe(sc, **recipe)
             db_session.add(r)
             db_session.commit()
+
         recipes.append(r)
+
+        # if the recipe creates metrics add them in here.
+        if 'metrics' in sc.creates:
+            for name, params in sc.metrics.items():
+                m = Metric(
+                    name=name,
+                    recipe_id=r.id,
+                    org_id=org.id,
+                    **params)
+                db_session.add(m)
+                db_session.commit()
     return recipes
 
 

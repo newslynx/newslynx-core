@@ -185,7 +185,7 @@ class ContentItem(db.Model):
             d['body'] = self.body
 
         if incl_metrics:
-            if self.metrics:
+            if self.summary_metrics:
                 d['metrics'] = self.summary_metrics.metrics
             else:
                 d['metrics'] = {}

@@ -133,7 +133,7 @@ class Cache(object):
 
             # if the worker returns None, break out
             if not obj:
-                return None
+                return CacheResponse(key, obj, None, False)
 
             # set the object in redis at the specified
             # key with the specified ttl

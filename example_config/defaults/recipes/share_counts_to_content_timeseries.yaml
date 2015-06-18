@@ -1,0 +1,5 @@
+sous_chef: share-counts-to-content-timeseries
+name: Shares Counts for Content Items
+slug: share-counts-to-content-timeseries
+status: stable
+options: {}

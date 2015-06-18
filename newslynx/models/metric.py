@@ -53,7 +53,7 @@ class Metric(db.Model):
     updated = db.Column(db.DateTime(timezone=True), onupdate=dates.now, default=dates.now)
 
     __table_args__ = (
-        db.UniqueConstraint('org_id', 'name', 'cumulative'),
+        db.UniqueConstraint('org_id', 'name', 'level'),
     )
 
     def __init__(self, **kw):

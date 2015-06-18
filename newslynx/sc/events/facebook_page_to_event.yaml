@@ -12,7 +12,10 @@ option_order:
     - interval
     - time_of_day
     - set_event_status
-    - tag_ids
+    - set_event_title
+    - set_event_description
+    - set_event_tag_ids
+    - set_event_content_item_ids
 options:
     
     page_name:
@@ -44,19 +47,46 @@ options:
         default: pending
         help:
             placeholder: "pending"
-    
-    tag_ids:
+
+    set_event_title:
+        input_type: text
+        value_types: 
+            - string
+        default: null
+        help:
+            placeholder: "Promotion Event"
+
+    set_event_description:
+        input_type: paragraph
+        value_types: 
+            - string
+        default: null
+
+    set_event_tag_ids:
         input_type: checkbox
         input_options: []
         accepts_list: true 
         value_types:
             - string 
-            - numeric
+            - numeric 
         default: []
         help:
             description: |
                 A list of Tag IDs or slugs to automatically
                 apply to events created by this recipe.
+            placeholder: "pending"
+
+    set_event_content_item_ids:
+        input_type: checkbox
+        input_options: []
+        accepts_list: true 
+        value_types:
+            - numeric 
+        default: []
+        help:
+            description: |
+                A list of Content Item IDs to automatically
+                apply to events created by this Recipe.
             placeholder: "pending"
 
 

@@ -57,7 +57,8 @@ def michaels_login():
 def me(user):
     """
     Get yourself.
-    """    return jsonify(user.to_dict(incl_apikey=True))
+    """
+    return jsonify(user.to_dict(incl_apikey=True))
 
 
 @bp.route('/api/v1/me', methods=['PUT', 'PATCH'])

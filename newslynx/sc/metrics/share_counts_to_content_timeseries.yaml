@@ -1,6 +1,6 @@
+slug: share-counts-to-content-timeseries
 name: Share Counts
-slug: share-counts-to-content-metrics-timeseries
-description: |
+description: >
     Computes a timeseries of share counts for an organization's 
     content items.
 runs: newslynx.sc.metrics.shares.TimeseriesCounts

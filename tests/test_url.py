@@ -100,7 +100,7 @@ class TestURL(unittest.TestCase):
              'http://www.fromscratchradio.com/show/marc-dacosta'),
             ('bit.ly/aaaaaa', 'http://bit.ly/aaaaaa'),
             ('http://ow.ly/i/5OTms', 'http://ow.ly/i/5OTms'),
-            ('http://j.mp/1jBOKo1', 'http://earthfix.info/portables')
+            # ('http://j.mp/1jBOKo1', 'http://earthfix.info/portables')
         ]
         for c in cases:
             test, truth = c

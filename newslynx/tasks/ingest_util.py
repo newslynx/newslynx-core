@@ -83,7 +83,7 @@ def prepare_url(o, field, source=None):
     return cache_response.value
 
 
-def prepare_thubnail(o, field):
+def prepare_thumbnail(o, field):
     """
     Prepare a url
     """

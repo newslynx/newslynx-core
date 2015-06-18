@@ -1,0 +1,35 @@
+schedule_by:
+    input_type: select 
+    input_options:
+        - interval
+        - time_of_day
+        - cron
+    value_types: 
+        - string
+        - nulltype
+    default: null 
+
+schedule_by_cron:
+    input_type: text
+    value_types:
+        - crontab
+        - nulltype
+    default: null
+
+schedule_by_interval:
+    input_type: number
+    value_types: 
+        - numeric
+        - nulltype
+    default: null
+
+schedule_by_time_of_day:
+    input_type: select
+    input_options:
+        - ...
+    value_types:
+        - string
+        - nulltpe
+    default: null
+
+

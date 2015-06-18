@@ -10,7 +10,8 @@ from newslynx.exc import (
     SousChefSchemaError, ConfigError, SearchStringError,
     UnprocessableEntityError)
 from newslynx.lib.serialize import jsonify
-from newslynx.views.util import register_blueprints
+from newslynx.views.util import (
+    register_blueprints, error_response)
 from newslynx.views import api
 from newslynx.views import admin
 from newslynx.views import auth
@@ -53,73 +54,42 @@ def handle_exceptions(exc):
 
 @app.errorhandler(AuthError)
 def handle_auth_error(error):
-    response = jsonify(error)
-    response.status_code = error.status_code
-    return response
+    return error_response('AuthError', error)
 
 
 @app.errorhandler(RequestError)
 def handle_request_error(error):
-    response = jsonify(error)
-    response.status_code = error.status_code
-    return response
+    return error_response('RequestError', error)
 
 
 @app.errorhandler(ForbiddenError)
 def handle_forbidden_error(error):
-    response = jsonify(error)
-    response.status_code = error.status_code
-    return response
+    return error_response('ForbiddenError', error)
 
 
 @app.errorhandler(NotFoundError)
 def handle_not_found_error(error):
-    response = jsonify(error)
-    response.status_code = error.status_code
-    return response
+    return error_response('NotFoundError', error)
 
 
 @app.errorhandler(UnprocessableEntityError)
 def handle_unprocessable_entity_error(error):
-    response = jsonify(error)
-    response.status_code = error.status_code
-    return response
+    return error_response('UnprocessableEntityError', error)
 
 
 @app.errorhandler(SousChefSchemaError)
 def handle_sous_chef_schema_error(error):
-    resp = {
-        "error": 'SousChefSchemaError',
-        "message": error.message,
-        "status_code": error.status_code
-    }
-    response = jsonify(resp)
-    response.status_code = error.status_code
-    return response
+    return error_response('SousChefSchemaError', error)
 
 
 @app.errorhandler(ConfigError)
 def handle_config_error(error):
-    resp = {
-        "error": 'ConfigError',
-        "message": error.message,
-        "status_code": error.status_code
-    }
-    response = jsonify(resp)
-    response.status_code = error.status_code
-    return response
+    return error_response('ConfigError', error)
 
 
 @app.errorhandler(SearchStringError)
 def handle_search_string_error(error):
-    resp = {
-        "error": 'SearchStringError',
-        "message": error.message,
-        "status_code": error.status_code
-    }
-    response = jsonify(resp)
-    response.status_code = error.status_code
-    return response
+    return error_response('SearchStringError', error)
 
 
 @app.before_request
