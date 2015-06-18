@@ -23,9 +23,10 @@ def b64_thumbnail_from_url(img_url, **kw):
     fmt = get_filetype(img_url)
 
     # get the image
-    data, mime_fmt = get_url(img_url)
-    if not data:
+    resp = get_url(img_url)
+    if not resp:
         return None
+    data, mime_fmt = resp
 
     # override fmt with format from mimetype
     if not fmt:
@@ -55,7 +56,11 @@ def b64_thumbnail_from_url(img_url, **kw):
     return "data:image/{};base64,{}".format(fmt, img_str)
 
 
+@network.retry(attempts=2)
 def get_url(img_url):
+    """
+    Fetch an image and detect its filetype
+    """
     fmt = None
     r = requests.get(img_url, **network.get_request_kwargs())
     mimetype = r.headers.get('content-type', None)
