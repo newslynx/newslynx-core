@@ -22,13 +22,14 @@ from newslynx.constants import (
 TYPE_SORT_ORDER = {
     "email": 0,
     "url": 1,
-    "searchstring": 2,
-    "datetime": 3,
-    "regex": 4,
-    "numeric": 5,
-    "boolean": 6,
-    "string": 7,
-    "nulltype": 8
+    "crontab": 2,
+    "searchstring": 3,
+    "datetime": 4,
+    "regex": 5,
+    "numeric": 6,
+    "boolean": 7,
+    "string": 8,
+    "nulltype": 9
 }
 
 
@@ -121,8 +122,22 @@ class RecipeSchema(object):
             except:
                 pass
         return RecipeSchemaError(
-            "{} can be a 'nulltype' field but was passed '{}'."
+            "{} should be a 'nulltype' field but was passed '{}'."
             .format(key, opt))
+
+    def valid_crontab(self, key, opt):
+        """
+        Validate a crontab option.
+        """
+        if opt is None:
+            return None
+        try:
+            return dates.cron(opt)
+        except Exception as e:
+            return RecipeSchemaError(
+                "{} should be a 'crontab' field but was passed '{}'. "
+                "Here is the error message: {}."
+                .format(key, opt, e.message))
 
     def valid_datetime(self, key, opt):
         """
@@ -131,7 +146,7 @@ class RecipeSchema(object):
         v_opt = dates.parse_iso(opt)
         if not v_opt:
             return RecipeSchemaError(
-                "{} can be a 'datetime' field but was passed '{}'."
+                "{} should be a 'datetime' field but was passed '{}'."
                 .format(key, opt))
         return v_opt
 
@@ -143,7 +158,7 @@ class RecipeSchema(object):
             return SearchString(opt)
         except SearchStringError as e:
             return RecipeSchemaError(
-                "{} can be a 'searchstring' field but was passed '{}'. "
+                "{} should be a 'searchstring' field but was passed '{}'. "
                 "Here is the specific error: {}."
                 .format(key, opt, e.message))
 
@@ -181,7 +196,7 @@ class RecipeSchema(object):
             return unicode(opt)
         except:
             return RecipeSchemaError(
-                "{} can be a 'string' field but was passed '{}'."
+                "{} should be a 'string' field but was passed '{}'."
                 .format(key, opt))
 
     def valid_url(self, key, opt):
@@ -191,7 +206,7 @@ class RecipeSchema(object):
         if url.validate(opt):
             return opt
         return RecipeSchemaError(
-            "{} can be a 'url' field but was passed '{}'."
+            "{} should be a 'url' field but was passed '{}'."
             .format(key, opt))
 
     def valid_email(self, key, opt):
@@ -212,7 +227,7 @@ class RecipeSchema(object):
             return re.compile(opt)
         except:
             return RecipeSchemaError(
-                "{} can be a 'regex' field but was passed '{}'."
+                "{} should be a 'regex' field but was passed '{}'."
                 .format(key, opt))
 
     def validate_type(self, key, opt, type):
@@ -222,6 +237,7 @@ class RecipeSchema(object):
         fx_lookup = {
             "string": self.valid_string,
             "numeric": self.valid_numeric,
+            "crontab": self.valid_crontab,
             "email": self.valid_email,
             "url": self.valid_url,
             "regex": self.valid_regex,
@@ -319,7 +335,7 @@ class RecipeSchema(object):
 
             # otherwise, merge it in.
             else:
-                # if the key can be a slug, fall back on the sous chef
+                # if the key should be a slug, fall back on the sous chef
                 # slug and add a random hash.
                 if key == 'slug':
                     slug = "{}-{}".format(self.sous_chef, gen_short_uuid())

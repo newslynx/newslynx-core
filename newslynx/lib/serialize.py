@@ -19,6 +19,7 @@ from flask import Response, request
 
 from newslynx.lib.search import SearchString
 from newslynx.lib.regex import RE_TYPE
+from newslynx.lib.pkg.crontab import CronTab
 
 
 def string_to_gz(s):
@@ -160,6 +161,8 @@ class JSONEncoder(json.JSONEncoder):
             return obj.raw
         if isinstance(obj, RE_TYPE):
             return obj.pattern
+        if isinstance(obj, CronTab):
+            return obj.raw
         if self.refs and hasattr(obj, 'to_ref'):
             return obj.to_ref()
         if hasattr(obj, 'to_dict'):

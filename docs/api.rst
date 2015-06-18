@@ -315,26 +315,12 @@ All methods, unless otherwise specified, will return one or many organization ob
 .. code-block:: javascript
 
   {
-    "users": [
-      {
-        "admin": true,
-        "email": "jon@example.com",
-        "created": "2015-04-28T01:28:52.172260-04:00",
-        "id": 2,
-        "name": "Jon Conroy"
-      },
-      {
-        "admin": true,
-        "email": "merlynne@newslynx.org",
-        "created": "2015-05-06T21:28:52.150736-04:00",
-        "id": 1,
-        "name": "Merlynne Jones"
-      }
-    ],
+    "id": 1,
+    "name": "liveqa",
+    "timezone": "America/New_York"
+    "users": [...],
     "settings": [...],
     "auths": [...],
-    "id": 1,
-    "name": "liveqa"
   }
     
 
@@ -386,6 +372,12 @@ Params
 +====================+========================+==================+================+
 | ``apikey``         | Your ``apikey``        |  null            | true           |
 +--------------------+------------------------+------------------+----------------+
+| ``localize``       | Return dates in        | false            | false          |
+|                    | the org's specified    |                  |                |
+|                    | timezeon. If `false`   |                  |                |
+|                    | dates will be returned |                  |                |
+|                    | in UTC.                |                  |                |
++--------------------+------------------------+------------------+----------------+
 
 Body
 ****
@@ -428,6 +420,18 @@ Params
 +====================+========================+==================+================+
 | ``apikey``         | Your ``apikey``        |  null            | true           |
 +--------------------+------------------------+------------------+----------------+
+| ``localize``       | Return dates in        | false            | false          |
+|                    | the org's specified    |                  |                |
+|                    | timezeon. If `false`   |                  |                |
+|                    | dates will be returned |                  |                |
+|                    | in UTC.                |                  |                |
++--------------------+------------------------+------------------+----------------+
+| ``localize``       | Return dates in        | false            | false          |
+|                    | the org's specified    |                  |                |
+|                    | timezeon. If `false`   |                  |                |
+|                    | dates will be returned |                  |                |
+|                    | in UTC.                |                  |                |
++--------------------+------------------------+------------------+----------------+
 
 Returns
 *******
@@ -460,6 +464,12 @@ Params
 | Parameter          |  Description           |  Default         |  Required      |
 +====================+========================+==================+================+
 | ``apikey``         | Your ``apikey``        |  null            | true           |
++--------------------+------------------------+------------------+----------------+
+| ``localize``       | Return dates in        | false            | false          |
+|                    | the org's specified    |                  |                |
+|                    | timezeon. If `false`   |                  |                |
+|                    | dates will be returned |                  |                |
+|                    | in UTC.                |                  |                |
 +--------------------+------------------------+------------------+----------------+
 
 Returns
@@ -508,6 +518,12 @@ Params
 +====================+========================+==================+================+
 | ``apikey``         | Your ``apikey``        |  null            | true           |
 +--------------------+------------------------+------------------+----------------+
+| ``localize``       | Return dates in        | false            | false          |
+|                    | the org's specified    |                  |                |
+|                    | timezeon. If `false`   |                  |                |
+|                    | dates will be returned |                  |                |
+|                    | in UTC.                |                  |                |
++--------------------+------------------------+------------------+----------------+
 
 Returns
 *******
@@ -540,6 +556,12 @@ Params
 | Parameter          |  Description           |  Default         |  Required      |
 +====================+========================+==================+================+
 | ``apikey``         | Your ``apikey``        |  null            | true           |
++--------------------+------------------------+------------------+----------------+
+| ``localize``       | Return dates in        | false            | false          |
+|                    | the org's specified    |                  |                |
+|                    | timezeon. If `false`   |                  |                |
+|                    | dates will be returned |                  |                |
+|                    | in UTC.                |                  |                |
 +--------------------+------------------------+------------------+----------------+
 
 Returns
@@ -574,6 +596,12 @@ Params
 | Parameter          |  Description           |  Default         |  Required      |
 +====================+========================+==================+================+
 | ``apikey``         | Your ``apikey``        |  null            | true           |
++--------------------+------------------------+------------------+----------------+
+| ``localize``       | Return dates in        | false            | false          |
+|                    | the org's specified    |                  |                |
+|                    | timezeon. If `false`   |                  |                |
+|                    | dates will be returned |                  |                |
+|                    | in UTC.                |                  |                |
 +--------------------+------------------------+------------------+----------------+
 
 Body
@@ -623,6 +651,12 @@ Params
 +====================+========================+==================+================+
 | ``apikey``         | Your ``apikey``        |  null            | true           |
 +--------------------+------------------------+------------------+----------------+
+| ``localize``       | Return dates in        | false            | false          |
+|                    | the org's specified    |                  |                |
+|                    | timezeon. If `false`   |                  |                |
+|                    | dates will be returned |                  |                |
+|                    | in UTC.                |                  |                |
++--------------------+------------------------+------------------+----------------+
 
 Returns
 *******
@@ -657,6 +691,12 @@ Params
 | Parameter          |  Description           |  Default         |  Required      |
 +====================+========================+==================+================+
 | ``apikey``         | Your ``apikey``        |  null            | true           |
++--------------------+------------------------+------------------+----------------+
+| ``localize``       | Return dates in        | false            | false          |
+|                    | the org's specified    |                  |                |
+|                    | timezeon. If `false`   |                  |                |
+|                    | dates will be returned |                  |                |
+|                    | in UTC.                |                  |                |
 +--------------------+------------------------+------------------+----------------+
 
 Returns
@@ -772,6 +812,12 @@ Params
 |                    | ``id`` or ``slug`` you         |                  |                |
 |                    | wish to access.                |                  |                |
 +--------------------+--------------------------------+------------------+----------------+
+| ``localize``       | Return dates in                | false            | false          |
+|                    | the org's specified            |                  |                |
+|                    | timezeon. If `false`           |                  |                |
+|                    | dates will be returned         |                  |                |
+|                    | in UTC.                        |                  |                |
++--------------------+--------------------------------+------------------+----------------+
 
 Returns
 *******
@@ -805,6 +851,12 @@ Params
 | ``org``            | The organization's             | null             | true           |
 |                    | ``id`` or ``slug`` you         |                  |                |
 |                    | wish to access.                |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+| ``localize``       | Return dates in                | false            | false          |
+|                    | the org's specified            |                  |                |
+|                    | timezeon. If `false`           |                  |                |
+|                    | dates will be returned         |                  |                |
+|                    | in UTC.                        |                  |                |
 +--------------------+--------------------------------+------------------+----------------+
 
 Body
@@ -858,6 +910,12 @@ Params
 |                    | ``id`` or ``slug`` you         |                  |                |
 |                    | wish to access.                |                  |                |
 +--------------------+--------------------------------+------------------+----------------+
+| ``localize``       | Return dates in                | false            | false          |
+|                    | the org's specified            |                  |                |
+|                    | timezeon. If `false`           |                  |                |
+|                    | dates will be returned         |                  |                |
+|                    | in UTC.                        |                  |                |
++--------------------+--------------------------------+------------------+----------------+
 
 Returns
 *******
@@ -893,6 +951,12 @@ Params
 | ``org``            | The organization's             | null             | true           |
 |                    | ``id`` or ``slug`` you         |                  |                |
 |                    | wish to access.                |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+| ``localize``       | Return dates in                | false            | false          |
+|                    | the org's specified            |                  |                |
+|                    | timezeon. If `false`           |                  |                |
+|                    | dates will be returned         |                  |                |
+|                    | in UTC.                        |                  |                |
 +--------------------+--------------------------------+------------------+----------------+
 
 Body
@@ -938,6 +1002,12 @@ Params
 | ``org``            | The organization's             | null             | true           |
 |                    | ``id`` or ``slug`` you         |                  |                |
 |                    | wish to access.                |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+| ``localize``       | Return dates in                | false            | false          |
+|                    | the org's specified            |                  |                |
+|                    | timezeon. If `false`           |                  |                |
+|                    | dates will be returned         |                  |                |
+|                    | in UTC.                        |                  |                |
 +--------------------+--------------------------------+------------------+----------------+
 
 Returns
@@ -1002,6 +1072,12 @@ Params
 |                    | ``id`` or ``slug`` you         |                  |                |
 |                    | wish to access.                |                  |                |
 +--------------------+--------------------------------+------------------+----------------+
+| ``localize``       | Return dates in                | false            | false          |
+|                    | the org's specified            |                  |                |
+|                    | timezeon. If `false`           |                  |                |
+|                    | dates will be returned         |                  |                |
+|                    | in UTC.                        |                  |                |
++--------------------+--------------------------------+------------------+----------------+
 
 Returns
 ********
@@ -1026,6 +1102,12 @@ Params
 | ``org``            | The organization's             | null             | true           |
 |                    | ``id`` or ``slug`` you         |                  |                |
 |                    | wish to access.                |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+| ``localize``       | Return dates in                | false            | false          |
+|                    | the org's specified            |                  |                |
+|                    | timezeon. If `false`           |                  |                |
+|                    | dates will be returned         |                  |                |
+|                    | in UTC.                        |                  |                |
 +--------------------+--------------------------------+------------------+----------------+
 
 Returns
@@ -1059,6 +1141,12 @@ Params
 |                    | ``id`` or ``slug`` you         |                  |                |
 |                    | wish to access.                |                  |                |
 +--------------------+--------------------------------+------------------+----------------+
+| ``localize``       | Return dates in                | false            | false          |
+|                    | the org's specified            |                  |                |
+|                    | timezeon. If `false`           |                  |                |
+|                    | dates will be returned         |                  |                |
+|                    | in UTC.                        |                  |                |
++--------------------+--------------------------------+------------------+----------------+
 | ``redirect_uri``   | The url which you would like to| null             | false          |
 |                    | send a user back to after an   |                  |                |
 |                    | authentication attempt         |                  |                |
@@ -1089,6 +1177,12 @@ Params
 |                    | ``id`` or ``slug`` you         |                  |                |
 |                    | wish to access.                |                  |                |
 +--------------------+--------------------------------+------------------+----------------+
+| ``localize``       | Return dates in                | false            | false          |
+|                    | the org's specified            |                  |                |
+|                    | timezeon. If `false`           |                  |                |
+|                    | dates will be returned         |                  |                |
+|                    | in UTC.                        |                  |                |
++--------------------+--------------------------------+------------------+----------------+
 
 Returns
 ********
@@ -1114,6 +1208,12 @@ Params
 |                    | ``id`` or ``slug`` you         |                  |                |
 |                    | wish to access.                |                  |                |
 +--------------------+--------------------------------+------------------+----------------+
+| ``localize``       | Return dates in                | false            | false          |
+|                    | the org's specified            |                  |                |
+|                    | timezeon. If `false`           |                  |                |
+|                    | dates will be returned         |                  |                |
+|                    | in UTC.                        |                  |                |
++--------------------+--------------------------------+------------------+----------------+
 
 Returns
 ********
@@ -1138,6 +1238,12 @@ Params
 | ``org``            | The organization's             | null             | true           |
 |                    | ``id`` or ``slug`` you         |                  |                |
 |                    | wish to access.                |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+| ``localize``       | Return dates in                | false            | false          |
+|                    | the org's specified            |                  |                |
+|                    | timezeon. If `false`           |                  |                |
+|                    | dates will be returned         |                  |                |
+|                    | in UTC.                        |                  |                |
 +--------------------+--------------------------------+------------------+----------------+
 | ``redirect_uri``   | The url which you would like to| null             | false          |
 |                    | send a user back to after an   |                  |                |
@@ -1169,6 +1275,12 @@ Params
 |                    | ``id`` or ``slug`` you         |                  |                |
 |                    | wish to access.                |                  |                |
 +--------------------+--------------------------------+------------------+----------------+
+| ``localize``       | Return dates in                | false            | false          |
+|                    | the org's specified            |                  |                |
+|                    | timezeon. If `false`           |                  |                |
+|                    | dates will be returned         |                  |                |
+|                    | in UTC.                        |                  |                |
++--------------------+--------------------------------+------------------+----------------+
 
 Returns
 ********
@@ -1194,6 +1306,12 @@ Params
 |                    | ``id`` or ``slug`` you         |                  |                |
 |                    | wish to access.                |                  |                |
 +--------------------+--------------------------------+------------------+----------------+
+| ``localize``       | Return dates in                | false            | false          |
+|                    | the org's specified            |                  |                |
+|                    | timezeon. If `false`           |                  |                |
+|                    | dates will be returned         |                  |                |
+|                    | in UTC.                        |                  |                |
++--------------------+--------------------------------+------------------+----------------+
 
 Returns
 ********
@@ -1218,6 +1336,12 @@ Params
 | ``org``            | The organization's             | null             | true           |
 |                    | ``id`` or ``slug`` you         |                  |                |
 |                    | wish to access.                |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+| ``localize``       | Return dates in                | false            | false          |
+|                    | the org's specified            |                  |                |
+|                    | timezeon. If `false`           |                  |                |
+|                    | dates will be returned         |                  |                |
+|                    | in UTC.                        |                  |                |
 +--------------------+--------------------------------+------------------+----------------+
 | ``redirect_uri``   | The url which you would like to| null             | false          |
 |                    | send a user back to after an   |                  |                |
@@ -1248,6 +1372,12 @@ Params
 | ``org``            | The organization's             | null             | true           |
 |                    | ``id`` or ``slug`` you         |                  |                |
 |                    | wish to access.                |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+| ``localize``       | Return dates in                | false            | false          |
+|                    | the org's specified            |                  |                |
+|                    | timezeon. If `false`           |                  |                |
+|                    | dates will be returned         |                  |                |
+|                    | in UTC.                        |                  |                |
 +--------------------+--------------------------------+------------------+----------------+
 
 Returns
@@ -1316,6 +1446,12 @@ Params
 | ``org``            | The organization's             | null             | true           |
 |                    | ``id`` or ``slug`` you         |                  |                |
 |                    | wish to access.                |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+| ``localize``       | Return dates in                | false            | false          |
+|                    | the org's specified            |                  |                |
+|                    | timezeon. If `false`           |                  |                |
+|                    | dates will be returned         |                  |                |
+|                    | in UTC.                        |                  |                |
 +--------------------+--------------------------------+------------------+----------------+
 | ``type``           | A :ref:`taxonomy-tag-type` to  | null             | false          |
 |                    | filter by.                     |                  |                |
@@ -1409,6 +1545,12 @@ Params
 |                    | ``id`` or ``slug`` you         |                  |                |
 |                    | wish to access.                |                  |                |
 +--------------------+--------------------------------+------------------+----------------+
+| ``localize``       | Return dates in                | false            | false          |
+|                    | the org's specified            |                  |                |
+|                    | timezeon. If `false`           |                  |                |
+|                    | dates will be returned         |                  |                |
+|                    | in UTC.                        |                  |                |
++--------------------+--------------------------------+------------------+----------------+
 
 Body
 *****
@@ -1460,6 +1602,12 @@ Params
 |                    | ``id`` or ``slug`` you         |                  |                |
 |                    | wish to access.                |                  |                |
 +--------------------+--------------------------------+------------------+----------------+
+| ``localize``       | Return dates in                | false            | false          |
+|                    | the org's specified            |                  |                |
+|                    | timezeon. If `false`           |                  |                |
+|                    | dates will be returned         |                  |                |
+|                    | in UTC.                        |                  |                |
++--------------------+--------------------------------+------------------+----------------+
 
 Returns
 *******
@@ -1495,6 +1643,12 @@ Params
 | ``org``            | The organization's             | null             | true           |
 |                    | ``id`` or ``slug`` you         |                  |                |
 |                    | wish to access.                |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+| ``localize``       | Return dates in                | false            | false          |
+|                    | the org's specified            |                  |                |
+|                    | timezeon. If `false`           |                  |                |
+|                    | dates will be returned         |                  |                |
+|                    | in UTC.                        |                  |                |
 +--------------------+--------------------------------+------------------+----------------+
 
 Body
@@ -1538,6 +1692,12 @@ Params
 | ``org``            | The organization's             | null             | true           |
 |                    | ``id`` or ``slug`` you         |                  |                |
 |                    | wish to access.                |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+| ``localize``       | Return dates in                | false            | false          |
+|                    | the org's specified            |                  |                |
+|                    | timezeon. If `false`           |                  |                |
+|                    | dates will be returned         |                  |                |
+|                    | in UTC.                        |                  |                |
 +--------------------+--------------------------------+------------------+----------------+
 
 
@@ -1624,75 +1784,7 @@ All methods, unless otherwise specified, will return one or many sous chef objec
           "help": {
             "placeholder": "cspan"
           }
-        },
-        "search_query": {
-          "default": null,
-          "required": false,
-          "type": "searchstring",
-          "help": {
-            "placeholder": "~fracking | drilling"
-          }
-        },
-        "description": {
-          "required": false,
-          "type": "text",
-          "help": {
-            "placeholder": "A description of what this recipe does."
-          }
-        },
-        "interval": {
-          "default": 900,
-          "type": "number",
-          "help": {
-            "placeholder": "3600",
-            "description": "The frequency (in seconds) with which this recipe should run."
-          }
-        },
-        "set_event_type": {
-          "default": "alert",
-          "type": "text",
-          "options": [
-            "alert",
-            "promotion"
-          ]
-        },
-        "time_of_day": {
-          "default": null,
-          "type": "text",
-          "help": {
-            "placeholder": "12:00 AM",
-            "description": "The time of day at which this recipe should run daily."
-          },
-          "options": [
-            "12:00 AM",
-            ...
-          ]
-        },
-        "tag": {
-          "default": null,
-          "type": "text"
-        },
-        "set_event_status": {
-          "default": "pending",
-          "type": "text",
-          "options": [
-            "pending",
-            "approved"
-          ]
-        },
-        "slug": {
-          "required": true,
-          "type": "text",
-          "help": {
-            "placeholder": "A slug for viewing the recipe in a url."
-          }
-        },
-        "name": {
-          "required": true,
-          "type": "text",
-          "help": {
-            "placeholder": "The name of the Recipe."
-          }
+          ...
         }
       }
     }
@@ -1716,6 +1808,12 @@ Params
 | ``org``            | The organization's             | null             | true           |
 |                    | ``id`` or ``slug`` you         |                  |                |
 |                    | wish to access.                |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+| ``localize``       | Return dates in                | false            | false          |
+|                    | the org's specified            |                  |                |
+|                    | timezeon. If `false`           |                  |                |
+|                    | dates will be returned         |                  |                |
+|                    | in UTC.                        |                  |                |
 +--------------------+--------------------------------+------------------+----------------+
 | ``is_command``     | Whether this is runs a         |                  |                |
 |                    | non-python script              | null             | false          |
@@ -1782,6 +1880,12 @@ Params
 |                    | ``id`` or ``slug`` you         |                  |                |
 |                    | wish to access.                |                  |                |
 +--------------------+--------------------------------+------------------+----------------+
+| ``localize``       | Return dates in                | false            | false          |
+|                    | the org's specified            |                  |                |
+|                    | timezeon. If `false`           |                  |                |
+|                    | dates will be returned         |                  |                |
+|                    | in UTC.                        |                  |                |
++--------------------+--------------------------------+------------------+----------------+
 
 Body
 *******
@@ -1847,6 +1951,12 @@ Params
 |                    | ``id`` or ``slug`` you         |                  |                |
 |                    | wish to access.                |                  |                |
 +--------------------+--------------------------------+------------------+----------------+
+| ``localize``       | Return dates in                | false            | false          |
+|                    | the org's specified            |                  |                |
+|                    | timezeon. If `false`           |                  |                |
+|                    | dates will be returned         |                  |                |
+|                    | in UTC.                        |                  |                |
++--------------------+--------------------------------+------------------+----------------+
 
 Returns
 *******
@@ -1886,6 +1996,12 @@ Params
 | ``org``            | The organization's             | null             | true           |
 |                    | ``id`` or ``slug`` you         |                  |                |
 |                    | wish to access.                |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+| ``localize``       | Return dates in                | false            | false          |
+|                    | the org's specified            |                  |                |
+|                    | timezeon. If `false`           |                  |                |
+|                    | dates will be returned         |                  |                |
+|                    | in UTC.                        |                  |                |
 +--------------------+--------------------------------+------------------+----------------+
 
 Body
@@ -1985,6 +2101,12 @@ Params
 |                    | ``id`` or ``slug`` you         |                  |                |
 |                    | wish to access.                |                  |                |
 +--------------------+--------------------------------+------------------+----------------+
+| ``localize``       | Return dates in                | false            | false          |
+|                    | the org's specified            |                  |                |
+|                    | timezeon. If `false`           |                  |                |
+|                    | dates will be returned         |                  |                |
+|                    | in UTC.                        |                  |                |
++--------------------+--------------------------------+------------------+----------------+
 | ``status``         | Filter recipes by their status.|                  |                |
 |                    | Either running, error, stable, | null             | false          |
 |                    | or uninitialized               |                  |                |
@@ -2074,6 +2196,12 @@ Params
 |                    | ``id`` or ``slug`` you         |                  |                |
 |                    | wish to access.                |                  |                |
 +--------------------+--------------------------------+------------------+----------------+
+| ``localize``       | Return dates in                | false            | false          |
+|                    | the org's specified            |                  |                |
+|                    | timezeon. If `false`           |                  |                |
+|                    | dates will be returned         |                  |                |
+|                    | in UTC.                        |                  |                |
++--------------------+--------------------------------+------------------+----------------+
 | ``sous_chef``      | The SousChef this recipe runs. | null             |                |
 |                    | While not required as a param, |                  | false          |
 |                    | you must either pass this in   |                  |                |
@@ -2140,6 +2268,12 @@ Params
 | ``org``            | The organization's             | null             | true           |
 |                    | ``id`` or ``slug`` you         |                  |                |
 |                    | wish to access.                |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+| ``localize``       | Return dates in                | false            | false          |
+|                    | the org's specified            |                  |                |
+|                    | timezeon. If `false`           |                  |                |
+|                    | dates will be returned         |                  |                |
+|                    | in UTC.                        |                  |                |
 +--------------------+--------------------------------+------------------+----------------+
 
 Returns
@@ -2210,6 +2344,12 @@ Params
 | ``org``            | The organization's             | null             | true           |
 |                    | ``id`` or ``slug`` you         |                  |                |
 |                    | wish to access.                |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+| ``localize``       | Return dates in                | false            | false          |
+|                    | the org's specified            |                  |                |
+|                    | timezeon. If `false`           |                  |                |
+|                    | dates will be returned         |                  |                |
+|                    | in UTC.                        |                  |                |
 +--------------------+--------------------------------+------------------+----------------+
 | ``sous_chef``      | The sous-chef this recipe runs.| null             |                |
 |                    | While not required as a param, |                  | false          |
@@ -2324,6 +2464,12 @@ Params
 | ``org``            | The organization's             | null             | true           |
 |                    | ``id`` or ``slug`` you         |                  |                |
 |                    | wish to access.                |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+| ``localize``       | Return dates in                | false            | false          |
+|                    | the org's specified            |                  |                |
+|                    | timezeon. If `false`           |                  |                |
+|                    | dates will be returned         |                  |                |
+|                    | in UTC.                        |                  |                |
 +--------------------+--------------------------------+------------------+----------------+
 | ``q``              | A search query. Will search on | null             |                |
 |                    | ``body``, ``authors``,         |                  | false          |
@@ -2523,6 +2669,12 @@ Params
 |                    | ``id`` or ``slug`` you         |                  |                |
 |                    | wish to access.                |                  |                |
 +--------------------+--------------------------------+------------------+----------------+
+| ``localize``       | Return dates in                | false            | false          |
+|                    | the org's specified            |                  |                |
+|                    | timezeon. If `false`           |                  |                |
+|                    | dates will be returned         |                  |                |
+|                    | in UTC.                        |                  |                |
++--------------------+--------------------------------+------------------+----------------+
 | ``must_link``      | Only create if the event       | false            | false          |
 |                    | contains links to one or more  |                  |                |
 |                    | Content Items.                 |                  |                |
@@ -2639,6 +2791,12 @@ Params
 |                    | ``id`` or ``slug`` you         |                  |                |
 |                    | wish to access.                |                  |                |
 +--------------------+--------------------------------+------------------+----------------+
+| ``localize``       | Return dates in                | false            | false          |
+|                    | the org's specified            |                  |                |
+|                    | timezeon. If `false`           |                  |                |
+|                    | dates will be returned         |                  |                |
+|                    | in UTC.                        |                  |                |
++--------------------+--------------------------------+------------------+----------------+
 
 Returns
 ********
@@ -2673,6 +2831,12 @@ Params
 | ``org``            | The organization's             | null             | true           |
 |                    | ``id`` or ``slug`` you         |                  |                |
 |                    | wish to access.                |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+| ``localize``       | Return dates in                | false            | false          |
+|                    | the org's specified            |                  |                |
+|                    | timezeon. If `false`           |                  |                |
+|                    | dates will be returned         |                  |                |
+|                    | in UTC.                        |                  |                |
 +--------------------+--------------------------------+------------------+----------------+
 
 Returns
@@ -2730,6 +2894,12 @@ Params
 |                    | ``id`` or ``slug`` you         |                  |                |
 |                    | wish to access.                |                  |                |
 +--------------------+--------------------------------+------------------+----------------+
+| ``localize``       | Return dates in                | false            | false          |
+|                    | the org's specified            |                  |                |
+|                    | timezeon. If `false`           |                  |                |
+|                    | dates will be returned         |                  |                |
+|                    | in UTC.                        |                  |                |
++--------------------+--------------------------------+------------------+----------------+
 | ``force``          | Whether or not to permanently  | null             | true           |
 |                    | delete this event.             |                  |                |
 |                    | wish to access.                |                  |                |
@@ -2777,6 +2947,12 @@ Params
 |                    | ``id`` or ``slug`` you         |                  |                |
 |                    | wish to access.                |                  |                |
 +--------------------+--------------------------------+------------------+----------------+
+| ``localize``       | Return dates in                | false            | false          |
+|                    | the org's specified            |                  |                |
+|                    | timezeon. If `false`           |                  |                |
+|                    | dates will be returned         |                  |                |
+|                    | in UTC.                        |                  |                |
++--------------------+--------------------------------+------------------+----------------+
 
 Returns
 ********
@@ -2811,6 +2987,12 @@ Params
 | ``org``            | The organization's             | null             | true           |
 |                    | ``id`` or ``slug`` you         |                  |                |
 |                    | wish to access.                |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+| ``localize``       | Return dates in                | false            | false          |
+|                    | the org's specified            |                  |                |
+|                    | timezeon. If `false`           |                  |                |
+|                    | dates will be returned         |                  |                |
+|                    | in UTC.                        |                  |                |
 +--------------------+--------------------------------+------------------+----------------+
 
 Returns
@@ -2848,6 +3030,12 @@ Params
 |                    | ``id`` or ``slug`` you         |                  |                |
 |                    | wish to access.                |                  |                |
 +--------------------+--------------------------------+------------------+----------------+
+| ``localize``       | Return dates in                | false            | false          |
+|                    | the org's specified            |                  |                |
+|                    | timezeon. If `false`           |                  |                |
+|                    | dates will be returned         |                  |                |
+|                    | in UTC.                        |                  |                |
++--------------------+--------------------------------+------------------+----------------+
 
 Returns
 ********
@@ -2882,6 +3070,12 @@ Params
 | ``org``            | The organization's             | null             | true           |
 |                    | ``id`` or ``slug`` you         |                  |                |
 |                    | wish to access.                |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+| ``localize``       | Return dates in                | false            | false          |
+|                    | the org's specified            |                  |                |
+|                    | timezeon. If `false`           |                  |                |
+|                    | dates will be returned         |                  |                |
+|                    | in UTC.                        |                  |                |
 +--------------------+--------------------------------+------------------+----------------+
 
 Returns

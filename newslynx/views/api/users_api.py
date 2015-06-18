@@ -7,7 +7,8 @@ from newslynx.exc import (
     AuthError, RequestError, ForbiddenError)
 from newslynx.views.decorators import load_user
 from newslynx.views.util import (
-    request_data, delete_response, arg_bool)
+    request_data, delete_response, arg_bool,
+    localize)
 
 # bp
 bp = Blueprint('users', __name__)
@@ -36,7 +37,6 @@ def login():
     if user is None:
         raise AuthError('A user with email "{}" does not exist.'
                         .format(email))
-
     # check the supplied password
     if not user.check_password(password):
         raise ForbiddenError('Invalid password.')
@@ -57,8 +57,7 @@ def michaels_login():
 def me(user):
     """
     Get yourself.
-    """
-    return jsonify(user.to_dict(incl_apikey=True))
+    """    return jsonify(user.to_dict(incl_apikey=True))
 
 
 @bp.route('/api/v1/me', methods=['PUT', 'PATCH'])

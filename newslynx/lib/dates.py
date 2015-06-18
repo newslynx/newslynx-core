@@ -11,6 +11,7 @@ import pytz
 import iso8601
 
 from newslynx.lib.regex import re_time
+from newslynx.lib.pkg.crontab import CronTab
 
 
 def now(ts=False):
@@ -209,6 +210,16 @@ def valid_tz(tz):
     Validate a timezone.
     """
     return tz in TIMEZONES
+
+
+def cron(crontab):
+    """
+    Parse a crontab string and return a CronTab object.
+    """
+    try:
+        return CronTab(crontab)
+    except Exception as e:
+        raise ValueError(e.message)
 
 
 TIMEZONES = frozenset([

@@ -41,6 +41,7 @@ class SousChef(db.Model):
             'description': self.description,
             'runs': self.runs,
             'is_command': self.is_command,
+            'option_order': self.option_order,
             'creates': self.creates
         }
         if incl_options:

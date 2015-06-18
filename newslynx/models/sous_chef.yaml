@@ -136,6 +136,7 @@ definitions:
                     type: string 
                     enum:
                         - datetime
+                        - crontab
                         - regex
                         - boolean
                         - numeric
