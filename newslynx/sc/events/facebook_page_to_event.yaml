@@ -3,7 +3,16 @@ slug: facebook-page-to-event
 description: Extracts events from a facebook page.
 runs: newslynx.sc.events.facebook.Page
 creates: events
-option_order: []
+option_order:
+    - name
+    - slug
+    - description
+    - page_name
+    - search_query
+    - interval
+    - time_of_day
+    - set_event_status
+    - tag_ids
 options:
     
     page_name:
