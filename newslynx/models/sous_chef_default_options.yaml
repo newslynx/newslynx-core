@@ -23,18 +23,41 @@ description:
     help: 
         description: A description of what this recipe does.
 
-interval:
-    input_type: number
+schedule_by:
+    input_type: select 
+    input_options:
+        - minutes
+        - daily
+        - cron
+        - 'null'
+    value_types: 
+        - string
+        - nulltype
+    default: null 
+    help:
+        placeholder: minutes
+        description: The method for scheduling the recipe.
+
+crontab:
+    input_type: text
     value_types:
+        - crontab
+        - nulltype
+    default: null
+    help:
+        placeholder: "*/30 * * * *"
+        description: A crontab string to use for scheduling this recipe.
+        link: "https://en.wikipedia.org/wiki/Cron"
+
+minutes:
+    input_type: number
+    value_types: 
         - numeric
         - nulltype
     default: null
-    required: false
     help:
-        placeholder: 3600
-        description: |
-            The frequency (in seconds) at which 
-            this recipe should run.
+        placeholder: 60
+        description: The frequency with which this recipe run (in minutes).
 
 time_of_day:
     input_type: select
@@ -94,5 +117,5 @@ time_of_day:
     default: null
     required: false
     help:
-        placeholder: '12:00 AM'
+        placeholder: '4:30 PM'
         description: The time of day at which this recipe should run daily.

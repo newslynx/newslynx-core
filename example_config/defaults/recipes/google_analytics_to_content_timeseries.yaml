@@ -1,0 +1,5 @@
+sous_chef: google-analytics-to-content-timeseries
+name: Google Analytics Timeseries Metric for Content Items
+slug: google-analytics-to-content-timeseries
+status: stable
+options: {}

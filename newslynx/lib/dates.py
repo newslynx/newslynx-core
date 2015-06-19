@@ -21,11 +21,11 @@ def now(ts=False):
     dt = datetime.utcnow()
     dt = dt.replace(tzinfo=pytz.utc)
     if ts:
-        return int(dt.strftime('%s'))
+        return int(dt.strftime("%s"))
     return dt
 
 
-def floor(dt, unit='hour', value=1, tz=pytz.utc):
+def floor(dt, unit="hour", value=1, tz=pytz.utc):
     """
     Floor a datetime object. Defaults to using `now`
     """
@@ -178,33 +178,6 @@ def force_datetime(dt, tz=None):
     )
 
 
-def parse_time_of_day(string):
-    """
-    12:00 AM > datetime.time
-    12:00 PM > datetime.time
-    """
-    m = re_time.search(string)
-    hour = int(m.group(1))
-    minute = int(m.group(2))
-    am_pm = m.group(3)
-
-    # catch 12 AM
-    if am_pm == 'AM' and hour == 12:
-        hour = 0
-    if am_pm == 'PM' and hour != 12:
-        hour += 12
-    return time(hour, minute)
-
-
-def seconds_until(time_of_day):
-    """
-    How many seconds between now and a given time_of_day?
-    """
-    _when = datetime.combine(now(), time_of_day)
-    _now = now()
-    return abs(_now - _when).seconds
-
-
 def valid_tz(tz):
     """
     Validate a timezone.
@@ -220,6 +193,71 @@ def cron(crontab):
         return CronTab(crontab)
     except Exception as e:
         raise ValueError(e.message)
+
+
+def time_of_day_to_cron(time_of_day):
+    """
+    Coerce a time-of-day into cron sytax.
+    """
+    if not time_of_day:
+        return None
+    crontab = TIME_OF_DAY_TO_CRON.get(time_of_day)
+    return cron(crontab)
+
+
+# a lookup of human-readable
+# times of days to crontab syntax
+
+TIME_OF_DAY_TO_CRON = {
+    "12:00 AM": "0 0 * * *",
+    "12:30 AM": "30 0 * * *",
+    "1:00 AM":  "0 1 * * *",
+    "1:30 AM":  "30 1 * * *",
+    "2:00 AM":  "0 2 * * *",
+    "2:30 AM":  "30 2 * * *",
+    "3:00 AM":  "0 3 * * *",
+    "3:30 AM":  "30 3 * * *",
+    "4:00 AM":  "0 4 * * *",
+    "4:30 AM":  "30 4 * * *",
+    "5:00 AM":  "0 5 * * *",
+    "5:30 AM":  "30 5 * * *",
+    "6:00 AM":  "0 6 * * *",
+    "6:30 AM":  "30 6 * * *",
+    "7:00 AM":  "0 7 * * *",
+    "7:30 AM":  "30 7 * * *",
+    "8:00 AM":  "0 8 * * *",
+    "8:30 AM":  "30 8 * * *",
+    "9:00 AM":  "0 9 * * *",
+    "9:30 AM":  "30 9 * * *",
+    "10:00 AM": "0 10 * * *",
+    "10:30 AM": "30 10 * * *",
+    "11:00 AM": "0 11 * * *",
+    "11:30 AM": "30 11 * * *",
+    "12:00 PM": "0 12 * * *",
+    "12:30 PM": "30 12 * * *",
+    "1:00 PM":  "0 13 * * *",
+    "1:30 PM":  "30 13 * * *",
+    "2:00 PM":  "0 14 * * *",
+    "2:30 PM":  "30 14 * * *",
+    "3:00 PM":  "0 15 * * *",
+    "3:30 PM":  "30 15 * * *",
+    "4:00 PM":  "0 16 * * *",
+    "4:30 PM":  "30 16 * * *",
+    "5:00 PM":  "0 17 * * *",
+    "5:30 PM":  "30 17 * * *",
+    "6:00 PM":  "0 18 * * *",
+    "6:30 PM":  "30 18 * * *",
+    "7:00 PM":  "0 19 * * *",
+    "7:30 PM":  "30 19 * * *",
+    "8:00 PM":  "0 20 * * *",
+    "8:30 PM":  "30 20 * * *",
+    "9:00 PM":  "0 21 * * *",
+    "9:30 PM":  "30 21 * * *",
+    "10:00 PM": "0 22 * * *",
+    "10:30 PM": "30 22 * * *",
+    "11:00 PM": "0 23 * * *",
+    "11:30 PM": "30 23 * * *"
+}
 
 
 TIMEZONES = frozenset([

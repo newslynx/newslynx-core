@@ -14,7 +14,8 @@ from newslynx.exc import (
 from newslynx.models.sous_chef_schema import SOUS_CHEF_DEFAULT_OPTIONS
 from newslynx.constants import (
     TRUE_VALUES, FALSE_VALUES, NULL_VALUES,
-    RECIPE_REMOVE_FIELDS, RECIPE_INTERNAL_FIELDS
+    RECIPE_REMOVE_FIELDS, RECIPE_INTERNAL_FIELDS,
+    RECIPE_SCHEDULE_METHODS
 )
 
 # order type checking from most to least
@@ -133,12 +134,13 @@ class RecipeSchema(object):
         if opt is None:
             return None
         try:
-            return dates.cron(opt)
+            dates.cron(opt)
         except Exception as e:
             return RecipeSchemaError(
                 "{} should be a 'crontab' field but was passed '{}'. "
                 "Here is the error message: {}."
                 .format(key, opt, e.message))
+        return opt
 
     def valid_datetime(self, key, opt):
         """
@@ -361,19 +363,14 @@ class RecipeSchema(object):
         """
         Validate recipe schedule options.
         """
-        # check if recipe has time_of_day and interval set. in this case
-        # we won't be able to tell what type of schedule it should have.
-        if (self.recipe.get('time_of_day') and self.recipe.get('interval')):
+        # check if recipe has more than one schedule set.
+        cnt = 0
+        for typ in RECIPE_SCHEDULE_METHODS:
+            if self.recipe.get(typ) and self.recipe.get(typ) is not None:
+                cnt += 1
+        if cnt > 1:
             raise RecipeSchemaError(
-                "A recipe cannot have 'time_of_day' and 'interval' set.")
-
-        # check if a recipe should be scheduled.
-        if not (self.recipe.get('time_of_day') or self.recipe.get('interval')) \
-                or self.uninitialized:
-            self.recipe['scheduled'] = False
-
-        else:
-            self.recipe['scheduled'] = True
+                "A recipe cannot have multiple schedule types set.")
 
     def validate(self):
         """

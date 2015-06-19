@@ -5,4 +5,5 @@ status: uninitialized
 options:
     set_event_status: approved
     set_event_tag_ids: ['internal-promotion']
-    interval: 900
+    schedule_by: minutes
+    minutes: 30

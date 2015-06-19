@@ -96,6 +96,14 @@ RECIPE_INTERNAL_FIELDS = [
     'status', 'last_run', 'last_job'
 ]
 
+RECIPE_SCHEDULE_TYPES = [
+    'minutes', 'crontab', 'time_of_day'
+]
+
+RECIPE_SCHEDULE_METHODS = [
+    'minutes', 'crontab', 'time_of_day'
+]
+
 SOUS_CHEF_RESERVED_FIELDS = RECIPE_REMOVE_FIELDS + RECIPE_INTERNAL_FIELDS
 
 # TAGS

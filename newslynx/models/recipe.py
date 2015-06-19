@@ -4,7 +4,8 @@ from slugify import slugify
 from newslynx.core import db
 from newslynx.lib import dates
 from newslynx.lib.serialize import obj_to_pickle, pickle_to_obj
-from newslynx.constants import RECIPE_STATUSES
+from newslynx.constants import (
+    RECIPE_STATUSES, RECIPE_SCHEDULE_TYPES)
 
 
 class Recipe(db.Model):
@@ -20,7 +21,7 @@ class Recipe(db.Model):
     org_id = db.Column(
         db.Integer, db.ForeignKey('orgs.id'), index=True)
 
-    # metadata fields
+    # core fields
     name = db.Column(db.Text, index=True)
     slug = db.Column(db.Text, index=True)
     description = db.Column(db.Text)
@@ -31,9 +32,10 @@ class Recipe(db.Model):
     last_run = db.Column(db.DateTime(timezone=True), index=True)
 
     # scheduler fields
-    scheduled = db.Column(db.Boolean, index=True)
-    time_of_day = db.Column(db.Text, index=True)
-    interval = db.Column(db.Integer, index=True)
+    schedule_by = db.Column(ENUM(*RECIPE_SCHEDULE_TYPES, name="recipe_schedule_type_enum"), index=True)
+    crontab = db.Column(db.Text)
+    time_of_day = db.Column(db.Text)
+    minutes = db.Column(db.Integer)
     status = db.Column(
         ENUM(*RECIPE_STATUSES, name="enum_recipe_statuses"), index=True)
     last_job = db.Column(JSON)
@@ -62,8 +64,10 @@ class Recipe(db.Model):
         self.name = kw.get('name')
         self.slug = slugify(kw.get('slug', kw['name']))
         self.description = kw.get('description')
+        self.schedule_by = kw.get('schedule_by')
+        self.crontab = kw.get('crontab')
         self.time_of_day = kw.get('time_of_day')
-        self.interval = kw.get('interval')
+        self.minutes = kw.get('minutes')
         self.status = kw.get('status', 'stable')
         self.set_options(kw.get('options', {}))
 
@@ -92,9 +96,10 @@ class Recipe(db.Model):
             'created': self.created,
             'updated': self.updated,
             'last_run': self.last_run,
-            'scheduled': self.scheduled,
+            'schedule_by': self.schedule_by,
+            'crontab': self.crontab,
             'time_of_day': self.time_of_day,
-            'interval': self.interval,
+            'minutes': self.minutes,
             'status': self.status,
             'last_job': self.last_job,
             'options': pickle_to_obj(self.options)

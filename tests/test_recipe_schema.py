@@ -12,6 +12,7 @@ from newslynx.models import recipe_schema
 from newslynx.exc import RecipeSchemaError
 from newslynx.models import Recipe, SousChef
 from newslynx.core import db_session
+from newslynx.util import gen_short_uuid
 
 
 sous_chef = {
@@ -104,10 +105,8 @@ good_recipe = {
     "last_job": {},
     "owner_screen_name": ["foobar", "uqbar"],
     "description": "This is what my cool twitter list recipe does.",
-    "time_of_day": "9:30 AM",
     "event_counts": {},
     "start_date": "2015-07-08",
-    "interval": "null",
     "search_query": "~fracking | drilling",
     "user_regex": r".*",
     "link_url": "http://example.com/some-url",
@@ -115,6 +114,8 @@ good_recipe = {
     "tag_ids": [1, 'this-is-also-a-tag'],
     "filter_bots": "t",
     "set_content_items": [{'id': 1, 'title': 'foo'}],
+    "schedule_by": "minutes",
+    "minutes": 60,
     "options": {}
 }
 
@@ -148,12 +149,8 @@ class TestRecipeSchema(unittest.TestCase):
         assert('slug' in r)
         assert('description' in r)
         assert('name' in r)
-        assert('time_of_day' in r)
-        assert('interval' in r)
-
-        # make sure scheduled determination has been made.
-        assert('scheduled' in r)
-        assert(r['scheduled'])
+        assert('schedule_by' in r)
+        assert('minutes' in r)
 
         # make sure user_id is not in recipe or options
         assert('user_id' not in r)
@@ -163,7 +160,7 @@ class TestRecipeSchema(unittest.TestCase):
         assert(sous_chef['slug'] != r['slug'])
 
         # make sure interval was parsed to null properly
-        assert(r['interval'] is None)
+        assert(r['crontab'] is None)
 
         # make sure event counts is parsed to null
         assert('event_counts' not in o)
@@ -204,12 +201,8 @@ class TestRecipeSchema(unittest.TestCase):
         assert('slug' in r)
         assert('description' in r)
         assert('name' in r)
-        assert('time_of_day' in r)
-        assert('interval' in r)
-
-        # make sure scheduled determination has been made.
-        assert('scheduled' in r)
-        assert(r['scheduled'])
+        assert('schedule_by' in r)
+        assert('minutes' in r)
 
         # make sure user_id is not in recipe or options
         assert('user_id' not in r)
@@ -219,7 +212,7 @@ class TestRecipeSchema(unittest.TestCase):
         assert(sous_chef['slug'] != r['slug'])
 
         # make sure interval was parsed to null properly
-        assert(r['interval'] is None)
+        assert(r['crontab'] is None)
 
         # make sure regex is parsed.
         assert(isinstance(o['user_regex'], RE_TYPE))
@@ -256,7 +249,7 @@ class TestRecipeSchema(unittest.TestCase):
 
     def test_bad_numeric(self):
         grecipe = copy.copy(good_recipe)
-        grecipe['interval'] = '014u30214'
+        grecipe['minutes'] = '014u30214'
         try:
             recipe_schema.validate(grecipe, sous_chef)
             assert False
@@ -308,6 +301,15 @@ class TestRecipeSchema(unittest.TestCase):
         except RecipeSchemaError:
             assert True
 
+    def test_multiple_schedules(self):
+        grecipe = copy.copy(good_recipe)
+        grecipe['crontab'] = '*/5 * * * *'
+        try:
+            recipe_schema.validate(grecipe, sous_chef)
+            assert False
+        except RecipeSchemaError:
+            assert True
+
     def test_partial_update(self):
         """
         Simiulate a partial update process.
@@ -320,6 +322,7 @@ class TestRecipeSchema(unittest.TestCase):
 
         old_recipe = recipe_schema.validate(old_recipe, sc.to_dict())
         old_id = old_recipe['options']['set_content_items'][0]['id']
+        old_recipe['slug'] += "-{}".format(gen_short_uuid())
         r = Recipe(sc, **old_recipe)
         db_session.add(r)
         db_session.commit()

@@ -6,4 +6,5 @@ options:
     set_event_status: approved
     set_event_tag_ids: ['internal-promotion']
     min_followers: 0
-    interval: 900
+    schedule_by: minutes
+    minutes: 30

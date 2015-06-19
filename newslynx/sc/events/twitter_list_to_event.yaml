@@ -107,15 +107,3 @@ options:
                 A list of Content Item IDs and Titles to automatically
                 apply to events created by this Recipe.
             placeholder: "pending"
-
-    # internal options
-    interval:
-        input_type: number
-        value_types:
-            - numeric
-        default: 900
-
-
-
-
-
