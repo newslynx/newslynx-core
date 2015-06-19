@@ -115,7 +115,11 @@ class ContentItem(db.Model):
 
     @property
     def simple_authors(self):
-        return [{"id": c.id, "name": c.name} for c in self.authors]
+        return [{"id": a.id, "name": a.name} for a in self.authors]
+
+    @property
+    def author_ids(self):
+        return [a.id for a in self.authors]
 
     # @property
     # def out_link_ids(self):
@@ -148,10 +152,6 @@ class ContentItem(db.Model):
     @property
     def tag_ids(self):
         return [t.id for t in self.tags]
-
-    @property
-    def author_ids(self):
-        return [t.id for t in self.authors]
 
     def to_dict(self, **kw):
         # incl_links = kw.get('incl_links', False)

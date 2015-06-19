@@ -34,15 +34,41 @@ class Author(db.Model):
         self.name = kw.get('name').upper()
         self.img_url = kw.get('img_url')
 
-    def to_dict(self):
-        return {
+    def fetch_content_items(self):
+        return self.content_items\
+            .order_by("content.created desc")\
+            .all()
+
+    def simple_content(self, **kw):
+        incl_metrics = kw.get('incl_metrics', False)
+        output = []
+        for c in self.fetch_content_items():
+            d = {
+                'id': c.id,
+                'title': c.title,
+                'description': c.description,
+                'created': c.created,
+                'img_url': c.img_url,
+                'thumbnail': c.thumbnail
+            }
+            if incl_metrics:
+                d['metrics'] = c.summary_metric.metrics
+            output.append(d)
+        return output
+
+    def to_dict(self, **kw):
+        incl_content = kw.get('incl_content', True)
+        d = {
             'id': self.id,
             'org_id': self.org_id,
             'name': self.name.title(),
             'img_url': self.img_url,
             'created': self.created,
-            'updated': self.updated
+            'updated': self.updated,
         }
+        if incl_content:
+            d['content_items'] = self.simple_content(**kw)
+        return d
 
     def __repr__(self):
         return '<Author %r >' % (self.name)

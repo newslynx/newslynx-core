@@ -104,7 +104,7 @@ class BaseClient(object):
         # format response
         return self._format_response(resp)
 
-    def _split_auth_params_from_kw(self, kw, kw_incl=[]):
+    def _split_auth_params_from_data(self, kw, kw_incl=[]):
         params = {}
         if 'apikey' in kw:
             params['apikey'] = kw.pop('apikey')
@@ -174,7 +174,7 @@ class Me(BaseClient):
         """
         Update your user profile.
         """
-        kw, params = self._split_auth_params_from_kw(kw, kw_incl=['refresh_apikey'])
+        kw, params = self._split_auth_params_from_data(kw, kw_incl=['refresh_apikey'])
 
         # special case for this parameter
 
@@ -215,7 +215,7 @@ class Orgs(BaseClient):
         """
         Create an organization.
         """
-        kw, params = self._split_auth_params_from_kw(kw)
+        kw, params = self._split_auth_params_from_data(kw)
         url = self._format_url('orgs')
         return self._request('POST', url, data=kw, params=params)
 
@@ -228,7 +228,7 @@ class Orgs(BaseClient):
             if not org:
                 raise ValueError(
                     'You must pass in the org ID or name as the first argument.')
-        kw, params = self._split_auth_params_from_kw(kw)
+        kw, params = self._split_auth_params_from_data(kw)
         url = self._format_url('orgs', org)
         return self._request('PUT', url, data=kw, params=params)
 
@@ -284,7 +284,7 @@ class Orgs(BaseClient):
             if not org:
                 raise ValueError(
                     'You must pass in the org ID or name as the first argument.')
-        kw, params = self._split_auth_params_from_kw(kw)
+        kw, params = self._split_auth_params_from_data(kw)
         url = self._format_url('orgs', org, 'users')
         return self._request('POST', url, data=kw, params=params)
 
@@ -350,7 +350,7 @@ class Settings(BaseClient):
             if not isinstance(kw.get('value'), basestring):
                 kw['value'] = obj_to_json(kw['value'])
 
-        kw, params = self._split_auth_params_from_kw(kw)
+        kw, params = self._split_auth_params_from_data(kw)
 
         url = self._format_url('settings')
         return self._request('POST', url, data=kw, params=params)
@@ -364,7 +364,7 @@ class Settings(BaseClient):
             if not isinstance(kw.get('value'), basestring):
                 kw['value'] = obj_to_json(kw['value'])
 
-        kw, params = self._split_auth_params_from_kw(kw)
+        kw, params = self._split_auth_params_from_data(kw)
 
         url = self._format_url('settings', name_id)
         return self._request('PUT', url, data=kw, params=params)
@@ -391,7 +391,7 @@ class Tags(BaseClient):
         """
         Create a tag
         """
-        kw, params = self._split_auth_params_from_kw(kw)
+        kw, params = self._split_auth_params_from_data(kw)
         url = self._format_url('tags')
         return self._request('POST', url, data=kw, params=params)
 
@@ -406,7 +406,7 @@ class Tags(BaseClient):
         """
         Update a tag
         """
-        kw, params = self._split_auth_params_from_kw(kw)
+        kw, params = self._split_auth_params_from_data(kw)
         url = self._format_url('tags', tag_id)
         return self._request('PUT', url, data=kw, params=params)
 
@@ -414,7 +414,7 @@ class Tags(BaseClient):
         """
         Delete a tag
         """
-        kw, params = self._split_auth_params_from_kw(kw)
+        kw, params = self._split_auth_params_from_data(kw)
         url = self._format_url('tags', tag_id)
         return self._request('DELETE', url, params=kw)
 
@@ -432,7 +432,7 @@ class Recipes(BaseClient):
         """
         Create a recipe
         """
-        kw, params = self._split_auth_params_from_kw(kw)
+        kw, params = self._split_auth_params_from_data(kw)
         url = self._format_url('recipes')
         return self._request('POST', url, data=kw, params=params)
 
@@ -447,7 +447,7 @@ class Recipes(BaseClient):
         """
         Update a tag
         """
-        kw, params = self._split_auth_params_from_kw(kw)
+        kw, params = self._split_auth_params_from_data(kw)
         url = self._format_url('recipes', recipe_id)
         return self._request('PUT', url, data=kw, params=params)
 
@@ -455,7 +455,7 @@ class Recipes(BaseClient):
         """
         Delete a tag
         """
-        kw, params = self._split_auth_params_from_kw(kw)
+        kw, params = self._split_auth_params_from_data(kw)
         url = self._format_url('recipes', recipe_id)
         return self._request('DELETE', url, params=kw)
 
@@ -470,7 +470,7 @@ class Events(BaseClient):
         return self._request('GET', url, params=kw)
 
     def create(self, **kw):
-        kw, params = self._split_auth_params_from_kw(kw, kw_incl=['must_link'])
+        kw, params = self._split_auth_params_from_data(kw, kw_incl=['must_link'])
         url = self._format_url('events')
         return self._request('POST', url, params=params, data=kw)
 
@@ -485,7 +485,7 @@ class Events(BaseClient):
         """
         Get an individual event.
         """
-        kw, params = self._split_auth_params_from_kw(kw)
+        kw, params = self._split_auth_params_from_data(kw)
         url = self._format_url('events', event_id)
         return self._request('PUT', url, data=kw, params=params)
 
@@ -535,7 +535,7 @@ class Content(BaseClient):
         return self._request('GET', url, params=kw)
 
     def create(self, **kw):
-        kw, params = self._split_auth_params_from_kw(kw, kw_incl=['extract'])
+        kw, params = self._split_auth_params_from_data(kw, kw_incl=['extract'])
         url = self._format_url('content')
         return self._request('POST', url, params=params, data=kw)
 
@@ -551,7 +551,64 @@ class Extract(BaseClient):
 
 
 class Authors(BaseClient):
-    pass
+
+    def list(self, **kw):
+        """
+        List all authors
+        """
+        url = self._format_url('authors')
+        return self._request('GET', url, params=kw)
+
+    def create(self, **kw):
+        """
+        Create an author.
+        """
+        kw, params = self._split_auth_params_from_data(kw)
+        url = self._format_url('authors')
+        return self._request('POST', url, params=params, data=kw)
+
+    def get(self, author_id, **kw):
+        """
+        Get an individual author.
+        """
+        url = self._format_url('authors', author_id)
+        return self._request('GET', url, params=kw)
+
+    def update(self, author_id, **kw):
+        """
+        Update an author.
+        """
+        kw, params = self._split_auth_params_from_data(kw)
+        url = self._format_url('authors', author_id)
+        return self._request('PUT', url, data=kw, params=params)
+
+    def delete(self, author_id, **kw):
+        """
+        Delete an author.
+        """
+        url = self._format_url('authors', author_id)
+        return self._request('DELETE', url, params=kw)
+
+    def add_content_item(self, author_id, content_id, **kw):
+        """
+        Add an author to a content item.
+        """
+        url = self._format_url('authors', author_id, 'content', content_id)
+        return self._request('PUT', url, params=kw)
+
+    def remove_content_item(self, author_id, content_id, **kw):
+        """
+        Remove an author from a content item.
+        """
+        url = self._format_url('authors', author_id, 'content', content_id)
+        return self._request('DELETE', url, params=kw)
+
+    def merge(self, from_author_id, to_author_id, **kw):
+        """
+        Remove an author from a content item.
+        """
+        url = self._format_url('authors', from_author_id, 'merge', to_author_id)
+        return self._request('PUT', url, params=kw)
 
 
 class SousChefs(BaseClient):

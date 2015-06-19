@@ -26,6 +26,7 @@ RETURNS JSON AS $$
   return json.dumps(l)
 $$ LANGUAGE PLPYTHONU;
 
+--- delete an individual key
 CREATE OR REPLACE FUNCTION "json_del_key"(
   "json"          json,
   "key_to_del"    TEXT
@@ -45,6 +46,8 @@ SELECT CASE
 END
 $function$;
 
+
+--- set an individual key
 CREATE OR REPLACE FUNCTION "json_set_key"(
   "json"          json,
   "key_to_set"    TEXT,
@@ -64,6 +67,7 @@ SELECT concat('{', string_agg(to_json("key") || ':' || "value", ','), '}')::json
 $function$;
 
 
+--- delete a path
 CREATE OR REPLACE FUNCTION "json_del_path"(
   "json"          json,
   "key_path"      TEXT[]
