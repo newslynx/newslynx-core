@@ -46,7 +46,7 @@ class Recipe(db.Model):
     # relations
     events = db.relationship('Event', lazy='dynamic')
     content_items = db.relationship('ContentItem', lazy='dynamic')
-    metrics = db.relationship('Metric', lazy='joined')
+    metrics = db.relationship('Metric', backref=db.backref('recipe', lazy='joined'), lazy='joined')
     sous_chef = db.relationship(
         'SousChef', backref=db.backref('recipes', lazy='joined', cascade="all, delete-orphan"), lazy='joined')
     user = db.relationship(
@@ -75,7 +75,6 @@ class Recipe(db.Model):
         self.sous_chef_id = sous_chef.id
         self.user_id = kw.get('user_id')
         self.org_id = kw.get('org_id')
-        self.scheduled = kw.get('scheduled', False)
         self.last_run = kw.get('last_run', None)
         self.last_job = kw.get('last_job', {})
 

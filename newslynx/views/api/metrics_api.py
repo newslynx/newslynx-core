@@ -1,14 +1,16 @@
+from collections import defaultdict, Counter
+
 from flask import Blueprint
+from sqlalchemy import or_
 
 from newslynx.core import db
-from newslynx.models import Metric
+from newslynx.models import Metric, Recipe, SousChef
 from newslynx.models.util import fetch_by_id_or_field
-from newslynx.lib.serialize import jsonify, json_to_obj
+from newslynx.lib.serialize import jsonify
 from newslynx.exc import RequestError, NotFoundError
 from newslynx.views.decorators import load_user, load_org
-from newslynx.views.util import (
-    request_data, delete_response,
-    arg_bool, arg_list)
+from newslynx.views.util import *
+from newslynx.lib.stats import parse_number
 
 # bp
 bp = Blueprint('metrics', __name__)
@@ -19,18 +21,127 @@ bp = Blueprint('metrics', __name__)
 @load_org
 def list_metrics(user, org):
 
-    metric_query = Metric.query
+    # optionally filter by type/level/category
+    include_recipes, exclude_recipes = \
+        arg_list('recipes', default=[], typ=str, exclusions=True)
+    include_sous_chefs, exclude_sous_chefs = \
+        arg_list('sous_chefs', default=[], typ=str, exclusions=True)
+    include_levels, exclude_levels = \
+        arg_list('levels', default=[], typ=str, exclusions=True)
+    include_aggregations, exclude_aggregations = \
+        arg_list('aggregations', default=[], typ=str, exclusions=True)
+    cumulative = arg_bool('cumulative', default=None)
+    faceted = arg_bool('faceted', default=None)
+    timeseries = arg_bool('timeseries', default=None)
 
-    return jsonify(org.settings)
+    # base query
+    metric_query = Metric.query.join(Recipe).join(SousChef)
 
+    # filter by recipes
+    if len(include_recipes):
+        slugs = []
+        ids = []
+        for r in include_recipes:
+            try:
+                i = parse_number(r)
+                ids.append(i)
+            except:
+                slugs.append(r)
 
-@bp.route('/api/v1/metrics', methods=['POST'])
-@load_user
-@load_org
-def create_metric(user, org):
+        metric_query = metric_query\
+            .filter(or_(Recipe.id.in_(ids), Recipe.slug.in_(slugs)))
 
-    # TODO
-    pass
+    if len(exclude_recipes):
+        slugs = []
+        ids = []
+        for r in exclude_recipes:
+            try:
+                i = parse_number(r)
+                ids.append(i)
+            except:
+                slugs.append(r)
+
+        metric_query = metric_query\
+            .filter(~or_(Recipe.id.in_(ids), Recipe.slug.in_(slugs)))
+
+    # filter by sous-chefs
+    if len(include_sous_chefs):
+        slugs = []
+        ids = []
+        for r in include_sous_chefs:
+            try:
+                i = parse_number(r)
+                ids.append(i)
+            except:
+                slugs.append(r)
+
+        metric_query = metric_query\
+            .filter(or_(SousChef.id.in_(ids), SousChef.slug.in_(slugs)))
+
+    if len(exclude_sous_chefs):
+        slugs = []
+        ids = []
+        for r in exclude_sous_chefs:
+            try:
+                i = parse_number(r)
+                ids.append(i)
+            except:
+                slugs.append(r)
+
+        metric_query = metric_query\
+            .filter(~or_(SousChef.id.in_(ids), SousChef.slug.in_(slugs)))
+
+    # filter by levels
+    if len(include_levels):
+        print include_levels
+        validate_metric_levels(include_levels)
+        metric_query = metric_query\
+            .filter(Metric.level.in_(include_levels))
+
+    if len(exclude_levels):
+        validate_metric_levels(exclude_levels)
+        metric_query = metric_query\
+            .filter(~Metric.level.in_(exclude_levels))
+
+    # filter by aggregations
+    if len(include_aggregations):
+        validate_metric_aggregations(include_aggregations)
+        metric_query = metric_query\
+            .filter(Metric.aggregation.in_(exclude_aggregations))
+
+    if len(exclude_aggregations):
+        validate_metric_aggregations(exclude_aggregations)
+        metric_query = metric_query\
+            .filter(~Metric.aggregation.in_(exclude_aggregations))
+
+    # filter by cumulative
+    if cumulative is not None:
+        metric_query.filter(Metric.cumulative is cumulative)
+
+    # filter by timeseries
+    if timeseries is not None:
+        metric_query.filter(Metric.timeseries is timeseries)
+
+    # filter by faceted
+    if faceted is not None:
+        metric_query.filter(Metric.faceted is faceted)
+
+    facets = defaultdict(Counter)
+    metrics = []
+    for m in metric_query.all():
+        facets['timeseries'][str(m.timeseries).lower()] += 1
+        facets['cumulative'][str(m.cumulative).lower()] += 1
+        facets['faceted'][str(m.faceted).lower()] += 1
+        facets['levels'][m.level] += 1
+        facets['aggregations'][m.aggregation] += 1
+        facets['recipes'][m.recipe.slug] += 1
+        metrics.append(m)
+
+    resp = {
+        'metrics': metrics,
+        'facets': facets
+    }
+    return jsonify(resp)
 
 
 @bp.route('/api/v1/metrics/<name_id>', methods=['GET'])

@@ -470,6 +470,68 @@ def validate_recipe_statuses(values):
                            .format(', '.join(bad_values), msg, ", ".join(statuses)))
 
 
+def validate_recipe_schedule_types(values):
+    """
+    Validate recipe statuses.
+    """
+    if not isinstance(values, list):
+        values = [values]
+    statuses = RECIPE_SCHEDULE_TYPES
+    bad_values = []
+    for value in values:
+        if value not in statuses:
+            bad_values.append(value)
+
+    if len(bad_values):
+        if len(bad_values) == 1:
+            msg = 'is not a valid Recipe schedule type'
+        else:
+            msg = 'are not valid Recipe schedule type'
+        raise RequestError("'{}' {}. Choose from: {}."
+                           .format(', '.join(bad_values), msg, ", ".join(statuses)))
+
+
+def validate_metric_levels(values):
+    """
+    Validate metric levels.
+    """
+    if not isinstance(values, list):
+        values = [values]
+    bad_values = []
+    for value in values:
+        if value not in METRIC_LEVELS:
+            bad_values.append(value)
+
+    if len(bad_values):
+        if len(bad_values) == 1:
+            msg = 'is not a valid Metric level.'
+        else:
+            msg = 'are not valid Metric levels'
+        raise RequestError(
+            "'{}' {}. Choose from: {}."
+            .format(', '.join(bad_values), msg, ", ".join(METRIC_LEVELS)))
+
+
+def validate_metric_aggregations(values):
+    """
+    Validate metric aggregations
+    """
+    if not isinstance(values, list):
+        values = [values]
+    bad_values = []
+    for value in values:
+        if value not in METRIC_AGGREGATIONS:
+            bad_values.append(value)
+
+    if len(bad_values):
+        if len(bad_values) == 1:
+            msg = 'is not a valid Metric aggregation.'
+        else:
+            msg = 'are not valid Metric aggregations'
+        raise RequestError(
+            "'{}' {}. Choose from: {}."
+            .format(', '.join(bad_values), msg, ", ".join(METRIC_AGGREGATIONS)))
+
 # Pagination
 
 def urls_for_pagination(handler, total_results, **kw):

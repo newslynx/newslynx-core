@@ -102,11 +102,11 @@ def list_recipes(user, org):
             rids.append(r.id)
 
         recipe_query = recipe_query\
-            .filter(~Recipe.id.in_(include_recipes))
+            .filter(~Recipe.id.in_(rids))
 
     if scheduled is not None:
         recipe_query = recipe_query\
-            .filter_by(scheduled=scheduled)
+            .filter_by(schedule_by is not None)
 
     if sort_field:
         sort_obj = eval('Recipe.{}.{}'.format(sort_field, direction))
@@ -126,7 +126,7 @@ def list_recipes(user, org):
         facets['sous_chefs'][r.sous_chef.slug] += 1
         facets['creates'][r.sous_chef.creates] += 1
 
-        if r.scheduled:
+        if r.schedule_by is not None:
             facets['schedules']['scheduled'] += 1
         else:
             facets['schedules']['unscheduled'] += 1
