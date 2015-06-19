@@ -3057,6 +3057,7 @@ All methods, unless otherwise specified, will return one or many Metric objects 
       "org_id" 1,
     }
 
+
 .. _endpoints-metrics-list:
 
 **GET** ``/metrics``
@@ -3209,6 +3210,7 @@ Example
     
     curl http://localhost:5000/api/v1/metrics/1\?org\=1\&apikey\=$NEWSLYNX_API_KEY
 
+
 .. _endpoints-metrics-update:
 
 **PUT | PATCH** ``/metrics/:metric_id``
@@ -3254,6 +3256,7 @@ Example
     
      -X PUT -d 'display_name=Google Analytics Entrances' \
      http://localhost:5000/api/v1/metrics/ga_entrances\?org\=1\&apikey\=$NEWSLYNX_API_KEY
+
 
 .. _endpoints-metrics-delete:
 
