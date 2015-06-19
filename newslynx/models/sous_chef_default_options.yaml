@@ -27,8 +27,8 @@ schedule_by:
     input_type: select 
     input_options:
         - minutes
-        - daily
-        - cron
+        - time_of_day
+        - crontab
         - 'null'
     value_types: 
         - string
