@@ -3030,6 +3030,9 @@ Example
 
 The **Metrics** API enables the creation, querying, faceting, updating, and deleting of Metrics. Refer to the :ref:`Metrics docs <events>` for more details on what these are.
 
+**NOTE**
+- Metrics are exclusively created by :ref:`Recipes <recipes>`.  Their settings are specified by :ref:`Sous Chefs <sous-chefs>`.
+
 .. _endpoint-metrics-json:
 
 Metric JSON
@@ -3174,6 +3177,9 @@ Fetch all metrics with an `aggregation` of `sum`.
 
 Fetch an individual metric.
 
+**NOTE**
+  - You can pass in a metric's `name` or `id` to this endpoint.
+
 Params
 ******
 
@@ -3202,6 +3208,92 @@ Example
 .. code-block:: bash
     
     curl http://localhost:5000/api/v1/metrics/1\?org\=1\&apikey\=$NEWSLYNX_API_KEY
+
+.. _endpoints-metrics-get:
+
+**PUT | PATCH** ``/metrics/:metric_id``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Update a metric.
+
+**NOTE**
+  - You can pass in a metric's ``name`` or ``id`` to this endpoint.
+  - You cannot update a metric's ``name``, only it's ``display_name``.
+
+Params
+******
+
++--------------------+--------------------------------+------------------+----------------+
+| Parameter          |  Description                   |  Default         |  Required      |
++====================+================================+==================+================+
+| ``apikey``         | Your ``apikey``                | null             | true           |
++--------------------+--------------------------------+------------------+----------------+
+| ``org``            | The organization's             | null             | true           |
+|                    | ``id`` or ``slug`` you         |                  |                |
+|                    | wish to access.                |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+| ``localize``       | Return dates in the org's      | false            | false          |
+|                    | specified timezone. If `false` |                  |                |
+|                    | dates will be returned in UTC. |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+
+Body
+********
+
+An partial or complete :ref:`endpoint-metrics-json` object.
+
+Returns
+********
+
+A newly updates :ref:`endpoint-metrics-json` object.
+
+Example
+********
+
+.. code-block:: bash
+    
+     -X PUT -d 'display_name=Google Analytics Entrances' \
+     http://localhost:5000/api/v1/metrics/ga_entrances\?org\=1\&apikey\=$NEWSLYNX_API_KEY
+
+
+**DELETE** ``/metrics/:metric_id``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Delete a metric.
+
+**NOTE**
+  - You can pass in a metric's ``name`` or ``id`` to this endpoint.
+  - This endpoint will delete all instances of metric from Timeseries and Summary tables.
+  - This endpoint will not effect previously created Reports.
+  - If you want to re-create a metric, you'll need to re-create the recipe 
+    which originally created it.
+
+Params
+******
+
++--------------------+--------------------------------+------------------+----------------+
+| Parameter          |  Description                   |  Default         |  Required      |
++====================+================================+==================+================+
+| ``apikey``         | Your ``apikey``                | null             | true           |
++--------------------+--------------------------------+------------------+----------------+
+| ``org``            | The organization's             | null             | true           |
+|                    | ``id`` or ``slug`` you         |                  |                |
+|                    | wish to access.                |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+
+
+Returns
+********
+
+``STATUS_CODE`` - ``204``
+
+Example
+********
+
+.. code-block:: bash
+    
+     curl -X DELETE -d \
+     http://localhost:5000/api/v1/metrics/ga_entrances\?org\=1\&apikey\=$NEWSLYNX_API_KEY
 
 
 

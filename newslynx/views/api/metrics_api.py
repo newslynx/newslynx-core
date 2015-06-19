@@ -5,9 +5,10 @@ from sqlalchemy import or_
 
 from newslynx.core import db
 from newslynx.models import Metric, Recipe, SousChef
-from newslynx.models.util import fetch_by_id_or_field
+from newslynx.models.util import (
+    fetch_by_id_or_field, get_table_columns)
 from newslynx.lib.serialize import jsonify
-from newslynx.exc import RequestError, NotFoundError
+from newslynx.exc import NotFoundError, RequestError
 from newslynx.views.decorators import load_user, load_org
 from newslynx.views.util import *
 from newslynx.lib.stats import parse_number
@@ -172,7 +173,27 @@ def update_metric(user, org, name_id):
     # get the request data
     req_data = request_data()
 
-    pass
+    # filter out any non-columns
+    columns = get_table_columns(Metric)
+    for k in req_data.keys():
+        if k not in columns:
+            req_data.pop(k)
+
+    # don't ever overwrite these:
+    for k in ['id', 'recipe_id', 'name', 'org_id', 'created', 'updated']:
+        if k in req_data:
+            req_data.pop(k, None)
+
+    # update fields
+    for k, v in req_data.items():
+        setattr(m, k, v)
+    try:
+        db.session.add(m)
+        db.session.commit()
+    except Exception as e:
+        raise RequestError("Error updating Metric: {}".format(e.message))
+
+    return jsonify(m)
 
 
 @bp.route('/api/v1/metrics/<name_id>', methods=['DELETE'])
@@ -188,22 +209,22 @@ def delete_metric(user, org, name_id):
 
     if m.level == 'content_item':
         cmd = """
-            UPDATE content_metric_timseries SET metrics=json_delete_keys(metrics, '{name}';
-            UPDATE content_metric_summary SET metrics=json_delete_keys(metrics, '{name}';
+            UPDATE content_metric_timeseries SET metrics=json_del_keys(metrics, '{name}'::text);
+            UPDATE content_metric_summary SET metrics=json_del_keys(metrics, '{name}'::text);
         """.format(name=m.name)
 
     if m.level == 'org':
         cmd = """
-            UPDATE org_metric_timeseries SET metrics=json_delete_keys(metrics, '{name}';
-            UPDATE org_metric_summary SET metrics=json_delete_keys(metrics, '{name}';
+            UPDATE org_metric_timeseries SET metrics=json_del_keys(metrics, '{name}'::text);
+            UPDATE org_metric_summary SET metrics=json_del_keys(metrics, '{name}'::text);
         """.format(name=m.name)
 
     if m.level == 'all':
         cmd = """
-            UPDATE content_metric_timseries SET metrics=json_delete_keys(metrics, '{name}';
-            UPDATE content_metric_summary SET metrics=json_delete_keys(metrics, '{name}';
-            UPDATE org_metric_timeseries SET metrics=json_delete_keys(metrics, '{name}';
-            UPDATE org_metric_summary SET metrics=json_delete_keys(metrics, '{name}';
+            UPDATE content_metric_timeseries SET metrics=json_del_keys(metrics, '{name}'::text);
+            UPDATE content_metric_summary SET metrics=json_del_keys(metrics, '{name}'::text);
+            UPDATE org_metric_timeseries SET metrics=json_del_keys(metrics, '{name}'::text);
+            UPDATE org_metric_summary SET metrics=json_del_keys(metrics, '{name}'::text);
         """.format(name=m.name)
 
     db.session.delete(m)
