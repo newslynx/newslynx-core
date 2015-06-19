@@ -2362,7 +2362,7 @@ All methods, unless otherwise specified, will return one or many Event objects o
 
 **NOTE** 
 
-- Events with a ``status`` of ``deleted`` mean that these Cvents have been manually deleted by a user or by a recipe. Such events are kept in the database for 7 days and can be restored at any point.  After 7 days these events are permanently deleted.
+- Events with a ``status`` of ``deleted`` mean that these Events have been manually deleted by a user or by a recipe. Such events are kept in the database for 7 days and can be restored at any point.  After 7 days these events are permanently deleted.
 
 .. code-block:: javascript
 
@@ -3021,6 +3021,189 @@ Example
 .. code-block:: bash
     
     curl -X DELETE http://localhost:5000/api/v1/events/2/content/1\?org\=1\&apikey\=$NEWSLYNX_API_KEY
+
+
+.. _endpoints-metrics:
+
+**Metrics**
+++++++++++++++++++
+
+The **Metrics** API enables the creation, querying, faceting, updating, and deleting of Metrics. Refer to the :ref:`Metrics docs <events>` for more details on what these are.
+
+.. _endpoint-metrics-json:
+
+Metric JSON
+~~~~~~~~~~~~~~~~~
+
+All methods, unless otherwise specified, will return one or many Metric objects of the following ``json`` schema:
+
+.. code-block:: javascript
+
+{
+  "updated": "2015-06-19T02:22:56.547445+00:00",
+  "cumulative": true,
+  "faceted": false,
+  "aggregation": "sum",
+  "recipe_id": 9,
+  "timeseries": true,
+  "id": 25,
+  "display_name": "Facebook Page Likes",
+  "name": "twitter_followers",
+  "created": "2015-06-19T02:22:56.547429+00:00",
+  "level": "org",
+  "org_id" 1,
+}
+
+.. _endpoints-metrics-list:
+
+**GET** ``/metrics``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Filter all metrics.
+
+Params
+******
+
++--------------------+--------------------------------+------------------+----------------+
+| Parameter          |  Description                   |  Default         |  Required      |
++====================+================================+==================+================+
+| ``apikey``         | Your ``apikey``                | null             | true           |
++--------------------+--------------------------------+------------------+----------------+
+| ``org``            | The organization's             | null             | true           |
+|                    | ``id`` or ``slug`` you         |                  |                |
+|                    | wish to access.                |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+| ``localize``       | Return dates in the org's      | false            | false          |
+|                    | specified timezone. If `false` |                  |                |
+|                    | dates will be returned in UTC. |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+|``levels``          | A comma-separated list of      | null             | false          |
+|                    | ``levels`` to filter           |                  |                |
+|                    | results by. Preface any element|                  |                |
+|                    | with **!** or **-** to exclude |                  |                |
+|                    | it. Choose from `all`,         |                  |                |
+|                    | `content_item` or `org`        |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+|``aggregations``    | A comma-separated list of      | null             | false          |
+|                    | ``aggregations`` to filter     |                  |                |
+|                    | results by. Preface any element|                  |                |
+|                    | with **!** or **-** to exclude |                  |                |
+|                    | it. Choose from `min`, `max`   |                  |                |
+|                    | `avg`, `median`,  or `sum`     |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+|``recipes``         | A comma-separated list of      | null             | false          |
+|                    | ``recipes`` to filter          |                  |                |
+|                    | results by. Preface any element|                  |                |
+|                    | with **!** or **-** to exclude |                  |                |
+|                    | it.                            |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+|``sous_chefs``      | A comma-separated list of      | null             | false          |
+|                    | ``sous_chef_ids`` to filter    |                  |                |
+|                    | results by. Preface any element|                  |                |
+|                    | with **!** or **-** to exclude |                  |                |
+|                    | it.                            |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+| ``cumulative``     | ``true`` / ``false``. Filter   | null             | false          |
+|                    | metrics by whether or not they |                  |                |
+|                    | are cumulative when collected. |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+| ``faceted``        | ``true`` / ``false``. Filter   | null             | false          |
+|                    | metrics by whether or not they |                  |                |
+|                    | have facets.                   |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+| ``timeseries``     | ``true`` / ``false``. Filter   | null             | false          |
+|                    | metrics by whether or not they |                  |                |
+|                    | are collected as a timeseries. |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+
+
+Returns
+*******
+
+.. code-block:: javascript
+
+    {
+      "facets": {
+        "recipes": {
+          "google-analytics-to-content-timeseries": 3,
+          "twitter-user-to-org-timeseries": 1,
+          "facebook-page-to-org-timeseries": 1,
+          "share-counts-to-content-timeseries": 8,
+          "content-metric-summary": 12
+        },
+        "cumulative": {
+          "false": 12,
+          "true": 13
+        },
+        "faceted": {
+          "false": 25
+        },
+        "aggregations": {
+          "sum": 25
+        },
+        "levels": {
+          "org": 2,
+          "all": 23
+        },
+        "timeseries": {
+          "false": 12,
+          "true": 13
+        },
+      },
+      "metrics": [
+        ...
+      ]
+    }
+
+
+
+Example
+********
+
+Fetch all metrics with an `aggregation` of `sum`.
+
+.. code-block:: bash
+    
+    curl http://localhost:5000/api/v1/metrics\?apikey=$NEWSLYNX_API_KEY\&org=1&aggregations=sum
+
+
+.. _endpoints-metrics-get:
+
+**GET** ``/metrics/:metric_id``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Fetch an individual metric.
+
+Params
+******
+
++--------------------+--------------------------------+------------------+----------------+
+| Parameter          |  Description                   |  Default         |  Required      |
++====================+================================+==================+================+
+| ``apikey``         | Your ``apikey``                | null             | true           |
++--------------------+--------------------------------+------------------+----------------+
+| ``org``            | The organization's             | null             | true           |
+|                    | ``id`` or ``slug`` you         |                  |                |
+|                    | wish to access.                |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+| ``localize``       | Return dates in the org's      | false            | false          |
+|                    | specified timezone. If `false` |                  |                |
+|                    | dates will be returned in UTC. |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+
+Returns
+********
+
+An :ref:`endpoint-metrics-json` object.
+
+Example
+********
+
+.. code-block:: bash
+    
+    curl http://localhost:5000/api/v1/metrics/1\?org\=1\&apikey\=$NEWSLYNX_API_KEY
+
+
 
 .. _Postgres Search docs: http://www.postgresql.org/docs/9.1/static/textsearch-tables.html#TEXTSEARCH-TABLES-SEARCH
 

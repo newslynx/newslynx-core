@@ -21,7 +21,7 @@ options:
 metrics:
 
     twitter_followers:
-        display_name: Facebook Page Likes
+        display_name: Twitter Followers
         aggregation: sum
         level: org
         cumulative: true

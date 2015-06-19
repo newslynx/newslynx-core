@@ -179,6 +179,7 @@ class TestRecipeSchema(unittest.TestCase):
 
         # make sure min followers got filled in with it's defaults.
         assert(o['min_followers'] == 0)
+        assert(o['link_url'] == "http://example.com/some-url")
 
         # assert screen name is list
         assert(isinstance(o['owner_screen_name'], list))
@@ -228,6 +229,8 @@ class TestRecipeSchema(unittest.TestCase):
 
         # make sure min followers got filled in with it's defaults.
         assert(o['min_followers'] == 0)
+
+        assert(o['link_url'] == "http://example.com/some-url")
 
         # assert screen name is list
         assert(not isinstance(o['owner_screen_name'], list))

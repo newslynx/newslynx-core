@@ -46,7 +46,7 @@ options:
 metrics:
 
     facebook_shares:
-        display_name: Twitter Shares
+        display_name: Facebook Shares
         aggregation: sum
         level: all
         cumulative: true
