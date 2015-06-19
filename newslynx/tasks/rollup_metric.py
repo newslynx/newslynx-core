@@ -6,15 +6,14 @@ from newslynx.lib import dates
 from newslynx.constants import IMPACT_TAG_CATEGORIES, IMPACT_TAG_LEVELS
 
 
-def summarize_content_ts(org, num_hours=24):
+def content_ts(org, num_hours=24):
     """
     Rollup content-timseries metrics into summaries.
     Optimize this query by only updating content items whose
     timeseries have been updated in last X hours.
     """
-
     # generate select statments + list of metric names.
-    json_select_pattern = "{aggregation}(COALESCE(metrics ->> '{name}')::text::numeric, 0)) AS {name}"
+    json_select_pattern = "{aggregation}(COALESCE((metrics ->> '{name}')::text::numeric, 0)) AS {name}"
     select_statements = []
     metrics = []
 
@@ -56,7 +55,7 @@ def summarize_content_ts(org, num_hours=24):
     return True
 
 
-def summarize_content_event_tags(org):
+def content_event_tags(org):
     """
     Count up impact tag categories + levels assigned to events
     by the content_items they're associated with.

@@ -1,0 +1,29 @@
+slug: twitter-user-to-org-timeseries
+name: Twitter User Timeseries Metrics
+description: >
+    Computes a timeseries of of metrics for one or more facebook pages.
+runs: newslynx.sc.metrics.twitter.UserMetrics
+creates: metrics
+option_order: []
+options:
+    
+    screen_name:
+        input_type: text
+        value_types:
+            - string
+        accepts_list: true
+        required: true
+        help:
+            placeholder: ProPublica
+            description: |
+                The name of your twitter account.
+
+metrics:
+
+    twitter_followers:
+        display_name: Facebook Page Likes
+        aggregation: sum
+        level: org
+        cumulative: true
+        faceted: false
+        timeseries: true

@@ -17,6 +17,7 @@ from newslynx.lib.serialize import obj_to_json
 from newslynx.constants import *
 from newslynx.exc import RecipeSchemaError
 from newslynx.util import here
+from newslynx.tasks import rollup_metric
 
 # fake factory
 fake = Faker()
@@ -31,73 +32,6 @@ SUBJECT_TAG_NAMES = ['Environment', 'Money & politics', 'Government', 'Health']
 
 
 AUTHORS = ['Michael Keller', 'Brian Abelson', 'Merlynne Jones']
-
-METRICS = [
-    {
-        'name': 'pageviews',
-        'display_name': 'Pageviews',
-        'level': 'content_item',
-        'aggregation': 'sum',
-        'timeseries': True,
-        'cumulative': False,
-        'faceted': False
-    },
-    {
-        'name': 'time_on_homepage',
-        'display_name': 'Time on homepage',
-        'level': 'content_item',
-        'aggregation': 'sum',
-        'timeseries': True,
-        'cumulative': False,
-        'faceted': False
-    },
-    {
-        'name': 'twitter_shares',
-        'display_name': 'Twitter Shares',
-        'level': 'content_item',
-        'aggregation': 'sum',
-        'timeseries': True,
-        'cumulative': True,
-        'faceted': False
-    },
-    {
-        'name': 'external_pageviews',
-        'display_name': 'External Pageviews',
-        'level': 'content_item',
-        'aggregation': 'sum',
-        'timeseries': False,
-        'cumulative': False,
-        'faceted': False
-    },
-    {
-        'name': 'pageviews_by_referrer',
-        'display_name': 'Pageviews by Referrer',
-        'level': 'content_item',
-        'aggregation': 'sum',
-        'timeseries': False,
-        'cumulative': False,
-        'faceted': True
-    },
-    {
-        'name': 'facebook_page_likes',
-        'display_name': 'Facebook Page Likes',
-        'level': 'org',
-        'aggregation': 'sum',
-        'timeseries': True,
-        'cumulative': True,
-        'faceted': False
-    },
-    {
-        'name': 'twitter_followers',
-        'display_name': 'Twitter Followers',
-        'level': 'org',
-        'aggregation': 'sum',
-        'timeseries': True,
-        'cumulative': True,
-        'faceted': False
-
-    }
-]
 
 
 def random_date(n1, n2):
@@ -214,6 +148,7 @@ def get_sous_chefs():
 # Recipe
 def gen_built_in_recipes(org):
     recipes = []
+    metrics = []
     u = choice(org.users)
     # add default recipes
     for recipe in load_default_recipes():
@@ -221,9 +156,6 @@ def gen_built_in_recipes(org):
         recipe['org_id'] = org.id
         recipe['status'] = 'uninitialized'
         sous_chef_slug = recipe.pop('sous_chef')
-        print "*"*60
-        print sous_chef_slug
-        print 
         if not sous_chef_slug:
             raise RecipeSchemaError(
                 'Default recipe "{}" is missing a "sous_chef" slug.'
@@ -253,9 +185,10 @@ def gen_built_in_recipes(org):
                     recipe_id=r.id,
                     org_id=org.id,
                     **params)
+                metrics.append(m)
                 db_session.add(m)
                 db_session.commit()
-    return recipes
+    return recipes, metrics
 
 
 # Tags
@@ -389,6 +322,8 @@ def gen_content_item(org, recipes, subject_tags, authors):
         recipe_id=r.id,
         url=random_url(),
         type=choice(CONTENT_ITEM_TYPES),
+        site_name=choice(["ProPalpatine", "Tatooine Times"]),
+        favicon="http://propublica.org/favicon.ico",
         provenance=provenance,
         created=random_date(10, 100),
         updated=random_date(1, 9),
@@ -409,29 +344,12 @@ def gen_content_item(org, recipes, subject_tags, authors):
     db_session.commit()
     return t
 
-# METRICS
-
-
-def gen_metrics(org, recipes):
-    _metrics = []
-    for metric in METRICS:
-        r = choice(recipes)
-
-        m = Metric(
-            org_id=org.id,
-            recipe_id=r.id,
-            **metric)
-        db_session.add(m)
-        _metrics.append(m)
-    db_session.commit()
-    return _metrics
-
 
 def gen_content_metric_timeseries(org, content_items, metrics, n_content_item_timeseries_metrics=1000):
     for _ in xrange(n_content_item_timeseries_metrics):
         _metrics = {}
         for m in metrics:
-            if m.level == 'content_item':
+            if m.level in ['content_item', 'all']:
                 _metrics[m.name] = random_int(1, 1000)
 
         cmd_kwargs = {
@@ -493,7 +411,7 @@ def main(
     subject_tags = gen_subject_tags(org, n_impact_tags)
     authors = gen_authors(org)
     sous_chefs = get_sous_chefs()
-    recipes = gen_built_in_recipes(org)
+    recipes, metrics = gen_built_in_recipes(org)
 
     # generate content_items + metrics
     if verbose:
@@ -505,8 +423,6 @@ def main(
 
     if verbose:
         print "generating {} events".format(n_events)
-
-    metrics = gen_metrics(org, recipes)
 
     if verbose:
         print "generating {} content item timeseries metrics"\
@@ -534,6 +450,12 @@ def main(
     # generate events
     gen_events(org, recipes, impact_tags, content_items, n_events)
     db_session.commit()
+
+    # rollup metrics
+    if verbose:
+        print "rolling up metrics"
+    rollup_metric.content_ts(org)
+    rollup_metric.content_event_tags(org)
 
 
 def run(**kw):
