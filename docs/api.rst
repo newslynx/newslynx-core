@@ -3042,20 +3042,20 @@ All methods, unless otherwise specified, will return one or many Metric objects 
 
 .. code-block:: javascript
 
-{
-  "updated": "2015-06-19T02:22:56.547445+00:00",
-  "cumulative": true,
-  "faceted": false,
-  "aggregation": "sum",
-  "recipe_id": 9,
-  "timeseries": true,
-  "id": 25,
-  "display_name": "Facebook Page Likes",
-  "name": "twitter_followers",
-  "created": "2015-06-19T02:22:56.547429+00:00",
-  "level": "org",
-  "org_id" 1,
-}
+    {
+      "updated": "2015-06-19T02:22:56.547445+00:00",
+      "cumulative": true,
+      "faceted": false,
+      "aggregation": "sum",
+      "recipe_id": 9,
+      "timeseries": true,
+      "id": 25,
+      "display_name": "Facebook Page Likes",
+      "name": "twitter_followers",
+      "created": "2015-06-19T02:22:56.547429+00:00",
+      "level": "org",
+      "org_id" 1,
+    }
 
 .. _endpoints-metrics-list:
 
