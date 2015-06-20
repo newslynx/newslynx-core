@@ -90,7 +90,7 @@ class TestContentAPI(unittest.TestCase):
         assert(c1.title != c.title)
 
     def test_delete_content(self):
-        cis = self.api.content.search(sort='title')
+        cis = self.api.content.search(sort='created')
         c = cis.content_items[0]
         ts = self.api.content.get_timeseries(c.id)
         assert(len(ts))
