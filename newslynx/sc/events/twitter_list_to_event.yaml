@@ -17,7 +17,7 @@ option_order:
     - set_event_title
     - set_event_description
     - set_event_tag_ids
-    - set_event_contents
+    - set_event_content_items
 options:
     
     list_owner_screen_name:
