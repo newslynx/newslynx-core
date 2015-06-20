@@ -363,14 +363,16 @@ class RecipeSchema(object):
         """
         Validate recipe schedule options.
         """
-        # check if recipe has more than one schedule set.
-        cnt = 0
+        # check that the associated schedule field is set.
         for typ in RECIPE_SCHEDULE_METHODS:
-            if self.recipe.get(typ) and self.recipe.get(typ) is not None:
-                cnt += 1
-        if cnt > 1:
-            raise RecipeSchemaError(
-                "A recipe cannot have multiple schedule types set.")
+            if typ != 'unscheduled':
+                if self.recipe.get('schedule_by') == typ and \
+                   not self.recipe.get(typ, None):
+                    print "IN HERE"
+                    raise RecipeSchemaError(
+                        "Recipe is set to be scheduled by '{}' "
+                        "but is missing an associated value."
+                        .format(typ))
 
     def validate(self):
         """

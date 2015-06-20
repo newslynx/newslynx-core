@@ -304,9 +304,10 @@ class TestRecipeSchema(unittest.TestCase):
         except RecipeSchemaError:
             assert True
 
-    def test_multiple_schedules(self):
+    def test_missing_schedules(self):
         grecipe = copy.copy(good_recipe)
-        grecipe['crontab'] = '*/5 * * * *'
+        grecipe['schedule_by'] = 'crontab'
+        grecipe['crontab'] = None
         try:
             recipe_schema.validate(grecipe, sous_chef)
             assert False
