@@ -36,11 +36,11 @@ options:
             description: |
                 The content item types to calculate share counts for.
 
-    interval: 
+    minutes: 
         input_type: number
         value_types:
             - numeric
-        default: 3600
+        default: 60
 
 
 metrics:
