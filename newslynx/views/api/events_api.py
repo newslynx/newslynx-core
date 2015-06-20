@@ -129,13 +129,13 @@ def apply_event_filters(q, **kw):
     # TODO: DONT USE MULTIPLE QUERIES HERE
     if len(kw['include_sous_chefs']):
         sous_chef_recipes = db.session.query(Recipe.id)\
-            .filter(Recipe.sous_chef.has(SousChef.id.in_(kw['include_sous_chefs'])))
+            .filter(Recipe.sous_chef.has(SousChef.slug.in_(kw['include_sous_chefs'])))
         q = q.filter(
             Event.recipe_id.in_([r[0] for r in sous_chef_recipes.all()]))
 
     if len(kw['exclude_sous_chefs']):
         sous_chef_recipes = db.session.query(Recipe.id)\
-            .filter(Recipe.sous_chef.has(SousChef.id.in_(kw['exclude_sous_chefs'])))\
+            .filter(Recipe.sous_chef.has(SousChef.slug.in_(kw['exclude_sous_chefs'])))\
             .all()
         q = q.filter(~Event.recipe_id.in_([r[0] for r in sous_chef_recipes]))
 
@@ -152,7 +152,7 @@ def search_events(user, org):
     """
     args:
         q                | search query
-        search           | a search vector to search on, choose from authors, title, description, body, meta, or all, default=all
+        search           | a search vector to search on, choose from title, description, body, meta, or all, default=all
         fields           | a comma-separated list of fields to include in response
         page             | page number
         per_page         | number of items per page.
@@ -170,7 +170,7 @@ def search_events(user, org):
         tag_ids          | a comma-separated list of tag_ids to filter by
         content_item_ids | a comma-separated list of content_item_ids to filter by
         recipe_ids       | a comma-separated list of recipes to filter by
-        sous_chef_ids    | a comma-separated list of sous_chefs to filter by
+        sous_chefs       | a comma-separated list of sous_chefs to filter by
         incl_thumbnail   | whether or not to include the thumbnail
     """
 

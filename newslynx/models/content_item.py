@@ -161,7 +161,7 @@ class ContentItem(db.Model):
         # incl_links = kw.get('incl_links', False)
         incl_body = kw.get('incl_body', False)
         incl_metrics = kw.get('incl_metrics', True)
-        incl_img = kw.get('incl_img', True)
+        incl_img = kw.get('incl_img', False)
 
         d = {
             'id': self.id,

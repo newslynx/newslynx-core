@@ -68,7 +68,8 @@ def ingest_content_item(
 
     # split out tags_ids + authors + links
     tag_ids = obj.pop('tag_ids', [])
-    authors = obj.pop('authors', []) # accept ids too
+    authors = obj.pop('author_ids', [])
+    authors.extend(obj.pop('authors', [])) # accept names too
     # links = obj.pop('links', {})
 
     # determine event provenance

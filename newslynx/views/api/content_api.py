@@ -179,7 +179,7 @@ def apply_content_item_filters(q, **kw):
     if len(kw['include_sous_chefs']):
         sous_chef_recipes = db.session.query(Recipe.id)\
             .filter(Recipe.sous_chef.has(
-                SousChef.name.in_(kw['include_sous_chefs'])))\
+                SousChef.slug.in_(kw['include_sous_chefs'])))\
             .all()
         recipe_ids = [r[0] for r in sous_chef_recipes]
         q = q.filter(ContentItem.recipe_id.in_(recipe_ids))
@@ -187,7 +187,7 @@ def apply_content_item_filters(q, **kw):
     if len(kw['exclude_sous_chefs']):
         sous_chef_recipes = db.session.query(Recipe.id)\
             .filter(Recipe.sous_chef.has(
-                SousChef.name.in_(kw['exclude_sous_chefs'])))\
+                SousChef.slug.in_(kw['exclude_sous_chefs'])))\
             .all()
         recipe_ids = [r[0] for r in sous_chef_recipes]
         q = q.filter(~ContentItem.recipe_id.in_(recipe_ids))
@@ -410,8 +410,7 @@ def search_content(user, org):
 
     # reformat entites as dictionary
     if kw['fields']:
-        content = [dict(zip(kw['fields'], r))
-                   for r in content.items]
+        content = [dict(zip(kw['fields'], r)) for r in content.items]
     else:
         content = [t.to_dict(**kw) for t in content.items]
 
@@ -440,7 +439,7 @@ def create_content(user, org):
         req_data,
         org_id=org.id,
         extract=extract)
-    return jsonify(c.to_dict(incl_body=True))
+    return jsonify(c.to_dict(incl_body=True, incl_img=True, incl_metrics=True))
 
 
 @bp.route('/api/v1/content/<int:content_item_id>', methods=['GET'])
