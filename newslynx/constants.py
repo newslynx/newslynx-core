@@ -98,7 +98,8 @@ RECIPE_INTERNAL_FIELDS = [
 ]
 
 RECIPE_SCHEDULE_TYPES = [
-    'minutes', 'crontab', 'time_of_day'
+    'minutes', 'crontab', 'time_of_day',
+    'unscheduled'
 ]
 
 RECIPE_SCHEDULE_METHODS = [
