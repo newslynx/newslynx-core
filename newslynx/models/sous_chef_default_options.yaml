@@ -57,7 +57,7 @@ minutes:
     default: null
     help:
         placeholder: 60
-        description: The frequency with which this recipe run (in minutes).
+        description: The frequency with which this recipe should run (in minutes).
 
 time_of_day:
     input_type: select

@@ -14,10 +14,10 @@ option_order:
     - minutes
     - time_of_day
     - event_status
+    - set_event_content_items
     - set_event_title
     - set_event_description
     - set_event_tag_ids
-    - set_event_content_items
 options:
     
     page_name:
@@ -79,7 +79,7 @@ options:
             placeholder: "pending"
 
     set_event_content_items:
-        input_type: text
+        input_type: article-search
         input_options: []
         accepts_list: true 
         value_types:
