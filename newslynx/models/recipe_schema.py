@@ -368,7 +368,7 @@ class RecipeSchema(object):
             if typ != 'unscheduled':
                 if self.recipe.get('schedule_by') == typ and \
                    not self.recipe.get(typ, None):
-                    print "IN HERE"
+
                     raise RecipeSchemaError(
                         "Recipe is set to be scheduled by '{}' "
                         "but is missing an associated value."
