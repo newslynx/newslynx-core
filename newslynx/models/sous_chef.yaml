@@ -108,6 +108,7 @@ definitions:
                 description: What type of input form should this option render?
                 type: string
                 enum:
+                    - search
                     - radio
                     - select
                     - checkbox

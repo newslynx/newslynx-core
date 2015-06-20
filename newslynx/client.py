@@ -527,9 +527,16 @@ class Events(BaseClient):
 
 class Content(BaseClient):
 
+    def search(self, **kw):
+        """
+        search all content items.
+        """
+        url = self._format_url('content')
+        return self._request('GET', url, params=kw)
+
     def get(self, content_id, **kw):
         """
-        Get an individual thing.
+        Get an individual content item.
         """
         url = self._format_url('content', content_id)
         return self._request('GET', url, params=kw)

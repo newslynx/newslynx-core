@@ -293,8 +293,9 @@ def validate_content_item_types(values):
     if not isinstance(values, list):
         values = [values]
     bad_values = []
+    types = CONTENT_ITEM_TYPES + ['all']
     for value in values:
-        if value not in CONTENT_ITEM_TYPES + ['all']:
+        if value not in types:
             bad_values.append(value)
 
     if len(bad_values):
@@ -304,7 +305,7 @@ def validate_content_item_types(values):
             msg = 'are not valid ContentItem types.'
         raise RequestError(
             "'{}' {}. Choose from: {}."
-            .format(', '.join(bad_values), msg, content_item_TYPES))
+            .format(', '.join(bad_values), msg, types))
 
 
 def validate_event_status(value):

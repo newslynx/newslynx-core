@@ -440,6 +440,24 @@ def create_content(user, org):
     return jsonify(c.to_dict(incl_body=True))
 
 
+@bp.route('/api/v1/content/<int:content_item_id>', methods=['GET'])
+@load_user
+@load_org
+def get_content_item(user, org, content_item_id):
+    """
+    Create a content item
+    """
+    c = ContentItem.query\
+        .filter_by(id=content_item_id, org_id=org.id)\
+        .first()
+
+    if not c:
+        raise NotFoundError(
+            'An ContentItem with ID {} does not exist.'
+            .format(event_id))
+    return jsonify(c.to_dict(incl_body=True))
+
+
 @bp.route('/api/v1/content/<int:content_item_id>', methods=['PUT', 'PATCH'])
 @load_user
 @load_org
@@ -500,10 +518,11 @@ def update_content_item(user, org, content_item_id):
             .format(e.message))
     return jsonify(c)
 
+
 @bp.route('/api/v1/content/<int:content_item_id>', methods=['DELETE'])
 @load_user
 @load_org
-def get_content_item(user, org, content_item_id):
+def delete_content_item(user, org, content_item_id):
     """
     Fetch an individual content-item.
     """
