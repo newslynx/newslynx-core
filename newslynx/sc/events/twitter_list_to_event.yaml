@@ -14,6 +14,7 @@ option_order:
     - schedule_by
     - crontab
     - minutes
+    - time_of_day
     - event_status
     - set_event_title
     - set_event_description
