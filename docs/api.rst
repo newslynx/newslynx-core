@@ -2819,7 +2819,7 @@ Example
 
 .. _endpoints-authors-add-content-item:
 
-**PUT** ``/authors/:author_id/content/:content_id``
+**PUT** ``/authors/:author_id/content/:content_item_id``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Associate an author with a content item.
@@ -2860,7 +2860,7 @@ Example
      http://localhost:5000/api/v1/authors/1/content/1\?org\=1\&apikey\=$NEWSLYNX_API_KEY
 
 
-**DELETE** ``/authors/:author_id/content/:content_id``
+**DELETE** ``/authors/:author_id/content/:content_item_id``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Remove an association between an author and a content item.
@@ -3531,7 +3531,7 @@ Example
 
 .. _endpoints-events-add-content-item:
 
-**PUT** ``/events/:event_id/content/:content_id``
+**PUT** ``/events/:event_id/content/:content_item_id``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Associate an Event with a Content Item.
@@ -3570,7 +3570,7 @@ Example
 
 .. _endpoints-events-remove-content-item:
 
-**DELETE** ``/events/:event_id/content/:content_id``
+**DELETE** ``/events/:event_id/content/:content_item_id``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Remove an associated Content Item from an Event.
