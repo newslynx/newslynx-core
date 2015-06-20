@@ -110,7 +110,6 @@ time_of_day:
         - '10:30 PM'
         - '11:00 PM'
         - '11:30 PM'
-        - 'null'
     value_types:
         - string 
         - nulltype

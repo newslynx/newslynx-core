@@ -15,10 +15,10 @@ option_order:
     - minutes
     - time_of_day
     - event_status
+    - set_event_content_items
     - set_event_title
     - set_event_description
     - set_event_tag_ids
-    - set_event_content_items
 options:
     
     screen_name:
