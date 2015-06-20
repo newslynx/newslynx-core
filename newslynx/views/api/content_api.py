@@ -169,7 +169,7 @@ def apply_content_item_filters(q, **kw):
             Author.id.in_(kw['include_authors'])))
 
     if len(kw['exclude_authors']):
-        q = q.filter(~ContentItem.tags.any(
+        q = q.filter(~ContentItem.authors.any(
             Author.id.in_(kw['exclude_authors'])))
 
     # apply sous_chefs filter

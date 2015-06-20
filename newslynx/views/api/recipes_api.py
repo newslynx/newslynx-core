@@ -127,7 +127,7 @@ def list_recipes(user, org):
         facets['sous_chefs'][r.sous_chef.slug] += 1
         facets['creates'][r.sous_chef.creates] += 1
 
-        if r.schedule_by is not None:
+        if r.schedule_by == 'unscheduled':
             facets['schedules']['scheduled'] += 1
         else:
             facets['schedules']['unscheduled'] += 1

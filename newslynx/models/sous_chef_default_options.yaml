@@ -29,7 +29,7 @@ schedule_by:
         - minutes
         - time_of_day
         - crontab
-        - 'null'
+        - unscheduled
     value_types: 
         - string
         - nulltype

@@ -1,4 +1,5 @@
 import unittest
+import re
 
 from newslynx.client import API
 from newslynx.models import ExtractCache
@@ -51,13 +52,35 @@ class TestContentAPI(unittest.TestCase):
         cis = self.api.content.search(q=c.title, search='title', sort='relevance')
         assert(cis.content_items[0].title == c.title)
 
-
     def test_content_bad_type(self):
-        # try:
-        cis = self.api.content.search(type='foo')
-        # except Exception as e:
-        #     assert(e.status_code == 400)
-        # assert(False)
+        try:
+            cis = self.api.content.search(type='foo')
+        except Exception as e:
+            assert(e.status_code == 400)
+        else:
+            assert(False)
+
+    def test_content_bad_provenance(self):
+        try:
+            cis = self.api.content.search(provenance='foo')
+        except Exception as e:
+            assert(e.status_code == 400)
+        else:
+            assert(False)
+
+    def test_content_domain_filter(self):
+        cis = self.api.content.search(domain='foo')
+        assert(len(cis.content_items) == 0)
+
+    def test_content_url_regex(self):
+        cis = self.api.content.search(url_regex='.*example.*')
+        assert(re.search('.*example.*', cis.content_items[0].url))
+
+    def test_content_url_regex(self):
+        cis = self.api.content.search(url_regex='.*example.*')
+        assert(re.search('.*example.*', cis.content_items[0].url))
+
+
 
 
 

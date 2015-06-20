@@ -184,6 +184,7 @@ def author_remove_content(user, org, author_id, content_item_id):
     c = ContentItem.query\
         .filter_by(id=content_item_id, org_id=org.id)\
         .first()
+
     if not c:
         raise RequestError(
             'ContentItem with ID {} does not exist.'
@@ -208,6 +209,7 @@ def merge_authors(user, org, from_author_id, to_author_id):
     from_a = Author.query\
         .filter_by(id=from_author_id, org_id=org.id)\
         .first()
+
     if not from_a:
         raise NotFoundError(
             'Author with ID "{}" does not exist."'
@@ -226,6 +228,7 @@ def merge_authors(user, org, from_author_id, to_author_id):
     stmt = update(content_items_authors)\
         .where(content_items_authors.c.author_id == from_author_id)\
         .values(author_id=to_author_id)
+
     db.session.execute(stmt)
 
     # remove from author id

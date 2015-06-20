@@ -60,7 +60,8 @@ CONTENT_ITEM_EVENT_FACETS = [
 CONTENT_ITEM_FACETS = [
     'tags', 'provenances',
     'sous_chefs', 'recipes',
-    'types', 'domains', 'authors'
+    'types', 'domains', 'authors',
+    'site_names'
     ] + CONTENT_ITEM_EVENT_FACETS
 
 CONTENT_ITEM_PROVENANCES = [
@@ -101,7 +102,8 @@ RECIPE_SCHEDULE_TYPES = [
 ]
 
 RECIPE_SCHEDULE_METHODS = [
-    'minutes', 'crontab', 'time_of_day'
+    'minutes', 'crontab', 'time_of_day',
+    'unscheduled'
 ]
 
 SOUS_CHEF_RESERVED_FIELDS = RECIPE_REMOVE_FIELDS + RECIPE_INTERNAL_FIELDS

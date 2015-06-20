@@ -64,7 +64,7 @@ class Recipe(db.Model):
         self.name = kw.get('name')
         self.slug = slugify(kw.get('slug', kw['name']))
         self.description = kw.get('description')
-        self.schedule_by = kw.get('schedule_by')
+        self.schedule_by = kw.get('schedule_by', 'unscheduled')
         self.crontab = kw.get('crontab')
         self.time_of_day = kw.get('time_of_day')
         self.minutes = kw.get('minutes')

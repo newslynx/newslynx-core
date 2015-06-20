@@ -227,6 +227,22 @@ def content_items_by_domains(content_item_ids):
     return [dict(zip(['domain', 'count'], r)) for r in domain_counts]
 
 
+def content_items_by_site_names(content_item_ids):
+    """
+    Count the number of content_items associated with domains.
+    """
+    site_name_counts = db.session\
+        .query(ContentItem.site_name, func.count(ContentItem.site_name))\
+        .filter(ContentItem.id.in_(content_item_ids))\
+        .group_by(ContentItem.site_name)\
+        .order_by(desc(func.count(ContentItem.site_name)))\
+        .all()
+
+    # explicitly shutdown session started in greenlet
+    db.session.remove()
+    return [dict(zip(['site_name', 'count'], r)) for r in site_name_counts]
+
+
 def content_items_by_authors(content_item_ids):
     """
     Count the number of content_items associated with domains.
@@ -303,6 +319,7 @@ def content_items(by, content_item_ids):
         'authors': content_items_by_authors,
         'tags': content_items_by_tags,
         'sous_chefs': content_items_by_sous_chefs,
+        'site_names': content_items_by_site_names,
         'statuses': content_items_by_types,
         'types': content_items_by_types,
         'domains': content_items_by_domains,
