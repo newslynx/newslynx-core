@@ -8,8 +8,9 @@ option_order:
     - slug
     - description
     - feed_url
-    - interval
-    - time_of_day
+    - schedule_by
+    - crontab
+    - minutes
 options:
 
     # custom options

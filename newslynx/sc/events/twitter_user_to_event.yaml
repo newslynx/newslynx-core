@@ -10,8 +10,9 @@ option_order:
     - screen_name
     - search_query
     - min_followers
-    - interval
-    - time_of_day
+    - schedule_by
+    - crontab
+    - minutes
     - event_status
     - set_event_title
     - set_event_description
