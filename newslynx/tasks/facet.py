@@ -242,7 +242,7 @@ def content_items_by_authors(content_item_ids):
         .all()
     # explicitly shutdown session started in greenlet
     db.session.remove()
-    return [dict(zip(['id' 'name', 'count'], r)) for r in author_counts]
+    return [dict(zip(['id', 'name', 'count'], r)) for r in author_counts]
 
 
 def content_items_by_recipes(content_item_ids):
@@ -300,7 +300,7 @@ def content_items(by, content_item_ids):
     """
     fx_lookup = {
         'recipes': content_items_by_recipes,
-        'authors': content_items_authors,
+        'authors': content_items_by_authors,
         'tags': content_items_by_tags,
         'sous_chefs': content_items_by_sous_chefs,
         'statuses': content_items_by_types,
