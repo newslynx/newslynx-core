@@ -104,11 +104,11 @@ options:
         
 
     # internal options
-    interval:
+    minutes:
         input_type: number
         value_types:
             - numeric
-        default: 900
+        default: 30
 
 
 
