@@ -1,6 +1,6 @@
 from sqlalchemy_utils.types import TSVectorType
 
-from newslynx.core import db
+from newslynx.core import db, SearchQuery
 from newslynx.lib import dates
 
 
@@ -12,6 +12,7 @@ class Author(db.Model):
     """
 
     __tablename__ = 'authors'
+    query_class = SearchQuery
 
     # the ID is the global bitly hash.
     id = db.Column(db.Integer, unique=True, primary_key=True, index=True)

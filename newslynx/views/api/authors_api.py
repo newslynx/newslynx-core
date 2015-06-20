@@ -10,7 +10,7 @@ from newslynx.exc import NotFoundError, RequestError
 from newslynx.views.decorators import load_user, load_org
 from newslynx.views.util import (
     request_data, delete_response,
-    arg_bool)
+    arg_bool, arg_str)
 
 
 # bp
@@ -25,9 +25,14 @@ def list_authors(user, org):
     Get all authors.
     """
     incl_content = arg_bool('incl_content', default=False)
+    q = arg_str('q', default=None)
+
     authors = Author.query\
-        .filter_by(org_id=org.id).all()
-    return jsonify([a.to_dict(incl_content=incl_content) for a in authors])
+        .filter_by(org_id=org.id)
+    if q:
+        authors = authors.search(q, vector=Author.search_vector, sort=True)
+
+    return jsonify([a.to_dict(incl_content=incl_content) for a in authors.all()])
 
 
 @bp.route('/api/v1/authors', methods=['POST'])
