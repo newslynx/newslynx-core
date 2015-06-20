@@ -3980,7 +3980,7 @@ Example
     
     curl http://localhost:5000/api/v1/content/1\?org\=1\&apikey\=$NEWSLYNX_API_KEY
 
-.. _endpoints-events-update:
+.. _endpoints-content-items-update:
 
 **PUT | PATCH** ``/content/:content_item_id``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
