@@ -171,6 +171,7 @@ def search_events(user, org):
         content_item_ids | a comma-separated list of content_item_ids to filter by
         recipe_ids       | a comma-separated list of recipes to filter by
         sous_chef_ids    | a comma-separated list of sous_chefs to filter by
+        incl_thumbnail   | whether or not to include the thumbnail
     """
 
     # parse arguments
@@ -218,6 +219,7 @@ def search_events(user, org):
         provenance=arg_str('provenance', default=None),
         facets=arg_list('facets', default=[], typ=str),
         incl_body=arg_bool('incl_body', False),
+        incl_img=arg_bool('incl_img', False),
         include_categories=include_categories,
         exclude_categories=exclude_categories,
         include_levels=include_levels,
@@ -306,9 +308,8 @@ def search_events(user, org):
     if kw['fields']:
         events = [dict(zip(kw['fields'], r)) for r in events.items]
     else:
-        events = [e.to_dict(incl_body=kw['incl_body'])
+        events = [e.to_dict(incl_body=kw['incl_body'], incl_img=kw['incl_img'])
                   for e in events.items]
-
     resp = {
         'events': events,
         'pagination': pagination,
@@ -333,7 +334,7 @@ def create_event(user, org):
         req_data,
         org_id=org.id,
         must_link=arg_bool('must_link', False))
-    return jsonify(e)
+    return jsonify(e.to_dict(incl_body=True, incl_img=True))
 
 
 @bp.route('/api/v1/events/<int:event_id>', methods=['GET'])
@@ -350,7 +351,7 @@ def get_event(user, org, event_id):
         raise NotFoundError(
             'An Event with ID {} does not exist.'
             .format(event_id))
-    return jsonify(e.to_dict(incl_body=True))
+    return jsonify(e.to_dict(incl_body=True, incl_img=True))
 
 
 @bp.route('/api/v1/events/<int:event_id>', methods=['PUT', 'PATCH'])
@@ -379,9 +380,9 @@ def event_update(user, org, event_id):
     current_status = e.status
     req_status = req_data.get('status')
 
-    if len(tag_ids) and len(content_item_ids):
+    # assign events + tags.
+    if len(tag_ids):
 
-        approve = True
         tags = Tag.query\
             .filter_by(org_id=org.id)\
             .filter(Tag.id.in_(tag_ids))\
@@ -391,6 +392,16 @@ def event_update(user, org, event_id):
                 'Tag(s) with ID(s) {} do(es) not exist.'
                 .format(tag_ids))
 
+        for tag in tags:
+            # validate tag
+            if tag.type != 'impact':
+                raise RequestError('Events can only be assigned Impact Tags.')
+
+            # add it
+            if tag.id not in e.tag_ids:
+                e.tags.append(tag)
+
+    if len(content_item_ids):
         content_items = ContentItem.query\
             .filter_by(org_id=org.id)\
             .filter(ContentItem.id.in_(content_item_ids))\
@@ -400,26 +411,25 @@ def event_update(user, org, event_id):
                 'ContentItem(s) with ID(s) {} do(es) not exist.'
                 .format(tag_ids))
 
+        # add content items + tags
+        for content_item in content_items:
+            if content_item.id not in e.content_item_ids:
+                e.content_items.append(content_item)
+
     # check for incomplete approval requests.
-    elif current_status != 'approved' and req_status == 'approved':
+    if not len(tag_ids) and not len(content_item_ids) and \
+       current_status != 'approved' and req_status == 'approved':
 
         raise RequestError(
             'To approve an event you must assign it to one or more '
-            'ContentItems or Tags by using the "content_item_ids" and '
+            'ContentItems and Tags by using the "content_item_ids" and '
             '"tag_ids" fields.')
-
-    else:
-        approve = False
 
     # filter out any non-columns
     columns = get_table_columns(Event)
     for k in req_data.keys():
         if k not in columns:
             req_data.pop(k)
-
-    # if we're approving this event, override status
-    if approve:
-        req_data['status'] = 'approved'
 
     # update fields
     for k, v in req_data.items():
@@ -428,22 +438,6 @@ def event_update(user, org, event_id):
     # ensure no one sneakily/accidentally
     # updates an organization id
     e.org_id = org.id
-
-    # if we're approving, add tags + things
-    if approve:
-
-        # only add things + tags that haven't already been assigned.
-        for content_item, tag in zip(content_items, tags):
-            if content_item.id not in e.content_item_ids:
-                e.content_items.append(content_item)
-
-            # validate tag
-            if tag.type != 'impact':
-                raise RequestError('Events can only be assigned Impact Tags.')
-
-            # add it
-            if tag.id not in e.tag_ids:
-                e.tags.append(tag)
 
     # commit changes
     db.session.add(e)

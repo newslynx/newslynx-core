@@ -118,7 +118,6 @@ class Event(db.Model):
             'status': self.status,
             'provenance': self.provenance,
             'url': self.url,
-            'img_url': self.img_url,
             'created': self.created,
             'updated': self.updated,
             'title': self.title,
@@ -130,8 +129,9 @@ class Event(db.Model):
         }
         if kw.get('incl_body', False):
             d['body'] = self.body
-        if kw.get('incl_thumbnail', True):
+        if kw.get('incl_img', False):
             d['thumbnail'] = self.thumbnail
+            d['img_url'] = self.img_url
         return d
 
     def __repr__(self):

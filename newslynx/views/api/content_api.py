@@ -264,7 +264,9 @@ def search_content(user, org):
         updated_before=arg_date('updated_before', default=None),
         type=arg_str('type', default='all'),
         provenance=arg_str('provenance', default=None),
-        incl_links=arg_bool('incl_links', default=False),
+        incl_body=arg_bool('incl_body', default=False),
+        incl_img=arg_bool('incl_img', default=False),
+        incl_metrics=arg_bool('incl_metrics', default=True),
         facets=arg_list('facets', default=[], typ=str),
         include_categories=include_categories,
         exclude_categories=exclude_categories,
@@ -411,8 +413,7 @@ def search_content(user, org):
         content = [dict(zip(kw['fields'], r))
                    for r in content.items]
     else:
-        content = [t.to_dict(incl_links=kw['incl_links'])
-                   for t in content.items]
+        content = [t.to_dict(**kw) for t in content.items]
 
     resp = {
         'content_items': content,

@@ -2974,6 +2974,689 @@ All methods, unless otherwise specified, will return one or many Event objects o
         "followers": 78
       },
       "source_id": "facebook-page-to-event:d25cb405-0c98-11e5-b5c0-6c4008aeb606",
+      "img_url": "http://example.com/d25cc021-0c98-11e5-b0a9-6c4008aeb606.png",
+      "thumbnail": "data:image/PNG;base64,...",
+      "body": "..."
+    }
+
+.. _endpoints-events-search:
+
+**GET** ``/events``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Search and filter all events and return helpful faceted counts.
+
+Params
+******
+
++--------------------+--------------------------------+------------------+----------------+
+| Parameter          |  Description                   |  Default         |  Required      |
++====================+================================+==================+================+
+| ``apikey``         | Your ``apikey``                | null             | true           |
++--------------------+--------------------------------+------------------+----------------+
+| ``org``            | The organization's             | null             | true           |
+|                    | ``id`` or ``slug`` you         |                  |                |
+|                    | wish to access.                |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+| ``localize``       | Return dates in the org's      | false            | false          |
+|                    | specified timezone. If `false` |                  |                |
+|                    | dates will be returned in UTC. |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+| ``q``              | A search query. Will search on | null             |                |
+|                    | ``body``, ``authors``,         |                  | false          |
+|                    | ``title``, ``description``, and|                  |                |
+|                    | ``meta``. Please refer to the  |                  |                |
+|                    | `Postgres Search docs`_ for    |                  |                |
+|                    | details on query syntax.       |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+| ``search``         | The field to search on. Either:| ``all``          |                |
+|                    | ``body``, ``authors``,         |                  | false          |
+|                    | ``title``, ``description``,    |                  |                |
+|                    | ``meta``, or ``all``.          |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+| ``fields``         | A comma-separated list of      | null             | false          |
+|                    | fields to include in the       |                  |                | 
+|                    | response.                      |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+| ``incl_body``      | Whether or not to include the  | false            | false          |
+|                    | body of the event in the       |                  |                | 
+|                    | response.                      |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+| ``incl_img``       | Whether or not to include the  | false            | false          |
+|                    | img_url and thumbail in the    |                  |                | 
+|                    | response.                      |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+| ``created_after``  | An ISO-8601 date to filter     |                  |                |
+|                    | results by.                    | null             | false          |
++--------------------+--------------------------------+------------------+----------------+
+| ``created_before`` | An ISO-8601 date to filter     |                  |                |
+|                    | results by.                    | null             | false          |
++--------------------+--------------------------------+------------------+----------------+
+| ``updated_after``  | An ISO-8601 date to filter     |                  |                |
+|                    | results by.                    | null             | false          |
++--------------------+--------------------------------+------------------+----------------+
+| ``updated_before`` | An ISO-8601 date to filter     |                  |                |
+|                    | results by.                    | null             | false          |
++--------------------+--------------------------------+------------------+----------------+
+| ``sort``           | Sort results by an event field.| -created.        |                |
+|                    | preface with **-** to sort     |                  | false          |
+|                    | descending. When submitting a  |                  |                |
+|                    | search query, use ``relevance``|                  |                |
+|                    | to sort by match rank.         |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+| ``status``         | A status to filter results by. |                  |                |
+|                    | Choose from ``pending``,       | ``all``          | false          |
+|                    | ``approved``, ``deleted`` or   |                  |                |
+|                    | ``all``.                       |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+| ``provenance``     | A provenance to filter         | null             | false          |
+|                    | results by. Choose from        |                  |                |
+|                    | ``manual`` or ``recipe``.      |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+| ``tag_ids``        | A comma-separated list of      | null             | false          |
+|                    | ``tag_ids`` to filter results  |                  |                |
+|                    | results by. Preface any element|                  |                |
+|                    | with **!** or **-** to exclude |                  |                |
+|                    | it.                            |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+|``levels``          | A comma-separated list of Tag  | null             | false          |
+|                    | ``levels`` to filter           |                  |                |
+|                    | results by. Preface any element|                  |                |
+|                    | with **!** or **-** to exclude |                  |                |
+|                    | it.                            |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+|``categories``      | A comma-separated list of Tag  | null             | false          |
+|                    | ``categories`` to filter       |                  |                |
+|                    | results by. Preface any element|                  |                |
+|                    | with **!** or **-** to exclude |                  |                |
+|                    | it.                            |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+|``content_item_ids``| A comma-separated list of      | null             | false          |
+|                    | ``content_item_ids`` to filter |                  |                |
+|                    | results by. Preface any element|                  |                |
+|                    | with **!** or **-** to exclude |                  |                |
+|                    | it.                            |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+|``recipe_ids``      | A comma-separated list of      | null             | false          |
+|                    | ``recipe_ids`` to filter       |                  |                |
+|                    | results by. Preface any element|                  |                |
+|                    | with **!** or **-** to exclude |                  |                |
+|                    | it.                            |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+|``sous_chef_ids``   | A comma-separated list of      | null             | false          |
+|                    | ``sous_chef_ids`` to filter    |                  |                |
+|                    | results by. Preface any element|                  |                |
+|                    | with **!** or **-** to exclude |                  |                |
+|                    | it.                            |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+|``facets``          | A comma-separated list of      | null             | false          |
+|                    | faceted counts to include      |                  |                |
+|                    | in the response. Choose from   |                  |                |
+|                    | ``tags``, ``content_items``,   |                  |                |
+|                    | ``levels``,  ``categories``,   |                  |                |
+|                    | ``sous_chefs``, ``recipes``,   |                  |                |
+|                    | ``statuses``, ``provenances``, |                  |                |
+|                    | or ``all``.                    |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+|``page``            |The page number of the results. | 1                | false          |
++--------------------+--------------------------------+------------------+----------------+
+|``per_page``        |The number of results to return | 25               | false          |
+|                    | per page. Max is 100.          |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+
+
+Returns
+*******
+
+The Events search endpoint will always return helpful pagination infromation. Including
+
+* ``first`` - The first page of the response.
+* ``last`` - The last page of the response.
+* ``next`` - The next page of the response (unless the last page is returned)
+* ``prev`` - The previous page of the response (unless the first page is returned)
+* ``page`` - The current page.
+* ``per_page`` - The number of results per page.
+
+It will also always return the ``total`` number of results for all pages.
+
+.. code-block:: javascript
+
+    {
+      "pagination": {
+        "last": "http://localhost:5000/api/v1/events?org=1&apikey=key&page=5&provenance=recipe",
+        "total_pages": 5,
+        "next": "http://localhost:5000/api/v1/events?status=approved&org=1&apikey=key&page=2&provenance=recipe",
+        "per_page": 25,
+        "page": 1,
+        "first": "http://localhost:5000/api/v1/events?status=approved&org=1&apikey=key&page=1&provenance=recipe"
+      },
+      "total": 104,
+      "facets": {
+        "categories": {
+          ...
+        },
+        ...
+      }
+      "events": [
+        ...
+      ]
+    }
+
+Examples
+********
+
+List ``approved`` events by most recently created.
+
+.. code-block:: bash
+    
+    curl http://localhost:5000/api/v1/events\?org\=1\&apikey\=$NEWSLYNX_API_KEY\&status\=approved&sort=-created
+
+Search events created manually.
+
+.. code-block:: bash
+    
+    curl http://localhost:5000/api/v1/events\?org\=1\&apikey\=$NEWSLYNX_API_KEY\&provenance\=manual&q=foobar
+
+List recipes that only have certain tags and have *not* been created by certain recipes.
+
+.. code-block:: bash
+    
+    curl http://localhost:5000/api/v1/events\?org\=1\&apikey\=$NEWSLYNX_API_KEY\&recipes=-1\&tag_ids=1,2,3
+
+List recipes that link to certain ``content_items`` and include the Event body in the response:
+
+.. code-block:: bash
+    
+    curl http://localhost:5000/api/v1/events\?org\=1\&apikey\=$NEWSLYNX_API_KEY\&content_item_ids=1,-2,3,-4\&incl_body=yes
+
+Facet events by tag levels:
+
+**PROTIP**: If you just want facets, use ``per_page=1`` to speed up the request.
+
+.. code-block:: bash
+    
+    curl http://localhost:5000/api/v1/events\?org\=1\&apikey\=$NEWSLYNX_API_KEY\&per_page=1&facets=levels
+
+Search Events and only return ``id`` and ``title``:
+
+**PROTIP**: when submitting a search query , upping the ``per_page`` limit, limiting the ``fields`` returned, and limiting the field to search on serves as an effective auto-complete endpoint. 
+
+.. code-block:: bash
+    
+    curl http://localhost:5000/api/v1/events\?org\=1\&apikey\=$NEWSLYNX_API_KEY\&q=foobar&fields=id,title&per_page=100&search=title
+
+.. _endpoints-events-create:
+
+**POST** ``/events``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Create an event.
+
+Params
+******
+
++--------------------+--------------------------------+------------------+----------------+
+| Parameter          |  Description                   |  Default         |  Required      |
++====================+================================+==================+================+
+| ``apikey``         | Your ``apikey``                | null             | true           |
++--------------------+--------------------------------+------------------+----------------+
+| ``org``            | The organization's             | null             | true           |
+|                    | ``id`` or ``slug`` you         |                  |                |
+|                    | wish to access.                |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+| ``localize``       | Return dates in the org's      | false            | false          |
+|                    | specified timezone. If `false` |                  |                |
+|                    | dates will be returned in UTC. |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+| ``must_link``      | Only create if the event       | false            | false          |
+|                    | contains links to one or more  |                  |                |
+|                    | Content Items.                 |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+
+Body
+*******
+
+A :ref:`endpoint-events-json` object, but the only required field is ``title``. You can also include the following special fields:
+
+* ``tag_ids`` - An array of tags to assign to this event.
+* ``content_item_ids`` - An array of content items to associate with this event.
+* ``links`` - An array of links you'd like to include when checking for matching Content Items
+
+*Links*
+
+While you can explicity set ``content_item_ids`` and ``links``, this method will also parse out
+all urls from the Event's ``body``, ``title``, and ``description`` and attempt to reconcile these
+with your organization's Content Items. Through this process, all short_urls will be unshortened and links will be canonicalized according to NewsLynx's standards.  In practice this means that Recipes that create Events don't need to worry too much about extracting links as this process will be handled by this method.
+
+*Source IDs*
+
+If you're creating an event that's associated with a ``recipe_id``, it's also imperative that you pass in a ``source_id``. We use this field to ensure that no duplicate events are created and also 
+to make sure that Events that have been previously ``deleted`` are not re-created by a recipe which polls a data source. If you include a ``recipe_id`` in the post of the body, the ``source_id`` you pass in will be prefixed by the slug of this Recipe to ensure that events created by recipes which generate similar source_ids do not conflict.
+
+*Dates*
+
+If you wish to specify a ``created`` for an event, just pass it in as `ISO 8601`_ date string. If you include a UTC-Offset, it will be properly convered to UTC. Otherwise it will be assumed to be UTC. If you don't pass in a ``created`` field, it will be set as the time the Event was created.
+
+*Provenance*
+
+Events created by recipes (AKA: Events that pass a ``recipe_id`` to the method) will be assigned a ``provenacnce`` of ``recipe``. All other events are assumed to have been created manually and will be assigned a ``provenance`` of ``manual``
+
+*Meta Fields*
+
+All fields passed to this method that are not part of the :ref:`endpoint-events-json` object will be inserted into the ``meta`` field.
+
+Returns
+********
+
+A newly-created :ref:`endpoint-events-json` object. If you specify ``must_link=true`` and there is no matching ContentItem in the request body, then this method will return ``null``.
+
+Examples
+********
+
+Create a ``pending`` event with a ``provenance`` of ``manual`` 
+
+.. code-block:: bash
+    
+    curl --data "title=Something Happened" \
+      http://localhost:5000/api/v1/events\?apikey=$NEWSLYNX_API_KEY\&org=1
+
+
+Create a ``pending`` event with a ``provenance`` of ``recipe`` 
+
+.. code-block:: bash
+    
+    curl --data "title=Something Happened&recipe_id=1&source_id=dlakjdalfds" \
+      http://localhost:5000/api/v1/events\?apikey=$NEWSLYNX_API_KEY\&org=1
+
+Create a ``pending`` event with a ``provenance`` of ``recipe`` and a ``meta`` field 
+
+.. code-block:: bash
+    
+  curl --data "title=Something Happened&recipe_id=1&source_id=dlakjdalfds&some_field=foo" \
+  http://localhost:5000/api/v1/events\?apikey=$NEWSLYNX_API_KEY\&org=1
+
+
+
+Create an ``approved`` event associated with specific ``content_item_ids`` and ``tag_ids`` 
+
+First, create a file like this and save it as ``event.json``
+
+.. code-block:: javascript
+
+    {
+      "source_id": "fdslakfjdaslkfjasdlkaf",
+      "recipe_id": 1,
+      "title": "Something else happened.",
+      "description": "This was crazy!",
+      "body": "<p> This is the transcript of what happend</p>",
+      "tag_ids": [1,2],
+      "content_item_ids": [1,2]
+    }
+
+
+Now run this command:
+
+.. code-block:: bash
+    
+  curl -X POST \
+       -H 'Content-Type:application/json' \
+       --data-binary @event.json \
+       http://localhost:5000/api/v1/events\?apikey=$NEWSLYNX_API_KEY\&org=1
+
+The ``status`` returned should be ``approved``.
+
+.. _endpoints-events-get:
+
+**GET** ``/events/:event_id``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Fetch an individual event.
+
+Params
+******
+
++--------------------+--------------------------------+------------------+----------------+
+| Parameter          |  Description                   |  Default         |  Required      |
++====================+================================+==================+================+
+| ``apikey``         | Your ``apikey``                | null             | true           |
++--------------------+--------------------------------+------------------+----------------+
+| ``org``            | The organization's             | null             | true           |
+|                    | ``id`` or ``slug`` you         |                  |                |
+|                    | wish to access.                |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+| ``localize``       | Return dates in the org's      | false            | false          |
+|                    | specified timezone. If `false` |                  |                |
+|                    | dates will be returned in UTC. |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+
+Returns
+********
+
+An :ref:`endpoint-events-json` object with the ``body`` included.
+
+Example
+********
+
+.. code-block:: bash
+    
+    curl http://localhost:5000/api/v1/events/1\?org\=1\&apikey\=$NEWSLYNX_API_KEY
+
+.. _endpoints-events-update:
+
+**PUT | PATCH** ``/events/:event_id``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Update an individual event.
+
+**NOTE**
+  - When passing in ``tag_ids`` and ``content_item_ids``, this method will upsert pre-exising associations rather than replacing them.
+
+Params
+******
+
++--------------------+--------------------------------+------------------+----------------+
+| Parameter          |  Description                   |  Default         |  Required      |
++====================+================================+==================+================+
+| ``apikey``         | Your ``apikey``                | null             | true           |
++--------------------+--------------------------------+------------------+----------------+
+| ``org``            | The organization's             | null             | true           |
+|                    | ``id`` or ``slug`` you         |                  |                |
+|                    | wish to access.                |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+| ``localize``       | Return dates in the org's      | false            | false          |
+|                    | specified timezone. If `false` |                  |                |
+|                    | dates will be returned in UTC. |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+
+Returns
+********
+
+An updated :ref:`endpoint-events-json` object.
+
+Examples
+********
+
+Update an event's ``description``.
+
+.. code-block:: bash
+    
+  curl -X PUT -d "description=This is what happened" \
+  http://localhost:5000/api/v1/events/1\?apikey=$NEWSLYNX_API_KEY\&org=1
+
+Update  event by associating it with specific ``content_item_ids`` and ``tag_ids``. If you provide 
+these fields you don't need to include a ``status`` since it will be assumed that you're "approving" it.
+
+First, create a file like this and save it as ``event.json``
+
+.. code-block:: javascript
+
+    {
+      "tag_ids": [3,4],
+      "content_item_ids": [1,2]
+    }
+
+Now run this command:
+
+.. code-block:: bash
+    
+  curl -X PUT \
+       -H 'Content-Type:application/json' \
+       --data-binary @event.json \
+       http://localhost:5000/api/v1/events/1\?apikey=$NEWSLYNX_API_KEY\&org=1
+
+.. _endpoints-events-delete:
+
+**DELETE** ``/events/:event_id``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Set an Event's ``status`` as deleted and remove it's associations with Tags and Content Items. Permanently delete an ``event`` by adding the parameter ``force=true``.
+
+Params
+******
+
++--------------------+--------------------------------+------------------+----------------+
+| Parameter          |  Description                   |  Default         |  Required      |
++====================+================================+==================+================+
+| ``apikey``         | Your ``apikey``                | null             | true           |
++--------------------+--------------------------------+------------------+----------------+
+| ``org``            | The organization's             | null             | true           |
+|                    | ``id`` or ``slug`` you         |                  |                |
+|                    | wish to access.                |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+| ``localize``       | Return dates in the org's      | false            | false          |
+|                    | specified timezone. If `false` |                  |                |
+|                    | dates will be returned in UTC. |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+| ``force``          | Whether or not to permanently  | null             | true           |
+|                    | delete this event.             |                  |                |
+|                    | wish to access.                |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+
+Returns
+********
+
+``STATUS_CODE`` - ``204``
+
+Examples
+********
+
+Set an Event's ``status`` to ``deleted``
+
+.. code-block:: bash
+    
+    curl -X DELETE http://localhost:5000/api/v1/events/1\?org\=1\&apikey\=$NEWSLYNX_API_KEY
+
+Permanently delete an Event.
+
+.. code-block:: bash
+    
+    curl -X DELETE http://localhost:5000/api/v1/events/1\?org\=1\&force\=true\&apikey\=$NEWSLYNX_API_KEY
+
+.. _endpoints-events-add-tag:
+
+**PUT** ``/events/:event_id/tag/:tag_id``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Add a tag to an event.
+
+**NOTE**
+  - Events must first be "approved" before adding additional Tags.
+
+Params
+******
+
++--------------------+--------------------------------+------------------+----------------+
+| Parameter          |  Description                   |  Default         |  Required      |
++====================+================================+==================+================+
+| ``apikey``         | Your ``apikey``                | null             | true           |
++--------------------+--------------------------------+------------------+----------------+
+| ``org``            | The organization's             | null             | true           |
+|                    | ``id`` or ``slug`` you         |                  |                |
+|                    | wish to access.                |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+| ``localize``       | Return dates in the org's      | false            | false          |
+|                    | specified timezone. If `false` |                  |                |
+|                    | dates will be returned in UTC. |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+
+Returns
+********
+
+An updated :ref:`endpoint-events-json` object.
+
+Example
+********
+
+.. code-block:: bash
+    
+    curl -X PUT http://localhost:5000/api/v1/events/2/content/1\?org\=1\&apikey\=$NEWSLYNX_API_KEY
+
+.. _endpoints-events-remove-tag:
+
+**DELETE** ``/events/:event_id/tags/:tag_id``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Remove an associated Content Item from an Event.
+
+**NOTE**
+  - Events must first be "approved" before removing Tags.
+
+Params
+******
+
++--------------------+--------------------------------+------------------+----------------+
+| Parameter          |  Description                   |  Default         |  Required      |
++====================+================================+==================+================+
+| ``apikey``         | Your ``apikey``                | null             | true           |
++--------------------+--------------------------------+------------------+----------------+
+| ``org``            | The organization's             | null             | true           |
+|                    | ``id`` or ``slug`` you         |                  |                |
+|                    | wish to access.                |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+| ``localize``       | Return dates in the org's      | false            | false          |
+|                    | specified timezone. If `false` |                  |                |
+|                    | dates will be returned in UTC. |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+
+Returns
+********
+
+An updated :ref:`endpoint-events-json` object.
+
+Example
+********
+
+.. code-block:: bash
+    
+    curl -X DELETE http://localhost:5000/api/v1/events/2/tags/1\?org\=1\&apikey\=$NEWSLYNX_API_KEY
+
+
+.. _endpoints-events-add-content-item:
+
+**PUT** ``/events/:event_id/content/:content_id``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Associate an Event with a Content Item.
+
+**NOTE**
+  - Events must first be "approved" before adding additional Content Items.
+
+Params
+******
+
++--------------------+--------------------------------+------------------+----------------+
+| Parameter          |  Description                   |  Default         |  Required      |
++====================+================================+==================+================+
+| ``apikey``         | Your ``apikey``                | null             | true           |
++--------------------+--------------------------------+------------------+----------------+
+| ``org``            | The organization's             | null             | true           |
+|                    | ``id`` or ``slug`` you         |                  |                |
+|                    | wish to access.                |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+| ``localize``       | Return dates in the org's      | false            | false          |
+|                    | specified timezone. If `false` |                  |                |
+|                    | dates will be returned in UTC. |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+
+Returns
+********
+
+An updated :ref:`endpoint-events-json` object.
+
+Example
+********
+
+.. code-block:: bash
+    
+    curl -X PUT http://localhost:5000/api/v1/events/2/content/1\?org\=1\&apikey\=$NEWSLYNX_API_KEY
+
+.. _endpoints-events-remove-content-item:
+
+**DELETE** ``/events/:event_id/content/:content_id``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Remove an associated Content Item from an Event.
+
+**NOTE**
+  - Events must first be "approved" before removing Content Items.
+
+Params
+******
+
++--------------------+--------------------------------+------------------+----------------+
+| Parameter          |  Description                   |  Default         |  Required      |
++====================+================================+==================+================+
+| ``apikey``         | Your ``apikey``                | null             | true           |
++--------------------+--------------------------------+------------------+----------------+
+| ``org``            | The organization's             | null             | true           |
+|                    | ``id`` or ``slug`` you         |                  |                |
+|                    | wish to access.                |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+| ``localize``       | Return dates in the org's      | false            | false          |
+|                    | specified timezone. If `false` |                  |                |
+|                    | dates will be returned in UTC. |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+
+Returns
+********
+
+An updated :ref:`endpoint-events-json` object.
+
+Example
+********
+
+.. code-block:: bash
+    
+    curl -X DELETE http://localhost:5000/api/v1/events/2/content/1\?org\=1\&apikey\=$NEWSLYNX_API_KEY
+
+
+.. _endpoints-content-items:
+
+**Content Items**
+++++++++++++++++++
+
+The **Content Items** API enables the creation, querying, faceting, updating, and deleting of Content Items. Refer to the :ref:`Content Items docs <content>` for more details on what these are.
+
+.. _endpoint-content-items-json:
+
+Content Item JSON
+~~~~~~~~~~~~~~~~~
+
+All methods, unless otherwise specified, will return one or many Event objects of the following ``json`` schema:
+
+**NOTE** 
+
+- Events with a ``status`` of ``deleted`` mean that these Events have been manually deleted by a user or by a recipe. Such events are kept in the database for 7 days and can be restored at any point.  After 7 days these events are permanently deleted.
+
+.. code-block:: javascript
+
+    {
+      "status": "approved",
+      "updated": "2015-06-06T22:10:22.137437+00:00",
+      "provenance": "recipe",
+      "description": "dolores iure eveniet harum dicta totam eos porro sint nisi quasi molestiae sit mollitia dignissimos ",
+      "content_items": [
+        {
+          "url": "http://example.com/d0fe5387-0c98-11e5-963f-6c4008aeb606",
+          "id": 39,
+          "title": "veritatis eos nisi a"
+        }
+      ],
+      "recipe_id": 1,
+      "authors": [
+        "Anthony Roob"
+      ],
+      "id": 173,
+      "created": "2015-05-27T23:10:20.852576+00:00",
+      "url": "http://example.com/d25cbf6b-0c98-11e5-9e0f-6c4008aeb606",
+      "title": "ut odio eos asperior",
+      "tag_ids": [
+        5
+      ],
+      "meta": {
+        "followers": 78
+      },
+      "source_id": "facebook-page-to-event:d25cb405-0c98-11e5-b5c0-6c4008aeb606",
       "img_url": "http://example.com/d25cc021-0c98-11e5-b0a9-6c4008aeb606.png"
     }
 
@@ -3602,7 +4285,6 @@ Example
 .. code-block:: bash
     
     curl -X DELETE http://localhost:5000/api/v1/events/2/content/1\?org\=1\&apikey\=$NEWSLYNX_API_KEY
-
 
 .. _Postgres Search docs: http://www.postgresql.org/docs/9.1/static/textsearch-tables.html#TEXTSEARCH-TABLES-SEARCH
 

@@ -202,9 +202,6 @@ def _associate_tags(e, org_id, tag_ids):
                     'Tag {} is of type {}'
                     .format(tag.id, tag.type))
 
-        # if there are tags, the status is approved
-        e.status = 'approved'
-
         # upsert
         if tag.id not in e.tag_ids:
             e.tags.append(tag)

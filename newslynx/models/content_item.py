@@ -161,7 +161,7 @@ class ContentItem(db.Model):
         # incl_links = kw.get('incl_links', False)
         incl_body = kw.get('incl_body', False)
         incl_metrics = kw.get('incl_metrics', True)
-        incl_thumbmail = kw.get('incl_thumbmail', True)
+        incl_img = kw.get('incl_img', True)
 
         d = {
             'id': self.id,
@@ -175,7 +175,6 @@ class ContentItem(db.Model):
             'updated': self.updated,
             'favicon': self.favicon,
             'site_name': self.site_name,
-            'img_url': self.img_url,
             'authors': self.simple_authors,
             'title': self.title,
             'description': self.description,
@@ -194,8 +193,9 @@ class ContentItem(db.Model):
             else:
                 d['metrics'] = {}
 
-        if incl_thumbmail:
+        if incl_img:
             d['thumbnail'] = self.thumbnail
+            d['img_url'] = self.img_url
 
         return d
 
