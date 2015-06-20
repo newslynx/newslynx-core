@@ -117,15 +117,18 @@ def list_metrics(user, org):
 
     # filter by cumulative
     if cumulative is not None:
-        metric_query.filter(Metric.cumulative is cumulative)
+        metric_query = metric_query\
+            .filter(Metric.cumulative == cumulative)
 
     # filter by timeseries
     if timeseries is not None:
-        metric_query.filter(Metric.timeseries is timeseries)
+        metric_query = metric_query\
+            .filter(Metric.timeseries == timeseries)
 
     # filter by faceted
     if faceted is not None:
-        metric_query.filter(Metric.faceted is faceted)
+        metric_query = metric_query\
+            .filter(Metric.faceted == faceted)
 
     facets = defaultdict(Counter)
     metrics = []

@@ -34,7 +34,7 @@ def handle_exceptions(exc):
         message = exc.get_description(request.environ)
         message = message.replace('<p>', '').replace('</p>', '')
         body = {
-            'status': exc.code,
+            'status_code': exc.code,
             'error': exc.name,
             'message': message
         }
@@ -42,7 +42,7 @@ def handle_exceptions(exc):
 
     else:
         body = {
-            'status': 500,
+            'status_code': 500,
             'error': exc.__class__.__name__,
             'message': unicode(exc)
         }

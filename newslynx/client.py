@@ -1,6 +1,5 @@
 import os
 import copy
-import logging
 
 from requests import Session, Request
 from addict import Dict
@@ -9,9 +8,8 @@ from urlparse import urljoin
 from newslynx import settings
 from newslynx.lib.serialize import obj_to_json
 from newslynx.exc import *
-from newslynx import logs
+from newslynx.logs import log
 
-log = logging.getLogger(__name__)
 
 RET_CODES = [200, 201]
 GOOD_CODES = RET_CODES + [204]
@@ -587,7 +585,7 @@ class Extract(BaseClient):
 
     def get(self, **kw):
         """
-        Extract articles from urls.
+        Extract metadata from urls.
         """
         url = self._format_url('content', content_id)
         return self._request('GET', url, params=kw)
@@ -654,11 +652,39 @@ class Authors(BaseClient):
         return self._request('PUT', url, params=kw)
 
 
-class SousChefs(BaseClient):
-    pass
-
-
 class Metrics(BaseClient):
+
+    def list(self, **kw):
+        """
+        List all metrics + faceted counts.
+        """
+        url = self._format_url('metrics')
+        return self._request('GET', url, params=kw)
+
+    def get(self, metric_id, **kw):
+        """
+        Get an individual metric
+        """
+        url = self._format_url('metrics', metric_id)
+        return self._request('GET', url, params=kw)
+
+    def update(self, metric_id, **kw):
+        """
+        Update a metric.
+        """
+        kw, params = self._split_auth_params_from_data(kw)
+        url = self._format_url('metrics', metric_id)
+        return self._request('PUT', url, data=kw, params=params)
+
+    def delete(self, metric_id, **kw):
+        """
+        Delete a metric and all instances it has been collected.
+        """
+        url = self._format_url('metrics', metric_id)
+        return self._request('DELETE', url, params=kw)
+
+
+class SousChefs(BaseClient):
     pass
 
 
