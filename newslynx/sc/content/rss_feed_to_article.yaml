@@ -8,7 +8,9 @@ option_order:
     - slug
     - description
     - feed_url
-    - interval
+    - schedule_by
+    - crontab
+    - minutes
     - time_of_day
 options:
 

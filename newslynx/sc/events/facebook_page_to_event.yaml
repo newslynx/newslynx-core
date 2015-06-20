@@ -9,13 +9,15 @@ option_order:
     - description
     - page_name
     - search_query
-    - interval
+    - schedule_by
+    - crontab
+    - minutes
     - time_of_day
-    - set_event_status
+    - event_status
     - set_event_title
     - set_event_description
     - set_event_tag_ids
-    - set_event_content_item_ids
+    - set_event_content_items
 options:
     
     page_name:
@@ -77,7 +79,7 @@ options:
             placeholder: "pending"
 
     set_event_content_items:
-        input_type: checkbox
+        input_type: text
         input_options: []
         accepts_list: true 
         value_types:
@@ -87,4 +89,4 @@ options:
             description: |
                 A list of Content Item IDs and Titles to automatically
                 apply to events created by this Recipe.
-            placeholder: "pending"
+            placeholder: "Search by article title..."
