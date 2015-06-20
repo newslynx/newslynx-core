@@ -48,8 +48,7 @@ class Author(db.Model):
                 'title': c.title,
                 'description': c.description,
                 'created': c.created,
-                'img_url': c.img_url,
-                'thumbnail': c.thumbnail
+                'img_url': c.img_url
             }
             if incl_metrics:
                 d['metrics'] = c.summary_metric.metrics
@@ -57,7 +56,7 @@ class Author(db.Model):
         return output
 
     def to_dict(self, **kw):
-        incl_content = kw.get('incl_content', True)
+        incl_content = kw.get('incl_content', False)
         d = {
             'id': self.id,
             'org_id': self.org_id,

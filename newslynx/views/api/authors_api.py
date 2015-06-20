@@ -38,7 +38,6 @@ def create_author(user, org):
     Create an author.
     """
     req_data = request_data()
-
     cols = get_table_columns(Author)
     for k in req_data.keys():
         if k not in cols or k in ['id', 'org_id']:
@@ -64,7 +63,7 @@ def get_author(user, org, author_id):
     """
     Get an author.
     """
-    incl_content = arg_bool('incl_content', default=True)
+    incl_content = arg_bool('incl_content', default=False)
     a = Author.query\
         .filter_by(id=author_id, org_id=org.id)\
         .first()
@@ -82,6 +81,7 @@ def update_author(user, org, author_id):
     """
     Update an author.
     """
+
     a = Author.query\
         .filter_by(id=author_id, org_id=org.id)\
         .first()

@@ -28,17 +28,17 @@ class TestAuthorsAPI(unittest.TestCase):
         ci = self.api.content.get(1)
 
         a4 = self.api.authors.add_content_item(a4.id, ci.id)
-        a4 = self.api.authors.get(a4.id)
+        a4 = self.api.authors.get(a4.id, incl_content=True)
         assert(len(a4.content_items))
 
         a5 = self.api.authors.remove_content_item(a4.id, ci.id)
         assert(a5)
 
-        a6 = self.api.authors.get(a2.id)
+        a6 = self.api.authors.get(a2.id, incl_content=True)
         assert(len(a6.content_items) == 0)
 
         a7 = self.api.authors.add_content_item(a4.id, ci.id)
-        assert(len(a4.content_items))
+        assert(len(a7.content_items))
 
         assert(len(a1.content_items) == 0)
         a1 = self.api.authors.merge(a4.id, a1.id)

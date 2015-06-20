@@ -3305,14 +3305,10 @@ Example
 **Authors**
 ++++++++++++++++++
 
-The **Authors** API enables the creation, update, and deletion of Authors. It also enables programmatic access to the associations between authors and content items. 
+The **Authors** API enables the creation, update, and deletion of Authors. It also enables programmatic access to creation and modification of associations between authors and content items. 
 
-**NOTE**
-- Authors are automatically created on Content Item creation. This is often achieved through an imperfect extraction methodology.  As a result, this API is useful for making sure there are no duplicate authors and that they have the correct names. 
 
-TK: Author Metrics
-
-.. _endpoint-metrics-json:
+.. _endpoints-authors-json:
 
 Author JSON
 ~~~~~~~~~~~~~~~~~
@@ -3321,28 +3317,24 @@ All methods, unless otherwise specified, will return one or many Metric objects 
 
 .. code-block:: javascript
 
-    {
-      "updated": "2015-06-19T02:22:56.547445+00:00",
-      "cumulative": true,
-      "faceted": false,
-      "aggregation": "sum",
-      "recipe_id": 9,
-      "timeseries": true,
-      "id": 25,
-      "display_name": "Facebook Page Likes",
-      "name": "twitter_followers",
-      "created": "2015-06-19T02:22:56.547429+00:00",
-      "level": "org",
-      "org_id" 1,
-    }
+  {
+    "updated": "2015-06-20T18:15:12.459411+00:00",
+    "name": "Merlynne Jones",
+    "created": "2015-06-20T18:15:12.459397+00:00",
+    "org_id": 1,
+    "img_url": "http://newslynx.org/merlynne-selfie.jpeg",
+    "id": 1,
+    "content_items": [
+      ...
+    ]
+  }
 
+.. _endpoints-authors-list:
 
-.. _endpoints-metrics-list:
-
-**GET** ``/metrics``
+**GET** ``/authors``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Filter all metrics.
+Fetch all authors for an organization.
 
 Params
 ******
@@ -3359,68 +3351,34 @@ Params
 | ``localize``       | Return dates in the org's      | false            | false          |
 |                    | specified timezone. If `false` |                  |                |
 |                    | dates will be returned in UTC. |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+| ``incl_content``   | Whether or not to include      | false            | false          |
+|                    | content items associated with  |                  |                |
+|                    | the authors.                   |                  |                |
 +--------------------+--------------------------------+------------------+----------------+
 
 
 Returns
 *******
 
-.. code-block:: javascript
-
-    {
-      "facets": {
-        "recipes": {
-          "google-analytics-to-content-timeseries": 3,
-          "twitter-user-to-org-timeseries": 1,
-          "facebook-page-to-org-timeseries": 1,
-          "share-counts-to-content-timeseries": 8,
-          "content-metric-summary": 12
-        },
-        "cumulative": {
-          "false": 12,
-          "true": 13
-        },
-        "faceted": {
-          "false": 25
-        },
-        "aggregations": {
-          "sum": 25
-        },
-        "levels": {
-          "org": 2,
-          "all": 23
-        },
-        "timeseries": {
-          "false": 12,
-          "true": 13
-        },
-      },
-      "metrics": [
-        ...
-      ]
-    }
+A list of :ref:`endpoint-authors-json` objects.
 
 
 
 Example
 ********
 
-Fetch all metrics with an `aggregation` of `sum`.
-
 .. code-block:: bash
     
-    curl http://localhost:5000/api/v1/metrics\?apikey=$NEWSLYNX_API_KEY\&org=1&aggregations=sum
+    curl http://localhost:5000/api/v1/authors\?apikey=$NEWSLYNX_API_KEY\&org=1
 
 
-.. _endpoints-metrics-get:
+.. _endpoints-authors-get:
 
-**GET** ``/metrics/:metric_id``
+**GET** ``/authors/:author_id``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Fetch an individual metric.
-
-**NOTE**
-  - You can pass in a metric's `name` or `id` to this endpoint.
+Fetch an individual author.
 
 Params
 ******
@@ -3438,30 +3396,30 @@ Params
 |                    | specified timezone. If `false` |                  |                |
 |                    | dates will be returned in UTC. |                  |                |
 +--------------------+--------------------------------+------------------+----------------+
+| ``incl_content``   | Whether or not to include      | false            | false          |
+|                    | content items associated with  |                  |                |
+|                    | the author.                    |                  |                |
++--------------------+--------------------------------+------------------+----------------+
 
 Returns
 ********
 
-An :ref:`endpoint-metrics-json` object.
+An :ref:`endpoint-authors-json` object.
 
 Example
 ********
 
 .. code-block:: bash
     
-    curl http://localhost:5000/api/v1/metrics/1\?org\=1\&apikey\=$NEWSLYNX_API_KEY
+    curl http://localhost:5000/api/v1/authors/1\?apikey=$NEWSLYNX_API_KEY\&org=1
 
 
-.. _endpoints-metrics-update:
+.. _endpoints-authors-update:
 
-**PUT | PATCH** ``/metrics/:metric_id``
+**PUT | PATCH** ``/authors/:author_id``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Update a metric.
-
-**NOTE**
-  - You can pass in a metric's ``name`` or ``id`` to this endpoint.
-  - You cannot update a metric's ``name``, only it's ``display_name``.
+Update an author.
 
 Params
 ******
@@ -3483,35 +3441,28 @@ Params
 Body
 ********
 
-An partial or complete :ref:`endpoint-metrics-json` object.
+An partial or complete :ref:`endpoint-authors-json` object.
 
 Returns
 ********
 
-A newly updates :ref:`endpoint-metrics-json` object.
+A newly updates :ref:`endpoint-authors-json` object.
 
 Example
 ********
 
 .. code-block:: bash
     
-     -X PUT -d 'display_name=Google Analytics Entrances' \
-     http://localhost:5000/api/v1/metrics/ga_entrances\?org\=1\&apikey\=$NEWSLYNX_API_KEY
+     curl -X DELETE \
+     http://localhost:5000/api/v1/authors/1\?org\=1\&apikey\=$NEWSLYNX_API_KEY
 
 
-.. _endpoints-metrics-delete:
+.. _endpoints-authors-delete:
 
-**DELETE** ``/metrics/:metric_id``
+**DELETE** ``/authors/:author_id``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Delete a metric.
-
-**NOTE**
-  - You can pass in a metric's ``name`` or ``id`` to this endpoint.
-  - This endpoint will delete all instances of metric from Timeseries and Summary tables.
-  - This endpoint will not effect previously created Reports.
-  - If you want to re-create a metric, you'll need to re-create the recipe 
-    which originally created it.
+Delete an author.
 
 Params
 ******
@@ -3537,8 +3488,117 @@ Example
 
 .. code-block:: bash
     
-     curl -X DELETE -d \
-     http://localhost:5000/api/v1/metrics/ga_entrances\?org\=1\&apikey\=$NEWSLYNX_API_KEY
+     curl -X DELETE \
+     http://localhost:5000/api/v1/authors/1\?org\=1\&apikey\=$NEWSLYNX_API_KEY
+
+
+.. _endpoints-authors-add-content-item:
+
+**PUT** ``/authors/:author_id/content/:content_id``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Associate an author with a content item.
+
+**NOTE**
+
+- Will always return the modified list of content items associated with the author.
+
+Params
+******
+
++--------------------+--------------------------------+------------------+----------------+
+| Parameter          |  Description                   |  Default         |  Required      |
++====================+================================+==================+================+
+| ``apikey``         | Your ``apikey``                | null             | true           |
++--------------------+--------------------------------+------------------+----------------+
+| ``org``            | The organization's             | null             | true           |
+|                    | ``id`` or ``slug`` you         |                  |                |
+|                    | wish to access.                |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+| ``localize``       | Return dates in the org's      | false            | false          |
+|                    | specified timezone. If `false` |                  |                |
+|                    | dates will be returned in UTC. |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+
+
+Returns
+********
+
+A newly updated :ref:`endpoint-authors-json` object with new content item included.
+
+Example
+********
+
+.. code-block:: bash
+    
+     curl -X PUT \
+     http://localhost:5000/api/v1/authors/1/content/1\?org\=1\&apikey\=$NEWSLYNX_API_KEY
+
+
+**DELETE** ``/authors/:author_id/content/:content_id``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Remove an association between an author and a content item.
+
+Params
+******
+
++--------------------+--------------------------------+------------------+----------------+
+| Parameter          |  Description                   |  Default         |  Required      |
++====================+================================+==================+================+
+| ``apikey``         | Your ``apikey``                | null             | true           |
++--------------------+--------------------------------+------------------+----------------+
+| ``org``            | The organization's             | null             | true           |
+|                    | ``id`` or ``slug`` you         |                  |                |
+|                    | wish to access.                |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+
+
+Returns
+********
+
+``STATUS_CODE`` - ``204``
+
+Example
+********
+
+.. code-block:: bash
+    
+     curl -X DELETE \
+     http://localhost:5000/api/v1/authors/2/content/1\?org\=1\&apikey\=$NEWSLYNX_API_KEY
+
+
+**PUT** ``/authors/:from_author_id/merge/:to_author_id``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Merges an Author with another Author. This method merges the `from_author` *into* the `to_author`, transferring all associated content items, and deleting the `from_author` in the process. This API exists to aid in dealing with duplicate Authors produced by the author extraction process.
+
+Params
+******
+
++--------------------+--------------------------------+------------------+----------------+
+| Parameter          |  Description                   |  Default         |  Required      |
++====================+================================+==================+================+
+| ``apikey``         | Your ``apikey``                | null             | true           |
++--------------------+--------------------------------+------------------+----------------+
+| ``org``            | The organization's             | null             | true           |
+|                    | ``id`` or ``slug`` you         |                  |                |
+|                    | wish to access.                |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+
+
+Returns
+********
+
+A newly updated :ref:`endpoint-authors-json` object for the `to_author` with content items from the `from_author` included.
+
+Example
+********
+
+.. code-block:: bash
+    
+     curl -X PUT \
+     http://localhost:5000/api/v1/authors/2/merge/3\?org\=1\&apikey\=$NEWSLYNX_API_KEY
 
 .. _Postgres Search docs: http://www.postgresql.org/docs/9.1/static/textsearch-tables.html#TEXTSEARCH-TABLES-SEARCH
 
