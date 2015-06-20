@@ -60,7 +60,7 @@ CONTENT_ITEM_EVENT_FACETS = [
 CONTENT_ITEM_FACETS = [
     'tags', 'provenances',
     'sous_chefs', 'recipes',
-    'types', 'domains'
+    'types', 'domains', 'authors'
     ] + CONTENT_ITEM_EVENT_FACETS
 
 CONTENT_ITEM_PROVENANCES = [

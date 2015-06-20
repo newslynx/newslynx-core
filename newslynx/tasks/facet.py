@@ -2,8 +2,10 @@ from collections import defaultdict, Counter
 
 from sqlalchemy import func, desc
 
-from newslynx.models import Event, Recipe, Tag, SousChef, ContentItem
-from newslynx.models.relations import events_tags, content_items_tags
+from newslynx.models import (
+    Event, Recipe, Tag, SousChef, ContentItem, Author)
+from newslynx.models.relations import (
+    events_tags, content_items_tags, content_items_authors)
 from newslynx.core import db
 
 
@@ -225,20 +227,38 @@ def content_items_by_domains(content_item_ids):
     return [dict(zip(['domain', 'count'], r)) for r in domain_counts]
 
 
+def content_items_by_authors(content_item_ids):
+    """
+    Count the number of content_items associated with domains.
+    """
+    author_counts = db.session\
+        .query(content_items_authors.c.author_id,
+               Author.name,
+               func.count(content_items_authors.c.content_item_id))\
+        .join(Author)\
+        .filter(content_items_authors.c.content_item_id.in_(content_item_ids))\
+        .group_by(content_items_authors.c.author_id, Author.name)\
+        .order_by(desc(func.count(content_items_authors.c.content_item_id)))\
+        .all()
+    # explicitly shutdown session started in greenlet
+    db.session.remove()
+    return [dict(zip(['id' 'name', 'count'], r)) for r in author_counts]
+
+
 def content_items_by_recipes(content_item_ids):
     """
     Count the number of content_items associated with recipes.
     """
     recipe_counts = db.session\
-        .query(Recipe.slug, func.count(Recipe.slug))\
+        .query(Recipe.id, func.count(Recipe.slug))\
         .join(ContentItem)\
         .filter(ContentItem.id.in_(content_item_ids))\
-        .order_by(desc(func.count(Recipe.slug)))\
-        .group_by(Recipe.slug).all()
+        .order_by(desc(func.count(Recipe.id)))\
+        .group_by(Recipe.id).all()
 
     # explicitly shutdown session started in greenlet
     db.session.remove()
-    return [dict(zip(['slug', 'count'], r)) for r in recipe_counts]
+    return [dict(zip(['id', 'count'], r)) for r in recipe_counts]
 
 
 def content_items_by_tags(content_item_ids):
@@ -280,6 +300,7 @@ def content_items(by, content_item_ids):
     """
     fx_lookup = {
         'recipes': content_items_by_recipes,
+        'authors': content_items_authors,
         'tags': content_items_by_tags,
         'sous_chefs': content_items_by_sous_chefs,
         'statuses': content_items_by_types,

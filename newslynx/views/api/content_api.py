@@ -8,7 +8,7 @@ from sqlalchemy.types import Numeric
 
 from newslynx.core import db
 from newslynx.exc import NotFoundError
-from newslynx.models import ContentItem, Author, ContentMetricSummary
+from newslynx.models import ContentItem, Author, ContentMetricSummary, Tag
 from newslynx.lib.serialize import jsonify
 from newslynx.views.decorators import load_user, load_org
 from newslynx.tasks import facet
@@ -163,6 +163,15 @@ def apply_content_item_filters(q, **kw):
         q = q.filter(~ContentItem.tags.any(
             Tag.id.in_(kw['exclude_tags'])))
 
+    # apply authors filter
+    if len(kw['include_authors']):
+        q = q.filter(ContentItem.authors.any(
+            Author.id.in_(kw['include_authors'])))
+
+    if len(kw['exclude_authors']):
+        q = q.filter(~ContentItem.tags.any(
+            Author.id.in_(kw['exclude_authors'])))
+
     # apply sous_chefs filter
     # TODO: DONT USE MULTIPLE QUERIES HERE
     if len(kw['include_sous_chefs']):
@@ -231,6 +240,8 @@ def search_content(user, org):
         arg_list('recipe_ids', default=[], typ=int, exclusions=True)
     include_sous_chefs, exclude_sous_chefs = \
         arg_list('sous_chefs', default=[], typ=str, exclusions=True)
+    include_authors, exclude_authors = \
+        arg_list('author_ids', default=[], typ=int, exclusions=True)
     include_levels, exclude_levels = \
         arg_list('levels', default=[], typ=str, exclusions=True)
     include_categories, exclude_categories = \
@@ -259,6 +270,8 @@ def search_content(user, org):
         exclude_levels=exclude_levels,
         include_tags=include_tags,
         exclude_tags=exclude_tags,
+        include_authors=include_authors,
+        exclude_authors=exclude_authors,
         include_recipes=include_recipes,
         exclude_recipes=exclude_recipes,
         include_sous_chefs=include_sous_chefs,
@@ -424,10 +437,70 @@ def create_content(user, org):
         req_data,
         org_id=org.id,
         extract=extract)
-    return jsonify(c.to_dict(incl_links=True, incl_body=True))
+    return jsonify(c.to_dict(incl_body=True))
 
 
-@bp.route('/api/v1/content/<int:content_item_id>', methods=['GET'])
+@bp.route('/api/v1/content/<int:content_item_id>', methods=['PUT', 'PATCH'])
+@load_user
+@load_org
+def update_content_item(user, org, content_item_id):
+    """
+    Update an individual content-item.
+    """
+    c = ContentItem.query\
+        .filter_by(id=content_item_id, org_id=org.id)\
+        .first()
+
+    if not c:
+        raise NotFoundError(
+            'An ContentItem with ID {} does not exist.'
+            .format(event_id))
+
+    # get request data
+    req_data = request_data()
+
+    # fetch tags
+    tag_ids = listify_data_arg('tag_ids')
+
+    # check for current status / PUT status
+    if len(tag_ids):
+        tags = Tag.query\
+            .filter_by(org_id=org.id)\
+            .filter(Tag.id.in_(tag_ids))\
+            .all()
+
+        if not len(tags):
+            raise RequestError(
+                'Tag(s) with ID(s) {} do(es) not exist.'
+                .format(tag_ids))
+
+        for t in tags:
+            if t.type != 'subject':
+                raise RequestError(
+                    'Only subject tags can be applied to Content Items')
+            if t.id not in c.tag_ids:
+                c.tags.append(t)
+
+    # filter out any non-columns
+    columns = get_table_columns(ContentItem)
+    for k in req_data.keys():
+        if k not in columns or k in ['org_id', 'id']:
+            req_data.pop(k)
+
+    # update fields
+    for k, v in req_data.items():
+        setattr(c, k, v)
+    try:
+        db.session.add(c)
+        db.session.commit()
+    except Exception as e:
+        raise RequestError(
+            'There was a problem updated this Content Item. '
+            'Here is the error: {}'
+            .format(e.message))
+    return jsonify(c)
+
+@bp.route('/api/v1/content/<int:content_item_id>', methods=['DELETE'])
 @load_user
 @load_org
 def get_content_item(user, org, content_item_id):
@@ -437,8 +510,9 @@ def get_content_item(user, org, content_item_id):
     c = ContentItem.query\
         .filter_by(id=content_item_id, org_id=org.id)\
         .first()
+
     if not c:
         raise NotFoundError(
             'An ContentItem with ID {} does not exist.'
             .format(event_id))
-    return jsonify(c)
+
