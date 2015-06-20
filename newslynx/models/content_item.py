@@ -64,7 +64,11 @@ class ContentItem(db.Model):
         backref=db.backref('content_items', lazy='dynamic'), lazy='joined')
 
     summary_metrics = db.relationship(
-        'ContentMetricSummary', lazy='joined', uselist=False)
+        'ContentMetricSummary', lazy='joined', uselist=False, cascade="all, delete-orphan")
+
+    timeseries_metrics = db.relationship(
+        'ContentMetricTimeseries', lazy='dynamic', cascade="all, delete-orphan")
+
 
     # # in/out links
     # out_links = db.relationship(

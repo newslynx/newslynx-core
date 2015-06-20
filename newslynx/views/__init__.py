@@ -35,7 +35,7 @@ def handle_exceptions(exc):
         message = message.replace('<p>', '').replace('</p>', '')
         body = {
             'status': exc.code,
-            'name': exc.name,
+            'error': exc.name,
             'message': message
         }
         headers = exc.get_headers(request.environ)
@@ -43,7 +43,7 @@ def handle_exceptions(exc):
     else:
         body = {
             'status': 500,
-            'name': exc.__class__.__name__,
+            'error': exc.__class__.__name__,
             'message': unicode(exc)
         }
         headers = {}

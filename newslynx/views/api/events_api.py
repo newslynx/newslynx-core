@@ -519,7 +519,7 @@ def event_add_tag(user, org, event_id, tag_id):
         .filter_by(id=tag_id, org_id=org.id)\
         .first()
     if not tag:
-        raise RequestError(
+        raise NotFoundError(
             'Tag with ID {} does not exist.'
             .format(tag_id))
 

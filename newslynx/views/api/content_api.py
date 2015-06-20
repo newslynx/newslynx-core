@@ -8,7 +8,9 @@ from sqlalchemy.types import Numeric
 
 from newslynx.core import db
 from newslynx.exc import NotFoundError
-from newslynx.models import ContentItem, Author, ContentMetricSummary, Tag
+from newslynx.models import (
+    ContentItem, Author, ContentMetricSummary, Tag,
+    ContentMetricTimeseries)
 from newslynx.lib.serialize import jsonify
 from newslynx.views.decorators import load_user, load_org
 from newslynx.tasks import facet
@@ -454,7 +456,7 @@ def get_content_item(user, org, content_item_id):
     if not c:
         raise NotFoundError(
             'An ContentItem with ID {} does not exist.'
-            .format(event_id))
+            .format(content_item_id))
     return jsonify(c.to_dict(incl_body=True))
 
 
@@ -472,7 +474,7 @@ def update_content_item(user, org, content_item_id):
     if not c:
         raise NotFoundError(
             'An ContentItem with ID {} does not exist.'
-            .format(event_id))
+            .format(content_item_id))
 
     # get request data
     req_data = request_data()
@@ -524,7 +526,7 @@ def update_content_item(user, org, content_item_id):
 @load_org
 def delete_content_item(user, org, content_item_id):
     """
-    Fetch an individual content-item.
+    Update an individual content-item.
     """
     c = ContentItem.query\
         .filter_by(id=content_item_id, org_id=org.id)\
@@ -533,5 +535,93 @@ def delete_content_item(user, org, content_item_id):
     if not c:
         raise NotFoundError(
             'An ContentItem with ID {} does not exist.'
-            .format(event_id))
+            .format(content_item_id))
 
+    # delete metrics
+    cmd = """
+    DELETE FROM content_metric_timeseries WHERE content_item_id = {0};
+    DELETE FROM content_metric_summary WHERE content_item_id = {0};
+    """.format(content_item_id)
+
+    # delete content item + metrics
+    db.session.execute(cmd)
+    db.session.delete(c)
+    db.session.commit()
+
+    return delete_response()
+
+
+@bp.route('/api/v1/content/<int:content_item_id>/tags/<int:tag_id>', methods=['PUT', 'PATCH'])
+@load_user
+@load_org
+def content_item_add_tag(user, org, content_item_id, tag_id):
+    """
+    Add a tag to an content_item.
+    """
+    c = ContentItem.query\
+        .filter_by(id=content_item_id, org_id=org.id)\
+        .first()
+
+    if not c:
+        raise NotFoundError(
+            'An ContentItem with ID {} does not exist.'
+            .format(content_item_id))
+
+    tag = Tag.query\
+        .filter_by(id=tag_id, org_id=org.id)\
+        .first()
+
+    if not tag:
+        raise NotFoundError(
+            'Tag with ID {} does not exist.'
+            .format(tag_id))
+
+    if tag.type != 'subject':
+        raise RequestError(
+            'Content Items can only be assigned Subject Tags.')
+
+    if tag.id not in c.tag_ids:
+        c.tags.append(tag)
+
+    db.session.add(c)
+    db.session.commit()
+
+    # return modified content item
+    return jsonify(c)
+
+
+@bp.route('/api/v1/content/<int:content_item_id>/tags/<int:tag_id>',
+          methods=['DELETE'])
+@load_user
+@load_org
+def content_item_delete_tag(user, org, content_item_id, tag_id):
+    """
+    Remove a tag from a content item.
+    """
+    c = ContentItem.query\
+        .filter_by(id=content_item_id, org_id=org.id)\
+        .first()
+
+    if not c:
+        raise NotFoundError(
+            'An ContentItem with ID {} does not exist.'
+            .format(content_item_id))
+
+    tag = Tag.query\
+        .filter_by(id=tag_id, org_id=org.id)\
+        .first()
+
+    if not tag:
+        raise NotFoundError(
+            'Tag with ID {} does not exist.'
+            .format(tag_id))
+
+    for tag in c.tags:
+        if tag.id == tag_id:
+            c.tags.remove(tag)
+
+    db.session.add(c)
+    db.session.commit()
+
+    # return modified content item
+    return jsonify(c)

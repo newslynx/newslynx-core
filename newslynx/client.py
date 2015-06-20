@@ -144,8 +144,6 @@ class BaseClient(object):
             return True
 
         data = resp.json()
-        if not data:
-            return None
         if isinstance(data, list):
             return [Dict(d) for d in data]
 
@@ -545,6 +543,44 @@ class Content(BaseClient):
         kw, params = self._split_auth_params_from_data(kw, kw_incl=['extract'])
         url = self._format_url('content')
         return self._request('POST', url, params=params, data=kw)
+
+    def update(self, content_id, **kw):
+        kw, params = self._split_auth_params_from_data(kw)
+        url = self._format_url('content', content_id)
+        return self._request('PUT', url, params=params, data=kw)
+
+    def delete(self, content_id, **kw):
+        url = self._format_url('content', content_id)
+        return self._request('DELETE', url, params=kw)
+
+    def get_timeseries(self, content_id, **kw):
+        """
+        Get a content item timeseries.
+        """
+        url = self._format_url('content', content_id, 'timeseries')
+        return self._request('GET', url, params=kw)
+
+    def create_timeseries(self, content_id, **kw):
+        """
+        Create timeseries metric(s) for a content item.
+        """
+        kw, params = self._split_auth_params_from_data(kw)
+        url = self._format_url('content', content_id, 'timeseries')
+        return self._request('POST', url, params=params, data=kw)
+
+    def add_tag(self, content_id, tag_id, **kw):
+        """
+        Tag a content item.
+        """
+        url = self._format_url('content', content_id, 'tags', tag_id)
+        return self._request('PUT', url, params=kw)
+
+    def remove_tag(self, content_id, tag_id, **kw):
+        """
+        Remove a tag from a content item.
+        """
+        url = self._format_url('content', content_id, 'tags', tag_id)
+        return self._request('DELETE', url, params=kw)
 
 
 class Extract(BaseClient):
