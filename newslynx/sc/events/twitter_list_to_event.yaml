@@ -56,7 +56,7 @@ options:
         help:
             placeholder: "~fracking | drilling"
 
-    set_event_status:
+    event_status:
         input_type: select
         input_options:
             - pending

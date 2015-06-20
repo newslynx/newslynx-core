@@ -3,7 +3,7 @@ name: Staff Twitter List to Promotion Event
 slug: twitter-list-to-event-promotion
 status: uninitialized
 options:
-    set_event_status: approved
+    event_status: approved
     set_event_tag_ids: ['internal-promotion']
     min_followers: 0
     schedule_by: minutes

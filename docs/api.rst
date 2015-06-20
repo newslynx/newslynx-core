@@ -3300,6 +3300,246 @@ Example
      http://localhost:5000/api/v1/metrics/ga_entrances\?org\=1\&apikey\=$NEWSLYNX_API_KEY
 
 
+.. _endpoints-authors:
+
+**Authors**
+++++++++++++++++++
+
+The **Authors** API enables the creation, update, and deletion of Authors. It also enables programmatic access to the associations between authors and content items. 
+
+**NOTE**
+- Authors are automatically created on Content Item creation. This is often achieved through an imperfect extraction methodology.  As a result, this API is useful for making sure there are no duplicate authors and that they have the correct names. 
+
+TK: Author Metrics
+
+.. _endpoint-metrics-json:
+
+Author JSON
+~~~~~~~~~~~~~~~~~
+
+All methods, unless otherwise specified, will return one or many Metric objects of the following ``json`` schema:
+
+.. code-block:: javascript
+
+    {
+      "updated": "2015-06-19T02:22:56.547445+00:00",
+      "cumulative": true,
+      "faceted": false,
+      "aggregation": "sum",
+      "recipe_id": 9,
+      "timeseries": true,
+      "id": 25,
+      "display_name": "Facebook Page Likes",
+      "name": "twitter_followers",
+      "created": "2015-06-19T02:22:56.547429+00:00",
+      "level": "org",
+      "org_id" 1,
+    }
+
+
+.. _endpoints-metrics-list:
+
+**GET** ``/metrics``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Filter all metrics.
+
+Params
+******
+
++--------------------+--------------------------------+------------------+----------------+
+| Parameter          |  Description                   |  Default         |  Required      |
++====================+================================+==================+================+
+| ``apikey``         | Your ``apikey``                | null             | true           |
++--------------------+--------------------------------+------------------+----------------+
+| ``org``            | The organization's             | null             | true           |
+|                    | ``id`` or ``slug`` you         |                  |                |
+|                    | wish to access.                |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+| ``localize``       | Return dates in the org's      | false            | false          |
+|                    | specified timezone. If `false` |                  |                |
+|                    | dates will be returned in UTC. |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+
+
+Returns
+*******
+
+.. code-block:: javascript
+
+    {
+      "facets": {
+        "recipes": {
+          "google-analytics-to-content-timeseries": 3,
+          "twitter-user-to-org-timeseries": 1,
+          "facebook-page-to-org-timeseries": 1,
+          "share-counts-to-content-timeseries": 8,
+          "content-metric-summary": 12
+        },
+        "cumulative": {
+          "false": 12,
+          "true": 13
+        },
+        "faceted": {
+          "false": 25
+        },
+        "aggregations": {
+          "sum": 25
+        },
+        "levels": {
+          "org": 2,
+          "all": 23
+        },
+        "timeseries": {
+          "false": 12,
+          "true": 13
+        },
+      },
+      "metrics": [
+        ...
+      ]
+    }
+
+
+
+Example
+********
+
+Fetch all metrics with an `aggregation` of `sum`.
+
+.. code-block:: bash
+    
+    curl http://localhost:5000/api/v1/metrics\?apikey=$NEWSLYNX_API_KEY\&org=1&aggregations=sum
+
+
+.. _endpoints-metrics-get:
+
+**GET** ``/metrics/:metric_id``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Fetch an individual metric.
+
+**NOTE**
+  - You can pass in a metric's `name` or `id` to this endpoint.
+
+Params
+******
+
++--------------------+--------------------------------+------------------+----------------+
+| Parameter          |  Description                   |  Default         |  Required      |
++====================+================================+==================+================+
+| ``apikey``         | Your ``apikey``                | null             | true           |
++--------------------+--------------------------------+------------------+----------------+
+| ``org``            | The organization's             | null             | true           |
+|                    | ``id`` or ``slug`` you         |                  |                |
+|                    | wish to access.                |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+| ``localize``       | Return dates in the org's      | false            | false          |
+|                    | specified timezone. If `false` |                  |                |
+|                    | dates will be returned in UTC. |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+
+Returns
+********
+
+An :ref:`endpoint-metrics-json` object.
+
+Example
+********
+
+.. code-block:: bash
+    
+    curl http://localhost:5000/api/v1/metrics/1\?org\=1\&apikey\=$NEWSLYNX_API_KEY
+
+
+.. _endpoints-metrics-update:
+
+**PUT | PATCH** ``/metrics/:metric_id``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Update a metric.
+
+**NOTE**
+  - You can pass in a metric's ``name`` or ``id`` to this endpoint.
+  - You cannot update a metric's ``name``, only it's ``display_name``.
+
+Params
+******
+
++--------------------+--------------------------------+------------------+----------------+
+| Parameter          |  Description                   |  Default         |  Required      |
++====================+================================+==================+================+
+| ``apikey``         | Your ``apikey``                | null             | true           |
++--------------------+--------------------------------+------------------+----------------+
+| ``org``            | The organization's             | null             | true           |
+|                    | ``id`` or ``slug`` you         |                  |                |
+|                    | wish to access.                |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+| ``localize``       | Return dates in the org's      | false            | false          |
+|                    | specified timezone. If `false` |                  |                |
+|                    | dates will be returned in UTC. |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+
+Body
+********
+
+An partial or complete :ref:`endpoint-metrics-json` object.
+
+Returns
+********
+
+A newly updates :ref:`endpoint-metrics-json` object.
+
+Example
+********
+
+.. code-block:: bash
+    
+     -X PUT -d 'display_name=Google Analytics Entrances' \
+     http://localhost:5000/api/v1/metrics/ga_entrances\?org\=1\&apikey\=$NEWSLYNX_API_KEY
+
+
+.. _endpoints-metrics-delete:
+
+**DELETE** ``/metrics/:metric_id``
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Delete a metric.
+
+**NOTE**
+  - You can pass in a metric's ``name`` or ``id`` to this endpoint.
+  - This endpoint will delete all instances of metric from Timeseries and Summary tables.
+  - This endpoint will not effect previously created Reports.
+  - If you want to re-create a metric, you'll need to re-create the recipe 
+    which originally created it.
+
+Params
+******
+
++--------------------+--------------------------------+------------------+----------------+
+| Parameter          |  Description                   |  Default         |  Required      |
++====================+================================+==================+================+
+| ``apikey``         | Your ``apikey``                | null             | true           |
++--------------------+--------------------------------+------------------+----------------+
+| ``org``            | The organization's             | null             | true           |
+|                    | ``id`` or ``slug`` you         |                  |                |
+|                    | wish to access.                |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+
+
+Returns
+********
+
+``STATUS_CODE`` - ``204``
+
+Example
+********
+
+.. code-block:: bash
+    
+     curl -X DELETE -d \
+     http://localhost:5000/api/v1/metrics/ga_entrances\?org\=1\&apikey\=$NEWSLYNX_API_KEY
+
 .. _Postgres Search docs: http://www.postgresql.org/docs/9.1/static/textsearch-tables.html#TEXTSEARCH-TABLES-SEARCH
 
 .. _ISO 8601: http://www.w3.org/TR/NOTE-datetime

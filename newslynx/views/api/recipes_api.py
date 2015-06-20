@@ -1,5 +1,6 @@
 from collections import defaultdict, Counter
 
+from sqlalchemy import or_
 from flask import Blueprint
 
 from newslynx.core import db
@@ -79,30 +80,30 @@ def list_recipes(user, org):
             .filter(~Recipe.sous_chef.has(SousChef.slug.in_(exclude_sous_chefs)))
 
     if len(include_recipes):
-        rids = []
-        for rid in include_recipes:
-            r = fetch_by_id_or_field(Recipe, 'slug', rid, org_id=org.id)
-            if not r:
-                raise RequestError(
-                    'A recipe with ID/slug {} does not exist.'
-                    .format(rid))
-            rids.append(r.id)
+        slugs = []
+        ids = []
+        for r in include_recipes:
+            try:
+                i = parse_number(r)
+                ids.append(i)
+            except:
+                slugs.append(r)
 
         recipe_query = recipe_query\
-            .filter(Recipe.id.in_(rids))
+            .filter(or_(Recipe.id.in_(ids), Recipe.slug.in_(slugs)))
 
     if len(exclude_recipes):
-        rids = []
-        for rid in exclude_recipes:
-            r = fetch_by_id_or_field(Recipe, 'slug', rid, org_id=org.id)
-            if not r:
-                raise RequestError(
-                    'A recipe with ID/slug {} does not exist.'
-                    .format(rid))
-            rids.append(r.id)
+        slugs = []
+        ids = []
+        for r in exclude_recipes:
+            try:
+                i = parse_number(r)
+                ids.append(i)
+            except:
+                slugs.append(r)
 
         recipe_query = recipe_query\
-            .filter(~Recipe.id.in_(rids))
+            .filter(~or_(Recipe.id.in_(ids), Recipe.slug.in_(slugs)))
 
     if scheduled is not None:
         recipe_query = recipe_query\

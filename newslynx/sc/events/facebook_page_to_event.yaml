@@ -37,7 +37,7 @@ options:
                 A search query to apply to the 
             placeholder: "~fracking | drilling"
 
-    set_event_status:
+    event_status:
         input_type: select
         input_options:
             - pending

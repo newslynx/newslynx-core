@@ -338,7 +338,8 @@ def search_content(user, org):
         else:
             p = "ContentMetricSummary.metrics['{sort_field}'].cast(Numeric).{direction}"
 
-        content_query = content_query.order_by(eval(p.format(**kw))())
+        content_query = content_query\
+            .order_by(eval(p.format(**kw))().nullslast())
 
     # facets
     validate_content_item_facets(kw['facets'])
