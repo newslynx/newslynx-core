@@ -3790,12 +3790,13 @@ Params
 |``facets``          | A comma-separated list of      | null             | false          |
 |                    | faceted counts to include      |                  |                |
 |                    | in the response. Choose from   |                  |                |
-|                    | ``tags``, ``events``,          |                  |                |
+|                    | ``subect_tags``, ``events``,   |                  |                |
 |                    | ``levels``,  ``categories``,   |                  |                |
 |                    | ``sous_chefs``, ``recipes``,   |                  |                |
 |                    | ``types``, ``site_names``,     |                  |                |
 |                    | ``domains``, ``authors``,      |                  |                |
-|                    | ``event_statuses`` or ``all``. |                  |                |
+|                    | ``event_statuses``             |                  |                |
+|                    | ``impact_tags`` or ``all``.    |                  |                |
 +--------------------+--------------------------------+------------------+----------------+
 |``page``            |The page number of the results. | 1                | false          |
 +--------------------+--------------------------------+------------------+----------------+
