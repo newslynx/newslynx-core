@@ -16,7 +16,7 @@ from newslynx.views.decorators import load_user, load_org
 from newslynx.tasks import facet
 from newslynx.tasks import ingest_content_item
 from newslynx.tasks import ingest_bulk
-from newslynx.models.relations import content_items_events
+from newslynx.models.relations import content_items_events, events_tags
 from newslynx.views.util import *
 from newslynx.constants import (
     CONTENT_ITEM_FACETS, CONTENT_ITEM_EVENT_FACETS)
