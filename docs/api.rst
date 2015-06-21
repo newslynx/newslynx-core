@@ -3635,8 +3635,11 @@ All methods, unless otherwise specified, will return one or many Content Item ob
       "description": "id voluptas voluptatem ea illum quae nam ab fugiat praesentium non libero quo in non aut autem et ut",
       "created": "2015-03-17T19:15:14.152661+00:00",
       "url": "http://example.com/4be5aec2-1778-11e5-b940-6c4008aeb606",
-      "tag_ids": [
+      "subject_tag_ids": [
         19
+      ],
+      "impact_tag_ids": [
+        12, 13
       ],
       "provenance": "recipe",
       "org_id": 1,
