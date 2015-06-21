@@ -9,8 +9,7 @@ from sqlalchemy.types import Numeric
 from newslynx.core import db
 from newslynx.exc import NotFoundError
 from newslynx.models import (
-    ContentItem, Author, ContentMetricSummary, Tag,
-    ContentMetricTimeseries, Event)
+    ContentItem, Author, ContentMetricSummary, Tag, Event)
 from newslynx.lib.serialize import jsonify
 from newslynx.views.decorators import load_user, load_org
 from newslynx.tasks import facet
