@@ -54,11 +54,12 @@ CONTENT_ITEM_TYPES = [
 
 CONTENT_ITEM_EVENT_FACETS = [
     'events', 'categories',
-    'levels', 'event_statuses'
+    'levels', 'event_statuses',
+    'impact_tags'
 ]
 
 CONTENT_ITEM_FACETS = [
-    'tags', 'provenances',
+    'subject_tags', 'provenances',
     'sous_chefs', 'recipes',
     'types', 'domains', 'authors',
     'site_names'

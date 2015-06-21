@@ -5,7 +5,7 @@ from newslynx.tasks import ingest_util
 from newslynx.lib.serialize import obj_to_json
 
 
-def ingest_content_metric_timeseries(
+def content_timeseries(
         obj,
         content_item_id,
         org_id,
@@ -41,17 +41,19 @@ def ingest_content_metric_timeseries(
                 {org_id},
                 {content_item_id},
                 '{datetime}',
-                '{metrics}');
+                '{metrics}')
            """.format(metrics=obj_to_json(metrics), **cmd_kwargs)
-    try:
-        db.session.execute(cmd)
-    except Exception as err:
-        raise RequestError(err.message)
-    cmd_kwargs['metrics'] = metrics
-    return cmd_kwargs
+
+    if commit:
+        try:
+            db.session.execute(cmd)
+        except Exception as err:
+            raise RequestError(err.message)
+        cmd_kwargs['metrics'] = metrics
+    return cmd
 
 
-def ingest_content_metric_summary(
+def content_summary(
         obj,
         content_item_id,
         org_id,
@@ -75,17 +77,19 @@ def ingest_content_metric_summary(
     cmd = """SELECT upsert_content_metric_summary(
                 {org_id},
                 {content_item_id},
-                '{metrics}');
+                '{metrics}')
            """.format(metrics=obj_to_json(metrics), **cmd_kwargs)
-    try:
-        db.session.execute(cmd)
-    except Exception as err:
-        raise RequestError(err.message)
-    cmd_kwargs['metrics'] = metrics
-    return cmd_kwargs
+
+    if commit:
+        try:
+            db.session.execute(cmd)
+        except Exception as err:
+            raise RequestError(err.message)
+        cmd_kwargs['metrics'] = metrics
+    return cmd
 
 
-def ingest_org_metric_timeseries(
+def org_timeseries(
         obj,
         org_id,
         org_metric_lookup,
@@ -118,17 +122,20 @@ def ingest_org_metric_timeseries(
     cmd = """SELECT upsert_org_metric_timeseries(
                  {org_id},
                 '{datetime}',
-                '{metrics}');
+                '{metrics}')
            """.format(metrics=obj_to_json(metrics), **cmd_kwargs)
-    try:
-        db.session.execute(cmd)
-    except Exception as err:
-        raise RequestError(err.message)
-    cmd_kwargs['metrics'] = metrics
-    return cmd_kwargs
+
+    if commit:
+        try:
+            db.session.execute(cmd)
+        except Exception as err:
+            raise RequestError(err.message)
+        cmd_kwargs['metrics'] = metrics
+        return cmd_kwargs
+    return cmd
 
 
-def ingest_org_metric_summary(
+def org_summary(
         obj,
         org_id,
         org_metric_lookup,
@@ -149,11 +156,13 @@ def ingest_org_metric_summary(
     # upsert command
     cmd = """SELECT upsert_org_metric_summary(
                  {org_id},
-                '{metrics}');
+                '{metrics}')
            """.format(metrics=obj_to_json(metrics), **cmd_kwargs)
-    try:
-        db.session.execute(cmd)
-    except Exception as err:
-        raise RequestError(err.message)
-    cmd_kwargs['metrics'] = metrics
-    return cmd_kwargs
+
+    if commit:
+        try:
+            db.session.execute(cmd)
+        except Exception as err:
+            raise RequestError(err.message)
+        cmd_kwargs['metrics'] = metrics
+    return cmd

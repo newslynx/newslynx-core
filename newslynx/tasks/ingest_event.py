@@ -17,7 +17,8 @@ def ingest_event(
         org_id,
         url_fields=['title', 'body', 'description'],
         requires=['title'],
-        must_link=False):
+        must_link=False,
+        commit=True):
     """
     Ingest an Event.
     """
@@ -112,8 +113,9 @@ def ingest_event(
     if not has_content_items and must_link:
         return None
 
-    db.session.add(e)
-    db.session.commit()
+    if commit:
+        db.session.add(e)
+        db.session.commit()
     return e
 
 

@@ -146,6 +146,7 @@ def events(by, event_ids):
     fx_lookup = {
         'recipes': events_by_recipes,
         'tags': events_by_tags,
+        'impact_tags': events_by_tags, # THIS IS A HACK FOR NOW!
         'categories': events_by_categories,
         'levels': events_by_levels,
         'sous_chefs': events_by_sous_chefs,
@@ -317,7 +318,7 @@ def content_items(by, content_item_ids):
     fx_lookup = {
         'recipes': content_items_by_recipes,
         'authors': content_items_by_authors,
-        'tags': content_items_by_tags,
+        'subject_tags': content_items_by_tags,
         'sous_chefs': content_items_by_sous_chefs,
         'site_names': content_items_by_site_names,
         'statuses': content_items_by_types,

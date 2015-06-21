@@ -19,7 +19,8 @@ def ingest_content_item(
         org_id,
         url_fields=['body'],
         requires=['url', 'type'],
-        extract=True):
+        extract=True,
+        commit=True):
     """
     Ingest an Event.
     """
@@ -69,7 +70,7 @@ def ingest_content_item(
     # split out tags_ids + authors + links
     tag_ids = obj.pop('tag_ids', [])
     authors = obj.pop('author_ids', [])
-    authors.extend(obj.pop('authors', [])) # accept names too
+    authors.extend(obj.pop('authors', []))  # accept names too
     # links = obj.pop('links', {})
 
     # determine event provenance
@@ -113,8 +114,9 @@ def ingest_content_item(
     if len(authors):
         c = _associate_authors(c, org_id, authors)
 
-    db.session.add(c)
-    db.session.commit()
+    if commit:
+        db.session.add(c)
+        db.session.commit()
     return c
 
 
@@ -164,7 +166,9 @@ def _associate_authors(c, org_id, authors):
             if not a:
                 a = Author(org_id=org_id, name=author)
         else:
-            a = Author.query.get(author)
+            a = Author.query\
+                .filter_by(id=author, org_id=org_id)\
+                .first()
 
         # upsert
         if a and a.id not in c.author_ids:
@@ -227,4 +231,3 @@ def _associate_tags(c, org_id, tag_ids):
 #                         if u:
 #                             _links.extend(u)
 #     return _links
-

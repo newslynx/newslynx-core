@@ -2,13 +2,12 @@ import logging
 
 from flask import Blueprint
 
-from newslynx.core import db
 from newslynx.views.decorators import load_user, load_org
 from newslynx.exc import RequestError, NotFoundError
 from newslynx.models import Org
 from newslynx.lib.serialize import jsonify
 from newslynx.views.util import request_data
-from newslynx.tasks.ingest_metric import *
+from newslynx.tasks import ingest_metric
 from newslynx.tasks import query_metric
 from newslynx.models.util import fetch_by_id_or_field
 from newslynx.views.util import (
@@ -77,7 +76,7 @@ def org_metrics_timeseries(user, org_id_slug):
 
     req_data = request_data()
 
-    ret = ingest_org_metric_timeseries(
+    ret = ingest_metric.org_timeseries(
         req_data,
         org.id,
         org.metrics_lookup
@@ -105,7 +104,7 @@ def org_metrics_summary(user, org_id_slug):
 
     req_data = request_data()
 
-    ret = ingest_org_metric_summary(
+    ret = ingest_metric.org_summary(
         req_data,
         org.id,
         org.metrics_lookup

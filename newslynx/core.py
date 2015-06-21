@@ -75,8 +75,8 @@ db_session.execute('SET TIMEZONE TO UTC')
 rds = redis.from_url(settings.REDIS_URL)
 
 # task queues
-bulk_q = Queue('bulk', connection=rds)
-recipe_q = Queue('recipe', connection=rds)
+bulk_queue = Queue('bulk', connection=rds)
+recipe_queue = Queue('recipe', connection=rds)
 
 # migrations
 migrate = Migrate(app, db)
