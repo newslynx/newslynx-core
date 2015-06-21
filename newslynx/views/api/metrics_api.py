@@ -29,6 +29,7 @@ def list_metrics(user, org):
         arg_list('sous_chefs', default=[], typ=str, exclusions=True)
     include_levels, exclude_levels = \
         arg_list('levels', default=[], typ=str, exclusions=True)
+    sort_field, direction = arg_sort('sort', default='-created')
     include_aggregations, exclude_aggregations = \
         arg_list('aggregations', default=[], typ=str, exclusions=True)
     cumulative = arg_bool('cumulative', default=None)
@@ -37,6 +38,10 @@ def list_metrics(user, org):
 
     # base query
     metric_query = Metric.query.join(Recipe).join(SousChef)
+
+    # validate sort fields are part of Recipe object.
+    if sort_field:
+        validate_fields(Metric, fields=[sort_field], suffix='to sort by')
 
     # filter by recipes
     if len(include_recipes):
@@ -129,6 +134,10 @@ def list_metrics(user, org):
     if faceted is not None:
         metric_query = metric_query\
             .filter(Metric.faceted == faceted)
+
+    if sort_field:
+        sort_obj = eval('Metric.{}.{}'.format(sort_field, direction))
+        metric_query = metric_query.order_by(sort_obj())
 
     facets = defaultdict(Counter)
     metrics = []
