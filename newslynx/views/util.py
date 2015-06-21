@@ -171,6 +171,21 @@ def request_data():
     return data
 
 
+def request_bulk_data():
+    """
+    Fetch request data from jsonlines.
+    """
+    data = request.get_json(silent=True)
+    if data is None:
+        try:
+            data = json_to_obj(request.data)
+        except:
+            data = None
+    if data is None:
+        data = dict(request.form.items())
+    return data
+
+
 def listify_data_arg(name):
     """
     Allow for multiple list formats of
@@ -532,6 +547,7 @@ def validate_metric_aggregations(values):
         raise RequestError(
             "'{}' {}. Choose from: {}."
             .format(', '.join(bad_values), msg, ", ".join(METRIC_AGGREGATIONS)))
+
 
 # Pagination
 

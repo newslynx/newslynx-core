@@ -69,7 +69,6 @@ class ContentItem(db.Model):
     timeseries_metrics = db.relationship(
         'ContentMetricTimeseries', lazy='dynamic', cascade="all, delete-orphan")
 
-
     # # in/out links
     # out_links = db.relationship(
     #     'ContentItem', secondary=relations.content_items_content_items,
@@ -154,8 +153,16 @@ class ContentItem(db.Model):
     #     return [dict(zip(['id', 'title'], l)) for l in in_links]
 
     @property
-    def tag_ids(self):
-        return [t.id for t in self.tags]
+    def subject_tag_ids(self):
+        return [t.id for t in self.tags if t.type == 'subject']
+
+    @property
+    def impact_tag_ids(self):
+        return [t.id for e in self.events for t in e.tags if t.type == 'impact']
+
+    @property
+    def event_ids(self):
+        return [e.id for e in self.events]
 
     def to_dict(self, **kw):
         # incl_links = kw.get('incl_links', False)
@@ -178,7 +185,8 @@ class ContentItem(db.Model):
             'authors': self.simple_authors,
             'title': self.title,
             'description': self.description,
-            'tag_ids': self.tag_ids,
+            'subject_tag_ids': self.subject_tag_ids,
+            'impact_tag_ids': self.impact_tag_ids,
             'meta': self.meta
         }
         # if incl_links:

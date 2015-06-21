@@ -124,6 +124,11 @@ IMPACT_TAG_LEVELS = [
     'community', 'individual', 'internal'
 ]
 
+TASK_QUEUE_NAMES = [
+    'recipe',
+    'bulk'
+]
+
 # boolean parsing.
 TRUE_VALUES = [
     'y', 'yes', '1', 't', 'true', 'on', 'ok'

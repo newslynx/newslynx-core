@@ -94,8 +94,8 @@ Exception KeyError: KeyError(4332017936,) in <module 'threading' from '/System/L
 - [ ] Implement SQL Query API
 - [x] Implement Extraction API
 - [x] Implement Event Creation API
-- [ ] Create thumbnails for images.
-   - [ ] Add thumbnail worker redis cache.
+- [x] Create thumbnails for images.
+   - [x] Add thumbnail worker redis cache.
 - [ ] Implement Metrics API:
     - [x] Create metrics table which contains information
           on each metric (name, timeseries agg method,
@@ -107,26 +107,25 @@ Exception KeyError: KeyError(4332017936,) in <module 'threading' from '/System/L
           which metrics they create.
     - [ ] When a recipe is created for a sous chef that 
           creates metrics, these metrics should be created for the associated organization.
-    - [ ] Timeseries Metrics for things will only be   
+    - [x] Timeseries Metrics for things will only be   
           collected 30 days after publication. After 
           this period an article moves into an "archived"
           state. 
-    - [ ] Each Organization should have the following 
+    - [x] Each Organization should have the following 
           views/apis with these respective 
           functionalites:
-          - [ ] Timeseries Aggregations
-             - [ ] Thing level 
-                - [ ] By hour + day.
+          - [x Timeseries Aggregations
+             - [x] Thing level 
+                - [x] By hour + day + month
              - [ ] Subject Tag Level (subsequent aggregations of things)
                 - [ ] By day.
-             - [ ] Impact Tag Level (aggregations of events => non customizable.)
-                - [ ] By day.
+             - [x] Impact Tag Level (aggregations of events => non customizable.)
              - [ ] Org Level (This should include 
                    summaries of thing-level statistics,
                    tag-level statistics, and event-level 
                    statistics)
                 - [ ] By day, month
-             - [ ] optionally return cumulative sums when
+             - [x] optionally return cumulative sums when
                    appropriate
           - [ ] Summary Stats
             - [ ] Impact Tag Level

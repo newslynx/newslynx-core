@@ -10,7 +10,7 @@ from newslynx.core import db
 from newslynx.exc import NotFoundError
 from newslynx.models import (
     ContentItem, Author, ContentMetricSummary, Tag,
-    ContentMetricTimeseries)
+    ContentMetricTimeseries, Event)
 from newslynx.lib.serialize import jsonify
 from newslynx.views.decorators import load_user, load_org
 from newslynx.tasks import facet
@@ -86,10 +86,13 @@ def apply_content_item_filters(q, **kw):
     # apply date filters
     if kw['created_after']:
         q = q.filter(ContentItem.created >= kw['created_after'])
+
     if kw['created_before']:
         q = q.filter(ContentItem.created <= kw['created_before'])
+
     if kw['updated_after']:
         q = q.filter(ContentItem.updated >= kw['updated_after'])
+
     if kw['updated_before']:
         q = q.filter(ContentItem.updated <= kw['updated_before'])
 
@@ -336,7 +339,8 @@ def search_content(user, org):
     validate_content_item_search_vector(kw['search_vector'])
 
     # base query
-    content_query = ContentItem.query.outerjoin(ContentMetricSummary)
+    content_query = ContentItem.query\
+        .outerjoin(ContentMetricSummary)
 
     # apply filters
     content_query, event_ids = \

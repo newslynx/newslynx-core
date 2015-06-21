@@ -20,6 +20,7 @@ from flask.ext.compress import Compress
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
 import redis
+from rq import Queue
 from embedly import Embedly
 import bitly_api as bitly
 
@@ -72,6 +73,10 @@ db_session.execute('SET TIMEZONE TO UTC')
 
 # redis connection
 rds = redis.from_url(settings.REDIS_URL)
+
+# task queues
+bulk_q = Queue('bulk', connection=rds)
+recipe_q = Queue('recipe', connection=rds)
 
 # migrations
 migrate = Migrate(app, db)

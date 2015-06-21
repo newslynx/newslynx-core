@@ -82,6 +82,7 @@ content_items_tags = db.Table(
         primary_key=True)
 )
 
+
 # content_items <=> content_items.
 content_items_content_items = db.Table(
     'content_items_content_items',

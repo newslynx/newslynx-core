@@ -299,11 +299,13 @@ def gen_events(org, recipes, impact_tags, content_items, n_events):
         if status == 'approved':
             e.tags.append(choice(impact_tags))
             e.content_items.append(choice(content_items))
+            c.tags.append(t)
 
         if provenance == 'manual':
             e.recipe_id = None
 
         db_session.add(e)
+        db_session.add(c)
         events.append(e)
     db_session.commit()
     return e

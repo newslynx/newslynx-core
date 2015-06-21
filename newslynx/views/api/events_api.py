@@ -380,7 +380,6 @@ def event_update(user, org, event_id):
     current_status = e.status
     req_status = req_data.get('status')
 
-    # assign events + tags.
     if len(tag_ids):
 
         tags = Tag.query\
@@ -411,7 +410,7 @@ def event_update(user, org, event_id):
                 'ContentItem(s) with ID(s) {} do(es) not exist.'
                 .format(tag_ids))
 
-        # add content items + tags
+        # add content items
         for content_item in content_items:
             if content_item.id not in e.content_item_ids:
                 e.content_items.append(content_item)
@@ -441,6 +440,7 @@ def event_update(user, org, event_id):
 
     # commit changes
     db.session.add(e)
+    db.session.add(c)
     db.session.commit()
 
     # return modified event
@@ -607,7 +607,9 @@ def event_delete_content_item(user, org, event_id, content_item_id):
     """
     Remove a thing from an event.
     """
-    e = Event.query.filter_by(id=event_id, org_id=org.id).first()
+    e = Event.query\
+        .filter_by(id=event_id, org_id=org.id)\
+        .first()
     if not e:
         raise NotFoundError(
             'An Event with ID {} does not exist.'.format(event_id))

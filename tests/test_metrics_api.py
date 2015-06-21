@@ -55,13 +55,5 @@ class TestMetricsAPI(unittest.TestCase):
         except:
             assert True
 
-
-
-
-
-
-
-
-
 if __name__ == '__main__':
     unittest.main()

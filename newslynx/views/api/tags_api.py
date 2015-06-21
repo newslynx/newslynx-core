@@ -68,8 +68,8 @@ def get_tags(user, org):
 
     tag_cols = ['id', 'org_id', 'name', 'slug', 'type', 'level',
                 'category', 'color', 'created', 'updated',
-                'event_count', 'thing_count']
-    
+                'event_count', 'content_item_count']
+
     tags = [dict(zip(tag_cols, r)) for r in tag_query.all()]
 
     # just compute facets via python rather
