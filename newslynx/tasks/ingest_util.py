@@ -7,7 +7,6 @@ from newslynx.lib import url
 from newslynx.lib import text
 from newslynx.lib import html
 from newslynx.lib import stats
-from newslynx.lib.serialize import obj_to_json
 from newslynx.models import URLCache, ThumbnailCache
 from newslynx import settings
 from newslynx.exc import RequestError
@@ -133,6 +132,7 @@ def prepare_metrics(
     Validate a metric.
     """
     # check if metrics exist and are properly formatted.
+    obj.update(obj.pop('metrics', {}))
     for k in obj.keys():
         m = org_metric_lookup.get(k)
         if not m:

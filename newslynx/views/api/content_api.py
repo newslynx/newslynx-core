@@ -14,7 +14,8 @@ from newslynx.models import (
 from newslynx.lib.serialize import jsonify
 from newslynx.views.decorators import load_user, load_org
 from newslynx.tasks import facet
-from newslynx.tasks.ingest_content_item import ingest_content_item
+from newslynx.tasks import ingest_content_item
+from newslynx.tasks import ingest_bulk
 from newslynx.models.relations import content_items_events
 from newslynx.views.util import *
 from newslynx.constants import (
@@ -444,6 +445,23 @@ def create_content(user, org):
         org_id=org.id,
         extract=extract)
     return jsonify(c.to_dict(incl_body=True, incl_img=True, incl_metrics=True))
+
+
+@bp.route('/api/v1/content/bulk', methods=['POST'])
+@load_user
+@load_org
+def bulk_create_content(user, org):
+    """
+    bulk create content items.
+    """
+    req_data = request_data()
+    extract = arg_bool('extract', default=True)
+    job_id = ingest_bulk.content_items(
+        req_data,
+        org_id=org.id,
+        extract=extract)
+    ret = url_for_job_status(apikey=user.apikey, job_id=job_id, queue='bulk')
+    return jsonify(ret)
 
 
 @bp.route('/api/v1/content/<int:content_item_id>', methods=['GET'])

@@ -589,6 +589,20 @@ def urls_for_pagination(handler, total_results, **kw):
     return p
 
 
+def url_for_job_status(**kw):
+    """
+    Generate a url for a job status
+    """
+    path = url_for('jobs.get_status', **kw)
+    status_url = urljoin(settings.API_URL, path)
+    return {
+        'job_id': kw.get('job_id'),
+        'status_url': status_url,
+        'queue': kw.get('queue'),
+        'datetime': dates.now()
+    }
+
+
 # Responses
 
 def delete_response():
@@ -653,8 +667,12 @@ def register_blueprints(app, *mods):
                     'templates' not in fp):
 
                 name = fp.replace('.py', '')
-                m = importlib.import_module(
-                    '%s.%s' % (package_name, name))
+                try:
+                    m = importlib.import_module(
+                        '%s.%s' % (package_name, name))
+                except ImportError:
+                    continue
+
                 for item in dir(m):
                     item = getattr(m, item)
                     if isinstance(item, Blueprint):

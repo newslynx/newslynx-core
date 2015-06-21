@@ -25,6 +25,7 @@ from embedly import Embedly
 import bitly_api as bitly
 
 from newslynx import settings
+from newslynx.constants import TASK_QUEUE_NAMES
 
 # import logs module to set handler
 from newslynx import logs
@@ -65,18 +66,22 @@ make_searchable()
 # Database
 db = SQLAlchemy(app, session_options={'query_cls': SearchQuery})
 db.engine.pool._use_threadlocal = True
+engine = create_engine(settings.SQLALCHEMY_DATABASE_URI)
+engine.pool._use_threadlocal = True
+
 
 # session for interactions outside of app context.
-engine = create_engine(settings.SQLALCHEMY_DATABASE_URI)
-db_session = scoped_session(sessionmaker(bind=engine))
+def gen_session():
+    return scoped_session(sessionmaker(bind=engine))
+db_session = gen_session()
 db_session.execute('SET TIMEZONE TO UTC')
+
 
 # redis connection
 rds = redis.from_url(settings.REDIS_URL)
 
 # task queues
-bulk_queue = Queue('bulk', connection=rds)
-recipe_queue = Queue('recipe', connection=rds)
+queues = {k: Queue(k, connection=rds) for k in TASK_QUEUE_NAMES}
 
 # migrations
 migrate = Migrate(app, db)

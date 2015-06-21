@@ -11,7 +11,7 @@ from newslynx.exc import *
 from newslynx.logs import log
 
 
-RET_CODES = [200, 201]
+RET_CODES = [200, 201, 202]
 GOOD_CODES = RET_CODES + [204]
 
 # a lookup of error name to exception object
@@ -106,13 +106,17 @@ class BaseClient(object):
         params = {}
         if 'apikey' in kw:
             params['apikey'] = kw.pop('apikey')
+
         if 'org' in kw:
             params['org'] = kw.pop('org')
+
         if 'localize' in kw:
             params['localize'] = kw.pop('localize')
+
         for i in kw_incl:
             if i in kw:
                 params[i] = kw.pop(i)
+
         return kw, params
 
     def _handle_errors(self, resp, err=None):
@@ -130,6 +134,8 @@ class BaseClient(object):
                 raise ClientError(resp.content)
 
             err = ERRORS.get(d['error'])
+            if not err:
+                raise ClientError(resp.content)
             raise err(d['message'])
 
     def _format_response(self, resp):
@@ -170,7 +176,8 @@ class Me(BaseClient):
         """
         Update your user profile.
         """
-        kw, params = self._split_auth_params_from_data(kw, kw_incl=['refresh_apikey'])
+        kw, params = self._split_auth_params_from_data(
+            kw, kw_incl=['refresh_apikey'])
 
         # special case for this parameter
 
@@ -466,7 +473,8 @@ class Events(BaseClient):
         return self._request('GET', url, params=kw)
 
     def create(self, **kw):
-        kw, params = self._split_auth_params_from_data(kw, kw_incl=['must_link'])
+        kw, params = self._split_auth_params_from_data(
+            kw, kw_incl=['must_link'])
         url = self._format_url('events')
         return self._request('POST', url, params=params, data=kw)
 
@@ -538,16 +546,35 @@ class Content(BaseClient):
         return self._request('GET', url, params=kw)
 
     def create(self, **kw):
+        """
+        Create a content item.
+        """
         kw, params = self._split_auth_params_from_data(kw, kw_incl=['extract'])
         url = self._format_url('content')
         return self._request('POST', url, params=params, data=kw)
 
+    def bulk_create(self, **kw):
+        """
+        Bulk create content items.
+        """
+        if 'data' not in kw:
+            raise ClientError('Bulk endpoints require a "data" kwarg')
+        kw, params = self._split_auth_params_from_data(kw, kw_incl=['extract'])
+        url = self._format_url('content', 'bulk')
+        return self._request('POST', url, params=params, data=kw['data'])
+
     def update(self, content_id, **kw):
+        """
+        Update a content item.
+        """
         kw, params = self._split_auth_params_from_data(kw)
         url = self._format_url('content', content_id)
         return self._request('PUT', url, params=params, data=kw)
 
     def delete(self, content_id, **kw):
+        """
+        Delete a content item.
+        """
         url = self._format_url('content', content_id)
         return self._request('DELETE', url, params=kw)
 
@@ -565,6 +592,16 @@ class Content(BaseClient):
         kw, params = self._split_auth_params_from_data(kw)
         url = self._format_url('content', content_id, 'timeseries')
         return self._request('POST', url, params=params, data=kw)
+
+    def bulk_create_timeseries(self, **kw):
+        """
+        Create timeseries metric(s) for a content item.
+        """
+        if 'data' not in kw:
+            raise ClientError('Bulk endpoints require a "data" kwarg')
+        kw, params = self._split_auth_params_from_data(kw)
+        url = self._format_url('content', 'timeseries', 'bulk')
+        return self._request('POST', url, params=params, data=kw['data'])
 
     def add_tag(self, content_id, tag_id, **kw):
         """
@@ -648,7 +685,8 @@ class Authors(BaseClient):
         """
         Remove an author from a content item.
         """
-        url = self._format_url('authors', from_author_id, 'merge', to_author_id)
+        url = self._format_url(
+            'authors', from_author_id, 'merge', to_author_id)
         return self._request('PUT', url, params=kw)
 
 
@@ -693,9 +731,11 @@ class Reports(BaseClient):
 
 
 class API(BaseClient):
+
     """
     A class for interacting with the TenderEngine API.
     """
+
     def __init__(self, **kw):
         BaseClient.__init__(self, **kw)
         self.me = Me(**kw)

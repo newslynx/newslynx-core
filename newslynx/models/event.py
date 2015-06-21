@@ -80,7 +80,7 @@ class Event(db.Model):
         self.url = kw.get('url')
         self.img_url = kw.get('img_url')
         self.thumbnail = kw.get('thumbnail')
-        self.created = kw.get('created')
+        self.created = kw.get('created', dates.now())
         self.title = kw.get('title')
         self.description = kw.get('description')
         self.body = kw.get('body')

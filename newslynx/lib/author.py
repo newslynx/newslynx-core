@@ -12,8 +12,8 @@ from newslynx.lib.regex import (
 )
 
 MIN_NAME_TOKENS = 2  # how short can a name be?
-MAX_NAME_TOKENS = 5  # how long can a name be?
-DELIM = ['and', '|', '&']
+MAX_NAME_TOKENS = 3  # how long can a name be?
+DELIM = ['and', '|', '&', '']
 
 PESSIMISTIC_TAGS = ['meta']
 OPTIMISTIC_TAGS = [
@@ -66,7 +66,6 @@ def extract(
 
         else:  # match.tag == <any other tag>
             content = match.text or u''  # text_content()
-
         if len(content) > 0:
             _authors.extend(parse(content))
 
@@ -96,7 +95,6 @@ def parse(search_str):
     curname = []  # List of first, last name tokens
 
     for token in name_tokens:
-
         # check if the length of the name
         # and the token suggest an initial
         if _is_initial(curname, token):

@@ -62,6 +62,13 @@ class Org(db.Model):
             settings[s.name] = v
         return settings
 
+    @property
+    def metrics_lookup(self):
+        metrics = {}
+        for m in self.metrics:
+            metrics[m.name] = m.to_dict()
+        return metrics
+
     def content_timeseries_metrics(self):
         return self.metrics\
             .filter(Metric.level.in_(['all', 'content_item']))\

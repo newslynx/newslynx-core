@@ -2,8 +2,11 @@ import datetime
 
 import unittest
 import pytz
+from bs4 import BeautifulSoup
 
+from newslynx.lib import network
 from newslynx.lib import article
+from newslynx.lib import author
 from newslynx.logs import log
 
 
@@ -11,7 +14,7 @@ class TestArticleExtraction(unittest.TestCase):
 
     def test_propublica(self):
 
-        source_url = 'https://www.propublica.org/article/congress-to-consider-scaling-down-group-homes-for-troubled-children'
+        source_url = 'http://www.propublica.org/article/congress-to-consider-scaling-down-group-homes-for-troubled-children'
         d = article.extract(source_url)
         assert(['JOAQUIN SAPIEN'] == d['authors'])
         assert(d['page_type'] == 'article')
@@ -21,7 +24,7 @@ class TestArticleExtraction(unittest.TestCase):
         assert(d['site_name'] == 'ProPublica')
         assert(d['created'] == datetime.datetime(2015, 5, 20, 17, 47, 13, tzinfo=pytz.utc))
         assert('www.propublica.org/favicon.ico' in d['favicon'])
-        assert(d['img_url'] == 'https://www.propublica.org/images/ngen/gypsy_og_image/20150520-group-home-hearing-1200x630.jpg')
+        assert(d['img_url'] == 'http://www.propublica.org/images/ngen/gypsy_og_image/20150520-group-home-hearing-1200x630.jpg')
         assert('finding that children had repeatedly been sent to facilities that were rife with abuse and that had become known recruiting grounds for pimp' in d['body'])
         assert(d['url'] == source_url)
         # assert('http://media.miamiherald.com/static/media/projects/2014/innocents-lost/' in d['links']['articles']['external'])
@@ -57,6 +60,11 @@ class TestArticleExtraction(unittest.TestCase):
         assert('Someone could easily get cut' in d['body'])
         assert(d['url'] == 'http://www.nytimes.com/2015/06/05/fashion/mens-style/farewell-my-lovely-cigarettes.html')
         # assert('http://drinks.seriouseats.com/2011/02/taste-test-best-malt-liquor-forty-colt-45-mickeys-private-stock-olde-english-king-cobra.html' in d['links']['articles']['external'])
+
+    def test_multiple_authors(self):
+        source_url = 'http://www.propublica.org/article/new-snowden-documents-reveal-secret-memos-expanding-spying'
+        d = article.extract(source_url)
+        assert(len(d.get('authors', [])) == 2)
 
 
 if __name__ == '__main__':

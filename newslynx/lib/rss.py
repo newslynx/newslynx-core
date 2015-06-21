@@ -19,7 +19,7 @@ from newslynx.lib import url
 from newslynx.lib import article
 from newslynx.lib import network
 from newslynx.lib import image
-from newslynx.lib.util import uniq
+from newslynx.util import uniq
 
 # JSONPATH CANDIDATES
 URL_CANDIDATE_JSONPATH = [
@@ -56,7 +56,7 @@ TAG_CANDIDATE_JSONPATH = [
 ]
 
 
-def parse_entries(feed_url, domains=[]):
+def get_entries(feed_url, domains=[]):
     """
     Parser entries from an rss feed.
     """
@@ -69,10 +69,9 @@ def extract_entries(feed_url, domains=[]):
     Parse entries from an rss feed and run article extraction
     an each
     """
-    entries = list(FeedExtractor(feed_url, domains).run())
+    entries = get_entries(feed_url, domains)
     urls = [e['url'] for e in entries if e.get('url')]
     p = Pool(len(entries))
-    keys_to_merge = entries[0].keys()
     for i, a in enumerate(p.imap_unordered(article.extract, urls)):
         yield a
 
@@ -83,9 +82,8 @@ def extract_articles(feed_url, domains=[]):
     run article extraction an each
     """
     entries = FeedExtractor(feed_url, domains).run()
-    urls = [e['url'] for e in entries if e.get('url')]
+    urls = [e['url'] for e in entries if url.is_article(e.get('url'))]
     p = Pool(len(entries))
-    keys_to_merge = entries[0].keys()
     for i, a in enumerate(p.imap_unordered(article.extract, urls)):
         yield a
 
@@ -163,7 +161,8 @@ class FeedExtractor(object):
         """
         return all candidates, and parse unique
         """
-        descriptions = self.get_candidates(entry, DESCRIPTION_CANDIDATE_JSONPATH)
+        descriptions = self.get_candidates(
+            entry, DESCRIPTION_CANDIDATE_JSONPATH)
         return self.pick_longest(descriptions)
 
     # get authors
@@ -285,8 +284,3 @@ class FeedExtractor(object):
         f = feedparser.parse(self.feed_url)
         for entry in f.entries:
             yield self.parse_entry(entry)
-
-
-if __name__ == '__main__':
-    for p in extract_entries('http://feeds.propublica.org/propublica/main', ['propublica.org']):
-        print p['img_url']

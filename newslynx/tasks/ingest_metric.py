@@ -7,15 +7,22 @@ from newslynx.lib.serialize import obj_to_json
 
 def content_timeseries(
         obj,
-        content_item_id,
-        org_id,
-        org_metric_lookup,
+        org_id=None,
+        metrics_lookup=None,
         commit=True):
+
     """
     Ingest Timeseries Metrics for a content item.
     """
+
+    # if not content_item_id or not org or not metrics_lookup:
+    #     raise RequestError('Missing required kwargs.')
+    content_item_id = obj.pop('content_item_id')
+    if not content_item_id:
+        raise RequestError('Object is missing a "content_item_id"')
+
     cmd_kwargs = {
-        'org_id': org_id,
+        "org_id": org_id,
         "content_item_id": content_item_id
     }
 
@@ -32,7 +39,7 @@ def content_timeseries(
 
     metrics = ingest_util.prepare_metrics(
         obj,
-        org_metric_lookup,
+        metrics_lookup,
         valid_levels=['content_item', 'all'],
         check_timeseries=True)
 
@@ -55,13 +62,16 @@ def content_timeseries(
 
 def content_summary(
         obj,
-        content_item_id,
         org_id,
         org_metric_lookup,
         commit=True):
     """
     Ingest Summary Metrics for a content item.
     """
+    content_item_id = obj.pop('content_item_id')
+    if not content_item_id:
+        raise RequestError('Object is missing a "content_item_id"')
+
     cmd_kwargs = {
         "org_id": org_id,
         "content_item_id": content_item_id

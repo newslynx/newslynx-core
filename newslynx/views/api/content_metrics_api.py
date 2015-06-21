@@ -3,10 +3,11 @@ import logging
 from flask import Blueprint
 
 from newslynx.views.decorators import load_user, load_org
-from newslynx.exc import NotFoundError
+from newslynx.exc import NotFoundError, RequestError
 from newslynx.models import ContentItem
 from newslynx.lib.serialize import jsonify
-from newslynx.views.util import request_data
+from newslynx.views.util import request_data, url_for_job_status
+from newslynx.tasks import ingest_bulk
 from newslynx.tasks import ingest_metric
 from newslynx.tasks import query_metric
 from newslynx.views.util import (
@@ -56,7 +57,7 @@ def get_content_timeseries(user, org, content_item_id):
 @bp.route('/api/v1/content/<content_item_id>/timeseries', methods=['POST'])
 @load_user
 @load_org
-def create_content_timeseries(user, org, content_item_id):
+def create_content_item_timeseries(user, org, content_item_id):
     """
     Upsert content timseries metrics.
     """
@@ -71,12 +72,47 @@ def create_content_timeseries(user, org, content_item_id):
             .format(content_item_id))
     req_data = request_data()
 
+    # insert content item id
+    req_data['content_item_id'] = content_item_id
+
     ret = ingest_metric.content_timeseries(
         req_data,
-        content_item_id=content_item_id,
-        org=org)
+        org_id=org.id,
+        metrics_lookup=org.metrics_lookup,
+        commit=True)
 
     return jsonify(ret)
+
+
+@bp.route('/api/v1/content/timeseries/bulk', methods=['POST'])
+@load_user
+@load_org
+def bulk_create_content_timeseries(user, org):
+    """
+    bulk upsert timseries metrics for an organization.
+    """
+    req_data = request_data()
+
+    # check for valid format.
+    if not isinstance(req_data, list):
+        raise RequestError(
+            "Bulk endpoints require a list of json objects."
+        )
+
+    # check for content_item_id.
+    if not 'content_item_id' in req_data[0].keys():
+        raise RequestError(
+            'You must pass in a content_item_id with each record.'
+        )
+
+    job_id = ingest_bulk.content_timeseries(
+        req_data,
+        org_id=org.id,
+        metrics_lookup=org.metrics_lookup,
+        commit=False)
+
+    ret = url_for_job_status(apikey=user.apikey, job_id=job_id, queue='bulk')
+    return jsonify(ret, status=202)
 
 
 @bp.route('/api/v1/content/<content_item_id>/summary', methods=['POST'])
@@ -92,12 +128,16 @@ def content_metrics_summary(user, org, content_item_id):
         raise NotFoundError(
             'A ContentItem with ID {} does not exist'
             .format(content_item_id))
+
     req_data = request_data()
+
+    # insert content item id
+    req_data['content_item_id'] = content_item_id
 
     ret = ingest_metric.content_summary(
         req_data,
-        content_item_id,
         org.id,
-        org.metrics_lookup
+        org.metrics_lookup,
+        commit=True
     )
     return jsonify(ret)

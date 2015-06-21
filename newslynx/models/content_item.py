@@ -106,7 +106,7 @@ class ContentItem(db.Model):
         self.type = kw.get('type')
         self.provenance = kw.get('provenance', 'recipe')
         self.domain = kw.get('domain')
-        self.created = kw.get('created')
+        self.created = kw.get('created', dates.now())
         self.site_name = kw.get('site_name')
         self.favicon = kw.get('favicon')
         self.img_url = kw.get('img_url')

@@ -1,6 +1,6 @@
 from sqlalchemy import or_
 
-from newslynx.core import db
+from newslynx.core import gen_session
 from newslynx.util import gen_uuid
 from newslynx.models import (
     Event, ContentItem, Tag, Recipe)
@@ -12,16 +12,19 @@ from newslynx.exc import RequestError, UnprocessableEntityError
 from newslynx.tasks import ingest_util
 
 
-def ingest_event(
+def ingest(
         obj,
         org_id,
         url_fields=['title', 'body', 'description'],
         requires=['title'],
-        must_link=False,
-        commit=True):
+        must_link=False):
     """
     Ingest an Event.
     """
+
+    # distinct session for this eventlet.
+    session = gen_session()
+
     has_content_items = False
 
     # check required fields
@@ -64,13 +67,13 @@ def ingest_event(
     links = obj.pop('links', [])
 
     # determine event provenance
-    obj = _event_provenance(obj, org_id)
+    obj = _event_provenance(obj, org_id, session)
 
     # split out meta fields
     obj = ingest_util.split_meta(obj, get_table_columns(Event))
 
     # see if the event already exists.
-    e = Event.query\
+    e = session.query(Event)\
         .filter_by(org_id=org_id)\
         .filter_by(source_id=obj['source_id'])\
         .first()
@@ -101,25 +104,24 @@ def ingest_event(
 
     # detect content_items
     if len(urls):
-        e, has_content_items = \
-            _associate_content_items(e, org_id, urls, content_item_ids)
+        e, has_content_items = _associate_content_items(
+            e, org_id, urls, content_item_ids, session)
 
     # associate tags
     if len(tag_ids):
-        e = _associate_tags(e, org_id, tag_ids)
+        e = _associate_tags(e, org_id, tag_ids, session)
 
     # dont commit event if we're only looking
     # for events that link to content_items
     if not has_content_items and must_link:
         return None
 
-    if commit:
-        db.session.add(e)
-        db.session.commit()
+    session.add(e)
+    session.commit()
     return e
 
 
-def _event_provenance(o, org_id):
+def _event_provenance(o, org_id, session):
     """
     if there's not a recipe_id set a random source id +
     set the recipe_id as "None" and preface the source_id
@@ -144,7 +146,7 @@ def _event_provenance(o, org_id):
                 'Recipe-generated events must include a source_id.')
 
         # fetch the associated recipe
-        r = Recipe.query\
+        r = session.query(Recipe)\
             .filter_by(id=o['recipe_id'])\
             .filter_by(org_id=org_id)\
             .first()
@@ -164,13 +166,13 @@ def _event_provenance(o, org_id):
     return o
 
 
-def _associate_content_items(e, org_id, urls, content_item_ids):
+def _associate_content_items(e, org_id, urls, content_item_ids, session):
     """
     Check if event has associations with content items.
     """
     has_content_items = False
 
-    content_items = ContentItem.query\
+    content_items = session.query(ContentItem)\
         .filter(or_(ContentItem.url.in_(urls),
                     ContentItem.id.in_(content_item_ids)))\
         .filter(ContentItem.org_id == org_id)\

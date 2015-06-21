@@ -14,7 +14,7 @@ from newslynx.lib.serialize import jsonify
 from newslynx.views.decorators import load_user, load_org
 from newslynx.views.util import *
 from newslynx.tasks import facet
-from newslynx.tasks.ingest_event import ingest_event
+from newslynx.tasks import ingest_event
 from newslynx.constants import EVENT_FACETS
 
 # blueprint
@@ -330,7 +330,7 @@ def create_event(user, org):
     Create an event.
     """
     req_data = request_data()
-    e = ingest_event(
+    e = ingest_event.ingest(
         req_data,
         org_id=org.id,
         must_link=arg_bool('must_link', False))

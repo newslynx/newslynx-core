@@ -1,5 +1,6 @@
+from psycopg2 import IntegrityError
 
-from newslynx.core import db
+from newslynx.core import gen_session
 from newslynx.models import ExtractCache
 from newslynx.models import (
     ContentItem, Tag, Recipe, Author)
@@ -14,16 +15,18 @@ from newslynx.tasks import ingest_util
 extract_cache = ExtractCache()
 
 
-def ingest_content_item(
+def ingest(
         obj,
         org_id,
         url_fields=['body'],
         requires=['url', 'type'],
-        extract=True,
-        commit=True):
+        extract=True):
     """
     Ingest an Event.
     """
+
+    # distinct session for this eventlet.
+    session = gen_session()
 
     # check required fields
     ingest_util.check_requires(obj, requires, type='Content Item')
@@ -80,7 +83,7 @@ def ingest_content_item(
     obj = ingest_util.split_meta(obj, get_table_columns(ContentItem))
 
     # see if the event already exists.
-    c = ContentItem.query\
+    c = session.query(ContentItem)\
         .filter_by(org_id=org_id, type=obj['type'], url=obj['url'])\
         .first()
 
@@ -108,15 +111,15 @@ def ingest_content_item(
 
     # associate tags
     if len(tag_ids):
-        c = _associate_tags(c, org_id, tag_ids)
+        c = _associate_tags(c, org_id, tag_ids, session)
 
     # associate tags
     if len(authors):
-        c = _associate_authors(c, org_id, authors)
+        c = _associate_authors(c, org_id, authors, session)
 
-    if commit:
-        db.session.add(c)
-        db.session.commit()
+    session.add(c)
+    session.commit()
+    session.remove()
     return c
 
 
@@ -126,9 +129,11 @@ def _content_item_provenance(obj, org_id):
     otherwise check it the recipe id is valid and set as "recipe"
     """
 
+    # this is a manual upload
     if 'recipe_id' not in obj or not obj['recipe_id']:
         obj['provenance'] = 'manual'
 
+    # this is from a recipe
     else:
         # fetch the associated recipe
         r = Recipe.query\
@@ -140,39 +145,66 @@ def _content_item_provenance(obj, org_id):
             raise RequestError(
                 'Recipe id "{recipe_id}" does not exist.'
                 .format(**obj))
+
         # set this event as non-manual
         obj['provenance'] = 'recipe'
 
     return obj
 
 
-def _associate_authors(c, org_id, authors):
+def _associate_authors(c, org_id, authors, session):
     """
     Associate authors with a content item.
     """
     if not isinstance(authors, list):
         authors = [authors]
+
     for author in authors:
+        exists = True
+
+        # is this an id or a name ?
         try:
             int(author)
             is_name = False
+
         except ValueError:
             is_name = True
 
+        # upsert by name.
         if is_name:
-            a = Author.query\
+            # standardize as much as we can.
+            author = author.upper().strip()
+            a = session.query(Author)\
                 .filter_by(name=author, org_id=org_id)\
                 .first()
             if not a:
+                exists = False
                 a = Author(org_id=org_id, name=author)
+
+        # upsert by id.
         else:
-            a = Author.query\
+            a = session.query(Author)\
                 .filter_by(id=author, org_id=org_id)\
                 .first()
+            if not a:
+                exists = False
+                a = Author(org_id=org_id, id=author)
 
-        # upsert
+        # create new author.
+        if not exists:
+            try:
+                session.add(a)
+                session.commit()
+
+            # FML: concurrency is hard.
+            except IntegrityError:
+                pass
+
+        # upsert associations
         if a and a.id not in c.author_ids:
             c.authors.append(a)
+
+    # return modified content item (with author associations)
     return c
 
 
