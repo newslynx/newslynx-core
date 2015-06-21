@@ -85,7 +85,7 @@ def get_tags(user, org):
 
         # TODO: refine query so we don't need to do this.
         if t['type'] == 'impact':
-            t.pop('thing_count')
+            t.pop('content_item_count', None)
         else:
             t.pop('event_count')
             t.pop('level')
