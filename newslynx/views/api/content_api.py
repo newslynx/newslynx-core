@@ -160,12 +160,38 @@ def apply_content_item_filters(q, **kw):
         q = q.filter(ContentItem.events.any(
             Event.id.in_(event_ids)))
 
+    if len(kw['include_impact_tags']):
+
+        event_ids = db.session.query(events_tags.c.event_id)\
+            .join(Tag)\
+            .filter_by(org_id=kw['org_id'])\
+            .filter(Tag.id.in_(kw['include_impact_tags']))\
+            .all()
+        event_ids = [e[0] for e in event_ids]
+        for e in event_ids:
+            all_event_ids.add(e)
+        q = q.filter(ContentItem.events.any(
+            Event.id.in_(event_ids)))
+
+    if len(kw['exclude_impact_tags']):
+        event_ids = db.session.query(events_tags.c.event_id)\
+            .join(Tag)\
+            .filter_by(org_id=kw['org_id'])\
+            .filter(Tag.id.in_(kw['exclude_impact_tags']))\
+            .all()
+
+        event_ids = [e[0] for e in event_ids]
+        for e in event_ids:
+            all_event_ids.remove(e)
+        q = q.filter(ContentItem.events.any(
+            Event.id.in_(event_ids)))
+
     # apply tags filter
-    if len(kw['include_tags']):
+    if len(kw['include_subject_tags']):
         q = q.filter(ContentItem.tags.any(
             Tag.id.in_(kw['include_tags'])))
 
-    if len(kw['exclude_tags']):
+    if len(kw['exclude_subject_tags']):
         q = q.filter(~ContentItem.tags.any(
             Tag.id.in_(kw['exclude_tags'])))
 
@@ -223,7 +249,8 @@ def search_content(user, org):
         tag            | a comma-separated list of tags to filter by
         categories     | a comma-separated list of tag_categories to filter by
         levels         | a comma-separated list of tag_levels to filter by
-        tag_ids        | a comma-separated list of content_items_ids to filter by
+        subject_tag_ids| a comma-separated list of subject_tag_ids to filter by
+        impact_tag_ids | a comma-separated list of impact_tag_ids to filter by
         recipe_ids     | a comma-separated list of recipes to filter by
         sous_chefs     | a comma-separated list of sous_chefs to filter by
         url_regex      | what does it sound like
@@ -240,8 +267,10 @@ def search_content(user, org):
     # special arg tuples
     sort_field, direction = \
         arg_sort('sort', default='-created')
-    include_tags, exclude_tags = \
-        arg_list('tag_ids', default=[], typ=int, exclusions=True)
+    include_subject_tags, exclude_subject_tags = \
+        arg_list('subject_tag_ids', default=[], typ=int, exclusions=True)
+    include_impact_tags, exclude_impact_tags = \
+        arg_list('impact_tag_ids', default=[], typ=int, exclusions=True)
     include_recipes, exclude_recipes = \
         arg_list('recipe_ids', default=[], typ=int, exclusions=True)
     include_sous_chefs, exclude_sous_chefs = \
@@ -276,8 +305,10 @@ def search_content(user, org):
         exclude_categories=exclude_categories,
         include_levels=include_levels,
         exclude_levels=exclude_levels,
-        include_tags=include_tags,
-        exclude_tags=exclude_tags,
+        include_subject_tags=include_subject_tags,
+        exclude_subject_tags=exclude_subject_tags,
+        include_impact_tags=include_impact_tags,
+        exclude_impact_tags=exclude_impact_tags,
         include_authors=include_authors,
         exclude_authors=exclude_authors,
         include_recipes=include_recipes,
