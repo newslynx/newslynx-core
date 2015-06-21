@@ -334,6 +334,8 @@ def create_event(user, org):
         req_data,
         org_id=org.id,
         must_link=arg_bool('must_link', False))
+    if not e:
+        return jsonify(None)
     return jsonify(e.to_dict(incl_body=True, incl_img=True))
 
 
@@ -440,7 +442,6 @@ def event_update(user, org, event_id):
 
     # commit changes
     db.session.add(e)
-    db.session.add(c)
     db.session.commit()
 
     # return modified event

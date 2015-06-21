@@ -22,8 +22,8 @@ class TestRecipeAPI(unittest.TestCase):
         assert(recipe['status'] == 'uninitialized')
         recipe = self.api.recipes.update(1, page_name='yo')
         assert(recipe['status'] == 'stable')
-        self.api.recipes.delete(recipe.id)
-        recipe = self.api.recipes.get(recipe.id)
+        self.api.recipes.delete(recipe['id'])
+        recipe = self.api.recipes.get(recipe['id'])
         assert(recipe['status'] == 'inactive')
 
 if __name__ == '__main__':

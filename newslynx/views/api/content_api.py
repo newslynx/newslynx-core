@@ -440,10 +440,11 @@ def create_content(user, org):
     """
     req_data = request_data()
     extract = arg_bool('extract', default=True)
-    c = ingest_content_item(
+    c = ingest_content_item.ingest(
         req_data,
         org_id=org.id,
-        extract=extract)
+        extract=extract,
+        kill_session=False)
     return jsonify(c.to_dict(incl_body=True, incl_img=True, incl_metrics=True))
 
 
@@ -602,7 +603,7 @@ def content_item_add_tag(user, org, content_item_id, tag_id):
         raise RequestError(
             'Content Items can only be assigned Subject Tags.')
 
-    if tag.id not in c.tag_ids:
+    if tag.id not in c.subject_tag_ids:
         c.tags.append(tag)
 
     db.session.add(c)

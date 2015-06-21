@@ -2,7 +2,6 @@ import os
 import copy
 
 from requests import Session, Request
-from addict import Dict
 from urlparse import urljoin
 
 from newslynx import settings
@@ -146,12 +145,7 @@ class BaseClient(object):
         # if there's no response just return true.
         if resp.status_code == 204:
             return True
-
-        data = resp.json()
-        if isinstance(data, list):
-            return [Dict(d) for d in data]
-
-        return Dict(data)
+        return resp.json()
 
     def login(self, **kw):
         """

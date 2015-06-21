@@ -24,7 +24,7 @@ class TestContentAPI(unittest.TestCase):
             'tag_ids': [13, 14]
         }
         c = self.api.content.create(extract=True, **c)
-        assert(len(c['tag_ids']) == 2)
+        assert(len(c['subject_tag_ids']) == 2)
         assert(len(c['authors']) == 1)
         assert(c['provenance'] == 'manual')
 
@@ -49,13 +49,13 @@ class TestContentAPI(unittest.TestCase):
 
     def test_content_facets(self):
         c = self.api.content.search(facets='all')
-        assert len(c.facets.keys()) == len(CONTENT_ITEM_FACETS)
+        assert len(c['facets'].keys()) == len(CONTENT_ITEM_FACETS)
 
     def test_content_search(self):
         c = self.api.content.get(1)
         cis = self.api.content.search(
-            q=c.title, search='title', sort='relevance')
-        assert(cis.content_items[0].title == c.title)
+            q=c['title'], search='title', sort='relevance')
+        assert(cis['content_items'][0]['title'] == c['title'])
 
     def test_content_bad_type(self):
         try:
@@ -75,41 +75,41 @@ class TestContentAPI(unittest.TestCase):
 
     def test_content_domain_filter(self):
         cis = self.api.content.search(domain='foodflikjalsdf')
-        assert(len(cis.content_items) == 0)
+        assert(len(cis['content_items']) == 0)
 
     def test_content_url_regex(self):
         cis = self.api.content.search(url_regex='.*example.*')
-        if len(cis.content_items):
-            assert(re.search('.*example.*', cis.content_items[0].url))
+        if len(cis['content_items']):
+            assert(re.search('.*example.*', cis['content_items'][0]['url']))
 
     def test_update_content(self):
         n = fake.name()
         c = self.api.content.get(1)
         c1 = self.api.content.update(1, title=n)
-        assert(c1.title == n)
-        assert(c1.title != c.title)
+        assert(c1['title'] == n)
+        assert(c1['title'] != c['title'])
 
     def test_delete_content(self):
         cis = self.api.content.search(sort='created')
-        c = cis.content_items[0]
-        ts = self.api.content.get_timeseries(c.id)
+        c = cis['content_items'][0]
+        ts = self.api.content.get_timeseries(c['id'])
         assert(len(ts))
-        r = self.api.content.delete(c.id)
+        r = self.api.content.delete(c['id'])
         assert(r)
         try:
-            self.api.content.get_timeseries(c.id)
+            self.api.content.get_timeseries(c['id'])
         except Exception as e:
             assert(e.status_code == 404)
 
     def test_add_remove_subject_tag(self):
         tags = self.api.tags.list(type='subject')
-        t = tags.tags[0]
-        cis = self.api.content.search(sort='id', tag_ids='!{}'.format(t.id))
-        c1 = cis.content_items[0]
-        c2 = self.api.content.add_tag(c1.id, t.id)
-        assert(len(c2.tag_ids) > len(c1.tag_ids))
-        c3 = self.api.content.remove_tag(c1.id, t.id)
-        assert(len(c3.tag_ids) == len(c1.tag_ids))
+        t = tags['tags'][0]
+        cis = self.api.content.search(sort='id', tag_ids='!{}'.format(t['id']))
+        c1 = cis['content_items'][0]
+        c2 = self.api.content.add_tag(c1['id'], t['id'])
+        assert(len(c2['subject_tag_ids']) > len(c1['subject_tag_ids']))
+        c3 = self.api.content.remove_tag(c1['id'], t['id'])
+        assert(len(c3['subject_tag_ids']) == len(c1['subject_tag_ids']))
 
 
 if __name__ == '__main__':

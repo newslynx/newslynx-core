@@ -20,7 +20,8 @@ def ingest(
         org_id,
         url_fields=['body'],
         requires=['url', 'type'],
-        extract=True):
+        extract=True,
+        kill_session=True):
     """
     Ingest an Event.
     """
@@ -77,7 +78,7 @@ def ingest(
     # links = obj.pop('links', {})
 
     # determine event provenance
-    data = _content_item_provenance(obj, org_id)
+    obj = _content_item_provenance(obj, org_id)
 
     # split out meta fields
     obj = ingest_util.split_meta(obj, get_table_columns(ContentItem))
@@ -119,7 +120,8 @@ def ingest(
 
     session.add(c)
     session.commit()
-    session.remove()
+    if kill_session:
+        session.remove()
     return c
 
 
@@ -208,29 +210,58 @@ def _associate_authors(c, org_id, authors, session):
     return c
 
 
-def _associate_tags(c, org_id, tag_ids):
+def _associate_tags(c, org_id, tag_ids, session):
     """
-    Associate tags with a content item.
+    Associate tags with event ids.
     """
-    for tid in tag_ids:
-        tag = fetch_by_id_or_field(Tag, 'slug', tid, org_id)
-        if not tag:
-            raise RequestError(
-                'Tag with id/slug {} does not exist.'
-                .format(tid))
+    if not isinstance(tag_ids, list):
+        tag_ids = [tag_ids]
 
-        if tag:
-            if tag.type != 'subject':
-                raise RequestError(
-                    'Only subject tags can be associated with Content Items. '
-                    'Tag {} is of type {}'
-                    .format(tag.id, tag.type))
+    for tag in tag_ids:
+        exists = True
 
-        # upsert
-        if tag.id not in c.tag_ids:
-            c.tags.append(tag)
+        # is this an id or a name ?
+        try:
+            int(tag)
+            is_name = False
+
+        except ValueError:
+            is_name = True
+
+        # upsert by name.
+        if is_name:
+            # standardize as much as we can.
+            t = session.query(Tag)\
+                .filter_by(slug=tag, org_id=org_id)\
+                .first()
+            if not t:
+                exists = False
+                t = Tag(org_id=org_id, slug=tag)
+
+        # upsert by id.
+        else:
+            t = session.query(Tag)\
+                .filter_by(id=tag, org_id=org_id)\
+                .first()
+
+            if not t:
+                exists = False
+                t = Tag(org_id=org_id, id=tag)
+
+        # create new author.
+        if not exists:
+            try:
+                session.add(t)
+                session.commit()
+
+            # FML: concurrency is hard.
+            except IntegrityError:
+                pass
+
+        # upsert associations
+        if t and t.id not in c.subject_tag_ids:
+            c.tags.append(t)
     return c
-
 # def _associate_content_items(c, org_id, urls):
 #     """
 #     Check if event has associations with content items.

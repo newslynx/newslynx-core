@@ -12,45 +12,45 @@ class TestMetricsAPI(unittest.TestCase):
 
     def test_all(self):
         resp = self.api.metrics.list()
-        assert(resp.facets.keys() > 1)
-        assert(len(resp.metrics) > 1)
+        assert(resp['facets'].keys() > 1)
+        assert(len(resp['metrics']) > 1)
 
         resp = self.api.metrics.list(timeseries=True)
-        assert(resp.facets.keys() > 1)
-        for m in resp.metrics:
-            assert(m.timeseries)
+        assert(resp['facets'].keys() > 1)
+        for m in resp['metrics']:
+            assert(m['timeseries'])
 
         resp = self.api.metrics.list(cumulative=True)
-        assert(resp.facets.keys() > 1)
-        for m in resp.metrics:
-            assert(m.cumulative)
+        assert(resp['facets'].keys() > 1)
+        for m in resp['metrics']:
+            assert(m['cumulative'])
 
         resp = self.api.metrics.list(faceted=True)
-        assert(resp.facets.keys() > 1)
-        for m in resp.metrics:
-            assert(m.faceted)
+        assert(resp['facets'].keys() > 1)
+        for m in resp['metrics']:
+            assert(m['faceted'])
 
         resp = self.api.metrics.list(aggregations='!median')
-        assert(resp.facets.keys() > 1)
-        for m in resp.metrics:
-            assert(m.aggregation != 'median')
+        assert(resp['facets'].keys() > 1)
+        for m in resp['metrics']:
+            assert(m['aggregation'] != 'median')
 
         resp = self.api.metrics.list(aggregations='sum')
-        assert(resp.facets.keys() > 1)
-        for m in resp.metrics:
-            assert(m.aggregation == 'sum')
+        assert(resp['facets'].keys() > 1)
+        for m in resp['metrics']:
+            assert(m['aggregation'] == 'sum')
 
-        m = self.api.metrics.get(1)
+        m = self.api.metrics.list()['metrics'][0]
+        n = fake.name()
+        m2 = self.api.metrics.update(m['id'], name='foo', display_name=n)
+        assert(m2['name'] != 'foo')
+        assert(m['display_name'] != m2['display_name'])
 
-        m2 = self.api.metrics.update(m.id, name='foo', display_name='bar')
-        assert(m2.name != 'foo')
-        assert(m.display_name != m2.display_name)
-
-        r = self.api.metrics.delete(m.id)
+        r = self.api.metrics.delete(m['id'])
         assert(r)
 
         try:
-            self.api.metrics.get(m.id)
+            self.api.metrics.get(m['id'])
             assert False
         except:
             assert True

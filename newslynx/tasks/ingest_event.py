@@ -1,12 +1,11 @@
+from psycopg2 import IntegrityError
 from sqlalchemy import or_
 
 from newslynx.core import gen_session
 from newslynx.util import gen_uuid
 from newslynx.models import (
     Event, ContentItem, Tag, Recipe)
-from newslynx.models.util import (
-    get_table_columns,
-    fetch_by_id_or_field)
+from newslynx.models.util import get_table_columns
 from newslynx.views.util import validate_event_status
 from newslynx.exc import RequestError, UnprocessableEntityError
 from newslynx.tasks import ingest_util
@@ -188,25 +187,55 @@ def _associate_content_items(e, org_id, urls, content_item_ids, session):
     return e, has_content_items
 
 
-def _associate_tags(e, org_id, tag_ids):
+def _associate_tags(e, org_id, tag_ids, session):
     """
     Associate tags with event ids.
     """
-    for tid in tag_ids:
-        tag = fetch_by_id_or_field(Tag, 'slug', tid, org_id)
-        if not tag:
-            raise RequestError(
-                'Tag with id/slug {} does not exist.'
-                .format(tid))
+    if not isinstance(tag_ids, list):
+        tag_ids = [tag_ids]
 
-        if tag:
-            if tag.type != 'impact':
-                raise RequestError(
-                    'Only impact tags can be associated with Events. '
-                    'Tag {} is of type {}'
-                    .format(tag.id, tag.type))
+    for tag in tag_ids:
+        exists = True
 
-        # upsert
-        if tag.id not in e.tag_ids:
-            e.tags.append(tag)
+        # is this an id or a name ?
+        try:
+            int(tag)
+            is_name = False
+
+        except ValueError:
+            is_name = True
+
+        # upsert by name.
+        if is_name:
+            # standardize as much as we can.
+            t = session.query(Tag)\
+                .filter_by(slug=tag, org_id=org_id)\
+                .first()
+            if not t:
+                exists = False
+                t = Tag(org_id=org_id, slug=tag)
+
+        # upsert by id.
+        else:
+            t = session.query(Tag)\
+                .filter_by(id=tag, org_id=org_id)\
+                .first()
+
+            if not t:
+                exists = False
+                t = Tag(org_id=org_id, id=tag)
+
+        # create new author.
+        if not exists:
+            try:
+                session.add(t)
+                session.commit()
+
+            # FML: concurrency is hard.
+            except IntegrityError:
+                pass
+
+        # upsert associations
+        if t and t.id not in e.tag_ids:
+            e.tags.append(t)
     return e

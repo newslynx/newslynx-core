@@ -15,9 +15,9 @@ import requests
 api = API(org=1)
 
 # # flush the cache to ensure realstic times.
-# URLCache.flush()
-# ExtractCache.flush()
-# ThumbnailCache.flush()
+URLCache.flush()
+ExtractCache.flush()
+ThumbnailCache.flush()
 
 
 def poll_status_url(status_url):
