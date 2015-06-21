@@ -328,8 +328,14 @@ def search_content(user, org):
        kw['sort_field'].startswith('metrics'):
 
         metric_sort = False
-        validate_fields(
-            ContentItem, fields=[kw['sort_field']], suffix='to sort by')
+        try:
+            validate_fields(
+                ContentItem, fields=[kw['sort_field']], suffix='to sort by')
+
+        except Exception as e:
+            raise RequestError("{} To sort by a metric, you must use the following "
+                               "format: 'metrics.<metric_name>'."
+                               .format(e.message))
 
     # validate metric sort fields
     elif kw['sort_field'].startswith('metrics'):
@@ -340,7 +346,7 @@ def search_content(user, org):
         if len(parts) != 2:
             raise RequestError(
                 "To sort by a metric, you must use the following "
-                "format: 'metrics.{metric_name}'. You input '{}'."
+                "format: 'metrics.<metric_name>'. You input '{}'."
                 .format(kw['sort_field']))
 
         # fetch metrics

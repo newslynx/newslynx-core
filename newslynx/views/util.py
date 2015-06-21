@@ -235,7 +235,7 @@ def validate_fields(obj, fields=[], incl=[], suffix='to select by'):
             msg = 'are not valid field names'
         raise RequestError(
             "'{}' {} {}. Choose from: {}."
-            .format(', '.join(bad_fields), msg, suffix, columns))
+            .format(', '.join(bad_fields), msg, suffix, ", ".join(columns)))
 
 
 def validate_tag_types(values):
