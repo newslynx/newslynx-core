@@ -218,7 +218,6 @@ def _associate_tags(c, org_id, tag_ids, session):
         tag_ids = [tag_ids]
 
     for tag in tag_ids:
-        exists = True
 
         # is this an id or a name ?
         try:
@@ -230,13 +229,11 @@ def _associate_tags(c, org_id, tag_ids, session):
 
         # upsert by name.
         if is_name:
+
             # standardize as much as we can.
             t = session.query(Tag)\
                 .filter_by(slug=tag, org_id=org_id)\
                 .first()
-            if not t:
-                exists = False
-                t = Tag(org_id=org_id, slug=tag)
 
         # upsert by id.
         else:
@@ -244,22 +241,14 @@ def _associate_tags(c, org_id, tag_ids, session):
                 .filter_by(id=tag, org_id=org_id)\
                 .first()
 
-            if not t:
-                exists = False
-                t = Tag(org_id=org_id, id=tag)
-
         # create new author.
-        if not exists:
-            try:
-                session.add(t)
-                session.commit()
-
-            # FML: concurrency is hard.
-            except IntegrityError:
-                pass
+        if not t:
+            raise RequestError(
+                'A tag with ID/slug "{}" does not exist'
+                .format(tag))
 
         # upsert associations
-        if t and t.id not in c.subject_tag_ids:
+        if t.id not in c.subject_tag_ids:
             c.tags.append(t)
     return c
 # def _associate_content_items(c, org_id, urls):
