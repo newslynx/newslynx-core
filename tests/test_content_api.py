@@ -1,6 +1,7 @@
 import unittest
 import re
 from faker import Faker
+from random import choice
 
 from newslynx.client import API
 from newslynx.models import ExtractCache
@@ -103,9 +104,9 @@ class TestContentAPI(unittest.TestCase):
 
     def test_add_remove_subject_tag(self):
         tags = self.api.tags.list(type='subject')
-        t = tags['tags'][0]
+        t = choice(tags['tags'])
         cis = self.api.content.search(sort='id', tag_ids='!{}'.format(t['id']))
-        c1 = cis['content_items'][0]
+        c1 = choice(cis['content_items'])
         c2 = self.api.content.add_tag(c1['id'], t['id'])
         assert(len(c2['subject_tag_ids']) > len(c1['subject_tag_ids']))
         c3 = self.api.content.remove_tag(c1['id'], t['id'])
