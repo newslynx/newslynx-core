@@ -9,17 +9,20 @@ def content_timeseries(
         obj,
         org_id=None,
         metrics_lookup=None,
+        content_item_ids=None,
         commit=True):
 
     """
     Ingest Timeseries Metrics for a content item.
     """
-
+    print "CONTENT ITEM IDS", content_item_ids
     # if not content_item_id or not org or not metrics_lookup:
     #     raise RequestError('Missing required kwargs.')
     content_item_id = obj.pop('content_item_id')
     if not content_item_id:
         raise RequestError('Object is missing a "content_item_id"')
+    if not content_item_id in content_item_ids:
+        raise RequestError('Content Item with ID {} doesnt exist'.format(content_item_id))
 
     cmd_kwargs = {
         "org_id": org_id,
@@ -62,15 +65,19 @@ def content_timeseries(
 
 def content_summary(
         obj,
-        org_id,
-        org_metric_lookup,
+        org_id=None,
+        metrics_lookup=None,
+        content_item_ids=None,
         commit=True):
     """
     Ingest Summary Metrics for a content item.
     """
+    print "CONTENT ITEM IDS", content_item_ids
     content_item_id = obj.pop('content_item_id')
     if not content_item_id:
         raise RequestError('Object is missing a "content_item_id"')
+    if not content_item_id in content_item_ids:
+        raise RequestError('Content Item with ID {} doesnt exist'.format(content_item_id))
 
     cmd_kwargs = {
         "org_id": org_id,
@@ -79,7 +86,7 @@ def content_summary(
 
     metrics = ingest_util.prepare_metrics(
         obj,
-        org_metric_lookup,
+        metrics_lookup,
         valid_levels=['content_item', 'all'],
         check_timeseries=False)
 
@@ -101,8 +108,8 @@ def content_summary(
 
 def org_timeseries(
         obj,
-        org_id,
-        org_metric_lookup,
+        org_id=None,
+        metrics_lookup=None,
         commit=True):
     """
     Ingest Timeseries Metrics for an organization.
@@ -124,7 +131,7 @@ def org_timeseries(
 
     metrics = ingest_util.prepare_metrics(
         obj,
-        org_metric_lookup,
+        metrics_lookup,
         valid_levels=['org', 'all'],
         check_timeseries=True)
 
@@ -148,7 +155,7 @@ def org_timeseries(
 def org_summary(
         obj,
         org_id,
-        org_metric_lookup,
+        metrics_lookup,
         commit=True):
     """
     Ingest Summary Metrics for an organization.
@@ -159,7 +166,7 @@ def org_summary(
 
     metrics = ingest_util.prepare_metrics(
         obj,
-        org_metric_lookup,
+        metrics_lookup,
         valid_levels=['org', 'all'],
         check_timeseries=False)
 

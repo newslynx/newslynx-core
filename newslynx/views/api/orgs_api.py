@@ -111,6 +111,31 @@ def org(user, org_id_slug):
     return jsonify(org)
 
 
+@bp.route('/api/v1/orgs/<org_id_slug>/simple-content', methods=['GET'])
+@load_user
+def org_content(user, org_id_slug):
+    """
+    Return a simple list of all content items an organization owns.
+    """
+    # fetch org
+    org = fetch_by_id_or_field(Org, 'slug', org_id_slug)
+
+    # if it still doesn't exist, raise an error.
+    if not org:
+        raise NotFoundError(
+            'This Org does not exist.')
+
+    # ensure the active user can edit this Org
+    if user.id not in org.user_ids:
+        raise ForbiddenError(
+            'You are not allowed to access this Org')
+
+    # localize
+    localize(org)
+
+    return jsonify(org.simple_content_items)
+
+
 @bp.route('/api/v1/orgs/<org_id_slug>', methods=['PUT', 'PATCH'])
 @load_user
 def org_update(user, org_id_slug):

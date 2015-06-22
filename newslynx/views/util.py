@@ -593,14 +593,12 @@ def url_for_job_status(**kw):
     """
     Generate a url for a job status
     """
+    # add context
+    kw['orig_url'] = request.url
+    kw['started'] = dates.now().isoformat()
     path = url_for('jobs.get_status', **kw)
-    status_url = urljoin(settings.API_URL, path)
-    return {
-        'job_id': kw.get('job_id'),
-        'status_url': status_url,
-        'queue': kw.get('queue'),
-        'datetime': dates.now()
-    }
+    kw['status_url'] = urljoin(settings.API_URL, path)
+    return kw
 
 
 # Responses

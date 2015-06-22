@@ -14,7 +14,7 @@ from newslynx.tasks import ingest_event
 from newslynx.tasks import ingest_metric
 from newslynx.util import gen_uuid
 from newslynx.lib.serialize import (
-    json_to_obj, obj_to_json)
+    jsongz_to_obj, obj_to_jsongz)
 
 
 class BulkLoader(object):
@@ -22,8 +22,8 @@ class BulkLoader(object):
     returns = None  # either "model" or "query"
     timeout = 1000  # seconds
     result_ttl = 60  # seconds
-    kwargs_ttl = 60
-    max_workers = 20
+    kwargs_ttl = 1000 # in case there is a backup in the queue
+    max_workers = 30
     kwargs_key = 'rq:kwargs:{}'
     q = queues.get('bulk')
 
@@ -57,7 +57,7 @@ class BulkLoader(object):
                 'An unexpected error occurred while processing bulk upload.'
             )
 
-        kwargs = json_to_obj(kwargs)
+        kwargs = jsongz_to_obj(kwargs)
         data = kwargs.get('data')
         kw = kwargs.get('kw')
 
@@ -69,11 +69,8 @@ class BulkLoader(object):
 
         fx = partial(self._load_one, **kw)
 
-        # TODO: pooled execution (How do we manage sessions within multiple eventlets?)
         pool = Pool(min([len(data), self.max_workers]))
         for err, res in pool.imap_unordered(fx, data):
-        # for item in data:
-            # err, res = fx(item)
             if err:
                 errors.append(res)
             else:
@@ -82,7 +79,7 @@ class BulkLoader(object):
         # return errors
         if len(errors):
             return RequestError(
-                'There were errors while bulk uploading: '
+                'There was an error while bulk uploading: '
                 '{}'.format(errors[0].message))
 
         # add objects and execute
@@ -93,7 +90,7 @@ class BulkLoader(object):
                         session.add(o)
                     except Exception as e:
                         return RequestError(
-                            'There were errors while bulk uploading: {}'
+                            'There was an error while bulk uploading: {}'
                             .format(e.message))
 
         # union all queries
@@ -103,7 +100,7 @@ class BulkLoader(object):
                     session.execute(query)
                 except Exception as e:
                     return RequestError(
-                        'There were errors while bulk uploading: {}'
+                        'There was an error while bulk uploading: {}'
                         .format(e.message))
         try:
             session.commit()
@@ -112,7 +109,7 @@ class BulkLoader(object):
             session.rollback()
             session.remove()
             return RequestError(
-                'There were errors while bulk uploading: {}'
+                'There was an error while bulk uploading: {}'
                 .format(e.message))
         session.remove()
         return True
@@ -122,11 +119,13 @@ class BulkLoader(object):
         # store the data + kwargs in redis temporarily
         # this makes the enqueuing process much, much more
         # efficient by allowing us to only pass a single key
-        # into the queue rather than a massive dump of json
+        # into the queue rather than a massive dump of data
+        # however it also means that all kwargs must be
+        # json serializable
         job_id = gen_uuid()
         kwargs_key = self.kwargs_key.format(job_id)
         kwargs = {'data': data, 'kw': kw}
-        rds.set(kwargs_key, obj_to_json(kwargs), ex=self.kwargs_ttl)
+        rds.set(kwargs_key, obj_to_jsongz(kwargs), ex=self.kwargs_ttl)
 
         # send the job to the task queue
         self.q.enqueue(
@@ -150,7 +149,7 @@ class ContentTimeseriesBulkLoader(BulkLoader):
 class ContentSummaryBulkLoader(BulkLoader):
 
     returns = 'query'
-    timeout = 120
+    timeout = 480
 
     def load_one(self, item, **kw):
 
@@ -180,7 +179,7 @@ class OrgSummaryBulkLoader(BulkLoader):
 class EventBulkLoader(BulkLoader):
 
     returns = 'model'
-    timeout = 240
+    timeout = 480
 
     def load_one(self, item, **kw):
 

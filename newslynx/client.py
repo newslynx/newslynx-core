@@ -118,6 +118,13 @@ class BaseClient(object):
 
         return kw, params
 
+    def _check_bulk_kw(self, kw):
+        """
+        Validate bulk endpoints.
+        """
+        if 'data' not in kw:
+            raise ClientError('Bulk endpoints require a "data" keyword argument.')
+
     def _handle_errors(self, resp, err=None):
         """
         Handle all errors.
@@ -199,12 +206,7 @@ class Orgs(BaseClient):
         """
         Get an organization.
         """
-        if not org:
-            org = copy.copy(self.org)
-            if not org:
-                raise ValueError(
-                    'You must pass in the org ID or name as the first argument.')
-
+        org = self._check_org(org)
         url = self._format_url('orgs', org)
         return self._request('GET', url, params=kw)
 
@@ -220,11 +222,7 @@ class Orgs(BaseClient):
         """
         Update an organization.
         """
-        if not org:
-            org = copy.copy(self.org)
-            if not org:
-                raise ValueError(
-                    'You must pass in the org ID or name as the first argument.')
+        org = self._check_org(org)
         kw, params = self._split_auth_params_from_data(kw)
         url = self._format_url('orgs', org)
         return self._request('PUT', url, data=kw, params=params)
@@ -233,12 +231,7 @@ class Orgs(BaseClient):
         """
         Delete an organization.
         """
-        if not org:
-            org = copy.copy(self.org)
-            if not org:
-                raise ValueError(
-                    'You must pass in the org ID or name as the first argument.')
-
+        org = self._check_org(org)
         url = self._format_url('orgs', org)
         return self._request('DELETE', url, params=kw)
 
@@ -246,13 +239,8 @@ class Orgs(BaseClient):
         """
         Get a user profile from an organization
         """
-        if not org:
-            org = copy.copy(self.org)
-            if not org:
-                raise ValueError(
-                    'You must pass in the org ID or name as the first argument.')
-
-        elif not user:
+        org = self._check_org(org)
+        if not user:
             raise ValueError(
                 'You must pass in the user id or email as the second argument.')
 
@@ -263,12 +251,7 @@ class Orgs(BaseClient):
         """
         Get all user profiles under an organization.
         """
-        if not org:
-            org = copy.copy(self.org)
-            if not org:
-                raise ValueError(
-                    'You must pass in the org ID or name as the first argument.')
-
+        org = self._check_org(org)
         url = self._format_url('orgs', org, 'users')
         return self._request('GET', url, params=kw)
 
@@ -276,11 +259,7 @@ class Orgs(BaseClient):
         """
         Create a user under an org.
         """
-        if not org:
-            org = copy.copy(self.org)
-            if not org:
-                raise ValueError(
-                    'You must pass in the org ID or name as the first argument.')
+        org = self._check_org(org)
         kw, params = self._split_auth_params_from_data(kw)
         url = self._format_url('orgs', org, 'users')
         return self._request('POST', url, data=kw, params=params)
@@ -289,35 +268,88 @@ class Orgs(BaseClient):
         """
         Add an existing user to an organization.
         """
-        if not org:
-            org = copy.copy(self.org)
-            if not org:
-                raise ValueError(
-                    'You must pass in the org ID or name as the first argument.')
-
-        elif not user:
-            raise ValueError(
-                'You must pass in the user id or email as the second argument.')
-
+        org = self._check_org(org)
         url = self._format_url('orgs', org, 'users', user)
+        if not user:
+            raise ValueError(
+                'You must pass in the \'user\' id or email as the second argument.')
         return self._request('PUT', url, params=kw)
 
     def remove_user(self, org=None, user=None, **kw):
         """
         Remove an existing user from an organization.
         """
+        org = self._check_org(org)
+        if not user:
+            raise ValueError(
+                'You must pass in the \'user\' id or email as the second argument.')
+        url = self._format_url('orgs', org, 'users', user)
+        return self._request('DELETE', url, params=kw)
+
+    def get_timeseries(self, org=None, **kw):
+        """
+        Get a content item timeseries.
+        """
+        org = self._check_org(org)
+        url = self._format_url('orgs', org, 'timeseries')
+        return self._request('GET', url, params=kw)
+
+    def create_timeseries(self, org=None, **kw):
+        """
+        Create timeseries metric(s) for a content item.
+        """
+        org = self._check_org(org)
+        kw, params = self._split_auth_params_from_data(kw)
+        url = self._format_url('orgs', org, 'timeseries')
+        return self._request('POST', url, params=params, data=kw)
+
+    def bulk_create_timeseries(self, org=None, **kw):
+        """
+        Bulk create timeseries metric(s) for content items.
+        """
+        org = self._check_org(org)
+        self._check_bulk_kw(kw)
+        kw, params = self._split_auth_params_from_data(kw)
+        url = self._format_url('orgs', org, 'timeseries', 'bulk')
+        return self._request('POST', url, params=params, data=kw['data'])
+
+    def get_summary(self, org=None, **kw):
+        """
+        Get an org's summary metrics.
+        """
+        org = self._check_org(org)
+        url = self._format_url('orgs', org, 'summary')
+        return self._request('GET', url, params=kw)
+
+    def create_summary(self, org=None, **kw):
+        """
+        Create summary metric(s) for an organization.
+        """
+        org = self._check_org(org)
+        kw, params = self._split_auth_params_from_data(kw)
+        url = self._format_url('orgs', org, 'summary')
+        return self._request('POST', url, params=params, data=kw)
+
+    def simple_content(self, org=None, **kw):
+        """
+        Return a simplified, non-paginated list of all content items for an org.
+        This is mostly useful for recipes.
+        """
+        org = self._check_org(org)
+        url = self._format_url('orgs', org, 'simple-content')
+        return self._request('GET', url, params=kw)
+
+    def _check_org(self, org):
+        """
+        Check for org arg.
+        """
         if not org:
             org = copy.copy(self.org)
             if not org:
                 raise ValueError(
-                    'You must pass in the org ID or name as the first argument.')
-
-        elif not user:
-            raise ValueError(
-                'You must pass in the user id or email as the second argument.')
-
-        url = self._format_url('orgs', org, 'users', user)
-        return self._request('DELETE', url, params=kw)
+                    'You must pass in the org ID or slug as the first argument '
+                    'if you have not set it when initializating API.')
+        return org
 
 
 class Settings(BaseClient):
@@ -472,6 +504,15 @@ class Events(BaseClient):
         url = self._format_url('events')
         return self._request('POST', url, params=params, data=kw)
 
+    def bulk_create(self, **kw):
+        """
+        Bulk create content items.
+        """
+        self._check_bulk_kw(kw)
+        kw, params = self._split_auth_params_from_data(kw, kw_incl=['must_link'])
+        url = self._format_url('events', 'bulk')
+        return self._request('POST', url, params=params, data=kw['data'])
+
     def get(self, event_id, **kw):
         """
         Get an individual event.
@@ -551,8 +592,7 @@ class Content(BaseClient):
         """
         Bulk create content items.
         """
-        if 'data' not in kw:
-            raise ClientError('Bulk endpoints require a "data" kwarg')
+        self._check_bulk_kw(kw)
         kw, params = self._split_auth_params_from_data(kw, kw_incl=['extract'])
         url = self._format_url('content', 'bulk')
         return self._request('POST', url, params=params, data=kw['data'])
@@ -589,12 +629,35 @@ class Content(BaseClient):
 
     def bulk_create_timeseries(self, **kw):
         """
-        Create timeseries metric(s) for a content item.
+        Bulk create timeseries metric(s) for content items.
         """
-        if 'data' not in kw:
-            raise ClientError('Bulk endpoints require a "data" kwarg')
+        self._check_bulk_kw(kw)
         kw, params = self._split_auth_params_from_data(kw)
         url = self._format_url('content', 'timeseries', 'bulk')
+        return self._request('POST', url, params=params, data=kw['data'])
+
+    def get_summary(self, content_id, **kw):
+        """
+        Get a content item timeseries.
+        """
+        url = self._format_url('content', content_id, 'summary')
+        return self._request('GET', url, params=kw)
+
+    def create_summary(self, content_id, **kw):
+        """
+        Create summary metric(s) for a content item.
+        """
+        kw, params = self._split_auth_params_from_data(kw)
+        url = self._format_url('content', content_id, 'summary')
+        return self._request('POST', url, params=params, data=kw)
+
+    def bulk_create_summary(self, **kw):
+        """
+        Bulk create summary metric(s) for content items.
+        """
+        self._check_bulk_kw(kw)
+        kw, params = self._split_auth_params_from_data(kw)
+        url = self._format_url('content', 'summary', 'bulk')
         return self._request('POST', url, params=params, data=kw['data'])
 
     def add_tag(self, content_id, tag_id, **kw):

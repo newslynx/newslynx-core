@@ -3,7 +3,7 @@ from gevent.pool import Pool
 import copy
 import logging
 
-from flask import Blueprint
+from flask import Blueprint, request
 
 from newslynx.core import db
 from newslynx.exc import RequestError, NotFoundError
@@ -15,6 +15,7 @@ from newslynx.views.decorators import load_user, load_org
 from newslynx.views.util import *
 from newslynx.tasks import facet
 from newslynx.tasks import ingest_event
+from newslynx.tasks import ingest_bulk
 from newslynx.constants import EVENT_FACETS
 
 # blueprint
@@ -330,6 +331,13 @@ def create_event(user, org):
     Create an event.
     """
     req_data = request_data()
+
+    # check for valid format.
+    if not isinstance(req_data, dict):
+        raise RequestError(
+            "Non-bulk endpoints require a single json object."
+        )
+
     e = ingest_event.ingest(
         req_data,
         org_id=org.id,
@@ -338,6 +346,29 @@ def create_event(user, org):
     if not e:
         return jsonify(None)
     return jsonify(e.to_dict(incl_body=True, incl_img=True))
+
+
+@bp.route('/api/v1/events/bulk', methods=['POST'])
+@load_user
+@load_org
+def bulk_create_event(user, org):
+    """
+    Create an event.
+    """
+    req_data = request_data()
+
+    # check for valid format.
+    if not isinstance(req_data, list):
+        raise RequestError(
+            "Non-bulk endpoints require a list of json objects.")
+
+    job_id = ingest_bulk.events(
+        req_data,
+        org_id=org.id,
+        must_link=arg_bool('must_link', False),
+        kill_session=True)
+    ret = url_for_job_status(apikey=user.apikey, job_id=job_id, queue='bulk')
+    return jsonify(ret, status=202)
 
 
 @bp.route('/api/v1/events/<int:event_id>', methods=['GET'])

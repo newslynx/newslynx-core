@@ -2,21 +2,22 @@ from gevent.pool import Pool
 
 from copy import copy
 
-from flask import Blueprint
+from flask import Blueprint, session
 from sqlalchemy import distinct, text
 from sqlalchemy.types import Numeric
 
 from newslynx.core import db
 from newslynx.exc import NotFoundError
-from newslynx.models import (
-    ContentItem, Author, ContentMetricSummary, Tag, Event)
 from newslynx.lib.serialize import jsonify
+from newslynx.lib import dates
 from newslynx.views.decorators import load_user, load_org
 from newslynx.tasks import facet
 from newslynx.tasks import ingest_content_item
 from newslynx.tasks import ingest_bulk
 from newslynx.models.relations import content_items_events, events_tags
 from newslynx.views.util import *
+from newslynx.models import (
+    ContentItem, Author, ContentMetricSummary, Tag, Event)
 from newslynx.constants import (
     CONTENT_ITEM_FACETS, CONTENT_ITEM_EVENT_FACETS)
 
@@ -422,7 +423,7 @@ def search_content(user, org):
                     .filter(content_items_events.c.content_item_id.in_(content_item_ids))\
                     .group_by(content_items_events.c.event_id)\
                     .all()
-                event_ids = [e[0] for e in event_ids]
+                event_ids = [ee[0] for ee in event_ids]
 
         # pooled faceting function
         def fx(by):
@@ -497,6 +498,7 @@ def bulk_create_content(user, org):
         req_data,
         org_id=org.id,
         extract=extract)
+    session['started'] = dates.now()
     ret = url_for_job_status(apikey=user.apikey, job_id=job_id, queue='bulk')
     return jsonify(ret)
 

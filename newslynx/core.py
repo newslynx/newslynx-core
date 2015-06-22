@@ -73,6 +73,7 @@ engine.pool._use_threadlocal = True
 # session for interactions outside of app context.
 def gen_session():
     return scoped_session(sessionmaker(bind=engine))
+
 db_session = gen_session()
 db_session.execute('SET TIMEZONE TO UTC')
 

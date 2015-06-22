@@ -45,6 +45,8 @@ class Org(db.Model):
     recipes = db.relationship('Recipe', lazy='dynamic', cascade='all')
     authors = db.relationship('Author', lazy='dynamic')
     tags = db.relationship('Tag', lazy='dynamic', cascade='all')
+    timeseries = db.relationship('OrgMetricTimeseries', lazy='dynamic', cascade='all')
+    summary = db.relationship('OrgMetricSummary', lazy='joined', cascade='all')
 
     def __init__(self, **kw):
         self.name = kw.get('name')
@@ -68,6 +70,19 @@ class Org(db.Model):
         for m in self.metrics:
             metrics[m.name] = m.to_dict()
         return metrics
+
+    @property
+    def summary_metrics(self):
+        return self.summary.metrics
+
+    @property
+    def content_item_ids(self):
+        return [c.id for c in self.content_items]
+
+    @property
+    def simple_content_items(self):
+        return [{'id': c.id, 'url': c.url, 'type': c.type, 'title': c.title}
+                for c in self.content_items]
 
     def content_timeseries_metrics(self):
         return self.metrics\
