@@ -333,7 +333,8 @@ def create_event(user, org):
     e = ingest_event.ingest(
         req_data,
         org_id=org.id,
-        must_link=arg_bool('must_link', False))
+        must_link=arg_bool('must_link', False),
+        kill_session=False)
     if not e:
         return jsonify(None)
     return jsonify(e.to_dict(incl_body=True, incl_img=True))

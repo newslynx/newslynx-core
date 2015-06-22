@@ -16,7 +16,8 @@ def ingest(
         org_id,
         url_fields=['title', 'body', 'description'],
         requires=['title'],
-        must_link=False):
+        must_link=False,
+        kill_session=True):
     """
     Ingest an Event.
     """
@@ -117,6 +118,8 @@ def ingest(
 
     session.add(e)
     session.commit()
+    if kill_session:
+        session.remove()
     return e
 
 
