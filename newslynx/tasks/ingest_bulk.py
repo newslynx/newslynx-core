@@ -3,7 +3,12 @@ import gevent.monkey
 gevent.monkey.patch_all()
 from gevent.pool import Pool
 
+import time
+
 from functools import partial
+from rq.timeouts import JobTimeoutException
+from sqlalchemy.orm.exc import ObjectDeletedError
+from psycopg2 import IntegrityError
 
 from newslynx.core import queues
 from newslynx.core import rds, gen_session
@@ -13,6 +18,7 @@ from newslynx.tasks import ingest_content_item
 from newslynx.tasks import ingest_event
 from newslynx.tasks import ingest_metric
 from newslynx.util import gen_uuid
+from newslynx.logs import log
 from newslynx.lib.serialize import (
     jsongz_to_obj, obj_to_jsongz)
 
@@ -22,10 +28,12 @@ class BulkLoader(object):
     returns = None  # either "model" or "query"
     timeout = 1000  # seconds
     result_ttl = 60  # seconds
-    kwargs_ttl = 1000 # in case there is a backup in the queue
-    max_workers = 30
+    kwargs_ttl = 1000  # in case there is a backup in the queue
+    max_workers = 5
+    concurrent = True
     kwargs_key = 'rq:kwargs:{}'
     q = queues.get('bulk')
+    redis = rds
 
     def load_one(self, item, **kw):
         """
@@ -42,77 +50,99 @@ class BulkLoader(object):
             return False, self.load_one(item, **kw)
         except Exception as e:
             return True, e
+        except ObjectDeletedError:
+            log.warning('An object was deleted in the process of executing bulk upload.')
+            return False, None
 
     def load_all(self, kwargs_key):
         """
         Do the work.
         """
-        # create a session specific to this task
-        session = gen_session()
-
-        # get the inputs from redis
-        kwargs = rds.get(kwargs_key)
-        if not kwargs:
-            raise InternalServerError(
-                'An unexpected error occurred while processing bulk upload.'
-            )
-
-        kwargs = jsongz_to_obj(kwargs)
-        data = kwargs.get('data')
-        kw = kwargs.get('kw')
-
-        # delete them
-        rds.delete(kwargs_key)
-
-        outputs = []
-        errors = []
-
-        fx = partial(self._load_one, **kw)
-
-        pool = Pool(min([len(data), self.max_workers]))
-        for err, res in pool.imap_unordered(fx, data):
-            if err:
-                errors.append(res)
-            else:
-                outputs.append(res)
-
-        # return errors
-        if len(errors):
-            return RequestError(
-                'There was an error while bulk uploading: '
-                '{}'.format(errors[0].message))
-
-        # add objects and execute
-        if self.returns == 'model':
-            for o in outputs:
-                if o is not None:
-                    try:
-                        session.add(o)
-                    except Exception as e:
-                        return RequestError(
-                            'There was an error while bulk uploading: {}'
-                            .format(e.message))
-
-        # union all queries
-        elif self.returns == 'query':
-            for query in outputs:
-                try:
-                    session.execute(query)
-                except Exception as e:
-                    return RequestError(
-                        'There was an error while bulk uploading: {}'
-                        .format(e.message))
+        start = time.time()
         try:
-            session.commit()
+            # create a session specific to this task
+            session = gen_session()
 
-        except Exception as e:
-            session.rollback()
+            # get the inputs from redis
+            kwargs = self.redis.get(kwargs_key)
+            if not kwargs:
+                raise InternalServerError(
+                    'An unexpected error occurred while processing bulk upload.'
+                )
+
+            kwargs = jsongz_to_obj(kwargs)
+            data = kwargs.get('data')
+            kw = kwargs.get('kw')
+
+            # delete them
+            self.redis.delete(kwargs_key)
+
+            outputs = []
+            errors = []
+
+            fx = partial(self._load_one, **kw)
+
+            if self.concurrent:
+                pool = Pool(min([len(data), self.max_workers]))
+                for err, res in pool.imap_unordered(fx, data):
+                    if err:
+                        errors.append(res)
+                    else:
+                        outputs.append(res)
+            else:
+                for item in data:
+                    err, res = fx(item)
+                    if err:
+                        errors.append(res)
+                    else:
+                        outputs.append(res)
+
+            # return errors
+            if len(errors):
+                return RequestError(
+                    'There was an error while bulk uploading: '
+                    '{}'.format(errors[0].message))
+
+            # add objects and execute
+            if self.returns == 'model':
+                for o in outputs:
+                    if o is not None:
+                        try:
+                            session.add(o)
+                        except Exception as e:
+                            return RequestError(
+                                'There was an error while bulk uploading: {}'
+                                .format(e.message))
+
+            # union all queries
+            elif self.returns == 'query':
+                for query in outputs:
+                    if query is not None:
+                        try:
+                            session.execute(query)
+                        except Exception as e:
+                            return RequestError(
+                                'There was an error while bulk uploading: {}'
+                                .format(e.message))
+            try:
+                session.commit()
+
+            except Exception as e:
+                session.rollback()
+                session.remove()
+                return RequestError(
+                    'There was an error while bulk uploading: {}'
+                    .format(e.message))
+
+            # return true if everything worked.
             session.remove()
-            return RequestError(
-                'There was an error while bulk uploading: {}'
-                .format(e.message))
-        session.remove()
-        return True
+            return True
+
+        except JobTimeoutException:
+            end = time.time()
+            return InternalServerError(
+                'Bulk loading timed out after {} seconds'
+                .format(end-start))
 
     def run(self, data, **kw):
 
@@ -182,7 +212,6 @@ class EventBulkLoader(BulkLoader):
     timeout = 480
 
     def load_one(self, item, **kw):
-
         return ingest_event.ingest(item, **kw)
 
 
@@ -190,9 +219,9 @@ class ContentItemBulkLoader(BulkLoader):
 
     returns = 'model'
     timeout = 240
+    concurrent = True
 
     def load_one(self, item, **kw):
-
         return ingest_content_item.ingest(item, **kw)
 
 

@@ -296,9 +296,13 @@ def gen_events(org, recipes, impact_tags, content_items, n_events):
             provenance=provenance,
             meta=random_meta())
 
-        if status == 'approved':
-            e.tags.append(choice(impact_tags))
-            e.content_items.append(choice(content_items))
+        t = choice(impact_tags)
+        e.tags.append(t)
+        c = choice(content_items)
+        e.content_items.append(c)
+        # if t.id not in c.tag_ids:
+        #     c.tags.append(t)
+        # db_session.add(c)
 
         if provenance == 'manual':
             e.recipe_id = None

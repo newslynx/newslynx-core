@@ -15,6 +15,7 @@ class Tag(db.Model):
     """
 
     __tablename__ = 'tags'
+    __module__ = 'newslynx.models.tag'
 
     id = db.Column(db.Integer, primary_key=True)
     org_id = db.Column(

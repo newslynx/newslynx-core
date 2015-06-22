@@ -9,6 +9,7 @@ from newslynx.constants import SOUS_CHEF_CREATES
 class SousChef(db.Model):
 
     __tablename__ = 'sous_chefs'
+    __module__ = 'newslynx.models.sous_chef'
 
     id = db.Column(db.Integer, unique=True, index=True, primary_key=True)
     name = db.Column(db.Text, index=True, unique=True)

@@ -4,20 +4,21 @@ gevent.monkey.patch_all()
 
 from datetime import timedelta
 from random import choice
+import requests
 import time
 
 from newslynx.client import API
-from newslynx.models import ExtractCache, URLCache, ThumbnailCache
 from newslynx.lib import dates
 from newslynx.lib import rss
-import requests
+from newslynx.models import (
+    ExtractCache, URLCache, ThumbnailCache)
 
 api = API(org=1)
 
 # # flush the cache to ensure realstic times.
-# URLCache.flush()
-# ExtractCache.flush()
-# ThumbnailCache.flush()
+URLCache.flush()
+ExtractCache.flush()
+ThumbnailCache.flush()
 
 
 def poll_status_url(status_url):
@@ -59,7 +60,7 @@ def test_bulk_content_timeseries(nrows=10000):
     res = api.content.bulk_create_timeseries(data=data)
     poll_status_url(res.get('status_url'))
     end = time.time()
-    print "Bulk Loading {} Timeseries Metrics Took {} seconds"\
+    print "Bulk Loading {} Content Timeseries Metrics Took {} seconds"\
         .format(nrows, round((end-start), 2))
 
 
@@ -80,7 +81,7 @@ def test_bulk_content_summary(nrows=1000):
     res = api.content.bulk_create_summary(data=data)
     poll_status_url(res.get('status_url'))
     end = time.time()
-    print "Bulk Loading {} Timeseries Metrics Took {} seconds"\
+    print "Bulk Loading {} Content Summary Metrics Took {} seconds"\
         .format(nrows, round((end-start), 2))
 
 
@@ -99,7 +100,7 @@ def test_bulk_org_timeseries(nrows=1000):
     res = api.orgs.bulk_create_timeseries(data=data)
     poll_status_url(res.get('status_url'))
     end = time.time()
-    print "Bulk Loading {} Timeseries Metrics Took {} seconds"\
+    print "Bulk Loading {} Org Timeseries Metrics Took {} seconds"\
         .format(nrows, round((end-start), 2))
 
 
@@ -142,4 +143,4 @@ def test_bulk_events(feed_url='http://feeds.propublica.org/propublica/main', dom
         .format(len(data), round((end-start), 2))
 
 if __name__ == '__main__':
-    test_bulk_events()
+    test_bulk_content_timeseries()

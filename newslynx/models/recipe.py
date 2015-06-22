@@ -11,6 +11,7 @@ from newslynx.constants import (
 class Recipe(db.Model):
 
     __tablename__ = 'recipes'
+    __module__ = 'newslynx.models.recipe'
 
     # id fields
     id = db.Column(db.Integer, unique=True, index=True, primary_key=True)

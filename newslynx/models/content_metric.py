@@ -11,6 +11,7 @@ class ContentMetricTimeseries(db.Model):
 
     """
     __tablename__ = 'content_metric_timeseries'
+    __module__ = 'newslynx.models.content_metric'
 
     # the ID is the global bitly hash.
     org_id = db.Column(
@@ -37,6 +38,7 @@ class ContentMetricSummary(db.Model):
 
     """
     __tablename__ = 'content_metric_summary'
+    __module__ = 'newslynx.models.content_metric'
 
     # the ID is the global bitly hash.
     org_id = db.Column(

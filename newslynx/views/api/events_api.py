@@ -410,9 +410,7 @@ def event_update(user, org, event_id):
     tag_ids = listify_data_arg('tag_ids')
     content_item_ids = listify_data_arg('content_item_ids')
 
-    # check for current status / PUT status
-    current_status = e.status
-    req_status = req_data.get('status')
+    # a list of content items to apply impact tags to.
 
     if len(tag_ids):
 
@@ -429,7 +427,6 @@ def event_update(user, org, event_id):
             # validate tag
             if tag.type != 'impact':
                 raise RequestError('Events can only be assigned Impact Tags.')
-
             # add it
             if tag.id not in e.tag_ids:
                 e.tags.append(tag)
@@ -439,24 +436,16 @@ def event_update(user, org, event_id):
             .filter_by(org_id=org.id)\
             .filter(ContentItem.id.in_(content_item_ids))\
             .all()
+
         if not len(content_items):
             raise RequestError(
                 'ContentItem(s) with ID(s) {} do(es) not exist.'
                 .format(tag_ids))
 
         # add content items
-        for content_item in content_items:
-            if content_item.id not in e.content_item_ids:
-                e.content_items.append(content_item)
-
-    # check for incomplete approval requests.
-    if not len(tag_ids) and not len(content_item_ids) and \
-       current_status != 'approved' and req_status == 'approved':
-
-        raise RequestError(
-            'To approve an event you must assign it to one or more '
-            'ContentItems and Tags by using the "content_item_ids" and '
-            '"tag_ids" fields.')
+        for c in content_items:
+            if c.id not in e.content_item_ids:
+                e.content_items.append(c)
 
     # filter out any non-columns
     columns = get_table_columns(Event)
@@ -557,6 +546,7 @@ def event_add_tag(user, org, event_id, tag_id):
     if tag.id not in e.tag_ids:
         e.tags.append(tag)
 
+
     db.session.add(e)
     db.session.commit()
 
@@ -586,6 +576,7 @@ def event_delete_tag(user, org, event_id, tag_id):
             'with a Tag with ID {}.'
             .format(event_id, tag_id))
 
+    # remove tag from event
     for tag in e.tags:
         if tag.id == tag_id:
             e.tags.remove(tag)
@@ -614,16 +605,18 @@ def event_add_thing(user, org, event_id, content_item_id):
         raise RequestError(
             'You must first approve an Event before adding additional ContentItems.')
 
-    content_item = ContentItem.query\
+    c = ContentItem.query\
         .filter_by(id=content_item_id, org_id=org.id)\
         .first()
-    if not content_item:
+
+    if not c:
         raise RequestError(
-            'ContentItem with ID {} does not exist.'
+            'A ContentItem with ID {} does not exist.'
             .format(content_item_id))
 
-    if content_item.id not in e.content_item_ids:
-        e.content_items.append(content_item)
+    # add content item to event
+    if c.id not in e.content_item_ids:
+        e.content_items.append(c)
 
     db.session.add(e)
     db.session.commit()
@@ -647,14 +640,22 @@ def event_delete_content_item(user, org, event_id, content_item_id):
         raise NotFoundError(
             'An Event with ID {} does not exist.'.format(event_id))
 
+    c = ContentItem.query\
+        .filter_by(id=content_item_id, org_id=org.id)\
+        .first()
+
+    if not c:
+        raise RequestError(
+            'A ContentItem with ID {} does not exist.'
+            .format(content_item_id))
+
     if content_item_id not in e.content_item_ids:
         raise RequestError(
             'An Event with ID {} does not currently have an association '
             'with a ContentItem with ID {}'.format(event_id, content_item_id))
 
-    for content_item in e.content_items:
-        if content_item.id == content_item_id:
-            e.content_items.remove(content_item)
+    # remove the content item form the event.
+    e.content_items.remove(c)
 
     db.session.add(e)
     db.session.commit()

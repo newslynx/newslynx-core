@@ -45,18 +45,21 @@ def get_status(user, job_id):
     started = request.args.get('started')
     orig_url = request.args.get('orig_url')
 
+    if started:
+        started = dates.parse_iso(started)
+
     # format return value
     ret = {
         'job_id': job_id,
         'queue': queue,
         'status': None,
-        'datetime': dates.now(),
+        'started': started,
         'orig_url': orig_url
     }
 
     # determine time since start
     if started:
-        ret['time_since_start'] = (dates.now() - dates.parse_iso(started)).seconds
+        ret['time_since_start'] = (dates.now() - started).seconds
 
     # determine status
     if job.is_queued:
@@ -70,8 +73,6 @@ def get_status(user, job_id):
         ret['message'] = "An unknown error occurred."
 
     if job.is_finished:
-        session.pop('started', None)
-        session.pop('endpoint', None)
         rv = job.return_value
 
         # job will return true if successful

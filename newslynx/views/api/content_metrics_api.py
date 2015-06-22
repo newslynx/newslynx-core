@@ -1,12 +1,11 @@
 import logging
 
-from flask import Blueprint, session, request
+from flask import Blueprint
 
 from newslynx.views.decorators import load_user, load_org
 from newslynx.exc import NotFoundError, RequestError
 from newslynx.models import ContentItem
 from newslynx.lib.serialize import jsonify
-from newslynx.lib import dates
 from newslynx.views.util import request_data, url_for_job_status
 from newslynx.tasks import ingest_bulk
 from newslynx.tasks import ingest_metric

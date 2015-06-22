@@ -9,7 +9,8 @@ from newslynx.lib import dates
 class Report(db.Model):
 
     __tablename__ = 'reports'
-
+    __module__ = 'newslynx.models.report'
+    
     id = db.Column(db.Integer, unique=True, index=True, primary_key=True)
     org_id = db.Column(
         db.Integer, db.ForeignKey('orgs.id'), index=True)

@@ -6,6 +6,7 @@ from newslynx.core import db
 class Auth(db.Model):
 
     __tablename__ = 'auths'
+    __module__ = 'newslynx.models.auth'
 
     id = db.Column(db.Integer, unique=True, index=True, primary_key=True)
     org_id = db.Column(

@@ -10,8 +10,8 @@ class OrgMetricTimeseries(db.Model):
     A org-metric is a no-sql store of org_id's, content_item_id's, datetimes (optional), and json metrics.
     """
     __tablename__ = 'org_metric_timeseries'
+    __module__ = 'newslynx.models.org_metric'
 
-    # the ID is the global bitly hash.
     org_id = db.Column(
         db.Integer, db.ForeignKey('orgs.id'), index=True, primary_key=True)
     datetime = db.Column(db.DateTime(timezone=True), primary_key=True)

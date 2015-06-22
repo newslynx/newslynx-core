@@ -13,6 +13,7 @@ from newslynx.models import Metric
 class Org(db.Model):
 
     __tablename__ = 'orgs'
+    __module__ = 'newslynx.models.org'
 
     id = db.Column(db.Integer, unique=True, index=True, primary_key=True)
     name = db.Column(db.Text, unique=True, index=True)

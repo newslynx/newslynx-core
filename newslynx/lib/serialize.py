@@ -22,7 +22,7 @@ from newslynx.lib.regex import RE_TYPE
 from newslynx.lib.pkg.crontab import CronTab
 
 
-def string_to_gz(s):
+def str_to_gz(s):
     """
     string > gzip
     """
@@ -32,7 +32,7 @@ def string_to_gz(s):
     return out.getvalue()
 
 
-def gz_to_string(s):
+def gz_to_str(s):
     """
     gzip > string
     """
@@ -61,14 +61,14 @@ def jsongz_to_obj(s):
     json.gz > obj
     """
 
-    return json_to_obj(gz_to_string(s))
+    return json_to_obj(gz_to_str(s))
 
 
 def obj_to_jsongz(obj):
     """
     obj > json.gz
     """
-    return string_to_gz(obj_to_json(obj))
+    return str_to_gz(obj_to_json(obj))
 
 
 def pickle_to_obj(s):
@@ -85,14 +85,28 @@ def obj_to_pickle(obj):
     return pickle.dumps(obj)
 
 
-def string_to_zip(s):
+def picklegz_to_obj(s):
+    """
+    pickle.gz > obj
+    """
+    return pickle_to_obj(gz_to_str(s))
+
+
+def obj_to_picklegz(obj):
+    """
+    obj > pickle.gz
+    """
+    return str_to_gz(obj_to_pickle(obj))
+
+
+def str_to_zip(s):
     """
     string > zip
     """
     return zlib.compress(s)
 
 
-def zip_to_string(s):
+def zip_to_str(s):
     """
     zip > string
     """

@@ -1,13 +1,16 @@
 from hashlib import md5
 
+from psycopg2 import IntegrityError
+
 from newslynx.core import rds
+from newslynx.models import Author
 from newslynx import settings
 from newslynx.lib import url
 from newslynx.lib import article
 from newslynx.lib import dates
 from newslynx.lib import image
 from newslynx.lib.serialize import (
-    obj_to_pickle, pickle_to_obj)
+    obj_to_picklegz, picklegz_to_obj)
 
 
 class CacheResponse(object):
@@ -54,14 +57,14 @@ class Cache(object):
         The function for serializing the object
         returned from `get` to a string.
         """
-        return obj_to_pickle(obj)
+        return obj_to_picklegz(obj)
 
     def deserialize(self, s):
         """
         The function for deserializing the string
         returned from redis
         """
-        return pickle_to_obj(s)
+        return picklegz_to_obj(s)
 
     def work(self, *args, **kw):
         """
@@ -98,8 +101,9 @@ class Cache(object):
 
         for a in sorted(args):
             hash_keys.append(str(a))
-        for v in sorted(kw.values()):
-            hash_keys.append(str(v))
+        for k, v in sorted(kw.items()):
+            if not k.startswith('_'):
+                hash_keys.append(str(v))
 
         hash_str = md5("".join(hash_keys)).hexdigest()
         return "{}:{}".format(self.key_prefix, hash_str)
@@ -174,7 +178,7 @@ class URLCache(Cache):
             source = raw_url
         else:
             source = None
-        return url.prepare(raw_url, source=source)
+        return url.prepare(raw_url, source=source, canonicalize=True, expand=True)
 
 
 class ExtractCache(Cache):
@@ -204,7 +208,7 @@ class ExtractCache(Cache):
 class ThumbnailCache(Cache):
 
     """
-    A redis cache of raw_url > normalized url
+    A redis cache of img url to base 64 thumbnail.
     """
     key_prefix = settings.THUMBNAIL_CACHE_PREFIX
     ttl = settings.THUMBNAIL_CACHE_TTL

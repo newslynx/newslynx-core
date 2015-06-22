@@ -19,6 +19,7 @@ class Event(db.Model):
     query_class = SearchQuery
 
     __tablename__ = 'events'
+    __module__ = 'newslynx.models.event'
 
     id = db.Column(db.Integer, unique=True, primary_key=True, index=True)
     # the unique id from the source.

@@ -116,12 +116,15 @@ def ingest(
 
     # associate tags
     if len(authors):
-        c = _associate_authors(c, org_id, authors, session)
+        _authors = _associate_authors(c, org_id, authors, session)
+        for a in _authors:
+            if a.id not in c.author_ids:
+                c.authors.append(a)
 
     session.add(c)
     session.commit()
     if kill_session:
-        session.remove()
+        session.close()
     return c
 
 
@@ -160,10 +163,9 @@ def _associate_authors(c, org_id, authors, session):
     """
     if not isinstance(authors, list):
         authors = [authors]
+    _authors = []
 
     for author in authors:
-        exists = True
-
         # is this an id or a name ?
         try:
             int(author)
@@ -174,40 +176,27 @@ def _associate_authors(c, org_id, authors, session):
 
         # upsert by name.
         if is_name:
+
             # standardize as much as we can.
             author = author.upper().strip()
             a = session.query(Author)\
                 .filter_by(name=author, org_id=org_id)\
                 .first()
+
             if not a:
-                exists = False
                 a = Author(org_id=org_id, name=author)
 
-        # upsert by id.
+        # get by id.
         else:
             a = session.query(Author)\
                 .filter_by(id=author, org_id=org_id)\
                 .first()
             if not a:
-                exists = False
                 a = Author(org_id=org_id, id=author)
+        _authors.append(a)
 
-        # create new author.
-        if not exists:
-            try:
-                session.add(a)
-                session.commit()
-
-            # FML: concurrency is hard.
-            except IntegrityError:
-                pass
-
-        # upsert associations
-        if a and a.id not in c.author_ids:
-            c.authors.append(a)
-
-    # return modified content item (with author associations)
-    return c
+    # return authors
+    return _authors
 
 
 def _associate_tags(c, org_id, tag_ids, session):

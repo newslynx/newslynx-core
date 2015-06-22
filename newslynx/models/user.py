@@ -12,6 +12,7 @@ from uuid import uuid4
 class User(db.Model):
 
     __tablename__ = 'users'
+    __module__ = 'newslynx.models.user'
 
     id = db.Column(db.Integer, unique=True, index=True, primary_key=True)
     name = db.Column(db.Text)

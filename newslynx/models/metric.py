@@ -36,6 +36,7 @@ class Metric(db.Model):
     """
 
     __tablename__ = 'metrics'
+    __module__ = 'newslynx.models.metric'
 
     id = db.Column(db.Integer, unique=True, primary_key=True, index=True)
     org_id = db.Column(

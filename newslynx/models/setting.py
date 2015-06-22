@@ -7,7 +7,8 @@ from newslynx.lib.serialize import json_to_obj, obj_to_json
 class Setting(db.Model):
 
     __tablename__ = 'org_settings'
-
+    __module__ = 'newslynx.models.setting'
+    
     id = db.Column(db.Integer, unique=True, index=True, primary_key=True)
     org_id = db.Column(
         db.Integer, db.ForeignKey('orgs.id'), index=True)

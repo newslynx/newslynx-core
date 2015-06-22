@@ -25,6 +25,7 @@ class ContentItem(db.Model):
     query_class = SearchQuery
 
     __tablename__ = 'content'
+    __module__ = 'newslynx.models.content_item'
 
     # the ID is the global bitly hash.
     id = db.Column(db.Integer, unique=True, primary_key=True, index=True)
@@ -151,6 +152,10 @@ class ContentItem(db.Model):
     #         .with_entities(ContentItem.id, ContentItem.title)\
     #         .all()
     #     return [dict(zip(['id', 'title'], l)) for l in in_links]
+
+    @property
+    def tag_ids(self):
+        return [t.id for t in self.tags]
 
     @property
     def subject_tag_ids(self):

@@ -119,7 +119,7 @@ def ingest(
     session.add(e)
     session.commit()
     if kill_session:
-        session.remove()
+        session.close()
     return e
 
 

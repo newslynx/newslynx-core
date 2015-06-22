@@ -12,6 +12,7 @@ class Author(db.Model):
     """
 
     __tablename__ = 'authors'
+    __module__ = 'newslynx.models.author'
     query_class = SearchQuery
 
     # the ID is the global bitly hash.

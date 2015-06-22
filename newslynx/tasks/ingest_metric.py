@@ -15,7 +15,6 @@ def content_timeseries(
     """
     Ingest Timeseries Metrics for a content item.
     """
-    print "CONTENT ITEM IDS", content_item_ids
     # if not content_item_id or not org or not metrics_lookup:
     #     raise RequestError('Missing required kwargs.')
     content_item_id = obj.pop('content_item_id')
@@ -72,7 +71,6 @@ def content_summary(
     """
     Ingest Summary Metrics for a content item.
     """
-    print "CONTENT ITEM IDS", content_item_ids
     content_item_id = obj.pop('content_item_id')
     if not content_item_id:
         raise RequestError('Object is missing a "content_item_id"')
