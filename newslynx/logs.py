@@ -1,3 +1,6 @@
+"""
+Logging Configurations
+"""
 import logging
 
 from newslynx import settings
@@ -10,7 +13,7 @@ LOG_LEVELS = {
     'CRITICAL': logging.CRITICAL
 }
 
-log = logging.getLogger(__name__)
+log = logging.getLogger("newslynx")
 log.addHandler(logging.basicConfig(
     format='%(levelname)s - %(asctime)s (%(name)s) %(message)s',
     level=LOG_LEVELS[getattr(settings, 'LOG_LEVEL', 'INFO').upper()],

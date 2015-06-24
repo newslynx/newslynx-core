@@ -76,13 +76,3 @@ def load_org(f):
         return f(*args, **kw)
 
     return decorated_function
-
-
-def cache_key(*args, **kw):
-    """
-    Create a caching key for redis from a request object.
-    """
-
-    path = request.path
-    args = str(hash(frozenset(request.args.items()))).encode('utf-8')
-    return 'newslynx-cache:{}:{}'.format(path, args)

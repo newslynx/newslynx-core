@@ -90,68 +90,69 @@ def _validate_input_and_value_types(sc):
     """
     Special cases for sous chefs that have checkbox option.
     """
+    slug = sc.get('slug')
     opts = sc.get('options', {})
     for k, v in opts.items():
 
         if not re_opt_name.match(k):
             raise SousChefSchemaError(
-                "SousChef option '{}' is invalid. "
+                "Error validating: '{}' - Option '{}' for SousChef '{}' is invalid. "
                 "Options must follow the naming convention of '{}'."
-                .format(re_opt_name.pattern))
+                .format(slug, re_opt_name.pattern))
 
         if k in SOUS_CHEF_RESERVED_FIELDS:
-            raise SousChefSchemaError(
-                "{} is a reserved name."
-                .format(k))
+                msg = "Invalid option '{}' - '{}' Is a reserved option name."\
+                      .format(k, k)
+                _raise_sous_chef_schema_error(sc, msg)
 
         elif v.get('input_type') == 'checkbox' and \
                 not v.get('accepts_list', False):
-            raise SousChefSchemaError(
-                "Error validating: '{}' - Options with a 'checkbox' input_type must "
-                "accept multiple inputs."
-                .format(k))
+                msg = "Invalid option '{}' - Options with a 'checkbox' input_type must "\
+                      "accept multiple inputs."\
+                      .format(k)
+                _raise_sous_chef_schema_error(sc, msg)
 
         elif v.get('input_type') == 'datepicker' and \
                 not 'datetime' in v.get('value_types'):
-            raise SousChefSchemaError(
-                "Error validating: '{}' - Options with a 'datepicker' input_type must "
-                "include 'datetime' in value_types."
-                .format(k))
+                msg = "Invalid option '{}' - Options with a 'datepicker' input_type must "\
+                      "include 'datetime' in value_types."\
+                      .format(k)
+                _raise_sous_chef_schema_error(sc, msg)
 
         elif v.get('input_type') == 'number' and \
                 not 'numeric' in v.get('value_types'):
-            raise SousChefSchemaError(
-                "Error validating: '{}' - Options with a 'number' input_type must "
-                "include 'numeric' in value_types."
-                .format(k))
+                msg = "Invalid option '{}' - Options with a 'number' input_type must "\
+                      "include 'numeric' in value_types."\
+                      .format(k)
+                _raise_sous_chef_schema_error(sc, msg)
 
         elif 'searchstring' in v.get('value_types') and \
                 not v.get('input_type') == 'text':
-            raise SousChefSchemaError(
-                "Error validating: '{}' - Options with a value_type of 'searchstring' "
-                "must have an input_type of 'text'."
-                .format(k))
+                msg = "Invalid option '{}' -  Options with a value_type of 'searchstring' "\
+                      "must have an input_type of 'text'."\
+                      .format(k)
+                _raise_sous_chef_schema_error(sc, msg)
 
         elif 'url' in v.get('value_types') and \
                 not v.get('input_type') == 'text':
-            raise SousChefSchemaError(
-                "Error validating: '{}' - Options with a value_type of 'url' "
-                "must have an input_type of 'text'."
-                .format(k))
+                msg = "Invalid option '{}' -  Options with a value_type of 'url'"\
+                      "must have an input_type of 'text'."\
+                      .format(k)
+                _raise_sous_chef_schema_error(sc, msg)
 
         elif 'email' in v.get('value_types') and \
                 not v.get('input_type') == 'text':
-            raise SousChefSchemaError(
-                "Error validating: '{}' - Options with a value_type of 'email' "
-                "must have an input_type of 'text'."
-                .format(k))
+                msg = "Invalid option '{}' - Options with a value_type of 'email' "\
+                      "must have an input_type of 'text'."\
+                      .format(k)
+                _raise_sous_chef_schema_error(sc, msg)
 
         elif 'regex' in v.get('value_types') and \
                 not v.get('input_type') == 'text':
-            raise SousChefSchemaError(
-                "Error validating: '{}' - Options with a value_type of 'regex' "
-                "must have an input_type of 'text'."
-                .format(k))
+                msg = "Invalid option '{}' - Options with a value_type of 'regex' "\
+                      "must have an input_type of 'text'."\
+                      .format(k)
+                _raise_sous_chef_schema_error(sc, msg)
 
 
 def _validate_metrics_sous_chef(sc):
@@ -160,49 +161,37 @@ def _validate_metrics_sous_chef(sc):
     """
     metrics = sc.get('metrics', {})
     if not len(metrics.keys()):
-        raise SousChefSchemaError(
-            'SousChefs that create metrics must explicitly '
-            'declare the metrics they create.')
+        msg = 'SousChefs that create metrics must explicitly declare the metrics they create.'
+        _raise_sous_chef_schema_error(sc, msg)
 
     # check special metrics edge cases.
     for name, config in metrics.items():
 
         if not re_opt_name.match(name):
-            raise SousChefSchemaError(
-                "SousChef metric '{}' is invalid. "
-                "Metrics must follow the naming convention of '{}'."
-                .format(re_opt_name.pattern))
+            msg = "metric '{}' is invalid. Metrics must follow the naming convention of '{}'."\
+                  .format(re_opt_name.pattern)
+            _raise_sous_chef_schema_error(sc, msg)
 
-        # cumulative metrics must be timeseries metrics
-        if config.get('cumulative', False) \
-           and not config.get('timeseries', True):
-
-            raise SousChefSchemaError(
-                "Metric '{}' was declared as 'cumulative' but not as a 'timeseries'. "
-                "All cumulative metrics must be timeseries."
-                .format(name))
-
-        # cumulative metrics must be timeseries metrics
-        if config.get('timeseries', True) \
-           and config.get('faceted', False):
-
-            raise SousChefSchemaError(
-                "You cannot create faceted timeseries metrics."
-                .format(name))
+        # TODO MORE checking logic.
 
 
 def _validate_sous_chef_json_schema(sc):
     """
     Check if a sous chef follows the core JSON schema.
     """
+    # call this error here so we can raise more informative errors
+    # down the line.
+    if not sc.get('slug', None):
+        raise SousChefSchemaError('A SousChef must have a slug!')
     schema_errors = sorted(
         SOUS_CHEF_VALIDATOR.iter_errors(sc), key=lambda e: e.path)
 
     if len(schema_errors):
-        message = "This SousChef config is improperly formatted. Here are the errors:"
+        msg = "This config does not match the json schema. Here are the errors:"
         for error in schema_errors:
-            message += "\n{} - {}".format(".".join([str(i) for i in error.path]), error.message)
-        raise SousChefSchemaError(message)
+            path = ".".join([str(i) for i in error.path])
+            msg += "\n{} - {}".format(path, error.message)
+        _raise_sous_chef_schema_error(sc, msg)
 
 
 def _validate_python_sous_chef(sc):
@@ -218,19 +207,17 @@ def _validate_python_sous_chef(sc):
         sous_chef = getattr(m, c, None)
 
         if not sous_chef:
-            raise SousChefSchemaError(
-                '{} does not exist in module {}.'
-                .format(c, module))
+            msg = '{} does not exist in module {}.'.format(c, module)
+            _raise_sous_chef_schema_error(sc, msg)
 
     except ImportError:
-        raise SousChefSchemaError(
-            "{} is not importable."
-            .format(module))
+        msg = "{} is not importable.".format(module)
+        _raise_sous_chef_schema_error(sc, msg)
 
     if not issubclass(sous_chef, SC):
-        raise SousChefSchemaError(
-            "{} does not inherit from newslynx.sc.SousChef."
-            .format(sc['runs']))
+        msg = "{} does not inherit from newslynx.sc.SousChef.".format(
+            sc['runs'])
+        _raise_sous_chef_schema_error(sc, msg)
 
 
 def _validate_command_sous_chef(sc):
@@ -238,16 +225,22 @@ def _validate_command_sous_chef(sc):
     Check if an executable SousChef is valid.
     """
     if not sc['runs'].startswith('/'):
-        raise SousChefSchemaError(
-            '{} does not have an absolute path.'
-            .format(sc['runs']))
+        msg = '{} does not have an absolute path.'.format(sc['runs'])
+        _raise_sous_chef_schema_error(sc, msg)
 
     if not os.path.exists(sc['runs']):
-        raise SousChefSchemaError(
-            '{} does not exist.'
-            .format(sc['runs']))
+        msg = '{} does not exist.'.format(sc['runs'])
+        _raise_sous_chef_schema_error(sc, msg)
 
     if not os.access(sc['runs'], os.X_OK):
-        raise SousChefSchemaError(
-            '{} is not an executable.'
-            .format(sc['runs']))
+        msg = '{} is not an executable.'.format(sc['runs'])
+        _raise_sous_chef_schema_error(sc, msg)
+
+
+def _raise_sous_chef_schema_error(sc, message):
+    """
+    A helper for raising consistent error messages.
+    """
+    preface = "There were problems validating SousChef '{slug}': ".format(**sc)
+    msg = preface + message
+    raise SousChefSchemaError(msg)

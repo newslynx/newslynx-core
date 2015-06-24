@@ -1,5 +1,6 @@
 import copy
-from sqlalchemy.dialects.postgresql import ENUM
+from sqlalchemy import and_, or_
+from sqlalchemy.dialects.postgresql import ENUM, ARRAY
 
 from slugify import slugify
 
@@ -20,6 +21,7 @@ class Org(db.Model):
     slug = db.Column(db.Text, unique=True, index=True)
     timezone = db.Column(
         ENUM(*list(dates.TIMEZONES), name='org_timezones_enum'))
+    domains = db.Column(ARRAY(db.Text))
     created = db.Column(db.DateTime(timezone=True), default=dates.now)
     updated = db.Column(
         db.DateTime(timezone=True), onupdate=dates.now, default=dates.now)
@@ -52,6 +54,7 @@ class Org(db.Model):
     def __init__(self, **kw):
         self.name = kw.get('name')
         self.timezone = kw.get('timezone', 'UTC')
+        self.domains = kw.get('domains', [])
         self.slug = kw.get('slug', slugify(kw['name']))
 
     @property
@@ -87,21 +90,23 @@ class Org(db.Model):
 
     def content_timeseries_metrics(self):
         return self.metrics\
-            .filter(Metric.level.in_(['all', 'content_item']))\
-            .filter(Metric.timeseries)\
+            .filter(Metric.content_levels.contains(['timeseries']))\
+            .filter(~Metric.faceted)\
             .all()
 
-    def content_metric_names(self):
-        metrics = self.metrics\
-            .filter(Metric.level.in_(['all', 'content_item']))\
+    def content_timeseries_metric_rollups(self):
+        return self.metrics\
+            .filter(Metric.content_levels.contains(['timeseries', 'summary']))\
             .with_entities(Metric.name)\
             .all()
-        return [m[0] for m in metrics]
 
-    def timeseries_metrics(self):
+    def org_timeseries_metrics(self):
         return self.metrics\
-            .filter(Metric.level.in_(['all', 'org']))\
-            .filter(Metric.timeseries)\
+            .filter(
+                or_(Metric.org_levels.contains(['timeseries']),
+                    and_(Metric.content_levels.contains(['timeseries']),
+                         Metric.org_levels.contains(['timeseries']))
+                    ))\
             .all()
 
     @property
@@ -121,22 +126,28 @@ class Org(db.Model):
             'id': self.id,
             'name': self.name,
             'timezone': self.timezone,
+            'domains': self.domains,
             'slug': self.slug,
             'created': self.created,
             'updated': self.updated
         }
+
         if incl_users:
             d['users'] = [
                 u.to_dict(incl_org=False, incl_apikey=False) for u in self.users]
+
         if incl_settings:
             if settings_as_dict:
                 d['settings'] = self.settings_dict
             else:
                 d['settings'] = self.settings
+
         if incl_auths:
             d['auths'] = self.auths
+
         if incl_tags:
             d['tags'] = [t.to_dict() for t in self.tags.query.all()]
+
         return d
 
     def __repr__(self):

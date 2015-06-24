@@ -1,0 +1,57 @@
+slug: google-analytics-to-content-domain-facets
+name: Google Analytics Domain Facets For Content Items
+description: >
+    Creates faceted metrics for pageviews by referrer for content items.
+runs: newslynx.sc.metrics.google_analytics.ContentDomainFacets
+creates: metrics
+option_order: []
+options:
+    
+    max_age:
+        input_type: number
+        value_types:
+            - numeric
+        default: 30
+        help:
+            placeholder: 30
+            description: |
+                The number of days past a content item's creation date
+                after which we will stop computing these counts.
+
+    max_facets:
+        input_type: number
+        value_types:
+            - numeric
+        default: 20
+        help:
+            placeholder: 20
+            description: |
+                The maximum number of domain facets to include.
+
+    content_item_types:
+        input_type: text
+        input_options:
+            - video
+            - article
+            - slideshow
+            - interactive
+            - podcast
+            - all
+        value_types:
+            - string
+        default: all
+        help:
+            placeholder: all
+            description: |
+                The content item types to calculate share counts for.
+
+
+metrics:
+
+    ga_pageviews_by_domain:
+        display_name: Pageviews By Refering Domain
+        type: count
+        content_levels:
+            - summary
+        org_levels: []
+        faceted: true

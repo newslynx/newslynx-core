@@ -1,4 +1,3 @@
-from psycopg2 import IntegrityError
 from sqlalchemy import or_
 
 from newslynx.core import gen_session
@@ -14,6 +13,7 @@ from newslynx.tasks import ingest_util
 def ingest(
         obj,
         org_id,
+        org_domains,
         url_fields=['title', 'body', 'description'],
         requires=['title'],
         must_link=False,
@@ -99,6 +99,7 @@ def ingest(
     urls = ingest_util.extract_urls(
         obj,
         url_fields,
+        org_domains,
         source=obj.get('url'),
         links=links)
 

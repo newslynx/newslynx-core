@@ -167,25 +167,15 @@ def create_recipe(user, org):
     db.session.add(r)
     db.session.commit()
 
-    # if the recipe creates metrics upsert them in here.
+    # if the recipe creates metrics create them in here.
     if 'metrics' in sc.creates:
         for name, params in sc.metrics.items():
-            m = Metric.query\
-                .filter_by(name=name, org_id=org.id, level=params.get('level'))\
-                .first()
-
-            if not m:
-                m = Metric(
-                    name=name,
-                    recipe_id=r.id,
-                    org_id=org.id,
-                    **params)
-
-            else:
-                for k, v in params.items():
-                    setattr(m, k, v)
-
-            dbsession.add(m)
+            m = Metric(
+                name=name,
+                recipe_id=r.id,
+                org_id=org.id,
+                **params)
+            db.session.add(m)
     try:
         db.session.commit()
 

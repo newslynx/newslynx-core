@@ -1,11 +1,12 @@
 import os
 import copy
 
+import requests
 from requests import Session, Request
 from urlparse import urljoin
 
 from newslynx import settings
-from newslynx.lib.serialize import obj_to_json
+from newslynx.lib.serialize import obj_to_json, json_to_obj
 from newslynx.exc import *
 from newslynx.logs import log
 
@@ -123,7 +124,8 @@ class BaseClient(object):
         Validate bulk endpoints.
         """
         if 'data' not in kw:
-            raise ClientError('Bulk endpoints require a "data" keyword argument.')
+            raise ClientError(
+                'Bulk endpoints require a "data" keyword argument.')
 
     def _handle_errors(self, resp, err=None):
         """
@@ -509,7 +511,8 @@ class Events(BaseClient):
         Bulk create content items.
         """
         self._check_bulk_kw(kw)
-        kw, params = self._split_auth_params_from_data(kw, kw_incl=['must_link'])
+        kw, params = self._split_auth_params_from_data(
+            kw, kw_incl=['must_link'])
         url = self._format_url('events', 'bulk')
         return self._request('POST', url, params=params, data=kw['data'])
 
@@ -779,6 +782,32 @@ class Metrics(BaseClient):
         return self._request('DELETE', url, params=kw)
 
 
+class SQL(BaseClient):
+
+    def execute(self, query, **kw):
+        """
+        Execute a sql command and stream resutls.
+        """
+        # merge in api key
+        kw.update({'apikey': self.apikey})
+        url = self._format_url('sql')
+
+        # post request
+        r = requests.post(url, params=kw, data={'query': query})
+
+        # stream results.
+        for line in r.iter_lines():
+            d = json_to_obj(line)
+
+            # catch errors
+            if d.get('error'):
+                err = ERRORS.get(d['error'])
+                if not err:
+                    raise ClientError(d)
+                raise err(d['message'])
+            yield d
+
+
 class SousChefs(BaseClient):
     pass
 
@@ -807,3 +836,4 @@ class API(BaseClient):
         self.reports = Reports(**kw)
         self.authors = Authors(**kw)
         self.extract = Extract(**kw)
+        self.sql = SQL(**kw)

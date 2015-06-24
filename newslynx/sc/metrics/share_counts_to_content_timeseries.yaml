@@ -36,75 +36,95 @@ options:
             description: |
                 The content item types to calculate share counts for.
 
-    minutes: 
-        input_type: number
-        value_types:
-            - numeric
-        default: 60
-
-
 metrics:
 
     facebook_shares:
         display_name: Facebook Shares
-        aggregation: sum
-        level: all
-        cumulative: true
-        faceted: false
-        timeseries: true
+        type: cumulative
+        content_levels:
+            - timeseries
+            - summary
+            - comparison
+        org_levels:
+            - timeseries
+            - summary
+
 
     facebook_likes:
         display_name: Facebook Likes
-        aggregation: sum
-        level: all
-        cumulative: true
-        faceted: false
-        timeseries: true
+        type: cumulative
+        content_levels:
+            - timeseries
+            - summary
+            - comparison
+        org_levels:
+            - timeseries
+            - summary
+
 
     facebook_comments:
         display_name: Facebook Comments
-        aggregation: sum
-        level: all
-        cumulative: true
-        faceted: false
-        timeseries: true
+        type: cumulative
+        content_levels:
+            - timeseries
+            - summary
+            - comparison
+        org_levels:
+            - timeseries
+            - summary
+
 
     linkedin_shares:
         display_name: LinkedIn Shares
-        aggregation: sum
-        level: all
-        cumulative: true
-        faceted: false
-        timeseries: true
+        type: cumulative
+        content_levels:
+            - timeseries
+            - summary
+            - comparison
+        org_levels:
+            - timeseries
+            - summary
 
     pinterest_shares:
         display_name: Pinterest Shares
-        aggregation: sum
-        level: all
-        cumulative: true
-        faceted: false
-        timeseries: true
+        type: cumulative
+        content_levels:
+            - timeseries
+            - summary
+            - comparison
+        org_levels:
+            - timeseries
+            - summary
 
     reddit_upvotes:
         display_name: Reddit UpVotes
-        aggregation: sum
-        level: all
-        cumulative: true
-        faceted: false
-        timeseries: true
+        type: cumulative
+        content_levels:
+            - timeseries
+            - summary
+            - comparison
+        org_levels:
+            - timeseries
+            - summary
 
     reddit_downvotes:
         display_name: Reddit DownVotes
-        aggregation: sum
-        level: all
-        cumulative: true
-        faceted: false
-        timeseries: true
+        type: cumulative
+        content_levels:
+            - timeseries
+            - summary
+            - comparison
+        org_levels:
+            - timeseries
+            - summary
 
     twitter_shares:
         display_name: Twitter Shares
-        aggregation: sum
-        level: all
-        cumulative: true
-        faceted: false
-        timeseries: true
+        type: cumulative
+        content_levels:
+            - timeseries
+            - summary
+            - comparison
+        org_levels:
+            - timeseries
+            - summary

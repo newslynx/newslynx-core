@@ -8,6 +8,7 @@ build:
 	python setup.py install
 
 defaults:
+	rm -rf ~.newslynx/defaults
 	cp -r example_config/defaults ~/.newslynx/
 
 documentation:

@@ -22,8 +22,8 @@ metrics:
 
     fb_page_likes:
         display_name: Facebook Page Likes
-        aggregation: sum
-        level: org
-        cumulative: true
-        faceted: false
-        timeseries: true
+        type: cumulative
+        content_levels: []
+        org_levels:
+            - timeseries
+            - summary

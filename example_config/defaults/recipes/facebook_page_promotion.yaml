@@ -1,9 +1,0 @@
-sous_chef: facebook-page-to-event
-name: Staff Facebook Page to Promotion Event
-slug: facebook-page-to-event-promotion
-status: uninitialized
-options:
-    event_status: approved
-    set_event_tag_ids: ['internal-promotion']
-    schedule_by: minutes
-    minutes: 30

@@ -98,18 +98,6 @@ def random_meta():
 
 
 # USER
-def gen_admin_user():
-    u = User.query.filter_by(email=settings.ADMIN_EMAIL).first()
-    if not u:
-        u = User(email=settings.ADMIN_EMAIL,
-                 password=settings.ADMIN_PASSWORD,
-                 name=settings.ADMIN_USER,
-                 admin=True)
-        db_session.add(u)
-        db_session.commit()
-    return u
-
-
 def gen_user():
     u = User(
         name=fake.name(),
@@ -124,25 +112,11 @@ def gen_user():
 
 # Org
 def gen_org(users):
-    o = Org(name=fake.company(), timezone='America/New_York')
+    o = Org(name=fake.company(), timezone='America/New_York', domains=['example.com', 'blog.example.com'])
     o.users.extend(users)
     db_session.add(o)
     db_session.commit()
     return o
-
-
-def get_sous_chefs():
-    sous_chefs = []
-    for sc in load_sous_chefs():
-        s = db_session.query(SousChef)\
-            .filter_by(slug=sc['slug'])\
-            .first()
-        if not s:
-            s = SousChef(**sc)
-            db_session.add(s)
-            db_session.commit()
-        sous_chefs.append(s)
-    return sous_chefs
 
 
 # Recipe
@@ -152,9 +126,6 @@ def gen_built_in_recipes(org):
     u = choice(org.users)
     # add default recipes
     for recipe in load_default_recipes():
-        recipe['user_id'] = u.id
-        recipe['org_id'] = org.id
-        recipe['status'] = 'uninitialized'
         sous_chef_slug = recipe.pop('sous_chef')
         if not sous_chef_slug:
             raise RecipeSchemaError(
@@ -167,14 +138,12 @@ def gen_built_in_recipes(org):
             raise RecipeSchemaError(
                 '"{}" is not a valid SousChef slug or the SousChef does not yet exist.'
                 .format(sous_chef_slug))
-        r = db_session.query(Recipe)\
-            .filter_by(org_id=org.id, slug=recipe['slug'])\
-            .first()
-        if not r:
-            r = Recipe(sc, **recipe)
-            db_session.add(r)
-            db_session.commit()
-
+        recipe = recipe_schema.validate(recipe, sc.to_dict())
+        recipe['user_id'] = u.id
+        recipe['org_id'] = org.id
+        r = Recipe(sc, **recipe)
+        db_session.add(r)
+        db_session.commit()
         recipes.append(r)
 
         # if the recipe creates metrics add them in here.
@@ -353,7 +322,7 @@ def gen_content_metric_timeseries(org, content_items, metrics, n_content_item_ti
     for _ in xrange(n_content_item_timeseries_metrics):
         _metrics = {}
         for m in metrics:
-            if m.level in ['content_item', 'all']:
+            if 'timeseries' in m.content_levels:
                 _metrics[m.name] = random_int(1, 1000)
 
         cmd_kwargs = {
@@ -377,7 +346,7 @@ def gen_org_metric_timeseries(org, metrics, n_org_timeseries_metrics=1000):
     for _ in xrange(n_org_timeseries_metrics):
         _metrics = {}
         for m in metrics:
-            if m.level == 'org':
+            if 'timeseries' in m.org_levels:
                 _metrics[m.name] = random_int(1, 120)
 
         cmd_kwargs = {
@@ -408,13 +377,12 @@ def main(
         verbose=True):
 
     # top level content_items
-    admin = gen_admin_user()
+    admin = db_session.query(User).filter_by(email=settings.SUPER_USER_EMAIL).first()
     users = [gen_user() for _ in xrange(n_users)] + [admin]
     org = gen_org(users)
     impact_tags = gen_impact_tags(org, n_subject_tags)
     subject_tags = gen_subject_tags(org, n_impact_tags)
     authors = gen_authors(org)
-    sous_chefs = get_sous_chefs()
     recipes, metrics = gen_built_in_recipes(org)
 
     # generate content_items + metrics
@@ -458,8 +426,8 @@ def main(
     # rollup metrics
     if verbose:
         print "rolling up metrics"
-    rollup_metric.content_ts(org)
-    rollup_metric.content_event_tags(org)
+    # rollup_metric.content_timeseries(org)
+    # rollup_metric.content_event_tags(org)
 
 
 def run(**kw):

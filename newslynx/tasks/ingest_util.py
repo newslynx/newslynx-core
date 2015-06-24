@@ -20,7 +20,7 @@ thumbnail_cache = ThumbnailCache()
 url_cache_pool = Pool(settings.URL_CACHE_POOL_SIZE)
 
 
-def extract_urls(obj, fields, source=None, links=[]):
+def extract_urls(obj, fields, org_domains, source=None, links=[]):
     """
     Extract, normalize, and dedupe urls from
     text/html fields in an object.
@@ -31,7 +31,8 @@ def extract_urls(obj, fields, source=None, links=[]):
         if v:
             for u in url.from_any(str(v), source=source):
                 if source and (source not in u or source != u):
-                    raw_urls.add(u)
+                    if any([d in u for d in org_domains]):
+                        raw_urls.add(u)
 
     clean_urls = set()
     for cache_response in url_cache_pool.imap_unordered(url_cache.get, list(raw_urls)):

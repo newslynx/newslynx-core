@@ -1,5 +1,5 @@
 from newslynx.sc import SousChef
 
 
-class Summarize(SousChef):
+class SummarizeEvents(SousChef):
     pass

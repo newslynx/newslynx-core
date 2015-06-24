@@ -19,6 +19,7 @@ from newslynx.lib import network
 from newslynx.lib import meta
 from newslynx.lib import html
 from newslynx.util import uniq
+from newslynx import settings
 
 # url chunks
 ALLOWED_TYPES = [
@@ -147,7 +148,7 @@ def unshorten(orig_url, **kw):
     return u
 
 
-@network.retry(attempts=2)
+@network.retry(attempts=settings.BROWSER_MAX_RETRIES)
 def shorten(url):
     """
     Shorten a url on bitly, return it's new short url
@@ -736,7 +737,7 @@ def _bypass_bitly_warning(url):
     return url
 
 
-@network.retry(attempts=2)
+@network.retry(attempts=settings.BROWSER_MAX_RETRIES)
 def _unshorten(url, pattern=None):
     """
     dual-method approach to unshortening a url

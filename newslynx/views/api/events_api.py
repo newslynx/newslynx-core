@@ -341,6 +341,7 @@ def create_event(user, org):
     e = ingest_event.ingest(
         req_data,
         org_id=org.id,
+        org_domains=org.domains,
         must_link=arg_bool('must_link', False),
         kill_session=False)
     if not e:
@@ -365,6 +366,7 @@ def bulk_create_event(user, org):
     job_id = ingest_bulk.events(
         req_data,
         org_id=org.id,
+        org_domains=org.domains,
         must_link=arg_bool('must_link', False),
         kill_session=True)
     ret = url_for_job_status(apikey=user.apikey, job_id=job_id, queue='bulk')

@@ -27,14 +27,14 @@ def list_metrics(user, org):
         arg_list('recipes', default=[], typ=str, exclusions=True)
     include_sous_chefs, exclude_sous_chefs = \
         arg_list('sous_chefs', default=[], typ=str, exclusions=True)
-    include_levels, exclude_levels = \
-        arg_list('levels', default=[], typ=str, exclusions=True)
-    sort_field, direction = arg_sort('sort', default='-created')
-    include_aggregations, exclude_aggregations = \
-        arg_list('aggregations', default=[], typ=str, exclusions=True)
-    cumulative = arg_bool('cumulative', default=None)
+    include_types, exclude_types = \
+        arg_list('types', default=[], typ=str, exclusions=True)
+    include_content_levels, exclude_content_levels = \
+        arg_list('content_levels', default=[], typ=str, exclusions=True)
+    include_org_levels, exclude_org_levels = \
+        arg_list('org_levels', default=[], typ=str, exclusions=True)
+    sort_field, direction = arg_sort('sort', default='display_name')
     faceted = arg_bool('faceted', default=None)
-    timeseries = arg_bool('timeseries', default=None)
 
     # base query
     metric_query = Metric.query.join(Recipe).join(SousChef)
@@ -66,7 +66,6 @@ def list_metrics(user, org):
                 ids.append(i)
             except:
                 slugs.append(r)
-
         metric_query = metric_query\
             .filter(~or_(Recipe.id.in_(ids), Recipe.slug.in_(slugs)))
 
@@ -98,37 +97,30 @@ def list_metrics(user, org):
             .filter(~or_(SousChef.id.in_(ids), SousChef.slug.in_(slugs)))
 
     # filter by levels
-    if len(include_levels):
-        print include_levels
-        validate_metric_levels(include_levels)
+    if len(include_types):
         metric_query = metric_query\
-            .filter(Metric.level.in_(include_levels))
+            .filter(Metric.type.in_(include_types))
 
-    if len(exclude_levels):
-        validate_metric_levels(exclude_levels)
+    if len(exclude_types):
         metric_query = metric_query\
-            .filter(~Metric.level.in_(exclude_levels))
+            .filter(~Metric.type.in_(exclude_types))
 
-    # filter by aggregations
-    if len(include_aggregations):
-        validate_metric_aggregations(include_aggregations)
+    # filter by levels
+    if len(include_content_levels):
         metric_query = metric_query\
-            .filter(Metric.aggregation.in_(exclude_aggregations))
+            .filter(Metric.content_levels.contains(include_content_levels))
 
-    if len(exclude_aggregations):
-        validate_metric_aggregations(exclude_aggregations)
+    if len(exclude_content_levels):
         metric_query = metric_query\
-            .filter(~Metric.aggregation.in_(exclude_aggregations))
+            .filter(~Metric.content_levels.contains(exclude_content_levels))
 
-    # filter by cumulative
-    if cumulative is not None:
+    if len(include_org_levels):
         metric_query = metric_query\
-            .filter(Metric.cumulative == cumulative)
+            .filter(Metric.org_levels.contains(include_org_levels))
 
-    # filter by timeseries
-    if timeseries is not None:
+    if len(exclude_org_levels):
         metric_query = metric_query\
-            .filter(Metric.timeseries == timeseries)
+            .filter(~Metric.org_levels.contains(exclude_org_levels))
 
     # filter by faceted
     if faceted is not None:
@@ -140,15 +132,19 @@ def list_metrics(user, org):
         metric_query = metric_query.order_by(sort_obj())
 
     facets = defaultdict(Counter)
+
     metrics = []
+
     for m in metric_query.all():
-        facets['timeseries'][str(m.timeseries).lower()] += 1
-        facets['cumulative'][str(m.cumulative).lower()] += 1
-        facets['faceted'][str(m.faceted).lower()] += 1
-        facets['levels'][m.level] += 1
-        facets['aggregations'][m.aggregation] += 1
         facets['recipes'][m.recipe.slug] += 1
-        metrics.append(m)
+        facets['types'][m.type] += 1
+        facets['faceted'][str(m.faceted).lower()] += 1
+        for cl in m.content_levels:
+            facets['content_levels'][cl] += 1
+        for cl in m.org_levels:
+            facets['org_levels'][cl] += 1
+
+        metrics.append(m.to_dict())
 
     resp = {
         'metrics': metrics,

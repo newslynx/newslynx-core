@@ -1,9 +1,10 @@
-from sqlalchemy.dialects.postgresql import ENUM
+from sqlalchemy.dialects.postgresql import ENUM, ARRAY
 
 from newslynx.core import db
 from newslynx.lib import dates
 from newslynx.constants import (
-    METRIC_AGGREGATIONS, METRIC_LEVELS
+    METRIC_CONTENT_LEVELS, METRIC_ORG_LEVELS,
+    METRIC_TYPES
 )
 
 
@@ -45,16 +46,15 @@ class Metric(db.Model):
     recipe_id = db.Column(db.Integer, db.ForeignKey('recipes.id'), index=True)
     name = db.Column(db.Text, index=True)
     display_name = db.Column(db.Text)
-    aggregation = db.Column(ENUM(*METRIC_AGGREGATIONS, name='metric_aggregations_enum'), index=True)
-    level = db.Column(ENUM(*METRIC_LEVELS, name='metric_levels_enum'), index=True)
-    cumulative = db.Column(db.Boolean, index=True, default=False)
+    type = db.Column(ENUM(*METRIC_TYPES, name='metric_types_enum'), index=True)
+    content_levels = db.Column(ARRAY(db.Text), index=True)
+    org_levels = db.Column(ARRAY(db.Text), index=True)
     faceted = db.Column(db.Boolean, index=True, default=False)
-    timeseries = db.Column(db.Boolean, index=True, default=True)
     created = db.Column(db.DateTime(timezone=True), default=dates.now)
     updated = db.Column(db.DateTime(timezone=True), onupdate=dates.now, default=dates.now)
 
     __table_args__ = (
-        db.UniqueConstraint('org_id', 'name', 'level'),
+        db.UniqueConstraint('org_id', 'name', 'type'),
     )
 
     def __init__(self, **kw):
@@ -62,11 +62,10 @@ class Metric(db.Model):
         self.recipe_id = kw.get('recipe_id')
         self.name = kw.get('name')
         self.display_name = kw.get('display_name')
-        self.aggregation = kw.get('aggregation')
-        self.level = kw.get('level')
-        self.cumulative = kw.get('cumulative')
-        self.faceted = kw.get('faceted')
-        self.timeseries = kw.get('timeseries')
+        self.type = kw.get('type')
+        self.content_levels = kw.get('content_levels', [])
+        self.org_levels = kw.get('org_levels', [])
+        self.faceted = kw.get('faceted', False)
 
     def to_dict(self):
         return {
@@ -75,11 +74,10 @@ class Metric(db.Model):
             'recipe_id': self.recipe_id,
             'name': self.name,
             'display_name': self.display_name,
-            'aggregation': self.aggregation,
-            'level': self.level,
-            'cumulative': self.cumulative,
+            'type': self.type,
+            'content_levels': self.content_levels,
+            'org_levels': self.org_levels,
             'faceted': self.faceted,
-            'timeseries': self.timeseries,
             'created': self.created,
             'updated': self.updated,
         }

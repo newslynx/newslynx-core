@@ -12,6 +12,7 @@ import iso8601
 
 from newslynx.lib.regex import re_time
 from newslynx.lib.pkg.crontab import CronTab
+from newslynx.exc import RequestError
 
 
 def now(ts=False):
@@ -74,7 +75,7 @@ def floor_now(**kw):
     return floor(now(), **kw)
 
 
-def parse_iso(ds):
+def parse_iso(ds, enforce_tz=True):
     """
     parse an isodate/datetime string with or without
     a datestring.  Convert timzeone aware datestrings
@@ -90,6 +91,9 @@ def parse_iso(ds):
     if tz:
         dt = force_datetime(dt, tz=tz)
         return convert_to_utc(dt)
+
+    if enforce_tz:
+        raise RequestError('This date is timzeone unaware!')
 
     return force_datetime(dt, tz=pytz.utc)
 
@@ -111,14 +115,14 @@ def parse_ts(ts):
     return dt
 
 
-def parse_any(ds):
+def parse_any(ds, **kw):
     """
     Check for isoformat, timestamp, fallback to dateutil.
     """
     if not ds or not str(ds).strip():
         return
 
-    dt = parse_iso(ds)
+    dt = parse_iso(ds, **kw)
     if dt:
         return dt
 

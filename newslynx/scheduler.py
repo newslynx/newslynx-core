@@ -1,3 +1,6 @@
+"""
+The Recipe Scheduler
+"""
 import gevent
 import gevent.monkey
 gevent.monkey.patch_all()

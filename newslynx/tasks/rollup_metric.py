@@ -6,7 +6,7 @@ from newslynx.lib import dates
 from newslynx.constants import IMPACT_TAG_CATEGORIES, IMPACT_TAG_LEVELS
 
 
-def content_ts(org, num_hours=24):
+def content_timeseries(org, num_hours=24):
     """
     Rollup content-timseries metrics into summaries.
     Optimize this query by only updating content items whose

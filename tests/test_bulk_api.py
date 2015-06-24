@@ -143,4 +143,4 @@ def test_bulk_events(feed_url='http://feeds.propublica.org/propublica/main', dom
         .format(len(data), round((end-start), 2))
 
 if __name__ == '__main__':
-    test_bulk_content_timeseries()
+    test_bulk_events()

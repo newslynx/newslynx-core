@@ -94,6 +94,11 @@ def content_item_timeseries(org, content_item_ids, **kw):
         output.append(dict(zip(cols, row)))
     return output
 
+    # select COALESCE(
+    #     ((metrics->>'facebook_comments')::text::numeric - lag((metrics->>'facebook_comments')::text::numeric) OVER (ORDER BY datetime ASC)),
+    #     (metrics->>'facebook_comments')::text::numeric) as foo
+    # from content_metric_timeseries LIMIT 2;
+
 
 def org_timeseries(org, **kw):
     """

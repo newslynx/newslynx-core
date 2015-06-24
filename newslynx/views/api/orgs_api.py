@@ -1,17 +1,20 @@
 from flask import Blueprint
 
 from newslynx.core import db
-from newslynx.models import User, Org, SousChef, Recipe, Tag
+from newslynx.models import User, Org, SousChef, Recipe, Tag, Metric
 from newslynx.models.util import fetch_by_id_or_field
+from newslynx.models import recipe_schema
+from newslynx.lib import mail
 from newslynx.lib.serialize import jsonify
 from newslynx.exc import (
-    AuthError, RequestError, ForbiddenError, NotFoundError)
+    AuthError, RequestError, ForbiddenError, NotFoundError,
+    ConfigError)
 from newslynx.views.decorators import load_user
 from newslynx.views.util import (
     request_data, delete_response, arg_bool, localize)
 from newslynx.init import load_default_tags, load_default_recipes
 from newslynx.exc import RecipeSchemaError
-from newslynx.constants import TRUE_VALUES, FALSE_VALUES
+from newslynx import settings
 
 
 # bp
@@ -30,9 +33,11 @@ def org_create(user):
 
     req_data = request_data()
 
-    if 'name' not in req_data or 'timezone' not in req_data:
+    if 'name' not in req_data \
+       or 'timezone' not in req_data\
+       or 'domains' not in req_data:
         raise RequestError(
-            "An Org requires a 'name' and 'timezone'.")
+            "An Org requires a 'name', 'timezone', and 'domains'")
 
     if not user.admin:
         raise ForbiddenError(
@@ -48,9 +53,31 @@ def org_create(user):
             "Org '{}' already exists"
             .format(req_data['name']))
 
+    if not isinstance(req_data['domains'], list):
+        raise RequestError(
+            '"domains" must be a list.'
+        )
+
     # add the requesting user to the org
-    org = Org(name=req_data['name'], timezone=req_data['timezone'])
+    org = Org(
+        name=req_data['name'],
+        timezone=req_data['timezone'],
+        domains=req_data.get('domains', [])
+    )
     org.users.append(user)
+
+    # add the super user to the org
+    if user.email != settings.SUPER_USER_EMAIL:
+        super_user = User.query\
+            .filter_by(email=settings.SUPER_USER_EMAIL)\
+            .first()
+
+        if not super_user:
+            raise ConfigError(
+                'You must create a super user before creating an org!'
+            )
+        org.users.append(super_user)
+
     db.session.add(org)
     db.session.commit()
 
@@ -62,14 +89,13 @@ def org_create(user):
 
     # add default recipes
     for recipe in load_default_recipes():
-        recipe['user_id'] = user.id
-        recipe['org_id'] = org.id
-        recipe['status'] = 'uninitialized'
+
+        # fetch it's sous chef.
         sous_chef_slug = recipe.pop('sous_chef')
         if not sous_chef_slug:
             raise RecipeSchemaError(
                 "Default recipe '{}' is missing a 'sous_chef' slug."
-                .format(recipe.get('name', '')))
+                .format(recipe.get('slug', '')))
 
         sc = SousChef.query\
             .filter_by(slug=sous_chef_slug)\
@@ -79,11 +105,28 @@ def org_create(user):
             raise RecipeSchemaError(
                 '"{}" is not a valid SousChef slug or the '
                 'SousChef does not yet exist.'
-                .format(recipe['name']))
+                .format(sous_chef_slug))
 
+        # validate the recipe
+        recipe = recipe_schema.validate(recipe, sc.to_dict())
+
+        # fill in relations
+        recipe['user_id'] = user.id
+        recipe['org_id'] = org.id
+
+        # add to database
         r = Recipe(sc, **recipe)
         db.session.add(r)
-
+        db.session.commit()
+        # if the recipe creates metrics create them here.
+        if 'metrics' in sc.creates:
+            for name, params in sc.metrics.items():
+                m = Metric(
+                    name=name,
+                    recipe_id=r.id,
+                    org_id=org.id,
+                    **params)
+                db.session.add(m)
     db.session.commit()
     return jsonify(org)
 
@@ -167,6 +210,12 @@ def org_update(user, org_id_slug):
     if 'timezone' in req_data:
         org.timezone = req_data['timezone']
 
+    if 'domains' in req_data:
+        if not isinstance(req_data['domains'], list):
+            raise RequestError(
+                '"domains" must be a list.')
+        org.domains = req_data['domains']
+
     try:
         db.session.add(org)
         db.session.commit()
@@ -248,9 +297,6 @@ def org_create_user(user, org_id_slug):
     password = req_data.get('password')
     name = req_data.get('name')
     admin = req_data.get('admin', False)
-    if not isinstance(admin, bool):
-        if str(admin).lower() in TRUE_VALUES:
-            admin = True
 
     if not all([email, password, name]):
         raise RequestError(
@@ -274,6 +320,11 @@ def org_create_user(user, org_id_slug):
     if User.query.filter_by(email=email).first():
         raise RequestError(
             'A User with email "{}" already exists'
+            .format(email))
+
+    if not mail.validate(email):
+        raise RequestError(
+            '{} is an invalid email address.'
             .format(email))
 
     new_org_user = User(
@@ -401,11 +452,20 @@ def org_remove_user(user, org_id_slug, user_email):
             'User "{}" is not a part of Org "{}"'
             .format(existing_user.email, org.name))
 
+    # remove the user from the org
     org.users.remove(existing_user)
 
+    # if we're force-deleted the user, do so
+    # but make sure their recipes are re-assigned
+    # to the super-user
     if arg_bool('force', False):
-        if len(user.org_ids) == 1:
-            db.session.delete(user)
-    db.session.commit()
+        super_user = User.query\
+            .filter_by(email=settings.SUPER_USER_EMAIL)\
+            .first()
+        cmd = "UPDATE recipes set user_id={} WHERE user_id={}"\
+              .format(super_user.id, existing_user.id)
+        db.session.execute(cmd)
+        db.session.delete(user)
 
+    db.session.commit()
     return delete_response()

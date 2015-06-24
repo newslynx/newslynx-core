@@ -665,6 +665,8 @@ def register_blueprints(app, *mods):
                     'templates' not in fp):
 
                 name = fp.replace('.py', '')
+
+                # THIS IS HERE BECAUSE OF RQWORKER :/
                 try:
                     m = importlib.import_module(
                         '%s.%s' % (package_name, name))

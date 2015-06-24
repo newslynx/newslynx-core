@@ -107,7 +107,7 @@ def get_request_kwargs(timeout=None, useragent=None):
     }
 
 
-@retry(attempts=2)
+@retry(attempts=settings.BROWSER_MAX_RETRIES)
 def get(_u, **params):
     """Retrieves the html for either a url or a response object. All html
     extractions MUST come from this method due to some intricies in the
@@ -132,7 +132,7 @@ def get(_u, **params):
     return html
 
 
-@retry(attempts=2)
+@retry(attempts=settings.BROWSER_MAX_RETRIES)
 def get_location(url):
     """
     most efficient method for unshortening a url.
@@ -143,7 +143,7 @@ def get_location(url):
     return url
 
 
-@retry(attempts=2)
+@retry(attempts=settings.BROWSER_MAX_RETRIES)
 def get_json(_u, **params):
     """
     Fetches json from a url.

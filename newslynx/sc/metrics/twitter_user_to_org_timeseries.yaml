@@ -22,8 +22,8 @@ metrics:
 
     twitter_followers:
         display_name: Twitter Followers
-        aggregation: sum
-        level: org
-        cumulative: true
-        faceted: false
-        timeseries: true
+        type: cumulative
+        content_levels: []
+        org_levels:
+            - timeseries
+            - summary

@@ -8,7 +8,6 @@ import time
 from functools import partial
 from rq.timeouts import JobTimeoutException
 from sqlalchemy.orm.exc import ObjectDeletedError
-from psycopg2 import IntegrityError
 
 from newslynx.core import queues
 from newslynx.core import rds, gen_session
@@ -50,9 +49,13 @@ class BulkLoader(object):
             return False, self.load_one(item, **kw)
         except Exception as e:
             return True, e
-        except ObjectDeletedError:
-            log.warning('An object was deleted in the process of executing bulk upload.')
-            return False, None
+
+    def _handle_errors(self, errors):
+        if not isinstance(errors, list):
+            errors = [errors]
+        return RequestError(
+            'There was an error while bulk uploading: '
+            '{}'.format(errors[0].message))
 
     def load_all(self, kwargs_key):
         """
@@ -99,9 +102,7 @@ class BulkLoader(object):
 
             # return errors
             if len(errors):
-                return RequestError(
-                    'There was an error while bulk uploading: '
-                    '{}'.format(errors[0].message))
+                self._handle_errors(errors)
 
             # add objects and execute
             if self.returns == 'model':
@@ -110,9 +111,7 @@ class BulkLoader(object):
                         try:
                             session.add(o)
                         except Exception as e:
-                            return RequestError(
-                                'There was an error while bulk uploading: {}'
-                                .format(e.message))
+                            self._handle_errors(e)
 
             # union all queries
             elif self.returns == 'query':
@@ -121,21 +120,17 @@ class BulkLoader(object):
                         try:
                             session.execute(query)
                         except Exception as e:
-                            return RequestError(
-                                'There was an error while bulk uploading: {}'
-                                .format(e.message))
+                            self._handle_errors(e)
             try:
                 session.commit()
 
             except Exception as e:
                 session.rollback()
                 session.remove()
-                return RequestError(
-                    'There was an error while bulk uploading: {}'
-                    .format(e.message))
+                self._handle_errors(e)
 
             # return true if everything worked.
-            session.remove()
+            session.close()
             return True
 
         except JobTimeoutException:
@@ -196,16 +191,6 @@ class OrgTimeseriesBulkLoader(BulkLoader):
         return ingest_metric.org_timeseries(item, **kw)
 
 
-class OrgSummaryBulkLoader(BulkLoader):
-
-    returns = 'query'
-    timeout = 120
-
-    def load_one(self, item, **kw):
-
-        return ingest_metric.org_summary(item, **kw)
-
-
 class EventBulkLoader(BulkLoader):
 
     returns = 'model'
@@ -229,6 +214,5 @@ class ContentItemBulkLoader(BulkLoader):
 content_timeseries = ContentTimeseriesBulkLoader().run
 content_summary = ContentSummaryBulkLoader().run
 org_timeseries = OrgTimeseriesBulkLoader().run
-org_summary = OrgSummaryBulkLoader().run
 events = EventBulkLoader().run
 content_items = ContentItemBulkLoader().run
