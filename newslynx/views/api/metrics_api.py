@@ -138,7 +138,11 @@ def list_metrics(user, org):
     for m in metric_query.all():
         facets['recipes'][m.recipe.slug] += 1
         facets['types'][m.type] += 1
-        facets['faceted'][str(m.faceted).lower()] += 1
+        if 'faceted' in facets:
+            if m.faceted:
+                facets['faceted'] += 1
+        else:
+            facets['faceted'] = 0
         for cl in m.content_levels:
             facets['content_levels'][cl] += 1
         for cl in m.org_levels:
@@ -165,6 +169,69 @@ def get_metric(user, org, name_id):
             .format(name_id, org.name))
 
     return jsonify(m)
+
+
+@bp.route('/api/v1/metrics/content-timeseries', methods=['GET'])
+@load_user
+@load_org
+def get_content_timeseries_metrics(user, org):
+    return jsonify(org.content_timeseries_metrics.values())
+
+
+@bp.route('/api/v1/metrics/content-timeseries/computed', methods=['GET'])
+@load_user
+@load_org
+def get_computed_content_timeseries_metrics(user, org):
+    return jsonify(org.computed_timeseries_metrics.values())
+
+
+@bp.route('/api/v1/metrics/content-summary', methods=['GET'])
+@load_user
+@load_org
+def get_content_summary_metrics(user, org):
+    return jsonify(org.content_summary_metrics.values())
+
+
+@bp.route('/api/v1/metrics/content-summary-sort', methods=['GET'])
+@load_user
+@load_org
+def get_content_summary_metric_sorts(user, org):
+    return jsonify(org.content_summary_metric_sorts.values())
+
+
+@bp.route('/api/v1/metrics/content-summary/computed', methods=['GET'])
+@load_user
+@load_org
+def get_computed_content_summary_metrics(user, org):
+    return jsonify(org.computed_content_summary_metrics.values())
+
+
+@bp.route('/api/v1/metrics/content-comparison', methods=['GET'])
+@load_user
+@load_org
+def get_content_comparsion_metrics(user, org):
+    return jsonify(org.content_comparsion_metrics.values())
+
+
+@bp.route('/api/v1/metrics/org-timeseries', methods=['GET'])
+@load_user
+@load_org
+def get_org_timeseries_metrics(user, org):
+    return jsonify(org.timeseries_metrics.values())
+
+
+@bp.route('/api/v1/metrics/org-timeseries/computed', methods=['GET'])
+@load_user
+@load_org
+def get_computed_org_timeseries_metrics(user, org):
+    return jsonify(org.computed_timeseries_metrics.values())
+
+
+@bp.route('/api/v1/metrics/org-summary', methods=['GET'])
+@load_user
+@load_org
+def get_org_summary_metrics(user, org):
+    return jsonify(org.summary_metrics.values())
 
 
 @bp.route('/api/v1/metrics/<name_id>', methods=['PUT', 'PATCH'])
@@ -212,31 +279,28 @@ def delete_metric(user, org, name_id):
     m = fetch_by_id_or_field(Metric, 'name', name_id, org_id=org.id)
     if not m:
         raise NotFoundError(
-            'Metric "{}" does not yet exist for Org "{}"'
-            .format(name_id, org.name))
+            'Metric "{}" does not yet exist.'
+            .format(name_id))
 
-    if m.level == 'content_item':
-        cmd = """
-            UPDATE content_metric_timeseries SET metrics=json_del_keys(metrics, '{name}'::text);
-            UPDATE content_metric_summary SET metrics=json_del_keys(metrics, '{name}'::text);
-        """.format(name=m.name)
+    # format for deleting metrics from metric store.
+    cmd_fmt = "UPDATE {table} " + \
+              "SET metrics=json_del_keys(metrics, '{name}'::text);"\
+              .format(name=m.name)
 
-    if m.level == 'org':
-        cmd = """
-            UPDATE org_metric_timeseries SET metrics=json_del_keys(metrics, '{name}'::text);
-            UPDATE org_metric_summary SET metrics=json_del_keys(metrics, '{name}'::text);
-        """.format(name=m.name)
+    # delete metric from metric stores.
+    if 'timeseries' in m.content_levels:
+        db.session.execute(cmd_fmt.format(table="content_metric_timeseries"))
 
-    if m.level == 'all':
-        cmd = """
-            UPDATE content_metric_timeseries SET metrics=json_del_keys(metrics, '{name}'::text);
-            UPDATE content_metric_summary SET metrics=json_del_keys(metrics, '{name}'::text);
-            UPDATE org_metric_timeseries SET metrics=json_del_keys(metrics, '{name}'::text);
-            UPDATE org_metric_summary SET metrics=json_del_keys(metrics, '{name}'::text);
-        """.format(name=m.name)
+    if 'summary' in m.content_levels:
+        db.session.execute(cmd_fmt.format(table="content_metric_summary"))
+
+    if 'timeseries' in m.org_levels:
+        db.session.execute(cmd_fmt.format(table="org_metric_timeseries"))
+
+    if 'summary' in m.org_levels:
+        db.session.execute(cmd_fmt.format(table="org_metric_summary"))
 
     db.session.delete(m)
-    db.session.execute(cmd)
     db.session.commit()
 
     return delete_response()

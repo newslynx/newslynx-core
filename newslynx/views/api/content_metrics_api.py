@@ -9,9 +9,10 @@ from newslynx.lib.serialize import jsonify
 from newslynx.views.util import request_data, url_for_job_status
 from newslynx.tasks import ingest_bulk
 from newslynx.tasks import ingest_metric
-from newslynx.tasks import query_metric
+from newslynx.tasks.query_metric import ContentMetricTimeseries
 from newslynx.views.util import (
-    arg_bool, arg_str, validate_ts_unit
+    arg_bool, arg_str, validate_ts_unit, arg_list,
+    arg_date, arg_int
 )
 
 # blueprint
@@ -37,20 +38,27 @@ def get_content_timeseries(user, org, content_item_id):
             'A ContentItem with ID {} does not exist'
             .format(content_item_id))
 
-    unit = arg_str('unit', default='hour')
-    sparse = arg_bool('sparse', default=True)
-    cumulative = arg_bool('cumulative', default=False)
+    # select / exclude
+    select, exclude = arg_list('select', typ=str, exclusions=True, default=['*'])
+    if '*' in select:
+        exclude = []
+        select = "*"
 
-    validate_ts_unit(unit)
+    kw = dict(
+        unit=arg_str('unit', default='hour'),
+        sparse=arg_bool('sparse', default=True),
+        sig_digits=arg_int('sig_digits', default=2),
+        select=select,
+        exclude=exclude,
+        rm_nulls=arg_bool('rm_nulls', default=False),
+        time_since_start=arg_bool('time_since_start', default=False),
+        transform=arg_str('transform', default=None),
+        before=arg_date('before', default=None),
+        after=arg_date('after', default=None)
+    )
 
-    # execute query
-    ts = query_metric.content_item_timeseries(
-        org,
-        content_item_id,
-        unit=unit,
-        sparse=sparse,
-        cumulative=cumulative)
-    return jsonify(ts)
+    q = ContentMetricTimeseries(org, [content_item_id], **kw)
+    return jsonify(list(q.execute()))
 
 
 @bp.route('/api/v1/content/<content_item_id>/timeseries', methods=['POST'])
@@ -84,7 +92,7 @@ def create_content_item_timeseries(user, org, content_item_id):
     ret = ingest_metric.content_timeseries(
         req_data,
         org_id=org.id,
-        metrics_lookup=org.metrics_lookup,
+        metrics_lookup=org.contet,
         commit=True)
     return jsonify(ret)
 
@@ -185,5 +193,6 @@ def bulk_create_content_summary(user, org):
         metrics_lookup=org.metrics_lookup,
         content_item_ids=org.content_item_ids,
         commit=False)
+
     ret = url_for_job_status(apikey=user.apikey, job_id=job_id, queue='bulk')
     return jsonify(ret, status=202)

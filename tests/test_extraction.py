@@ -2,12 +2,8 @@ import datetime
 
 import unittest
 import pytz
-from bs4 import BeautifulSoup
 
-from newslynx.lib import network
 from newslynx.lib import article
-from newslynx.lib import author
-from newslynx.logs import log
 
 
 class TestArticleExtraction(unittest.TestCase):

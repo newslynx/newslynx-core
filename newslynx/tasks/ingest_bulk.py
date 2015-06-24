@@ -17,9 +17,8 @@ from newslynx.tasks import ingest_content_item
 from newslynx.tasks import ingest_event
 from newslynx.tasks import ingest_metric
 from newslynx.util import gen_uuid
-from newslynx.logs import log
 from newslynx.lib.serialize import (
-    jsongz_to_obj, obj_to_jsongz)
+    picklegz_to_obj, obj_to_picklegz)
 
 
 class BulkLoader(object):
@@ -73,7 +72,7 @@ class BulkLoader(object):
                     'An unexpected error occurred while processing bulk upload.'
                 )
 
-            kwargs = jsongz_to_obj(kwargs)
+            kwargs = picklegz_to_obj(kwargs)
             data = kwargs.get('data')
             kw = kwargs.get('kw')
 
@@ -150,7 +149,7 @@ class BulkLoader(object):
         job_id = gen_uuid()
         kwargs_key = self.kwargs_key.format(job_id)
         kwargs = {'data': data, 'kw': kw}
-        rds.set(kwargs_key, obj_to_jsongz(kwargs), ex=self.kwargs_ttl)
+        rds.set(kwargs_key, obj_to_picklegz(kwargs), ex=self.kwargs_ttl)
 
         # send the job to the task queue
         self.q.enqueue(
@@ -187,7 +186,6 @@ class OrgTimeseriesBulkLoader(BulkLoader):
     timeout = 240
 
     def load_one(self, item, **kw):
-
         return ingest_metric.org_timeseries(item, **kw)
 
 

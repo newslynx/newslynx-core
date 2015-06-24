@@ -7,7 +7,7 @@ from newslynx.core import db
 class OrgMetricTimeseries(db.Model):
 
     """
-    A org-metric is a no-sql store of org_id's, content_item_id's, datetimes (optional), and json metrics.
+    A org-metric is a no-sql store of org_id's datetimes (optional) and json metrics.
     """
     __tablename__ = 'org_metric_timeseries'
     __module__ = 'newslynx.models.org_metric'
@@ -30,9 +30,10 @@ class OrgMetricTimeseries(db.Model):
 class OrgMetricSummary(db.Model):
 
     """
-    A org-metric is a no-sql store of org_id's, content_item_id's, datetimes (optional), and json metrics.
+    A org-metric is a no-sql store of org_id's and json metrics.
     """
     __tablename__ = 'org_metric_summary'
+    __module__ = 'newslynx.models.org_metric'
 
     # the ID is the global bitly hash.
     org_id = db.Column(

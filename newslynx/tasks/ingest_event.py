@@ -96,17 +96,12 @@ def ingest(
             setattr(e, k, v)
 
     # extract urls and normalize urls asynchronously.
-    urls = ingest_util.extract_urls(
-        obj,
-        url_fields,
-        org_domains,
-        source=obj.get('url'),
-        links=links)
+    links = ingest_util.prepare_links(links)
 
     # detect content_items
-    if len(urls):
+    if len(links):
         e, has_content_items = _associate_content_items(
-            e, org_id, urls, content_item_ids, session)
+            e, org_id, links, content_item_ids, session)
 
     # associate tags
     if len(tag_ids):

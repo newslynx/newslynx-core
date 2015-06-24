@@ -1,237 +1,480 @@
+from datetime import datetime, date
+
 from newslynx.core import db
+from newslynx.models import Org
+from newslynx.models.util import ResultIter
 
 
-def content_item_timeseries(org, content_item_ids, **kw):
+class TSQuery(object):
+
     """
-    Fetch a timeseries for a content_item
+    An abstract model for querying our timeseries stores.
     """
-    if not isinstance(content_item_ids, list):
-        content_item_ids = [content_item_ids]
+    table = None
+    id_col = None
+    metrics_attr = None
+    computed_metrics_attr = None
+    cal_fx = None
 
-    # get the org's content timeseries metrics
-    metrics = org.content_timeseries_metrics()
+    date_col = 'datetime'
+    metrics_col = 'metrics'
+    init_table = 'init'
+    sparse_table = 'sparse'
+    min_unit = 'hour'
 
-    sparse = kw.get('sparse', True)
-    unit = kw.get('unit', 'hour')
-    cumulative = kw.get('cumulative', False)
-    ret_query = kw.get('ret_query', False)
+    def __init__(self, org, ids, **kw):
+        self.org = org
+        if not isinstance(ids, list):
+            ids = [ids]
+        self.ids = ids
+        self.select = kw.get('select', '*')
+        self.exclude = kw.get('exclude', [])
+        self.unit = kw.get('unit', self.min_unit)
+        self.sparse = kw.get('sparse', True)
+        self.sig_digits = kw.get('sig_digits', 2)
+        self.group_by_id = kw.get('group_by_id', True)
+        self.rm_nulls = kw.get('rm_nulls', False)
+        self.time_since_start = kw.get('time_since_start', False) # TODO
+        self.transform = kw.get('transform', None) # cumulative, avg, median, per_change, roll_avg
+        self.before = kw.get('before', None)
+        self.after = kw.get('after', None)
+        self.metrics = getattr(org, self.metrics_attr)
+        self.computed_metrics = getattr(org, self.computed_metrics_attr)
+        self.select_metrics()
+        self.format_dates()
 
-    cols = ['content_item_id', 'datetime']
+    ## TODO : Figure out how to deal with metrics which
+    ##        computed metrics are reliant upon.
+    def select_metrics(self):
+        """
+        Select / exclude computed metrics.
+        """
+        if self.select != "*":
+            if not isinstance(self.select, list):
+                self.select = [self.select]
 
-    # fetch metrics
-    sparse_statements, metric_columns = \
-        _gen_sparse_select_statements(metrics)
+            for n in self.metrics.keys():
+                if n not in self.select:
+                    self.metrics.pop(n)
 
-    # add metric columns
-    cols += metric_columns
+            for n in self.computed_metrics.keys():
+                if n not in self.select:
+                    self.computed_metrics.pop(n)
 
-    # format kwargs for query
-    cids = ", ".join([str(c) for c in content_item_ids])
-    qkw = {
-        'content_item_ids': "ARRAY[{}]".format(cids),
-        'unit': unit,
-        'select_statements': ",\n".join(sparse_statements)
-    }
+        if not isinstance(self.exclude, list):
+            self.exclude = [self.exclude]
 
-    # generate sparse query
-    query = """
-        SELECT content_item_id,
-            date_trunc('{unit}', datetime) as datetime,
-            {select_statements}
-        FROM content_metric_timeseries
-        WHERE content_item_id IN (select unnest({content_item_ids}))
-        GROUP BY content_item_id, date_trunc('{unit}', datetime)
-        ORDER BY datetime, content_item_id ASC
-        """.format(**qkw)
+        if len(self.exclude):
+            for n in self.metrics.keys():
+                if n in self.exclude:
+                    self.metrics.pop(n)
 
-    # if the timeseries should be filled in, update the query.
-    if not sparse:
+            for n in self.computed_metrics.keys():
+                if n in self.exclude:
+                    self.computed_metrics.pop(n)
 
-        non_sparse_statements = _gen_non_sparse_select_statements(metrics)
-        qkw['select_statements'] = ",\n".join(non_sparse_statements)
-        qkw['init_q'] = query
+    def format_dates(self):
+        """
+        Format dates.
+        """
+        self.filter_dates = False
+        if self.before:
+            self.filter_dates = True
+            self.before = self.format_date(self.before)
+        if self.after:
+            self.filter_dates = True
+            self.after = self.format_date(self.after)
 
-        query = """
-            with stats as (
-                {init_q}
-            ),
-            cal as (
-                select * from content_metric_calendar('1 {unit}s', {content_item_ids})
-            )
-            SELECT cal.content_item_id,
-                   cal.datetime,
-                   {select_statements}
-            FROM cal
-            LEFT JOIN stats ON
-                cal.datetime = stats.datetime AND
-                cal.content_item_id = stats.content_item_id
-            GROUP BY cal.content_item_id, cal.datetime
-            ORDER BY cal.datetime ASC
-        """.format(**qkw)
+    def format_date(self, d):
+        """
+        Format a date
+        """
+        if isinstance(d, (datetime, date)):
+            return d.isoformat()
+        return d
 
-    # if the query should return cumulative counts, reformat the query again.
-    if cumulative:
+    @property
+    def ids_array(self):
+        """
+        The array of ids to select.
+        """
+        idstring = ", ".join([str(i) for i in self.ids])
+        return "ARRAY[{}]".format(idstring)
 
-        cumulative_statements = _gen_cumulative_select_statements(metrics)
-        qkw['select_statements'] = ",\n".join(cumulative_statements)
-        qkw['init_q'] = query
+    @property
+    def date_filter(self):
+        """
+        Filter by date.
+        """
+        clauses = []
+        fmt = "{} {} '{}'"
+        if not self.filter_dates:
+            return ""
+        if self.before:
+            c = fmt.format(self.date_col, "<=", self.before)
+            clauses.append(c)
+        if self.after:
+            c = fmt.format(self.date_col, ">=", self.after)
+            clauses.append(c)
+        return "AND {}".format(" AND ".join(clauses))
 
-        query = """
-        SELECT content_item_id, datetime,
-            {select_statements}
-        FROM (
-            {init_q}
-        ) t
-        """.format(**qkw)
+    @property
+    def query_kw(self):
+        """
+        default kwargs.
+        """
+        return dict(
+            table=self.table,
+            id_col=self.id_col,
+            date_col=self.date_col,
+            sig_digits=self.sig_digits,
+            metrics_col=self.metrics_col,
+            unit=self.unit,
+            cal_fx=self.cal_fx,
+            sparse_table=self.sparse_table,
+            ids_array=self.ids_array,
+            date_filter=self.date_filter
+        )
 
-    # just return the query
-    if ret_query:
-        return query
+    def add_kw(self, **kw):
+        """
+        Update default kw.
+        """
+        return dict(self.query_kw.items() + kw.items())
 
-    # execute the query and format the results as a dictionary
-    output = []
-    for row in db.session.execute(query):
-        output.append(dict(zip(cols, row)))
-    return output
+    # SELECT STATEMENTS
 
-    # select COALESCE(
-    #     ((metrics->>'facebook_comments')::text::numeric - lag((metrics->>'facebook_comments')::text::numeric) OVER (ORDER BY datetime ASC)),
-    #     (metrics->>'facebook_comments')::text::numeric) as foo
-    # from content_metric_timeseries LIMIT 2;
+    def select_json(self, metric):
+        """
+        Pull a json key out of the metrics store.
+        """
+        return "({metrics_col} ->> '{name}')::text::numeric"\
+               .format(**self.add_kw(**metric))
 
+    def select_simple(self, metric):
+        """
+        A simple select statement for the initial, sparse query.
+        """
+        j = self.select_json(metric)
+        return "{j} as {name}".format(j=j, **self.add_kw(**metric))
 
-def org_timeseries(org, **kw):
-    """
-    Fetch a timeseries for an org
-    """
+    def select_cumulative_to_count(self, metric):
+        """
+        Generate a select statement for a cumulative metric to turn it into a count.
+        """
+        j = self.select_json(metric)
+        return """COALESCE(
+                    {j} - lag({j}) OVER (PARTITION BY {id_col} ORDER BY {date_col} ASC),
+                    {j}) as {name}""".format(j=j, **self.add_kw(**metric))
 
-    # get the org's content timeseries metrics
-    metrics = org.timeseries_metrics()
+    def select_agg(self, metric):
+        """
+        A select statement for the agg query.
+        """
+        s = "ROUND({agg_fx}({name}), {sig_digits}) as {name}"
+        return s.format(**self.add_kw(**metric))
 
-    sparse = kw.get('sparse', True)
-    unit = kw.get('unit', 'hour')
-    cumulative = kw.get('cumulative', False)
+    def select_non_sparse(self, metric):
+        """
+        A non-sparse select statement.
+        """
+        s = "COALESCE({sparse_table}.{name}, 0) as {name}"
+        return s.format(**self.add_kw(**metric))
 
-    cols = ['org_id', 'datetime']
+    def select_cumulative(self, metric):
+        """
+        A select statement to make a count metric cumulative.
+        """
+        p = "PARTITION BY {}".format(self.id_col)
+        if not self.group_by_id:
+            p = ""
+        s = "sum({name}) OVER ({p} ORDER BY {date_col} ASC) AS {name}"
+        return s.format(p=p, **self.add_kw(**metric))
 
-    # fetch metrics
-    sparse_statements, metric_columns = \
-        _gen_sparse_select_statements(metrics)
+    @property
+    def init_select(self):
+        """
+        Generate select statements for the initial query.
+        """
+        ss = []
+        for n, m in self.metrics.items():
+            if m['type'] == 'cumulative':
+                ss.append(self.select_cumulative_to_count(m))
+            else:
+                ss.append(self.select_simple(m))
+        return ",\n".join(ss)
 
-    # add metric columns
-    cols += metric_columns
+    @property
+    def agg_select(self):
+        """
+        Generate select statements for the aggregation query.
+        """
+        ss = []
+        for n, m in self.metrics.items():
+            ss.append(self.select_agg(m))
+        return ",\n".join(ss)
 
-    # format kwargs for query
-    qkw = {
-        'org_id': org.id,
-        'unit': unit,
-        'select_statements': ",\n".join(sparse_statements)
-    }
+    @property
+    def non_sparse_select(self):
+        """
+        Generate select statements for the non sparse query.
+        """
+        ss = []
+        for n, m in self.metrics.items():
+            ss.append(self.select_non_sparse(m))
+        return ",\n".join(ss)
 
-    # generate sparse query
-    query = """
-        SELECT org_id,
-            date_trunc('{unit}', datetime) as datetime,
-            {select_statements}
-        FROM org_metric_timeseries
-        WHERE org_id = {org_id}
-        GROUP BY org_id, date_trunc('{unit}', datetime)
-        ORDER BY datetime ASC
-        """.format(**qkw)
+    @property
+    def cumulative_select(self):
+        """
+        Generate select statements for the cumulative query.
+        """
+        ss = []
+        for n, m in self.metrics.items():
+            if m['agg_fx'] == 'sum':
+                ss.append(self.select_cumulative(m))
+            else:
+                ss.append(n)
+        return ",\n".join(ss)
 
-    # if the timeseries should be filled in, update the query.
-    if not sparse:
+    @property
+    def init_kw(self):
+        """
+        kwargs for the initial query.
+        """
+        init_id_col = "{},".format(self.id_col)
+        if not self.group_by_id:
+            init_id_col = ""
 
-        non_sparse_statements = _gen_non_sparse_select_statements(metrics)
-        qkw['select_statements'] = ",\n".join(non_sparse_statements)
-        qkw['init_q'] = query
+        return self.add_kw(
+            select=self.init_select,
+            init_id_col=init_id_col
+        )
 
-        query = """
-            with stats as (
-                {init_q}
-            ),
-            cal as (
-                select * from org_metric_calendar('1 {unit}s', {org_id})
-            )
-            SELECT cal.org_id,
-                   cal.datetime,
-                   {select_statements}
-            FROM cal
-            LEFT JOIN stats ON
-                cal.datetime = stats.datetime AND
-                cal.org_id = stats.org_id
-            GROUP BY cal.org_id, cal.datetime
-            ORDER BY cal.datetime ASC
-        """.format(**qkw)
+    @property
+    def init_query(self):
+        """
+        The initial query.
+        """
+        return \
+            """SELECT
+                    {init_id_col}
+                    date_trunc('{unit}', {date_col}) as {date_col},
+                    {select}
+                FROM {table}
+                    WHERE {id_col} IN (select unnest({ids_array}))
+                    {date_filter}
+            """.format(**self.init_kw)
 
-    # if the query should return cumulative counts, reformat the query again.
-    if cumulative:
+    @property
+    def agg_kw(self):
+        """
+        kwargs for the aggregation query.
+        """
+        # group by ID ?
+        agg_id_col = "{0},".format(self.id_col)
+        agg_order_by = ",{0}".format(self.id_col)
+        if not self.group_by_id:
+            agg_id_col = ""
+            agg_order_by = ""
 
-        cumulative_statements = _gen_cumulative_select_statements(metrics, id_col='org_id')
-        qkw['select_statements'] = ",\n".join(cumulative_statements)
-        qkw['init_q'] = query
+        return self.add_kw(
+            select=self.agg_select,
+            init_query=self.init_query,
+            agg_id_col=agg_id_col,
+            agg_order_by=agg_order_by
+        )
 
-        query = """
-        SELECT org_id, datetime,
-            {select_statements}
-        FROM (
-            {init_q}
-        ) t
-        """.format(**qkw)
+    @property
+    def agg_query(self):
+        """
+        The aggregation query.
+        """
+        return \
+            """SELECT {agg_id_col}
+                    date_trunc('{unit}', {date_col}) as {date_col},
+                    {select}
+                FROM ({init_query}) t1
+                GROUP BY {agg_id_col} {date_col}
+                ORDER BY {date_col} {agg_order_by} ASC
+            """.format(**self.agg_kw)
 
-    # execute the query and format the results as a dictionary
-    output = []
-    for row in db.session.execute(query):
-        output.append(dict(zip(cols, row)))
-    return output
+    @property
+    def cal_kw(self):
+        """
+        kwargs for non-sparse calendar
+        """
+        before = ""
+        after = ""
+        if self.before:
+            before = ", '{}'".format(self.before)
+        if self.after:
+            after = ", '{}'".format(self.after)
+        return self.add_kw(before=before, after=after)
 
+    @property
+    def cal(self):
+        """
+        The calendar for the non-sparse query.
+        """
+        p = "{cal_fx}('1 {unit}s', {ids_array} {after} {before})"
+        return p.format(**self.cal_kw)
 
-def _gen_sparse_select_statements(metrics):
-    """
-    Generate select statements for a list of metrics
-    """
-    select_pattern = """
-        ROUND({aggregation}(COALESCE((metrics ->> '{name}')::text::numeric, 0)), 2) as {name}
-    """
-
-    statements = []
-    columns = []
-    for m in metrics:
-        statements.append(select_pattern.format(**m.to_dict()))
-        columns.append(m.name)
-    return statements, columns
-
-
-def _gen_non_sparse_select_statements(metrics, table='stats'):
-    """
-    Generate select statements for a list of metrics
-    """
-    select_pattern = """
-        ROUND({aggregation}(COALESCE({table}.{name}, 0)), 2) as {name}
-    """
-
-    statements = []
-    for m in metrics:
-        kw = m.to_dict()
-        kw['table'] = table
-        statements.append(select_pattern.format(**kw))
-    return statements
-
-
-def _gen_cumulative_select_statements(metrics, id_col='content_item_id'):
-    """
-    Generate select statements for a list of metrics
-    """
-    select_pattern = """
-        sum({name}) OVER (PARTITION BY {id_col} ORDER BY datetime ASC) AS {name}
-    """
-
-    statements = []
-    for m in metrics:
-        if m.aggregation != 'sum':
-            statements.append(m.name)
+    @property
+    def non_sparse_kw(self):
+        """
+        kwargs for the non-sparse query.
+        """
+        if self.unit == self.min_unit:
+            init_q = self.init_query
         else:
-            kw = m.to_dict()
-            kw['id_col'] = id_col
-            statements.append(select_pattern.format(**kw))
-    return statements
+            init_q = self.agg_query
+
+        # group by ID ?
+        cal_id_col1 = "{0},\n".format(self.id_col)
+        cal_id_col2 = "cal.{0}".format(cal_id_col1)
+        cal_id_join = "AND cal.{0} = {1}.{0}"\
+                      .format(self.id_col, self.sparse_table)
+        cal_order_by = ", cal.{0}".format(self.id_col)
+        cal_date_select = "{}".format(self.date_col)
+        if not self.group_by_id:
+            cal_id_col1 = ""
+            cal_id_col2 = ""
+            cal_id_join = ""
+            cal_order_by = ""
+            cal_date_select = "distinct({})".format(self.date_col)
+
+        return self.add_kw(
+            select=self.non_sparse_select,
+            init_q=init_q,
+            cal=self.cal,
+            cal_id_join=cal_id_join,
+            cal_id_col1=cal_id_col1,
+            cal_id_col2=cal_id_col2,
+            cal_order_by=cal_order_by,
+            cal_date_select=cal_date_select
+        )
+
+    @property
+    def non_sparse_query(self):
+        """
+        The non-sparse query.
+        """
+        return \
+            """WITH {sparse_table} as (
+                    {init_q}
+                ),
+                cal as (
+                    select
+                        {cal_id_col1}
+                        {cal_date_select}
+                        from {cal}
+                )
+                SELECT
+                       {cal_id_col2}
+                       cal.{date_col},
+                       {select}
+                FROM cal
+                LEFT JOIN {sparse_table} ON
+                    cal.{date_col} = {sparse_table}.{date_col}
+                    {cal_id_join}
+                ORDER BY cal.{date_col} {cal_order_by} ASC
+            """.format(**self.non_sparse_kw)
+
+    @property
+    def cumulative_kw(self):
+        """
+        kwargs for the cumulative query.
+        """
+        # determine initial query
+        if self.sparse and self.unit == 'hour' and self.group_by_id:
+            init_q = self.init_query
+
+        elif self.sparse:
+            init_q = self.agg_query
+
+        elif not self.sparse:
+            init_q = self.non_sparse_query
+
+        _id_col = "{},".format(self.id_col)
+        if not self.group_by_id:
+            _id_col = ""
+
+        return self.add_kw(
+            select=self.cumulative_select,
+            init_q=init_q,
+            _id_col=_id_col
+        )
+
+    @property
+    def cumulative_query(self):
+        """
+        The cumulative query.
+        """
+        return \
+            """ SELECT
+                    {date_col},
+                    {_id_col}
+                    {select}
+                FROM (
+                    {init_q}
+                ) t2
+            """.format(**self.cumulative_kw)
+
+    @property
+    def query(self):
+        """
+        The whole shebang
+        """
+
+        # simple query.
+        if self.sparse and \
+           self.unit == self.min_unit and \
+           not self.transform:
+
+            return self.init_query
+
+        # simple aggregate query
+        elif self.sparse and not self.transform:
+            return self.agg_query
+
+        # non-sparse query
+        elif not self.sparse and not self.transform:
+            return self.non_sparse_query
+
+        # cumulative
+        elif self.transform == 'cumulative':
+            return self.cumulative_query
+
+        ## TODO: rolling average, per_change, median + average timeseries for multiple ids.
+
+        # return self.cumulative_query
+
+    def execute(self):
+        """
+        Execute the query stream the results.
+        """
+        return ResultIter(db.session.execute(self.query))
+
+
+class ContentMetricTimeseries(TSQuery):
+    table = "content_metric_timeseries"
+    id_col = "content_item_id"
+    cal_fx = "content_metric_calendar"
+    metrics_attr = "content_timeseries_metrics"
+    computed_metrics_attr = "computed_content_timeseries_metrics"
+
+
+class OrgMetricTimeseries(TSQuery):
+    table = "org_metric_timeseries"
+    id_col = "org_id"
+    cal_fx = "org_metric_calendar"
+    metrics_attr = "timeseries_metrics"
+    computed_metrics_attr = "computed_timeseries_metrics"
+
+
+if __name__ == '__main__':
+    o = Org.query.get(1)
+    ids = [1]
+    cms = OrgMetricTimeseries(o, ids, unit="month", sparse=False, select="fb_page_likes", transform="cumulative", after="2015-04-01", before="2015-08-01")
+    print cms.query

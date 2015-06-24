@@ -101,7 +101,6 @@ definitions:
                         - timeseries
                         - summary
 
-
             faceted: 
                 description: Is this metric faceted?
                 type: boolean

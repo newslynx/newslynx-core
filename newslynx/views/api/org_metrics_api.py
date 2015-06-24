@@ -10,12 +10,11 @@ from newslynx.lib import dates
 from newslynx.views.util import request_data
 from newslynx.tasks import ingest_metric
 from newslynx.tasks import ingest_bulk
-from newslynx.tasks import query_metric
+from newslynx.tasks.query_metric import OrgMetricTimeseries
 from newslynx.models.util import fetch_by_id_or_field
 from newslynx.views.util import (
     arg_bool, arg_str, validate_ts_unit, localize,
-    url_for_job_status
-)
+    url_for_job_status,  arg_list, arg_date, arg_int)
 
 # blueprint
 bp = Blueprint('org_metrics', __name__)
@@ -71,7 +70,7 @@ def org_metrics_summary(user, org_id_slug):
     ret = ingest_metric.org_summary(
         req_data,
         org_id=org.id,
-        metrics_lookup=org.metrics_lookup,
+        valid_metrics=org.org_summary_metric_names,
         commit=True
     )
     return jsonify(ret)
@@ -94,22 +93,28 @@ def get_org_timeseries(user, org_id_slug):
         raise ForbiddenError(
             'You are not allowed to access this Org')
 
-    unit = arg_str('unit', default='hour')
-    sparse = arg_bool('sparse', default=True)
-    cumulative = arg_bool('cumulative', default=False)
-    validate_ts_unit(unit)
+    # select / exclude
+    select, exclude = arg_list('select', typ=str, exclusions=True, default=['*'])
+    if '*' in select:
+        exclude = []
+        select = "*"
 
-    # localize
-    localize(org)
+    kw = dict(
+        unit=arg_str('unit', default='hour'),
+        sparse=arg_bool('sparse', default=True),
+        sig_digits=arg_int('sig_digits', default=2),
+        select=select,
+        exclude=exclude,
+        group_by_id=arg_bool('group_by_id', default=True),
+        rm_nulls=arg_bool('rm_nulls', default=False),
+        time_since_start=arg_bool('time_since_start', default=False),
+        transform=arg_str('transform', default=None),
+        before=arg_date('before', default=None),
+        after=arg_date('after', default=None)
+    )
 
-    # execute query
-    ts = query_metric.org_timeseries(
-        org,
-        unit=unit,
-        sparse=sparse,
-        cumulative=cumulative)
-
-    return jsonify(ts)
+    q = OrgMetricTimeseries(org, [org.id], **kw)
+    return jsonify(list(q.execute()))
 
 
 @bp.route('/api/v1/orgs/<org_id_slug>/timeseries', methods=['POST'])

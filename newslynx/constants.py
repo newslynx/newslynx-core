@@ -6,7 +6,7 @@ Global defaults. These are non-configurable.
 METRIC_TYPES = [
     'count', 'cumulative', 'percentile',
     'median', 'average', 'min_rank',
-    'max_rank'
+    'max_rank', 'computed'
 ]
 
 

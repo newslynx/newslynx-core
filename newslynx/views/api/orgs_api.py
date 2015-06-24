@@ -33,15 +33,14 @@ def org_create(user):
 
     req_data = request_data()
 
-    if 'name' not in req_data \
-       or 'timezone' not in req_data\
-       or 'domains' not in req_data:
-        raise RequestError(
-            "An Org requires a 'name', 'timezone', and 'domains'")
-
-    if not user.admin:
+    if not user.super_user:
         raise ForbiddenError(
-            'You must be an admin to create or update an Org')
+            'You must be the super user to create an Org')
+
+    if 'name' not in req_data \
+       or 'timezone' not in req_data:
+        raise RequestError(
+            "An Org requires a 'name' and 'timezone")
 
     org = Org.query\
         .filter_by(name=req_data['name'])\
@@ -53,31 +52,12 @@ def org_create(user):
             "Org '{}' already exists"
             .format(req_data['name']))
 
-    if not isinstance(req_data['domains'], list):
-        raise RequestError(
-            '"domains" must be a list.'
-        )
-
     # add the requesting user to the org
     org = Org(
         name=req_data['name'],
-        timezone=req_data['timezone'],
-        domains=req_data.get('domains', [])
+        timezone=req_data['timezone']
     )
     org.users.append(user)
-
-    # add the super user to the org
-    if user.email != settings.SUPER_USER_EMAIL:
-        super_user = User.query\
-            .filter_by(email=settings.SUPER_USER_EMAIL)\
-            .first()
-
-        if not super_user:
-            raise ConfigError(
-                'You must create a super user before creating an org!'
-            )
-        org.users.append(super_user)
-
     db.session.add(org)
     db.session.commit()
 
@@ -118,6 +98,7 @@ def org_create(user):
         r = Recipe(sc, **recipe)
         db.session.add(r)
         db.session.commit()
+
         # if the recipe creates metrics create them here.
         if 'metrics' in sc.creates:
             for name, params in sc.metrics.items():
@@ -209,12 +190,6 @@ def org_update(user, org_id_slug):
 
     if 'timezone' in req_data:
         org.timezone = req_data['timezone']
-
-    if 'domains' in req_data:
-        if not isinstance(req_data['domains'], list):
-            raise RequestError(
-                '"domains" must be a list.')
-        org.domains = req_data['domains']
 
     try:
         db.session.add(org)
@@ -455,15 +430,12 @@ def org_remove_user(user, org_id_slug, user_email):
     # remove the user from the org
     org.users.remove(existing_user)
 
-    # if we're force-deleted the user, do so
+    # if we're force-deleting the user, do so
     # but make sure their recipes are re-assigned
     # to the super-user
     if arg_bool('force', False):
-        super_user = User.query\
-            .filter_by(email=settings.SUPER_USER_EMAIL)\
-            .first()
         cmd = "UPDATE recipes set user_id={} WHERE user_id={}"\
-              .format(super_user.id, existing_user.id)
+              .format(org.super_user.id, existing_user.id)
         db.session.execute(cmd)
         db.session.delete(user)
 

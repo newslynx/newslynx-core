@@ -3,22 +3,8 @@ Logging Configurations
 """
 import logging
 
-from newslynx import settings
-
-LOG_LEVELS = {
-    'DEBUG': logging.DEBUG,
-    'INFO': logging.INFO,
-    'WARNING': logging.WARNING,
-    'ERROR': logging.ERROR,
-    'CRITICAL': logging.CRITICAL
-}
-
-log = logging.getLogger("newslynx")
-log.addHandler(logging.basicConfig(
-    format='%(levelname)s - %(asctime)s (%(name)s) %(message)s',
-    level=LOG_LEVELS[getattr(settings, 'LOG_LEVEL', 'INFO').upper()],
-    datefmt='%Y-%m-%d %H:%M:%S'
-    ))
+## TODO CONFIGURE LOGGING PROPERLY
+log = logging.getLogger('newslynx')
 
 # suppress tld logging
 tld_log = logging.getLogger('tldextract')

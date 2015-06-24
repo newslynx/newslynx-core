@@ -26,7 +26,7 @@ try:
     import DNS
     ServerError = DNS.ServerError
     DNS.DiscoverNameServers()
-except (ImportError, AttributeError):
+except:
     DNS = None
 
     class ServerError(Exception):
