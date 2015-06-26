@@ -46,6 +46,13 @@ class SousChefInitError(Exception):
     status_code = 400
 
 
+class MerlynneError(Exception):
+    """
+    An error that's thrown when a Merlynne is not properly initialized.
+    """
+    status_code = 400
+
+
 class RecipeSchemaError(Exception):
     """
     An error that's thrown when a Recipe has an invalid schema

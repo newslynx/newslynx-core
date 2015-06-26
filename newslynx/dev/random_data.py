@@ -162,21 +162,7 @@ def gen_built_in_recipes(org):
 
 # Tags
 def gen_impact_tags(org, n_impact_tags):
-
-    # random
     impact_tags = []
-    for _ in xrange(n_impact_tags):
-        t = Tag(
-            org_id=org.id,
-            name=random_text(20) + str(random_int(1, 100)),
-            color=random_color(),
-            type='impact',
-            category=choice(IMPACT_TAG_CATEGORIES),
-            level=choice(IMPACT_TAG_LEVELS))
-        db_session.add(t)
-        db_session.commit()
-        impact_tags.append(t)
-
     # default
     for tag in load_default_tags():
         if tag['type'] == 'impact':
@@ -188,23 +174,13 @@ def gen_impact_tags(org, n_impact_tags):
                 t = Tag(**tag)
                 db_session.add(t)
                 db_session.commit()
+                impact_tags.append(t)
     return impact_tags
 
 
 # TAGS
 def gen_subject_tags(org, n_subject_tags):
     subject_tags = []
-    for _ in xrange(n_subject_tags):
-        t = Tag(
-            org_id=org.id,
-            name=random_text(20) + str(random_int(1, 100)),
-            color=random_color(),
-            type='subject')
-        db_session.add(t)
-        db_session.commit()
-        subject_tags.append(t)
-
-    # default
     for tag in load_default_tags():
         if tag['type'] == 'subject':
             tag['org_id'] = org.id
@@ -215,7 +191,7 @@ def gen_subject_tags(org, n_subject_tags):
                 t = Tag(**tag)
                 db_session.add(t)
                 db_session.commit()
-            impact_tags.append(t)
+            subject_tags.append(t)
     return subject_tags
 
 

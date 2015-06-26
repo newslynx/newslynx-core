@@ -18,10 +18,8 @@ from newslynx.merlynne import Merlynne
 # blueprint
 bp = Blueprint('recipes', __name__)
 
-
-
-
 # utils
+
 
 @bp.route('/api/v1/recipes', methods=['GET'])
 @load_user
@@ -291,13 +289,19 @@ def cook_a_recipe(user, org, recipe_id):
             settings_as_dict=True,
             incl_users=True),
         apikey=user.apikey,
-        recipe=r,
-        sous_chef=r.sous_chef.runs)
+        recipe=r.to_dict(),
+        recipe_obj=r,
+        sous_chef_path=r.sous_chef.runs)
 
     # cook recipe
     merlynne = Merlynne(**kw)
-    job_id = merlynne.cook_recipe(**kw)
+    try:
+        job_id = merlynne.cook_recipe(**kw)
+    except Exception as e:
+        raise RequestError(
+            'There was a problem initializating the SousChef: {}'
+            .format(e.message))
 
-    # return job status url
+    # # return job status url
     ret = url_for_job_status(apikey=user.apikey, job_id=job_id, queue='merlynne')
     return jsonify(ret, status=202)

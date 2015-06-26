@@ -64,7 +64,7 @@ class ContentComparison(object):
         return ",\n".join(ss)
 
     def metric_query(self, metric):
-        kwargs = {
+        kw = {
             'name': metric.get('name'),
             'percentiles': self.select_percentiles,
             'summary_query': self.metric_summary_query(metric),
@@ -75,7 +75,7 @@ class ContentComparison(object):
                       mean, median, min, max,
                       {percentiles}
                FROM (\n{summary_query}\n) AS "{alias}"
-            """.format(**kwargs)
+            """.format(**kw)
 
     @property
     def query(self):

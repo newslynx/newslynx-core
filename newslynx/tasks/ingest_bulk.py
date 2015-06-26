@@ -18,7 +18,7 @@ from newslynx.tasks import ingest_event
 from newslynx.tasks import ingest_metric
 from newslynx.util import gen_uuid
 from newslynx.lib.serialize import (
-    picklegz_to_obj, obj_to_picklegz)
+    pickle_to_obj, obj_to_pickle)
 
 
 class BulkLoader(object):
@@ -72,7 +72,7 @@ class BulkLoader(object):
                     'An unexpected error occurred while processing bulk upload.'
                 )
 
-            kwargs = picklegz_to_obj(kwargs)
+            kwargs = pickle_to_obj(kwargs)
             data = kwargs.get('data')
             kw = kwargs.get('kw')
 
@@ -149,7 +149,7 @@ class BulkLoader(object):
         job_id = gen_uuid()
         kwargs_key = self.kwargs_key.format(job_id)
         kwargs = {'data': data, 'kw': kw}
-        rds.set(kwargs_key, obj_to_picklegz(kwargs), ex=self.kwargs_ttl)
+        self.redis.set(kwargs_key, obj_to_pickle(kwargs), ex=self.kwargs_ttl)
 
         # send the job to the task queue
         self.q.enqueue(

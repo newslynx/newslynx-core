@@ -87,7 +87,7 @@ class Recipe(db.Model):
         """
         self.options = obj_to_pickle(opts)
 
-    def to_dict(self, incl_sous_chef=False):
+    def to_dict(self):
         d = {
             'id': self.id,
             'org_id': self.org_id,
@@ -103,6 +103,7 @@ class Recipe(db.Model):
             'time_of_day': self.time_of_day,
             'minutes': self.minutes,
             'status': self.status,
+            'traceback': self.traceback,
             'last_job': self.last_job,
             'options': pickle_to_obj(self.options)
         }
