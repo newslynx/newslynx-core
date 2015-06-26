@@ -39,6 +39,7 @@ class Recipe(db.Model):
     minutes = db.Column(db.Integer)
     status = db.Column(
         ENUM(*RECIPE_STATUSES, name="enum_recipe_statuses"), index=True)
+    traceback = db.Column(db.Text)
     last_job = db.Column(JSON)
 
     # options
@@ -70,6 +71,7 @@ class Recipe(db.Model):
         self.time_of_day = kw.get('time_of_day')
         self.minutes = kw.get('minutes')
         self.status = kw.get('status', 'stable')
+        self.traceback = kw.get('traceback')
         self.set_options(kw.get('options', {}))
 
         # internal fields

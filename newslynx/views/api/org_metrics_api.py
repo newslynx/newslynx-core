@@ -1,16 +1,15 @@
 import logging
 
-from flask import Blueprint, session, request
+from flask import Blueprint, request
 
-from newslynx.views.decorators import load_user, load_org
+from newslynx.views.decorators import load_user
 from newslynx.exc import NotFoundError, ForbiddenError
 from newslynx.models import Org
 from newslynx.lib.serialize import jsonify
-from newslynx.lib import dates
 from newslynx.views.util import request_data
 from newslynx.tasks import ingest_metric
 from newslynx.tasks import ingest_bulk
-from newslynx.tasks.query_metric import OrgMetricTimeseries
+from newslynx.tasks.query_metric import QueryOrgMetricTimeseries
 from newslynx.models.util import fetch_by_id_or_field
 from newslynx.views.util import (
     arg_bool, arg_str, validate_ts_unit, localize,
@@ -93,11 +92,14 @@ def get_org_timeseries(user, org_id_slug):
         raise ForbiddenError(
             'You are not allowed to access this Org')
 
+    # todo: validate which metrics you can select.
+
     # select / exclude
-    select, exclude = arg_list('select', typ=str, exclusions=True, default=['*'])
-    if '*' in select:
+    select, exclude = arg_list(
+        'select', typ=str, exclusions=True, default=['all'])
+    if 'all' in select:
         exclude = []
-        select = "*"
+        select = "all"
 
     kw = dict(
         unit=arg_str('unit', default='hour'),
@@ -113,7 +115,7 @@ def get_org_timeseries(user, org_id_slug):
         after=arg_date('after', default=None)
     )
 
-    q = OrgMetricTimeseries(org, [org.id], **kw)
+    q = QueryOrgMetricTimeseries(org, [org.id], **kw)
     return jsonify(list(q.execute()))
 
 

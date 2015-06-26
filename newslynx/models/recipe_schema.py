@@ -282,7 +282,7 @@ class RecipeSchema(object):
             else:
                 return ret
 
-        msg = "The following options are invalid:{}"\
+        msg = "The following options are invalid: {}"\
               .format("\n\t- ".join(error_messages))
         self._raise_recipe_schema_error(msg)
 
@@ -412,7 +412,7 @@ class RecipeSchema(object):
         """
         r = self.recipe.get('slug', self.recipe.get('name', ''))
         preface = "There were problems validating Recipe '{}' "\
-                  "which is associated with SousChef '{}': "\
+                  "which is associated with SousChef '{}'-- "\
                   .format(r, self.sous_chef)
         msg = preface + message
         raise RecipeSchemaError(msg)

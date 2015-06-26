@@ -60,7 +60,6 @@ metrics:
             - timeseries
             - summary
 
-
     ga_entrances:
         display_name: Entrances
         type: count
@@ -72,7 +71,6 @@ metrics:
             - timeseries
             - summary
 
-
     ga_total_time_on_page:
         display_name: Total Time on Page
         type: count
@@ -83,5 +81,32 @@ metrics:
         org_levels:
             - timeseries
             - summary
+
+    ga_avg_time_on_page:
+        display_name: Average Time on Page 
+        type: computed
+        content_levels:
+            - timeseries 
+            - summary 
+            - comparison 
+        org_levels:
+            - timeseries
+            - summary 
+        formula: '{ga_total_time_on_page} / {ga_pageviews}'
+        agg: avg
+
+    ga_per_external:
+        display_name: Percent External Traffic 
+        type: computed
+        content_levels:
+            - timeseries 
+            - summary 
+            - comparison 
+        org_levels:
+            - timeseries
+            - summary 
+        formula: '{ga_entrances} / {ga_pageviews}'
+        agg: avg
+
 
 

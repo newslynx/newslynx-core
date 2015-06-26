@@ -12,3 +12,7 @@ from .content_metric import ContentMetricTimeseries, ContentMetricSummary
 from .user import User
 from .sous_chef import SousChef
 from .work_cache import URLCache, ExtractCache, ThumbnailCache
+from .compare_cache import (
+    ComparisonsCache, AllContentComparisonCache,
+    SubjectTagsComparisonCache, ContentTypeComparisonCache,
+    ImpactTagsComparisonCache)

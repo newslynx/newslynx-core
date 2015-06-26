@@ -1,10 +1,5 @@
 
-class Error(Exception):
-    """
-    A generic Exception with status_code
-    """
-    def __init__(self, *args, **kw):
-        Exception.__init__(self, *args, **kw)
+# API Errors #
 
 
 class RequestError(Exception):
@@ -44,6 +39,13 @@ class SousChefSchemaError(Exception):
     status_code = 400
 
 
+class SousChefInitError(Exception):
+    """
+    An error that's thrown when a SousChef is not properly initialized.
+    """
+    status_code = 400
+
+
 class RecipeSchemaError(Exception):
     """
     An error that's thrown when a Recipe has an invalid schema
@@ -71,3 +73,20 @@ class ClientError(Exception):
     An error that's thrown when something is wrong on the API Client side.
     """
     status_code = 500
+
+
+# a lookup of all errors
+ERRORS = {
+    "RequestError": RequestError,
+    "AuthError": AuthError,
+    "ForbiddenError": ForbiddenError,
+    "NotFoundError": NotFoundError,
+    "ConflictError": ConflictError,
+    "UnprocessableEntityError": UnprocessableEntityError,
+    "InternalServerError": InternalServerError,
+    "SousChefSchemaError": SousChefSchemaError,
+    "RecipeSchemaError": RecipeSchemaError,
+    "SearchStringError": SearchStringError,
+    "ConfigError": ConfigError,
+    "ClientError": ClientError
+}

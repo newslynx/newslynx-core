@@ -79,10 +79,19 @@ definitions:
                     - count
                     - cumulative
                     - percentile
-                    - median
-                    - average
                     - min_rank
                     - max_rank
+                    - computed
+
+            agg:
+                description: How should we aggregate this metric?
+                type: string
+                enum:
+                    - sum
+                    - avg 
+                    - median 
+                    - max 
+                    - min
 
             content_levels:
                 description: What content metric levels does this metric apply to?

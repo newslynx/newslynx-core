@@ -20,10 +20,16 @@ thumbnail_cache = ThumbnailCache()
 url_cache_pool = Pool(settings.URL_CACHE_POOL_SIZE)
 
 
-def prepare_links(links=[]):
+def prepare_links(links=[], domains=[]):
     """
     Prepare links to be tested against content items.
     """
+    if len(domains):
+        _links = []
+        for l in links:
+            if any([d in l for d in domains]):
+                _links.append(l)
+        links = _links
     raw_urls = list(set(links))
     clean_urls = set()
     for cache_response in url_cache_pool.imap_unordered(url_cache.get, list(raw_urls)):
@@ -129,18 +135,8 @@ def prepare_metrics(
         m = org_metric_lookup.get(k)
         if not m:
             raise RequestError(
-                "Metric '{}' does not exist."
+                "Metric '{}' does not exist at this level."
                 .format(k))
-
-        if check_timeseries and not m['timeseries']:
-            raise RequestError(
-                "Metric '{}' is not a timeseries metric."
-                .format(k))
-
-        if m['level'] not in valid_levels:
-            raise RequestError(
-                "Metric '{}' cannot be applied to a {}."
-                .format(k, parent_obj))
 
         if m['faceted'] and not isinstance(obj[k], list):
             raise RequestError(

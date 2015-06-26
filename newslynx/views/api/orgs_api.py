@@ -194,6 +194,7 @@ def org_update(user, org_id_slug):
     try:
         db.session.add(org)
         db.session.commit()
+
     except Exception as e:
         raise RequestError(
             "An error occurred while updating this Org '{}'. "

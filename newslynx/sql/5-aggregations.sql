@@ -46,3 +46,25 @@ CREATE AGGREGATE median(numeric) (
   FINALFUNC=_final_median,
   INITCOND='{}'
 );
+
+--- numpy.percentile
+CREATE OR REPLACE FUNCTION percentile(metrics numeric[], per numeric)
+RETURNS JSON AS $$
+  import numpy as np
+  if not metrics:
+    return None
+  if not len(metrics):
+    return None
+  float_array = []
+  zero_tests = []
+  for m in metrics:
+      if m:
+        zero_tests.append(m == 0)
+        float_array.append(float(m))
+  if all(zero_tests):
+    return 0
+  if not len(float_array):
+    return None
+  n = np.percentile(float_array, float(per))
+  return float("{0:.2f}".format(n))
+$$ LANGUAGE PLPYTHONU;

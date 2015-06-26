@@ -1,18 +1,24 @@
-from flask import Blueprint, Response, stream_with_context
+"""
+The super user can submit sql queries to the API.
+"""
+from flask import Blueprint, Response, stream_with_context, request
+
 from sqlalchemy.exc import ResourceClosedError
 from newslynx.core import db
 from newslynx.exc import RequestError, ForbiddenError
 from newslynx.views.decorators import load_user
 from newslynx.lib.serialize import obj_to_json
+from newslynx.lib.serialize import jsonify
 from newslynx.views.util import request_data
-from newslynx.models.util import ResultIter
+from newslynx.tasks.util import ResultIter
+from newslynx.views.util import arg_str, arg_bool
 
 
 # bp
 bp = Blueprint('sql', __name__)
 
 
-@bp.route('/api/v1/sql', methods=['POST'])
+@bp.route('/api/v1/sql', methods=['POST', 'GET'])
 @load_user
 def exec_query(user):
     """
@@ -24,11 +30,13 @@ def exec_query(user):
     if not user.super_user:
         raise ForbiddenError(
             "Only the super user can access the SQL API.")
-
-    q = request_data().get('query', None)
+    if request.method == "POST":
+        q = request_data().get('query', None)
+    if request.method == "GET":
+        q = arg_str('query', default=None)
     if not q:
         raise RequestError('A query - "q" is required.')
-
+    stream = arg_bool('stream', default=True)
     try:
         results = db.session.execute(q)
     except Exception as e:
@@ -39,8 +47,16 @@ def exec_query(user):
     def generate():
         try:
             for row in ResultIter(results):
-                yield obj_to_json(row) + "\n"
+                if stream:
+                    yield obj_to_json(row) + "\n"
+                else:
+                    yield row
         except ResourceClosedError:
-            yield obj_to_json({'success': True}) + "\n"
-
-    return Response(stream_with_context(generate()))
+            resp = {'success': True}
+            if stream:
+                yield obj_to_json(resp) + "\n"
+            else:
+                yield resp
+    if stream:
+        return Response(stream_with_context(generate()))
+    return jsonify(list(generate()))

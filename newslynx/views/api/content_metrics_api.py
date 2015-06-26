@@ -3,22 +3,37 @@ import logging
 from flask import Blueprint
 
 from newslynx.views.decorators import load_user, load_org
-from newslynx.exc import NotFoundError, RequestError
+from newslynx.exc import NotFoundError, RequestError, InternalServerError
 from newslynx.models import ContentItem
 from newslynx.lib.serialize import jsonify
 from newslynx.views.util import request_data, url_for_job_status
 from newslynx.tasks import ingest_bulk
 from newslynx.tasks import ingest_metric
-from newslynx.tasks.query_metric import ContentMetricTimeseries
+from newslynx.tasks import rollup_metric
+from newslynx.constants import CONTENT_METRIC_COMPARISONS
+from newslynx.tasks.query_metric import QueryContentMetricTimeseries
+from newslynx.models import (
+    ComparisonsCache, AllContentComparisonCache,
+    SubjectTagsComparisonCache,
+    ContentTypeComparisonCache,
+    ImpactTagsComparisonCache)
 from newslynx.views.util import (
     arg_bool, arg_str, validate_ts_unit, arg_list,
-    arg_date, arg_int
+    arg_date, arg_int, delete_response
 )
 
 # blueprint
 bp = Blueprint('content_metrics', __name__)
 
 log = logging.getLogger(__name__)
+
+comparisons_cache = ComparisonsCache()
+comparison_types = {
+    'all': AllContentComparisonCache(),
+    'impact_tags': ImpactTagsComparisonCache(),
+    'subject_tags': SubjectTagsComparisonCache(),
+    'types': ContentTypeComparisonCache()
+}
 
 
 @bp.route('/api/v1/content/<content_item_id>/timeseries', methods=['GET'])
@@ -57,7 +72,7 @@ def get_content_timeseries(user, org, content_item_id):
         after=arg_date('after', default=None)
     )
 
-    q = ContentMetricTimeseries(org, [content_item_id], **kw)
+    q = QueryContentMetricTimeseries(org, [content_item_id], **kw)
     return jsonify(list(q.execute()))
 
 
@@ -92,7 +107,7 @@ def create_content_item_timeseries(user, org, content_item_id):
     ret = ingest_metric.content_timeseries(
         req_data,
         org_id=org.id,
-        metrics_lookup=org.contet,
+        metrics_lookup=org.content_timeseries_metrics,
         commit=True)
     return jsonify(ret)
 
@@ -121,7 +136,7 @@ def bulk_create_content_timeseries(user, org):
     job_id = ingest_bulk.content_timeseries(
         req_data,
         org_id=org.id,
-        metrics_lookup=org.metrics_lookup,
+        metrics_lookup=org.content_timeseries_metrics,
         content_item_ids=org.content_item_ids,
         commit=False)
     ret = url_for_job_status(apikey=user.apikey, job_id=job_id, queue='bulk')
@@ -159,7 +174,7 @@ def content_metrics_summary(user, org, content_item_id):
     ret = ingest_metric.content_summary(
         req_data,
         org_id=org.id,
-        metrics_lookup=org.metrics_lookup,
+        metrics_lookup=org.content_summary_metrics,
         content_item_ids=org.content_item_ids,
         commit=True
     )
@@ -184,15 +199,107 @@ def bulk_create_content_summary(user, org):
     # check for content_item_id.
     if not 'content_item_id' in req_data[0].keys():
         raise RequestError(
-            'You must pass in a content_item_id with each record.'
-        )
+            'You must pass in a content_item_id with each record.')
 
     job_id = ingest_bulk.content_summary(
         req_data,
         org_id=org.id,
-        metrics_lookup=org.metrics_lookup,
+        metrics_lookup=org.content_summary_metrics,
         content_item_ids=org.content_item_ids,
         commit=False)
 
     ret = url_for_job_status(apikey=user.apikey, job_id=job_id, queue='bulk')
     return jsonify(ret, status=202)
+
+
+@bp.route('/api/v1/content/summary', methods=['PUT'])
+@load_user
+@load_org
+def refresh_content_summary(user, org):
+    """
+    Refresh content summary metrics
+    """
+    since = arg_int('since', 24)
+    rollup_metric.content_timeseries_to_summary(org, since)
+    rollup_metric.event_tags_to_summary(org)
+    return jsonify({'success': True})
+
+
+@bp.route('/api/v1/content/comparisons', methods=['GET'])
+@load_user
+@load_org
+def get_all_content_comparisons(user, org):
+    """
+    Refresh content comparisons.
+    """
+    refresh = arg_bool('refresh', default=False)
+    cache_details = arg_bool('cache_details', default=False)
+    if refresh:
+        comparisons_cache.invalidate(org.id)
+    cr = comparisons_cache.get(org.id)
+    if refresh and cr.is_cached:
+        raise InternalServerError(
+            'Something went wrong with the cache invalidation process.')
+    if cache_details:
+        return jsonify({'cache': cr, 'comparisons': cr.value})
+    return jsonify(cr.value)
+
+
+@bp.route('/api/v1/content/comparisons', methods=['PUT'])
+@load_user
+@load_org
+def refresh_content_comparisons(user, org):
+    """
+    Refresh content comparisons
+    """
+    comparisons_cache.invalidate(org.id)
+    cr = comparisons_cache.get(org.id)
+    if not cr.is_cached:
+        return jsonify({'success': True})
+    raise InternalServerError(
+        'Something went wrong with the comparison cache invalidation process.')
+
+
+@bp.route('/api/v1/content/comparisons/<type>', methods=['GET'])
+@load_user
+@load_org
+def get_one_content_comparisons(user, org, type):
+    """
+    Get one content comparison.
+    """
+    # allow the urls to be pretty slugs :)
+    type = type.replace('-', "_")
+    if type not in CONTENT_METRIC_COMPARISONS:
+        raise RequestError(
+            "'{}' is an invalid content metric comparison. Choose from {}"
+            .format(type, ", ".join(CONTENT_METRIC_COMPARISONS)))
+    refresh = arg_bool('refresh', default=False)
+    cache_details = arg_bool('cache_details', default=False)
+    if refresh:
+        comparison_types[type].invalidate(org.id)
+    cr = comparison_types[type].get(org.id)
+    if refresh and cr.is_cached:
+        raise InternalServerError(
+            'Something went wrong with the comparison cache invalidation process.')
+    if cache_details:
+        return jsonify({'cache': cr, 'comparison': cr.value.get(type)})
+    return jsonify(cr.value.get(type))
+
+
+@bp.route('/api/v1/content/comparisons/<type>', methods=['PUT'])
+@load_user
+@load_org
+def refresh_one_content_comparisons(user, org, type):
+    """
+    Get one content comparison.
+    """
+    if type not in CONTENT_METRIC_COMPARISONS:
+        raise RequestError(
+            "'{}' is an invalid content metric comparison. Choose from {}"
+            .format(type, ", ".join(CONTENT_METRIC_COMPARISONS)))
+    comparison_types[type].invalidate(org.id)
+    cr = comparison_types[type].get(org.id)
+    if not cr.is_cached:
+        return jsonify({'success': True})
+    raise InternalServerError(
+        'Something went wrong with the comparison cache invalidation process.')

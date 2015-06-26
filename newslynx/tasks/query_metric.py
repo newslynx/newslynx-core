@@ -1,8 +1,9 @@
 from datetime import datetime, date
+import copy
 
 from newslynx.core import db
-from newslynx.models import Org
-from newslynx.models.util import ResultIter
+from .util import ResultIter
+from newslynx.util import uniq
 
 
 class TSQuery(object):
@@ -27,51 +28,74 @@ class TSQuery(object):
         if not isinstance(ids, list):
             ids = [ids]
         self.ids = ids
-        self.select = kw.get('select', '*')
-        self.exclude = kw.get('exclude', [])
+        # self.select = kw.get('select', '*') # TODO
+        # self.exclude = kw.get('exclude', []) # TODO
         self.unit = kw.get('unit', self.min_unit)
         self.sparse = kw.get('sparse', True)
         self.sig_digits = kw.get('sig_digits', 2)
         self.group_by_id = kw.get('group_by_id', True)
         self.rm_nulls = kw.get('rm_nulls', False)
-        self.time_since_start = kw.get('time_since_start', False) # TODO
-        self.transform = kw.get('transform', None) # cumulative, avg, median, per_change, roll_avg
+        self.time_since_start = kw.get('time_since_start', False)  # TODO
+        # cumulative, avg, median, per_change, roll_avg
+        self.transform = kw.get('transform', None)
         self.before = kw.get('before', None)
         self.after = kw.get('after', None)
         self.metrics = getattr(org, self.metrics_attr)
         self.computed_metrics = getattr(org, self.computed_metrics_attr)
-        self.select_metrics()
+        # self.select_metrics()
         self.format_dates()
+        self.compute = len(self.computed_metrics.keys()) > 0
 
-    ## TODO : Figure out how to deal with metrics which
-    ##        computed metrics are reliant upon.
-    def select_metrics(self):
-        """
-        Select / exclude computed metrics.
-        """
-        if self.select != "*":
-            if not isinstance(self.select, list):
-                self.select = [self.select]
+    # @property
+    # def computed_metrics_require(self):
+    #     """
+    #     Which metrics to do computed metrics require?
+    #     """
+    #     required = []
+    #     for metric in self.computed_metrics.values():
+    #         if self.select == "*":
 
-            for n in self.metrics.keys():
-                if n not in self.select:
-                    self.metrics.pop(n)
+    #             required.extend(metric.get('formula_requires', []))
 
-            for n in self.computed_metrics.keys():
-                if n not in self.select:
-                    self.computed_metrics.pop(n)
+    #         elif metric['name'] in self.select and \
+    #                 not metric['name'] in self.exclude:
 
-        if not isinstance(self.exclude, list):
-            self.exclude = [self.exclude]
+    #             required.extend(metric.get('formula_requires', []))
 
-        if len(self.exclude):
-            for n in self.metrics.keys():
-                if n in self.exclude:
-                    self.metrics.pop(n)
+    #     return uniq(required)
 
-            for n in self.computed_metrics.keys():
-                if n in self.exclude:
-                    self.computed_metrics.pop(n)
+    # # TODO : Figure out how to deal with metrics which
+    # # computed metrics are reliant upon.
+    # def select_metrics(self):
+    #     """
+    #     Select / exclude computed metrics.
+    #     """
+    #     select = copy.copy(self.select)
+
+    #     if select != "*":
+    #         if not isinstance(select, list):
+    #             select = [select]
+
+    #         for n in self.metrics.keys():
+    #             if n not in select and n not in self.computed_metrics_require:
+    #                 self.metrics.pop(n)
+
+    #         for n in self.computed_metrics.keys():
+    #             if n not in self.select:
+    #                 self.computed_metrics.pop(n)
+
+    #     exclude = copy.copy(self.exclude)
+    #     if not isinstance(exclude, list):
+    #         exclude = [exclude]
+
+    #     if len(exclude):
+    #         for n in self.metrics.keys():
+    #             if n in self.exclude:
+    #                 self.metrics.pop(n)
+
+    #         for n in self.computed_metrics.keys():
+    #             if n in self.exclude:
+    #                 self.computed_metrics.pop(n)
 
     def format_dates(self):
         """
@@ -81,6 +105,7 @@ class TSQuery(object):
         if self.before:
             self.filter_dates = True
             self.before = self.format_date(self.before)
+
         if self.after:
             self.filter_dates = True
             self.after = self.format_date(self.after)
@@ -110,12 +135,15 @@ class TSQuery(object):
         fmt = "{} {} '{}'"
         if not self.filter_dates:
             return ""
+
         if self.before:
             c = fmt.format(self.date_col, "<=", self.before)
             clauses.append(c)
+
         if self.after:
             c = fmt.format(self.date_col, ">=", self.after)
             clauses.append(c)
+
         return "AND {}".format(" AND ".join(clauses))
 
     @property
@@ -158,6 +186,14 @@ class TSQuery(object):
         j = self.select_json(metric)
         return "{j} as {name}".format(j=j, **self.add_kw(**metric))
 
+    def select_compute(self, metric):
+        """
+        compute a metrics. we're assuming formula is validating at this point.
+        """
+        formula = metric.get('formula')
+        formula = formula.replace('{', '"').replace('}', '"')
+        return "{f} as {name}".format(f=formula, **metric)
+
     def select_cumulative_to_count(self, metric):
         """
         Generate a select statement for a cumulative metric to turn it into a count.
@@ -171,7 +207,7 @@ class TSQuery(object):
         """
         A select statement for the agg query.
         """
-        s = "ROUND({agg_fx}({name}), {sig_digits}) as {name}"
+        s = "ROUND({agg}({name}), {sig_digits}) as {name}"
         return s.format(**self.add_kw(**metric))
 
     def select_non_sparse(self, metric):
@@ -192,7 +228,7 @@ class TSQuery(object):
         return s.format(p=p, **self.add_kw(**metric))
 
     @property
-    def init_select(self):
+    def init_selects(self):
         """
         Generate select statements for the initial query.
         """
@@ -205,7 +241,7 @@ class TSQuery(object):
         return ",\n".join(ss)
 
     @property
-    def agg_select(self):
+    def agg_selects(self):
         """
         Generate select statements for the aggregation query.
         """
@@ -215,7 +251,20 @@ class TSQuery(object):
         return ",\n".join(ss)
 
     @property
-    def non_sparse_select(self):
+    def compute_selects(self):
+        """
+        Generate select statements for the calculation query.
+        """
+        ss = []
+        for n, m in self.computed_metrics.items():
+            ss.append(self.select_compute(m))
+        # passthrough other metrics
+        for n, m in self.metrics.items():
+            ss.append(n)
+        return ",\n".join(ss)
+
+    @property
+    def non_sparse_selects(self):
         """
         Generate select statements for the non sparse query.
         """
@@ -225,13 +274,13 @@ class TSQuery(object):
         return ",\n".join(ss)
 
     @property
-    def cumulative_select(self):
+    def cumulative_selects(self):
         """
         Generate select statements for the cumulative query.
         """
         ss = []
-        for n, m in self.metrics.items():
-            if m['agg_fx'] == 'sum':
+        for n, m in dict(self.metrics.items() + self.computed_metrics.items()).items():
+            if m['agg'] == 'sum':
                 ss.append(self.select_cumulative(m))
             else:
                 ss.append(n)
@@ -247,7 +296,7 @@ class TSQuery(object):
             init_id_col = ""
 
         return self.add_kw(
-            select=self.init_select,
+            select=self.init_selects,
             init_id_col=init_id_col
         )
 
@@ -279,7 +328,7 @@ class TSQuery(object):
             agg_order_by = ""
 
         return self.add_kw(
-            select=self.agg_select,
+            select=self.agg_selects,
             init_query=self.init_query,
             agg_id_col=agg_id_col,
             agg_order_by=agg_order_by
@@ -330,6 +379,9 @@ class TSQuery(object):
         else:
             init_q = self.agg_query
 
+        if self.compute:
+            init_q = self.computed_query(init_q)
+
         # group by ID ?
         cal_id_col1 = "{0},\n".format(self.id_col)
         cal_id_col2 = "cal.{0}".format(cal_id_col1)
@@ -337,6 +389,7 @@ class TSQuery(object):
                       .format(self.id_col, self.sparse_table)
         cal_order_by = ", cal.{0}".format(self.id_col)
         cal_date_select = "{}".format(self.date_col)
+
         if not self.group_by_id:
             cal_id_col1 = ""
             cal_id_col2 = ""
@@ -345,7 +398,7 @@ class TSQuery(object):
             cal_date_select = "distinct({})".format(self.date_col)
 
         return self.add_kw(
-            select=self.non_sparse_select,
+            select=self.non_sparse_selects,
             init_q=init_q,
             cal=self.cal,
             cal_id_join=cal_id_join,
@@ -381,6 +434,28 @@ class TSQuery(object):
                 ORDER BY cal.{date_col} {cal_order_by} ASC
             """.format(**self.non_sparse_kw)
 
+    def computed_query(self, init_q):
+        """
+        A computed query is special in that
+        it must come after selects
+        + aggregations queries but before
+        transformations.
+        """
+        kw = {
+            "init_q": init_q,
+            "select": self.compute_selects,
+            'com_id_col': "{},".format(self.id_col)
+        }
+        if not self.group_by_id:
+            kw['com_id_col'] = ""
+        return \
+            """SELECT
+                {com_id_col}
+                {date_col},
+                {select}
+               FROM ({init_q}) tttt
+            """.format(**self.add_kw(**kw))
+
     @property
     def cumulative_kw(self):
         """
@@ -400,8 +475,11 @@ class TSQuery(object):
         if not self.group_by_id:
             _id_col = ""
 
+        if self.compute:
+            init_q = self.computed_query(init_q)
+
         return self.add_kw(
-            select=self.cumulative_select,
+            select=self.cumulative_selects,
             init_q=init_q,
             _id_col=_id_col
         )
@@ -432,21 +510,32 @@ class TSQuery(object):
            self.unit == self.min_unit and \
            not self.transform:
 
-            return self.init_query
+            if not self.compute:
+                return self.init_query
+            else:
+                return self.computed_query(self.init_query)
 
         # simple aggregate query
         elif self.sparse and not self.transform:
-            return self.agg_query
+
+            if not self.compute:
+                return self.agg_query
+            else:
+                return self.computed_query(self.agg_query)
 
         # non-sparse query
         elif not self.sparse and not self.transform:
-            return self.non_sparse_query
+            if not self.compute:
+                return self.non_sparse_query
+            else:
+                return self.computed_query(self.non_sparse_query)
 
         # cumulative
         elif self.transform == 'cumulative':
             return self.cumulative_query
 
-        ## TODO: rolling average, per_change, median + average timeseries for multiple ids.
+        # TODO: rolling average, per_change, median + average timeseries for
+        # multiple ids.
 
         # return self.cumulative_query
 
@@ -457,7 +546,7 @@ class TSQuery(object):
         return ResultIter(db.session.execute(self.query))
 
 
-class ContentMetricTimeseries(TSQuery):
+class QueryContentMetricTimeseries(TSQuery):
     table = "content_metric_timeseries"
     id_col = "content_item_id"
     cal_fx = "content_metric_calendar"
@@ -465,16 +554,9 @@ class ContentMetricTimeseries(TSQuery):
     computed_metrics_attr = "computed_content_timeseries_metrics"
 
 
-class OrgMetricTimeseries(TSQuery):
+class QueryOrgMetricTimeseries(TSQuery):
     table = "org_metric_timeseries"
     id_col = "org_id"
     cal_fx = "org_metric_calendar"
     metrics_attr = "timeseries_metrics"
     computed_metrics_attr = "computed_timeseries_metrics"
-
-
-if __name__ == '__main__':
-    o = Org.query.get(1)
-    ids = [1]
-    cms = OrgMetricTimeseries(o, ids, unit="month", sparse=False, select="fb_page_likes", transform="cumulative", after="2015-04-01", before="2015-08-01")
-    print cms.query

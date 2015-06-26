@@ -2,6 +2,7 @@ from sqlalchemy.dialects.postgresql import ENUM, ARRAY
 
 from newslynx.core import db
 from newslynx.lib import dates
+from newslynx.models import computed_metric_schema
 from newslynx.constants import (
     METRIC_TYPES
 )
@@ -15,6 +16,7 @@ TYPE_TO_AGG_FX = {
     "average": "avg",
     "min_rank": "min",
     "max_rank": "max",
+    "computed": "avg"
 }
 
 
@@ -49,6 +51,7 @@ class Metric(db.Model):
     name = db.Column(db.Text, index=True)
     display_name = db.Column(db.Text)
     type = db.Column(ENUM(*METRIC_TYPES, name='metric_types_enum'), index=True)
+    agg = db.Column(db.Text, index=True)
     content_levels = db.Column(ARRAY(db.Text), index=True)
     org_levels = db.Column(ARRAY(db.Text), index=True)
     faceted = db.Column(db.Boolean, index=True, default=False)
@@ -68,34 +71,39 @@ class Metric(db.Model):
         self.name = kw.get('name')
         self.display_name = kw.get('display_name')
         self.type = kw.get('type')
+        self.agg = kw.get('agg', TYPE_TO_AGG_FX.get(kw.get('type')))
         self.content_levels = kw.get('content_levels', [])
         self.org_levels = kw.get('org_levels', [])
         self.faceted = kw.get('faceted', False)
         self.formula = kw.get('formula')
 
     @property
-    def agg_fx(self):
-        return TYPE_TO_AGG_FX.get(self.type, None)
-
-    @property
     def computed(self):
         return self.type == 'computed'
 
+    @property
+    def formula_requires(self):
+        return computed_metric_schema.required_metrics(self.formula)
+
     def to_dict(self):
-        return {
+        d = {
             'id': self.id,
             'org_id': self.org_id,
             'recipe_id': self.recipe_id,
             'name': self.name,
             'display_name': self.display_name,
             'type': self.type,
+            'agg': self.agg,
             'content_levels': self.content_levels,
             'org_levels': self.org_levels,
-            'agg_fx': self.agg_fx,
             'faceted': self.faceted,
             'created': self.created,
-            'updated': self.updated,
+            'updated': self.updated
         }
+        if self.computed:
+            d['formula'] = self.formula
+            d['formula_requires'] = self.formula_requires
+        return d
 
     def __repr__(self):
         return '<Metric %r >' % (self.name)

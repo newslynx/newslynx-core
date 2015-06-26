@@ -27,7 +27,7 @@ class BulkLoader(object):
     timeout = 1000  # seconds
     result_ttl = 60  # seconds
     kwargs_ttl = 1000  # in case there is a backup in the queue
-    max_workers = 5
+    max_workers = 7
     concurrent = True
     kwargs_key = 'rq:kwargs:{}'
     q = queues.get('bulk')

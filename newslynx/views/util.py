@@ -670,8 +670,12 @@ def register_blueprints(app, *mods):
                 try:
                     m = importlib.import_module(
                         '%s.%s' % (package_name, name))
-                except ImportError:
+                except:
+                    print "WARNING {} failed to load".format(m)
                     continue
+
+                # m = importlib.import_module(
+                #         '%s.%s' % (package_name, name))
 
                 for item in dir(m):
                     item = getattr(m, item)

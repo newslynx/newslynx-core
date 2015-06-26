@@ -185,7 +185,7 @@ def get_computed_content_timeseries_metrics(user, org):
     return jsonify(org.computed_timeseries_metrics.values())
 
 
-@bp.route('/api/v1/metrics/content-summary', methods=['GET'])
+@bp.route('/api/v1/metric/content-summary', methods=['GET'])
 @load_user
 @load_org
 def get_content_summary_metrics(user, org):

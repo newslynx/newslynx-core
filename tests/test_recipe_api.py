@@ -11,6 +11,8 @@ good_recipe = {
     "page_name": "helloworld"
 }
 
+## TODO ACTUALLY WRITE THESE TESTS
+
 
 class TestRecipeAPI(unittest.TestCase):
     org = 1
@@ -20,7 +22,8 @@ class TestRecipeAPI(unittest.TestCase):
         recipe = self.api.recipes.get(1)
         print recipe
         assert(recipe['status'] == 'uninitialized')
-        recipe = self.api.recipes.update(1, page_name='yo')
+        recipe = self.api.recipes.update(1, feed_url='yo')
+        print recipe
         assert(recipe['status'] == 'stable')
         self.api.recipes.delete(recipe['id'])
         recipe = self.api.recipes.get(recipe['id'])

@@ -96,7 +96,7 @@ def ingest(
             setattr(e, k, v)
 
     # extract urls and normalize urls asynchronously.
-    links = ingest_util.prepare_links(links)
+    links = ingest_util.prepare_links(links, org_domains)
 
     # detect content_items
     if len(links):

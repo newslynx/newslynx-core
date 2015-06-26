@@ -83,35 +83,35 @@ class TestEventsAPI(unittest.TestCase):
         assert(event['provenance'] == 'manual')
         assert(event['status'] == 'pending')
 
-    def test_create_event_with_content_string(self):
-        t = self.api.content.get(1)
-        e = {
-            'source_id': '09ac-11fdasfsafasdfasdfdsafdfefdsaf5-8e2a-6c4008aeb606',
-            'description': 'eos aliquid mollitia dicta',
-            'body': 'foo bar {}'.format(t['url']),
-            'created': '2015-05-15 09:54:46+00:00',
-            'url': 'http://example.com/a81857dc-09ac-11e5-8e2a-6c4008aeb606/',
-            'authors': ['Stanford Feeney'],
-            'title': 'laboriosam facilis q',
-            'img_url': 'http://example.com/a818591c-09ac-11e5-8e9f-6c4008aeb606.jpg',
-        }
-        event = self.api.events.create(**e)
-        assert(len(event['content_items']))
+    # def test_create_event_with_content_string(self):
+    #     t = self.api.content.get(1)
+    #     e = {
+    #         'source_id': '09ac-11fdasfsafasdfasdfdsafdfefdsaf5-8e2a-6c4008aeb606',
+    #         'description': 'eos aliquid mollitia dicta',
+    #         'body': 'foo bar {}'.format(t['url']),
+    #         'created': '2015-05-15 09:54:46+00:00',
+    #         'url': 'http://example.com/a81857dc-09ac-11e5-8e2a-6c4008aeb606/',
+    #         'authors': ['Stanford Feeney'],
+    #         'title': 'laboriosam facilis q',
+    #         'img_url': 'http://example.com/a818591c-09ac-11e5-8e9f-6c4008aeb606.jpg',
+    #     }
+    #     event = self.api.events.create(**e)
+    #     assert(len(event['content_items']))
 
-    def test_create_event_with_content_html(self):
-        t = self.api.content.get(1)
-        e = {
-            'source_id': '09ac-11fdasfsafasdfasdfdsafdfefdsaf5-8e2a-6c4008aeb606',
-            'description': 'eos aliquid mollitia dicta',
-            'body': 'foo bar <a href="{}"></a>'.format(t['url']),
-            'created': '2015-05-15 09:54:46+00:00',
-            'url': 'http://example.com/a81857dc-09ac-11e5-8e2a-6c4008aeb606/',
-            'authors': ['Stanford Feeney'],
-            'title': 'laboriosam facilis q',
-            'img_url': 'http://example.com/a818591c-09ac-11e5-8e9f-6c4008aeb606.jpg',
-        }
-        event = self.api.events.create(**e)
-        assert(len(event['content_items']))
+    # def test_create_event_with_content_html(self):
+    #     t = self.api.content.get(1)
+    #     e = {
+    #         'source_id': '09ac-11fdasfsafasdfasdfdsafdfefdsaf5-8e2a-6c4008aeb606',
+    #         'description': 'eos aliquid mollitia dicta',
+    #         'body': 'foo bar <a href="{}"></a>'.format(t['url']),
+    #         'created': '2015-05-15 09:54:46+00:00',
+    #         'url': 'http://example.com/a81857dc-09ac-11e5-8e2a-6c4008aeb606/',
+    #         'authors': ['Stanford Feeney'],
+    #         'title': 'laboriosam facilis q',
+    #         'img_url': 'http://example.com/a818591c-09ac-11e5-8e9f-6c4008aeb606.jpg',
+    #     }
+    #     event = self.api.events.create(**e)
+    #     assert(len(event['content_items']))
 
     def test_search_and_delete_events(self):
         s = 'this is a unique string'

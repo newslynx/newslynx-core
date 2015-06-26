@@ -426,8 +426,8 @@ def main(
     # rollup metrics
     if verbose:
         print "rolling up metrics"
-    # rollup_metric.content_timeseries(org)
-    # rollup_metric.content_event_tags(org)
+    rollup_metric.content_timeseries_to_summary(org)
+    rollup_metric.event_tags_to_summary(org)
 
 
 def run(**kw):

@@ -1,5 +1,6 @@
 import os
 import copy
+from inspect import isgenerator
 
 import requests
 from requests import Session, Request
@@ -7,28 +8,12 @@ from urlparse import urljoin
 
 from newslynx import settings
 from newslynx.lib.serialize import obj_to_json, json_to_obj
-from newslynx.exc import *
+from newslynx.exc import ERRORS, ClientError
 from newslynx.logs import log
 
 
 RET_CODES = [200, 201, 202]
 GOOD_CODES = RET_CODES + [204]
-
-# a lookup of error name to exception object
-ERRORS = {
-    "RequestError": RequestError,
-    "AuthError": AuthError,
-    "ForbiddenError": ForbiddenError,
-    "NotFoundError": NotFoundError,
-    "ConflictError": ConflictError,
-    "UnprocessableEntityError": UnprocessableEntityError,
-    "InternalServerError": InternalServerError,
-    "SousChefSchemaError": SousChefSchemaError,
-    "RecipeSchemaError": RecipeSchemaError,
-    "SearchStringError": SearchStringError,
-    "ConfigError": ConfigError,
-    "ClientError": ClientError
-}
 
 
 class BaseClient(object):
@@ -126,6 +111,9 @@ class BaseClient(object):
         if 'data' not in kw:
             raise ClientError(
                 'Bulk endpoints require a "data" keyword argument.')
+        if isgenerator(kw['data']):
+            kw['data'] = list(kw['data'])
+        return kw
 
     def _handle_errors(self, resp, err=None):
         """
@@ -310,7 +298,7 @@ class Orgs(BaseClient):
         Bulk create timeseries metric(s) for content items.
         """
         org = self._check_org(org)
-        self._check_bulk_kw(kw)
+        kw = self._check_bulk_kw(kw)
         kw, params = self._split_auth_params_from_data(kw)
         url = self._format_url('orgs', org, 'timeseries', 'bulk')
         return self._request('POST', url, params=params, data=kw['data'])
@@ -510,7 +498,7 @@ class Events(BaseClient):
         """
         Bulk create content items.
         """
-        self._check_bulk_kw(kw)
+        kw = self._check_bulk_kw(kw)
         kw, params = self._split_auth_params_from_data(
             kw, kw_incl=['must_link'])
         url = self._format_url('events', 'bulk')
@@ -595,7 +583,7 @@ class Content(BaseClient):
         """
         Bulk create content items.
         """
-        self._check_bulk_kw(kw)
+        kw = self._check_bulk_kw(kw)
         kw, params = self._split_auth_params_from_data(kw, kw_incl=['extract'])
         url = self._format_url('content', 'bulk')
         return self._request('POST', url, params=params, data=kw['data'])
@@ -634,7 +622,7 @@ class Content(BaseClient):
         """
         Bulk create timeseries metric(s) for content items.
         """
-        self._check_bulk_kw(kw)
+        kw = self._check_bulk_kw(kw)
         kw, params = self._split_auth_params_from_data(kw)
         url = self._format_url('content', 'timeseries', 'bulk')
         return self._request('POST', url, params=params, data=kw['data'])
@@ -658,7 +646,7 @@ class Content(BaseClient):
         """
         Bulk create summary metric(s) for content items.
         """
-        self._check_bulk_kw(kw)
+        kw = self._check_bulk_kw(kw)
         kw, params = self._split_auth_params_from_data(kw)
         url = self._format_url('content', 'summary', 'bulk')
         return self._request('POST', url, params=params, data=kw['data'])
@@ -684,7 +672,7 @@ class Extract(BaseClient):
         """
         Extract metadata from urls.
         """
-        url = self._format_url('content', content_id)
+        url = self._format_url('extract')
         return self._request('GET', url, params=kw)
 
 

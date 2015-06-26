@@ -12,10 +12,13 @@ from newslynx.lib.serialize import jsonify
 from newslynx.views.decorators import load_user, load_org
 from newslynx.views.util import *
 from newslynx.tasks import facet
+from newslynx.merlynne import Merlynne
 
 
 # blueprint
 bp = Blueprint('recipes', __name__)
+
+
 
 
 # utils
@@ -266,3 +269,35 @@ def delete_recipe(user, org, recipe_id):
     db.session.commit()
 
     return delete_response()
+
+
+@bp.route('/api/v1/recipes/<recipe_id>/cook', methods=['GET', 'POST'])
+@load_user
+@load_org
+def cook_a_recipe(user, org, recipe_id):
+    """
+    Run recipes via the API.
+    """
+    r = fetch_by_id_or_field(Recipe, 'slug', recipe_id, org_id=org.id)
+    if not r:
+        raise RequestError('Recipe with id/slug {} does not exist.'
+                           .format(recipe_id))
+
+    # setup kwargs for merlynne
+    kw = dict(
+        org=org.to_dict(
+            incl_auths=True,
+            auths_as_dict=True,
+            settings_as_dict=True,
+            incl_users=True),
+        apikey=user.apikey,
+        recipe=r,
+        sous_chef=r.sous_chef.runs)
+
+    # cook recipe
+    merlynne = Merlynne(**kw)
+    job_id = merlynne.cook_recipe(**kw)
+
+    # return job status url
+    ret = url_for_job_status(apikey=user.apikey, job_id=job_id, queue='merlynne')
+    return jsonify(ret, status=202)

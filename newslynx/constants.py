@@ -27,6 +27,10 @@ METRIC_TS_UNITS = [
     'hour', 'day', 'month'
 ]
 
+CONTENT_METRIC_COMPARISONS = [
+    'all', 'types', 'impact_tags', 'subject_tags'
+]
+
 # EVENTS
 EVENT_STATUSES = [
     'approved', 'pending', 'deleted'
