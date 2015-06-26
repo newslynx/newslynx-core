@@ -5,7 +5,7 @@ from newslynx.lib import dates
 
 
 class Article(ContentSousChef):
-    timeout = 30
+    timeout = 240
     extract = True
 
     def setup(self):
