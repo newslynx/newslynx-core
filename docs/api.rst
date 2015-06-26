@@ -14,7 +14,7 @@ All of **NewsLynx**'s functionality is exposed through a `RESTful <http://en.wik
 API Keys
 +++++++++
 
-All endpoints except for: :ref:`endpoints-user-login`, require an ``apikey`` passed in as a query-string parameter.  The ``apikey`` is used to ensure that the requesting user is registered and has access to the the requested resource. When a user is created, his/her ``apikey`` is randomnly generated. It can be refreshed at any time.
+All endpoints except for: :ref:`endpoints-user-login`, require an ``apikey`` passed in as a query-string parameter.  The ``apikey`` is used to ensure that the requesting user is registered and has access to the the requested resource. When a user is created, his/her ``apikey`` is randomly generated. It can be refreshed at any time.
 
 
 .. _authentication-organizations:
@@ -105,7 +105,7 @@ All endpoints are prefaced by ``/api/:version``. The current (and only version) 
 **Endpoints**
 --------------
 
-All endpoints retunrn ``json``. If you'd like to follow along with these examples, go ahead and set your api key as an environment variables:
+All endpoints return ``json``. If you'd like to follow along with these examples, go ahead and set your api key as an environment variables:
 
 .. code-block:: bash 
 
@@ -723,20 +723,20 @@ Remove a user from an organization.
 Params
 ******
 
-+--------------------+------------------------+------------------+----------------+
-| Parameter          |  Description           |  Default         |  Required      |
-+====================+========================+==================+================+
-| ``apikey``         | Your ``apikey``        | null             | true           |
-+--------------------+------------------------+------------------+----------------+
-| ``force``          | ``true`` / ``false``.  | false            | false          |
-|                    | If ``true``, the       |                  |                |
-|                    | user will be permanenly|                  |                |
-|                    | deleted. This option is|                  |                |
-|                    | only relevant if a user|                  |                |
-|                    | does not have other    |                  |                |
-|                    | organizational         |                  |                |
-|                    | affiliations.          |                  |                |
-+--------------------+------------------------+------------------+----------------+
++--------------------+-------------------------+------------------+----------------+
+| Parameter          |  Description            |  Default         |  Required      |
++====================+=========================+==================+================+
+| ``apikey``         | Your ``apikey``         | null             | true           |
++--------------------+-------------------------+------------------+----------------+
+| ``force``          | ``true`` / ``false``.   | false            | false          |
+|                    | If ``true``, the        |                  |                |
+|                    | user will be permanently|                  |                |
+|                    | deleted. This option is |                  |                |
+|                    | only relevant if a user |                  |                |
+|                    | does not have other     |                  |                |
+|                    | organizational          |                  |                |
+|                    | affiliations.           |                  |                |
++--------------------+-------------------------+------------------+----------------+
 
 
 Returns
@@ -758,7 +758,7 @@ Example
 **Settings**
 ++++++++++++++++++
 
-The **Settings** API enables the creation / updating / deleting of arbitrarty settings associated with an organization. The settings collection is key/value store which can grow with the complexity of the application. 
+The **Settings** API enables the creation / updating / deleting of arbitrary settings associated with an organization. The settings collection is key/value store which can grow with the complexity of the application. 
 
 
 .. _endpoints-settings-json:
@@ -1014,7 +1014,7 @@ The **Authorizations** API enables authorization with external platforms. Curren
 
 * Google Analytics - Track site traffic
 * Twitter - Access tweets from individual users or lists.
-* Facebook - Access a organization's facebook page and, depending on the configuration of the associated Facebook application, collect Insights data.
+* Facebook - Access a organization's Facebook page and, depending on the configuration of the associated Facebook application, collect Insights data.
 
 .. _endpoints-auth-json:
 
@@ -1098,13 +1098,13 @@ An :ref:`endpoints-auth-json` object
 **GET** ``/auths/google-analytics/grant``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Authorizes Newslynx to access an organization's Google Analytics.
+Authorizes NewsLynx to access an organization's Google Analytics.
 
 **NOTE**
 
 This method will prompt a user to authenticate with Google Analytics. Upon successful authentication
 it will direct them to a form which they can use to select which properties and profiles they would like
-to grant Newslynx access to. If at any point a user would like to change these properties, he/she simply
+to grant NewsLynx access to. If at any point a user would like to change these properties, he/she simply
 needs to access this method again - it's not necessary to revoke access first.
 
 Params
@@ -1193,7 +1193,7 @@ An :ref:`endpoints-auth-json` object
 **GET** ``/auths/twitter/grant``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Authorizes Newslynx to access an organization's Twitter profile.
+Authorizes NewsLynx to access an organization's Twitter profile.
 
 Params
 *********
@@ -1281,7 +1281,7 @@ An :ref:`endpoints-auth-json` object
 **GET** ``/auths/facebook/grant``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Authorizes Newslynx to access an organization's Facebook profile.
+Authorizes NewsLynx to access an organization's Facebook profile.
 
 Params
 ********
@@ -1726,7 +1726,7 @@ All methods, unless otherwise specified, will return one or many sous chef objec
     }
 
 
-If a SousChef creates :ref:`Metrics <metrics>`, It should also explicity declare which metrics it creates:
+If a SousChef creates :ref:`Metrics <metrics>`, It should also explicitly declare which metrics it creates:
 
 .. code-block:: javascript
 
@@ -3019,11 +3019,11 @@ Params
 |                    | response.                      |                  |                |
 +--------------------+--------------------------------+------------------+----------------+
 | ``incl_body``      | Whether or not to include the  | false            | false          |
-|                    | body of the conten item in the |                  |                | 
-|                    | response.                      |                  |                |
+|                    | body of the content item in    |                  |                | 
+|                    | the response.                  |                  |                |
 +--------------------+--------------------------------+------------------+----------------+
 | ``incl_img``       | Whether or not to include the  | false            | false          |
-|                    | img_url and thumbail in the    |                  |                | 
+|                    | img_url and thumbnail in the   |                  |                | 
 |                    | response.                      |                  |                |
 +--------------------+--------------------------------+------------------+----------------+
 | ``created_after``  | An ISO-8601 date to filter     |                  |                |
@@ -3224,7 +3224,7 @@ A :ref:`endpoint-events-json` object, but the only required field is ``title``. 
 
 *Links*
 
-While you can explicity set ``content_item_ids`` and ``links``, this method will also parse out
+While you can explicitly set ``content_item_ids`` and ``links``, this method will also parse out
 all urls from the Event's ``body``, ``title``, and ``description`` and attempt to reconcile these
 with your organization's Content Items. Through this process, all short_urls will be unshortened and links will be canonicalized according to NewsLynx's standards.  In practice this means that Recipes that create Events don't need to worry too much about extracting links as this process will be handled by this method.
 
@@ -3239,7 +3239,7 @@ If you wish to specify a ``created`` for an event, just pass it in as `ISO 8601`
 
 *Provenance*
 
-Events created by recipes (AKA: Events that pass a ``recipe_id`` to the method) will be assigned a ``provenacnce`` of ``recipe``. All other events are assumed to have been created manually and will be assigned a ``provenance`` of ``manual``
+Events created by recipes (AKA: Events that pass a ``recipe_id`` to the method) will be assigned a ``provenance`` of ``recipe``. All other events are assumed to have been created manually and will be assigned a ``provenance`` of ``manual``
 
 *Meta Fields*
 
@@ -3288,7 +3288,7 @@ First, create a file like this and save it as ``event.json``
       "recipe_id": 1,
       "title": "Something else happened.",
       "description": "This was crazy!",
-      "body": "<p> This is the transcript of what happend</p>",
+      "body": "<p> This is the transcript of what happened</p>",
       "tag_ids": [1,2],
       "status": "approved",
       "content_item_ids": [1,2]
@@ -3350,7 +3350,7 @@ Example
 Update an individual event.
 
 **NOTE**
-  - When passing in ``tag_ids`` and ``content_item_ids``, this method will upsert pre-exising associations rather than replacing them.
+  - When passing in ``tag_ids`` and ``content_item_ids``, this method will upsert pre-existing associations rather than replacing them.
 
 Params
 ******
@@ -3705,11 +3705,11 @@ Params
 |                    | response.                      |                  |                |
 +--------------------+--------------------------------+------------------+----------------+
 | ``incl_body``      | Whether or not to include the  | false            | false          |
-|                    | body of the conten item in the |                  |                | 
-|                    | response.                      |                  |                |
+|                    | body of the content item in    |                  |                | 
+|                    | the response.                  |                  |                |
 +--------------------+--------------------------------+------------------+----------------+
 | ``incl_img``       | Whether or not to include the  | false            | false          |
-|                    | img_url and thumbail in the    |                  |                | 
+|                    | img_url and thumbnail in the   |                  |                | 
 |                    | response.                      |                  |                |
 +--------------------+--------------------------------+------------------+----------------+
 | ``incl_metrics``   | Whether or not to include      | true             | false          |
@@ -3927,7 +3927,7 @@ A :ref:`endpoint-content-items-json` object, but the only required field is ``ti
 
 *Provenance*
 
-Content items created by recipes (AKA: content items  that pass a ``recipe_id`` to the method) will be assigned a ``provenacnce`` of ``recipe``. All other content items are assumed to have been created manually and will be assigned a ``provenance`` of ``manual``.
+Content items created by recipes (AKA: content items  that pass a ``recipe_id`` to the method) will be assigned a ``provenance`` of ``recipe``. All other content items are assumed to have been created manually and will be assigned a ``provenance`` of ``manual``.
 
 *Meta Fields*
 
@@ -3992,7 +3992,7 @@ Example
 Update an individual content item id.
 
 **NOTE**
-  - When passing in ``tag_ids`` this method will upsert pre-exising associations rather than replacing them.
+  - When passing in ``tag_ids`` this method will upsert pre-existing associations rather than replacing them.
 
 Params
 ******
