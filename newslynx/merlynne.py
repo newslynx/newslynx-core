@@ -10,7 +10,7 @@ from newslynx.util import gen_uuid
 from newslynx import settings
 from newslynx.exc import InternalServerError, MerlynneError
 from newslynx.lib.serialize import (
-    obj_to_json, json_to_obj)
+    obj_to_pickle, pickle_to_obj)
 
 
 log = logging.getLogger(__name__)
@@ -38,14 +38,8 @@ class Merlynne(object):
         """
         kw_key = "{}:{}".format(copy.copy(self.kw_prefix), job_id)
         kw = copy.copy(self.sous_chef_kwargs)
-        rds.set(kw_key, obj_to_json(kw), ex=self.kw_ttl)
+        rds.set(kw_key, obj_to_pickle(kw), ex=self.kw_ttl)
         return kw_key
-
-    def run_sous_chef(self, kw_key):
-        """
-        Run the Sous Chef and handle errors.
-        """
-        pass
 
     def cook_recipe(self):
 
@@ -61,29 +55,23 @@ class Merlynne(object):
         # import the sous chef here to get the timeout
         # and raise import errors before it attempts to run
         # in the queue
-        sc = self.import_sous_chef()
+        sc = import_sous_chef(self.sous_chef_path)
 
         # stash kwargs
-        try:
-            kw_key = self.stash_kw(job_id)
-        except Exception as e:
-            print "CANT STASH KWARGS"
-            raise e
-        print "ENQUEING"
-        # send the job to the task queue
-        print "timeout", sc.timeout
-        try:
-            self.q.enqueue(
-                run_sous_chef, kw_key, self.recipe.id,
-                job_id=job_id, timeout=sc.timeout,
-                result_ttl=self.kw_ttl)
-        except Exception as e:
-            print format_exc()
-            raise e
+        kw_key = self.stash_kw(job_id)
+
+        # send it to the queue
+        self.q.enqueue(
+            run_sous_chef, self.sous_chef_path,
+            self.recipe.id, kw_key,
+            job_id=job_id, timeout=sc.timeout,
+            result_ttl=self.kw_ttl)
+
+        # return the job id
         return job_id
 
 
-def run_sous_chef(recipe_id, sous_chef_path, kw_key):
+def run_sous_chef(sous_chef_path, recipe_id, kw_key):
     """
     Do the work. This exists outside the class
     in order to enable pickling.
@@ -96,7 +84,7 @@ def run_sous_chef(recipe_id, sous_chef_path, kw_key):
             raise InternalServerError(
                 'An unexpected error occurred while attempting to run a Sous Chef.'
             )
-        kw = json_to_obj(kw)
+        kw = pickle_to_obj(kw)
 
         # delete them.
         rds.delete(kw_key)
@@ -112,6 +100,7 @@ def run_sous_chef(recipe_id, sous_chef_path, kw_key):
 
         # update status and next job from sous chef.
         recipe.status = "stable"
+        recipe.traceback = None
         recipe.last_job = sc.next_job
         db.session.add(recipe)
         db.session.commit()
@@ -125,13 +114,13 @@ def run_sous_chef(recipe_id, sous_chef_path, kw_key):
         db.session.commit()
         return MerlynneError(e)
 
+
 def import_sous_chef(sous_chef_path):
     """
     Import a sous chef.
     """
     try:
-
-        import_parts = self.sous_chef_path.split('.')
+        import_parts = sous_chef_path.split('.')
         module = '.'.join(import_parts[:-1])
         c = import_parts[-1]
         m = importlib.import_module(module)

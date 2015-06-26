@@ -12,7 +12,7 @@ class SousChef(object):
 
     timeout = 120  # how long until this sous chef timesout?
 
-    def __init__(self, *kw):
+    def __init__(self, **kw):
         # parse kwargs
 
         org = kw.get('org')
