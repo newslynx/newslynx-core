@@ -7,17 +7,17 @@ from flask.ext.script import Manager
 from flask.ext.migrate import MigrateCommand
 
 from newslynx.views import app
-from newslynx.core import db_session, db, rds
+from newslynx.core import db_session, db
 from newslynx.models import User, SousChef
 from newslynx.init import load_sous_chefs
-from newslynx.lib.serialize import obj_to_json
-from newslynx import settings
+from newslynx.models import sous_chef_schema
 from newslynx.dev import random_data
 from newslynx.init import load_sql
-from newslynx.constants import TASK_QUEUE_NAMES
-from rq import Worker, Queue, Connection
+from newslynx import settings
 
-log = logging.getLogger('newslynx')
+
+log = logging.getLogger(__name__)
+
 
 manager = Manager(app)
 manager.add_command('migrate', MigrateCommand)
@@ -31,7 +31,7 @@ def version():
 @manager.command
 def config():
     sys.stderr.write('Newslynx Configurations:\n')
-    for name, value in settings.config.items():
+    for name, value in settings.CONFIG.items():
         sys.stderr.write("{}: {}\n".format(name, value))
 
 
@@ -42,9 +42,29 @@ def init():
     db.configure_mappers()
     db.create_all()
 
+    # create the super user
+    u = User(name=settings.SUPER_USER,
+             email=settings.SUPER_USER_EMAIL,
+             password=settings.SUPER_USER_PASSWORD,
+             admin=True,
+             super_user=True)
+
+    # optionally add super user apikey
+    if getattr(settings, 'SUPER_USER_APIKEY', None):
+        u.apikey = settings.SUPER_USER_APIKEY
+    db_session.add(u)
+
     # load sql extensions + functions
     for sql in load_sql():
         db_session.execute(sql)
+
+    # load built-in sous-chefs
+    for sc in load_sous_chefs():
+        sc = sous_chef_schema.validate(sc)
+        s = SousChef(**sc)
+        db_session.add(s)
+
+    # commit
     db_session.commit()
 
 
@@ -59,22 +79,5 @@ def gen_random_data():
     random_data.run()
 
 
-@manager.option('-q', '--queue',
-                help='The queue the worker should listen to. '
-                     'Choose from {}'.format(", ".join(TASK_QUEUE_NAMES)))
-def worker(queue):
-    """
-    start a worker on a queue.
-    """
-    if queue not in TASK_QUEUE_NAMES:
-        raise ValueError('queue must be one of {}'.format(", ".join(TASK_QUEUE_NAMES)))
-    with Connection(rds):
-        worker = Worker(Queue(queue))
-        worker.work()
-
-
 def run():
     manager.run()
-
-if __name__ == '__main__':
-    run()

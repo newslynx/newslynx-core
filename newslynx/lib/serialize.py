@@ -166,9 +166,9 @@ class JSONEncoder(json.JSONEncoder):
         if isinstance(obj, Decimal):
             return float(obj)
         if isinstance(obj, set):
-            return [o for o in obj]
+            return list(obj)
         if isgenerator(obj):
-            return [o for o in obj]
+            return list(obj)
         if isinstance(obj, Counter):
             return dict(obj)
         if isinstance(obj, SearchString):

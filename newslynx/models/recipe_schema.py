@@ -79,6 +79,8 @@ class RecipeSchema(object):
         if not 'options' in self.recipe:
             self.recipe['options'] = {}
         self.sous_chef = sous_chef.get('slug')
+        self.sous_chef_name = sous_chef.get('name')
+        self.sous_chef_desc = sous_chef.get('description')
         self.sous_chef_opts = sous_chef.get('options')
         self.uninitialized = uninitialized
 
@@ -102,10 +104,9 @@ class RecipeSchema(object):
                 elif self.uninitialized:
                     return None
 
-                raise RecipeSchemaError(
-                    "Recipes associated with SousChef '{}'"
-                    " require a '{}' option."
-                    .format(self.sous_chef, key))
+                msg = "Missing required option '{}".format(key)
+                self._raise_recipe_schema_error(msg)
+
             else:
                 return sc_opt.get('default', None)
 
@@ -280,10 +281,10 @@ class RecipeSchema(object):
                 error_messages.append(ret.message)
             else:
                 return ret
-        raise RecipeSchemaError(
-            "There was problem validating '{}'. "
-            "Here are the errors: \n\t- {}"
-            .format(key, "\n\t- ".join(error_messages)))
+
+        msg = "The following options are invalid: {}"\
+              .format("\n\t- ".join(error_messages))
+        self._raise_recipe_schema_error(msg)
 
     def validate_opt(self, key, top_level=False):
         """
@@ -301,9 +302,9 @@ class RecipeSchema(object):
         # validate options which accept lists
         if isinstance(opt, list):
             if not sc_opt.get('accepts_list', False):
-                raise RecipeSchemaError(
-                    "{} does not accept multiple inputs."
-                    .format(key))
+                msg = "{} does not accept lists.".format(key)
+                self._raise_recipe_schema_error(msg)
+
             opts = []
             for o in opt:
                 o = self.validate_types(key, o, types)
@@ -356,6 +357,16 @@ class RecipeSchema(object):
                 if key == 'slug':
                     slug = "{}-{}".format(self.sous_chef, gen_short_uuid())
                     self.recipe['slug'] = slug
+
+                # inhert the sous chef's name + description
+                elif key == 'name':
+                    self.recipe[key] = self.sous_chef_name
+
+                # inhert the sous chef's name + description
+                elif key == 'description':
+                    self.recipe[key] = self.sous_chef_desc
+
+                # fallback on sous chef defaults.
                 else:
                     self.recipe[key] = self.validate_opt(key, top_level=True)
 
@@ -365,14 +376,14 @@ class RecipeSchema(object):
         """
         # check that the associated schedule field is set.
         for typ in RECIPE_SCHEDULE_METHODS:
-            if typ != 'unscheduled':
-                if self.recipe.get('schedule_by') == typ and \
-                   not self.recipe.get(typ, None):
+            if typ != 'unscheduled' and \
+               self.recipe.get('schedule_by') == typ and \
+               not self.recipe.get(typ, None):
 
-                    raise RecipeSchemaError(
-                        "Recipe is set to be scheduled by '{}' "
-                        "but is missing an associated value."
-                        .format(typ))
+                msg = "Recipe is set to be scheduled by '{}' "\
+                      "but is missing an associated value."\
+                      .format(typ)
+                self._raise_recipe_schema_error(msg)
 
     def validate(self):
         """
@@ -394,3 +405,14 @@ class RecipeSchema(object):
 
         # return the valid recipe
         return copy.copy(self.recipe)
+
+    def _raise_recipe_schema_error(self, message):
+        """
+        A helper for raising consistent error messages.
+        """
+        r = self.recipe.get('slug', self.recipe.get('name', ''))
+        preface = "There were problems validating Recipe '{}' "\
+                  "which is associated with SousChef '{}'-- "\
+                  .format(r, self.sous_chef)
+        msg = preface + message
+        raise RecipeSchemaError(msg)

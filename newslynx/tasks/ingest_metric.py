@@ -11,7 +11,6 @@ def content_timeseries(
         metrics_lookup=None,
         content_item_ids=None,
         commit=True):
-
     """
     Ingest Timeseries Metrics for a content item.
     """
@@ -21,7 +20,8 @@ def content_timeseries(
     if not content_item_id:
         raise RequestError('Object is missing a "content_item_id"')
     if not content_item_id in content_item_ids:
-        raise RequestError('Content Item with ID {} doesnt exist'.format(content_item_id))
+        raise RequestError(
+            'Content Item with ID {} doesnt exist'.format(content_item_id))
 
     cmd_kwargs = {
         "org_id": org_id,
@@ -75,7 +75,8 @@ def content_summary(
     if not content_item_id:
         raise RequestError('Object is missing a "content_item_id"')
     if not content_item_id in content_item_ids:
-        raise RequestError('Content Item with ID {} doesnt exist'.format(content_item_id))
+        raise RequestError(
+            'Content Item with ID {} doesnt exist'.format(content_item_id))
 
     cmd_kwargs = {
         "org_id": org_id,

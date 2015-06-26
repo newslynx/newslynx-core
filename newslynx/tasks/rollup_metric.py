@@ -4,49 +4,55 @@ from newslynx.lib.serialize import obj_to_json
 from newslynx.core import db
 from newslynx.lib import dates
 from newslynx.constants import IMPACT_TAG_CATEGORIES, IMPACT_TAG_LEVELS
+from newslynx.tasks.query_metric import QueryContentMetricTimeseries
+from newslynx.models import Org
 
 
-def content_ts(org, num_hours=24):
+def content_timeseries_to_summary(org, num_hours=24):
     """
     Rollup content-timseries metrics into summaries.
     Optimize this query by only updating content items whose
     timeseries have been updated in last X hours.
     """
-    # generate select statments + list of metric names.
-    json_select_pattern = "{aggregation}(COALESCE((metrics ->> '{name}')::text::numeric, 0)) AS {name}"
+
+    # just use this to generate a giant timeseries select with computed
+    # metrics.
+    ts = QueryContentMetricTimeseries(org, org.content_item_ids)
+
+    # generate aggregation statments + list of metric names.
+    summary_pattern = "{agg}({name}) AS {name}"
     select_statements = []
     metrics = []
-
-    for m in org.content_timeseries_metrics():
-        ss = json_select_pattern.format(**m.to_dict())
+    for n, m in org.content_timeseries_metric_rollups.items():
+        ss = summary_pattern.format(**m)
         select_statements.append(ss)
-        metrics.append(m.name)
+        metrics.append(n)
 
     qkw = {
         'select_statements': ",\n".join(select_statements),
         'metrics': ", ".join(metrics),
-        'last_updated': (dates.now() - timedelta(hours=num_hours)).isoformat()
+        'org_id': org.id,
+        'last_updated': (dates.now() - timedelta(hours=num_hours)).isoformat(),
+        'ts_query': ts.query
     }
 
-    q = """SELECT upsert_content_metric_summary(org_id, content_item_id, metrics::text)
+    q = """SELECT upsert_content_metric_summary({org_id}, content_item_id, metrics::text)
            FROM  (
               SELECT
-                org_id,
                 content_item_id,
                 (SELECT row_to_json(_) from (SELECT {metrics}) as _) as metrics
               FROM (
                  SELECT
-                    org_id,
                     content_item_id,
                     {select_statements}
-                FROM content_metric_timeseries
+                FROM ({ts_query}) zzzz
                 WHERE content_item_id in (
                     SELECT
                         distinct(content_item_id)
                     FROM content_metric_timeseries
                     WHERE updated > '{last_updated}'
                     )
-                GROUP BY content_item_id, org_id
+                GROUP BY content_item_id
                 ) t1
             ) t2
         """.format(**qkw)
@@ -55,7 +61,7 @@ def content_ts(org, num_hours=24):
     return True
 
 
-def content_event_tags(org):
+def event_tags_to_summary(org):
     """
     Count up impact tag categories + levels assigned to events
     by the content_items they're associated with.

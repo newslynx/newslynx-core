@@ -15,30 +15,10 @@ class TestMetricsAPI(unittest.TestCase):
         assert(resp['facets'].keys() > 1)
         assert(len(resp['metrics']) > 1)
 
-        resp = self.api.metrics.list(timeseries=True)
+        resp = self.api.metrics.list(content_levels='timeseries')
         assert(resp['facets'].keys() > 1)
         for m in resp['metrics']:
-            assert(m['timeseries'])
-
-        resp = self.api.metrics.list(cumulative=True)
-        assert(resp['facets'].keys() > 1)
-        for m in resp['metrics']:
-            assert(m['cumulative'])
-
-        resp = self.api.metrics.list(faceted=True)
-        assert(resp['facets'].keys() > 1)
-        for m in resp['metrics']:
-            assert(m['faceted'])
-
-        resp = self.api.metrics.list(aggregations='!median')
-        assert(resp['facets'].keys() > 1)
-        for m in resp['metrics']:
-            assert(m['aggregation'] != 'median')
-
-        resp = self.api.metrics.list(aggregations='sum')
-        assert(resp['facets'].keys() > 1)
-        for m in resp['metrics']:
-            assert(m['aggregation'] == 'sum')
+            assert('timeseries' in m['content_levels'])
 
         m = self.api.metrics.list()['metrics'][0]
         n = fake.name()

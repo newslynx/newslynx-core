@@ -161,7 +161,7 @@ def publish_date(soup, source_url=None):
     for tag in PUBLISH_DATE_TAGS:
         ds = _extract_tag_data(soup, tag)
         if ds:
-            dt = dates.parse_iso(ds)
+            dt = dates.parse_iso(ds, enforce_tz=False)
             if dt:
                 return dt
 
@@ -177,7 +177,7 @@ def publish_date(soup, source_url=None):
     for tag in PUBLISH_DATE_TAGS:
         ds = _extract_tag_data(soup, tag)
         if ds:
-            dt = dates.parse_any(ds)
+            dt = dates.parse_any(ds, enforce_tz=False)
             if dt:
                 return dt
 
@@ -186,7 +186,7 @@ def publish_date(soup, source_url=None):
         dm = re_url_date.search(source_url)
         if dm:
             ds = dm.group(0)
-            dt = dates.parse_any(ds)
+            dt = dates.parse_any(ds, enforce_tz=False)
             if dt:
                 return dt
 

@@ -1,8 +1,8 @@
 slug: google-analytics-to-content-timeseries
-name: Google Analytics Timeseries
+name: Google Analytics Timeseries For Content Items
 description: >
     Computes a timeseries of pageviews, entrances, and exits for content items.
-runs: newslynx.sc.metrics.google_analytics.Timeseries
+runs: newslynx.sc.metrics.google_analytics.ContentTimeseries
 creates: metrics
 option_order: []
 options:
@@ -40,24 +40,73 @@ metrics:
 
     ga_pageviews:
         display_name: Pageviews
-        aggregation: sum
-        level: all
-        cumulative: true
-        faceted: false
-        timeseries: true
+        type: count
+        content_levels:
+            - timeseries
+            - summary
+            - comparison
+        org_levels:
+            - timeseries
+            - summary
 
     ga_exits:
         display_name: Exits
-        aggregation: sum
-        level: all
-        cumulative: true
-        faceted: false
-        timeseries: true
+        type: count
+        content_levels:
+            - timeseries
+            - summary
+            - comparison
+        org_levels:
+            - timeseries
+            - summary
 
     ga_entrances:
         display_name: Entrances
-        aggregation: sum
-        level: all
-        cumulative: true
-        faceted: false
-        timeseries: true
+        type: count
+        content_levels:
+            - timeseries
+            - summary
+            - comparison
+        org_levels:
+            - timeseries
+            - summary
+
+    ga_total_time_on_page:
+        display_name: Total Time on Page
+        type: count
+        content_levels:
+            - timeseries
+            - summary
+            - comparison
+        org_levels:
+            - timeseries
+            - summary
+
+    ga_avg_time_on_page:
+        display_name: Average Time on Page 
+        type: computed
+        content_levels:
+            - timeseries 
+            - summary 
+            - comparison 
+        org_levels:
+            - timeseries
+            - summary 
+        formula: '{ga_total_time_on_page} / {ga_pageviews}'
+        agg: avg
+
+    ga_per_external:
+        display_name: Percent External Traffic 
+        type: computed
+        content_levels:
+            - timeseries 
+            - summary 
+            - comparison 
+        org_levels:
+            - timeseries
+            - summary 
+        formula: '{ga_entrances} / {ga_pageviews}'
+        agg: avg
+
+
+

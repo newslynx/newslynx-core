@@ -63,37 +63,55 @@ definitions:
         type: object
         required:
             - display_name
-            - level 
-            - aggregation
+            - type
+            - content_levels
+            - org_levels
         properties:
             
             display_name:
+                description: How should this metric be displated?
                 type: string
             
-            level:
-                type: string 
+            type:
+                description: What type of metric is this?
+                type: string
                 enum:
-                    - content_item
-                    - org 
-                    - all 
-            aggregation:
-                type: string 
+                    - count
+                    - cumulative
+                    - percentile
+                    - min_rank
+                    - max_rank
+                    - computed
+
+            agg:
+                description: How should we aggregate this metric?
+                type: string
                 enum:
-                    - median
-                    - avg
-                    - min
-                    - max
                     - sum
+                    - avg 
+                    - median 
+                    - max 
+                    - min
 
-            cumulative:
-                type: boolean
-                default: false 
+            content_levels:
+                description: What content metric levels does this metric apply to?
+                type: array
+                items:
+                    enum:
+                        - timeseries
+                        - summary
+                        - comparison
+            
+            org_levels:
+                description: What org metric levels does this metric apply to?
+                type: array
+                items:
+                    enum:
+                        - timeseries
+                        - summary
 
-            faceted:
-                type: boolean
-                default: false 
-
-            timeseries:
+            faceted: 
+                description: Is this metric faceted?
                 type: boolean
                 default: false
 

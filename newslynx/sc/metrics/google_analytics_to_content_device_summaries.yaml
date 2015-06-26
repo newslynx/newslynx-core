@@ -1,0 +1,66 @@
+slug: google-analytics-to-content-device-summaries
+name: Google Analytics Pageviews by Device Type for content Items
+description: >
+    Computes a timeseries of pageviews, entrances, and exits for content items.
+runs: newslynx.sc.metrics.google_analytics.ContentDeviceSummaries
+creates: metrics
+option_order: []
+options:
+    
+    max_age:
+        input_type: number
+        value_types:
+            - numeric
+        default: 30
+        help:
+            placeholder: 30
+            description: |
+                The number of days past a content item's creation date
+                after which we will stop computing these counts.
+
+    content_item_types:
+        input_type: text
+        input_options:
+            - video
+            - article
+            - slideshow
+            - interactive
+            - podcast
+            - all
+        value_types:
+            - string
+        default: all
+        help:
+            placeholder: all
+            description: |
+                The content item types to calculate share counts for.
+
+
+metrics:
+
+    ga_pageviews_mobile:
+        display_name: Pageviews
+        type: count
+        content_levels:
+            - summary
+            - comparison
+        org_levels:
+            - summary
+
+    ga_pageviews_tablet:
+        display_name: Pageviews
+        type: count
+        content_levels:
+            - summary
+            - comparison
+        org_levels:
+            - summary
+
+    ga_pageviews_tablet:
+        display_name: Pageviews
+        type: count
+        content_levels:
+            - summary
+            - comparison
+        org_levels:
+            - summary

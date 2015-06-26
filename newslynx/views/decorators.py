@@ -1,12 +1,11 @@
 from functools import wraps
 
-from flask import request
-
 from newslynx.models.util import fetch_by_id_or_field
 from newslynx.views.util import localize
 from newslynx.models import User, Org
 from newslynx.exc import (
     AuthError, ForbiddenError, NotFoundError)
+from newslynx.views.util import arg_str
 
 
 def load_user(f):
@@ -17,7 +16,7 @@ def load_user(f):
     def decorated_function(*args, **kw):
 
         # if we got an apikey...
-        apikey = request.args.get('apikey')
+        apikey = arg_str('apikey', default=None)
         if not apikey:
             raise AuthError(
                 'An apikey is required for this request.')
@@ -47,7 +46,7 @@ def load_org(f):
     def decorated_function(*args, **kw):
 
         # get the org
-        org_id = request.args.get('org')
+        org_id = arg_str('org', default=None)
         if not org_id:
             raise AuthError(
                 'An org is required for this request.')
@@ -76,13 +75,3 @@ def load_org(f):
         return f(*args, **kw)
 
     return decorated_function
-
-
-def cache_key(*args, **kw):
-    """
-    Create a caching key for redis from a request object.
-    """
-
-    path = request.path
-    args = str(hash(frozenset(request.args.items()))).encode('utf-8')
-    return 'newslynx-cache:{}:{}'.format(path, args)

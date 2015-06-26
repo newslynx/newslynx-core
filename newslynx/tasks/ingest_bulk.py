@@ -8,7 +8,6 @@ import time
 from functools import partial
 from rq.timeouts import JobTimeoutException
 from sqlalchemy.orm.exc import ObjectDeletedError
-from psycopg2 import IntegrityError
 
 from newslynx.core import queues
 from newslynx.core import rds, gen_session
@@ -18,9 +17,8 @@ from newslynx.tasks import ingest_content_item
 from newslynx.tasks import ingest_event
 from newslynx.tasks import ingest_metric
 from newslynx.util import gen_uuid
-from newslynx.logs import log
 from newslynx.lib.serialize import (
-    jsongz_to_obj, obj_to_jsongz)
+    picklegz_to_obj, obj_to_picklegz)
 
 
 class BulkLoader(object):
@@ -29,7 +27,7 @@ class BulkLoader(object):
     timeout = 1000  # seconds
     result_ttl = 60  # seconds
     kwargs_ttl = 1000  # in case there is a backup in the queue
-    max_workers = 5
+    max_workers = 7
     concurrent = True
     kwargs_key = 'rq:kwargs:{}'
     q = queues.get('bulk')
@@ -50,9 +48,13 @@ class BulkLoader(object):
             return False, self.load_one(item, **kw)
         except Exception as e:
             return True, e
-        except ObjectDeletedError:
-            log.warning('An object was deleted in the process of executing bulk upload.')
-            return False, None
+
+    def _handle_errors(self, errors):
+        if not isinstance(errors, list):
+            errors = [errors]
+        return RequestError(
+            'There was an error while bulk uploading: '
+            '{}'.format(errors[0].message))
 
     def load_all(self, kwargs_key):
         """
@@ -70,7 +72,7 @@ class BulkLoader(object):
                     'An unexpected error occurred while processing bulk upload.'
                 )
 
-            kwargs = jsongz_to_obj(kwargs)
+            kwargs = picklegz_to_obj(kwargs)
             data = kwargs.get('data')
             kw = kwargs.get('kw')
 
@@ -99,9 +101,7 @@ class BulkLoader(object):
 
             # return errors
             if len(errors):
-                return RequestError(
-                    'There was an error while bulk uploading: '
-                    '{}'.format(errors[0].message))
+                self._handle_errors(errors)
 
             # add objects and execute
             if self.returns == 'model':
@@ -110,9 +110,7 @@ class BulkLoader(object):
                         try:
                             session.add(o)
                         except Exception as e:
-                            return RequestError(
-                                'There was an error while bulk uploading: {}'
-                                .format(e.message))
+                            self._handle_errors(e)
 
             # union all queries
             elif self.returns == 'query':
@@ -121,21 +119,17 @@ class BulkLoader(object):
                         try:
                             session.execute(query)
                         except Exception as e:
-                            return RequestError(
-                                'There was an error while bulk uploading: {}'
-                                .format(e.message))
+                            self._handle_errors(e)
             try:
                 session.commit()
 
             except Exception as e:
                 session.rollback()
                 session.remove()
-                return RequestError(
-                    'There was an error while bulk uploading: {}'
-                    .format(e.message))
+                self._handle_errors(e)
 
             # return true if everything worked.
-            session.remove()
+            session.close()
             return True
 
         except JobTimeoutException:
@@ -155,7 +149,7 @@ class BulkLoader(object):
         job_id = gen_uuid()
         kwargs_key = self.kwargs_key.format(job_id)
         kwargs = {'data': data, 'kw': kw}
-        rds.set(kwargs_key, obj_to_jsongz(kwargs), ex=self.kwargs_ttl)
+        rds.set(kwargs_key, obj_to_picklegz(kwargs), ex=self.kwargs_ttl)
 
         # send the job to the task queue
         self.q.enqueue(
@@ -192,18 +186,7 @@ class OrgTimeseriesBulkLoader(BulkLoader):
     timeout = 240
 
     def load_one(self, item, **kw):
-
         return ingest_metric.org_timeseries(item, **kw)
-
-
-class OrgSummaryBulkLoader(BulkLoader):
-
-    returns = 'query'
-    timeout = 120
-
-    def load_one(self, item, **kw):
-
-        return ingest_metric.org_summary(item, **kw)
 
 
 class EventBulkLoader(BulkLoader):
@@ -229,6 +212,5 @@ class ContentItemBulkLoader(BulkLoader):
 content_timeseries = ContentTimeseriesBulkLoader().run
 content_summary = ContentSummaryBulkLoader().run
 org_timeseries = OrgTimeseriesBulkLoader().run
-org_summary = OrgSummaryBulkLoader().run
 events = EventBulkLoader().run
 content_items = ContentItemBulkLoader().run

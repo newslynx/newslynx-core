@@ -23,10 +23,3 @@ options:
         required: true
         help:
             placeholder: http://propalpatine.org/feed.xml
-    
-    # default options
-    interval:
-        input_type: number
-        value_types:
-            - numeric
-        default: 1800

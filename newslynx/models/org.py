@@ -1,13 +1,15 @@
 import copy
-from sqlalchemy.dialects.postgresql import ENUM
+from sqlalchemy import and_, or_, func
+from sqlalchemy.dialects.postgresql import ENUM, ARRAY
 
 from slugify import slugify
 
 from newslynx.core import db
 from newslynx.lib import dates
 from newslynx.lib.serialize import json_to_obj
-from newslynx.models.relations import orgs_users
-from newslynx.models import Metric
+from .relations import orgs_users
+from .metric import Metric
+from .content_item import ContentItem
 
 
 class Org(db.Model):
@@ -46,7 +48,8 @@ class Org(db.Model):
     recipes = db.relationship('Recipe', lazy='dynamic', cascade='all')
     authors = db.relationship('Author', lazy='dynamic')
     tags = db.relationship('Tag', lazy='dynamic', cascade='all')
-    timeseries = db.relationship('OrgMetricTimeseries', lazy='dynamic', cascade='all')
+    timeseries = db.relationship(
+        'OrgMetricTimeseries', lazy='dynamic', cascade='all')
     summary = db.relationship('OrgMetricSummary', lazy='joined', cascade='all')
 
     def __init__(self, **kw):
@@ -56,6 +59,9 @@ class Org(db.Model):
 
     @property
     def settings_dict(self):
+        """
+        An org's settings formatted as a dictionary.
+        """
         settings = {}
         for s in self.settings:
             if s.json_value:
@@ -66,47 +72,353 @@ class Org(db.Model):
         return settings
 
     @property
-    def metrics_lookup(self):
-        metrics = {}
-        for m in self.metrics:
-            metrics[m.name] = m.to_dict()
-        return metrics
+    def auths_dict(self):
+        """
+        An org's authorizations formatted as a dictionary.
+        """
+        settings = {}
+        for a in self.auths:
+            settings[s.name] = a.value
+        return settings
+
+    @property
+    def super_user(self):
+        """
+        Simplified access to the super user from an org object.
+        """
+        return [u for u in self.users if u.super_user][0]
+
+    @property
+    def user_ids(self):
+        """
+        An array of an org's user ids.
+        """
+        return [u.id for u in self.users]
 
     @property
     def summary_metrics(self):
+        """
+        Summary metrics for an organization.
+        """
         return self.summary.metrics
 
     @property
+    def domains(self):
+        """
+        Domains which an organization manages.
+        """
+        domains = db.session.query(func.distinct(ContentItem.domain))\
+            .filter_by(org_id=self.id)\
+            .all()
+        return [d[0] for d in domains]
+
+    @property
     def content_item_ids(self):
+        """
+        An array of an org's content item IDs.
+        """
         return [c.id for c in self.content_items]
 
     @property
     def simple_content_items(self):
-        return [{'id': c.id, 'url': c.url, 'type': c.type, 'title': c.title}
-                for c in self.content_items]
+        """
+        Simplified content items.
+        """
+        return [
+            {'id': c.id, 'url': c.url, 'type': c.type, 'title': c.title}
+            for c in self.content_items
+        ]
 
+    # METRICS
+
+    ## CONTENT TIMESERIES METRICS
+
+    @property
     def content_timeseries_metrics(self):
-        return self.metrics\
-            .filter(Metric.level.in_(['all', 'content_item']))\
-            .filter(Metric.timeseries)\
-            .all()
-
-    def content_metric_names(self):
+        """
+        Content metrics that can exist in the content timeseries store.
+        """
         metrics = self.metrics\
-            .filter(Metric.level.in_(['all', 'content_item']))\
+            .filter(Metric.content_levels.contains(['timeseries']))\
+            .filter(Metric.type != 'computed')\
+            .all()
+        return {m.name: m.to_dict() for m in metrics}
+
+    @property
+    def content_timeseries_metric_names(self):
+        """
+        The names of metrics that can exist in the content timeseries store.
+        """
+        metrics = self.metrics\
+            .filter(Metric.content_levels.contains(['timeseries']))\
+            .filter(Metric.type != 'computed')\
+            .filter(~Metric.faceted)\
             .with_entities(Metric.name)\
             .all()
         return [m[0] for m in metrics]
 
-    def timeseries_metrics(self):
-        return self.metrics\
-            .filter(Metric.level.in_(['all', 'org']))\
-            .filter(Metric.timeseries)\
+    @property
+    def content_timeseries_metric_rollups(self):
+        """
+        Content metrics that should be rolled-up from timeseries => summary.
+        Computed timeseries metrics can and should be summarized for ease of
+        generating comparisons on these metrics.
+        """
+        metrics = self.metrics\
+            .filter(Metric.content_levels.contains(['timeseries', 'summary']))\
+            .filter(~Metric.faceted)\
             .all()
+        return {m.name: m.to_dict() for m in metrics}
 
     @property
-    def user_ids(self):
-        return [u.id for u in self.users]
+    def computed_content_timeseries_metrics(self):
+        """
+        Metrics to compute on top of the timeseries store.
+        """
+        metrics = self.metrics\
+            .filter(Metric.content_levels.contains(['timeseries']))\
+            .filter(Metric.type == 'computed')\
+            .filter(~Metric.faceted)\
+            .all()
+        return {m.name: m.to_dict() for m in metrics}
+
+    ## CONTENT SUMMARY METRICS
+
+    @property
+    def content_summary_metrics(self):
+        """
+        Content metrics that can exist in the content summary store.
+        """
+        metrics = self.metrics\
+            .filter(Metric.content_levels.contains(['summary']))\
+            .all()
+        return {m.name: m.to_dict() for m in metrics}
+
+    @property
+    def content_summary_metric_names(self):
+        """
+        The names of metrics that can exist in the content summary store.
+        """
+        metrics = self.metrics\
+            .filter(Metric.content_levels.contains(['summary']))\
+            .with_entities(Metric.name)\
+            .all()
+        return [m[0] for m in metrics]
+
+    @property
+    def computed_content_summary_metrics(self):
+        """
+        Metrics to compute on top of the content summary store.
+        """
+        metrics = self.metrics\
+            .filter(Metric.content_levels.contains(['summary']))\
+            .filter(Metric.type == 'computed')\
+            .filter(~Metric.faceted)\
+            .all()
+        return {m.name: m.to_dict() for m in metrics}
+
+    @property
+    def computed_content_summary_metric_names(self):
+        """
+        The names of metrics to compute on top of the content summary store.
+        """
+        metrics = self.metrics\
+            .filter(Metric.content_levels.contains(['summary']))\
+            .filter(Metric.type == 'computed')\
+            .filter(~Metric.faceted)\
+            .with_entities(Metric.name)\
+            .all()
+        return [m[0] for m in metrics]
+
+    @property
+    def computable_content_summary_metrics(self):
+        """
+        The names of metrics which can be used in computed summary metrics.
+        """
+        metrics = self.metrics\
+            .filter(Metric.content_levels.contains(['summary']))\
+            .filter(Metric.type != 'computed')\
+            .filter(~Metric.faceted)\
+            .all()
+        return {m.name: m.to_dict() for m in metrics}
+
+    @property
+    def computable_content_summary_metrics_names(self):
+        """
+        The names of metrics which can be used in computed summary metrics.
+        """
+        metrics = self.metrics\
+            .filter(Metric.content_levels.contains(['summary']))\
+            .filter(Metric.type != 'computed')\
+            .filter(~Metric.faceted)\
+            .with_entities(Metric.name)\
+            .all()
+        return [m[0] for m in metrics]
+
+    @property
+    def content_summary_metric_sorts(self):
+        """
+        The names of metrics that can can be used to sort content items.
+        """
+        metrics = self.metrics\
+            .filter(Metric.content_levels.contains(['summary']))\
+            .filter(~Metric.faceted)\
+            .all()
+        return {m.name: m.to_dict() for m in metrics}
+
+    @property
+    def content_summary_metric_sort_names(self):
+        """
+        The names of metrics that can can be used to sort content items.
+        """
+        metrics = self.metrics\
+            .filter(Metric.content_levels.contains(['summary']))\
+            .filter(~Metric.faceted)\
+            .with_entities(Metric.name)\
+            .all()
+        return {m.name: m.to_dict() for m in metrics}
+
+    @property
+    def content_metric_comparisons(self):
+        """
+        Content summary metrics that should be used to generate comparisons.
+        """
+        metrics = self.metrics\
+            .filter(Metric.content_levels.contains(['summary', 'comparison']))\
+            .filter(~Metric.faceted)\
+            .all()
+        return {m.name: m.to_dict() for m in metrics}
+
+    @property
+    def content_metric_comparison_names(self):
+        """
+        The names of content summary metrics that should be used to generate comparisons.
+        """
+        metrics = self.metrics\
+            .filter(Metric.content_levels.contains(['summary', 'comparison']))\
+            .filter(~Metric.faceted)\
+            .with_entities(Metric.name)\
+            .all()
+        return [m[0] for m in metrics]
+
+    @property
+    def content_faceted_metric_names(self):
+        """
+        The names of faceted content metrics.
+        """
+        metrics = self.metrics\
+            .filter(Metric.faceted)\
+            .filter(Metric.content_levels.contains(['summary']))\
+            .with_entities(Metric.name)\
+            .all()
+        return [m[0] for m in metrics]
+
+    ## ORG TIMESERIES METRICS
+
+    @property
+    def timeseries_metrics(self):
+        """
+        Org timeseries metrics and content timeseries metrics
+        which can exist in the org timeseries.
+
+        Computed metrics should be rolled-up to the org timeseries.
+        """
+        metrics = self.metrics\
+            .filter(
+                or_(Metric.org_levels.contains(['timeseries']),
+                    and_(Metric.content_levels.contains(['timeseries']),
+                         Metric.org_levels.contains(['timeseries']))
+                    ))\
+            .filter(~Metric.faceted)\
+            .all()
+        return {m.name: m.to_dict() for m in metrics}
+
+    @property
+    def timeseries_metric_names(self):
+        """
+        The names of org timeseries metrics and content timeseries metrics
+        which can exist in the org timeseries.
+        """
+        metrics = self.metrics\
+            .filter(
+                or_(Metric.org_levels.contains(['timeseries']),
+                    and_(Metric.content_levels.contains(['timeseries']),
+                         Metric.org_levels.contains(['timeseries']))
+                    ))\
+            .filter(~Metric.faceted)\
+            .with_entities(Metric.name)\
+            .all()
+        return [m[0] for m in metrics]
+
+    @property
+    def computed_timeseries_metrics(self):
+        """
+        Org-specific computed timeseries metrics.
+        """
+        metrics = self.metrics\
+            .filter(Metric.org_levels.contains(['timeseries']))\
+            .filter(~Metric.content_levels.contains(['timeseries']))\
+            .filter(Metric.type == 'computed')\
+            .all()
+        return {m.name: m.to_dict() for m in metrics}
+
+    @property
+    def computed_timeseries_metrics_names(self):
+        """
+        The names of metrics which can be used in computed summary metrics.
+        """
+        metrics = self.metrics\
+            .filter(Metric.org_levels.contains(['timeseries']))\
+            .filter(~Metric.content_levels.contains(['timeseries']))\
+            .filter(Metric.type == 'computed')\
+            .with_entities(Metric.name)\
+            .all()
+        return [m[0] for m in metrics]
+
+    @property
+    def computable_timeseries_metrics(self):
+        """
+        Metrics which can be used in computed summary metrics.
+        """
+        return self.timeseries_metrics
+
+    @property
+    def computable_timeseries_metrics_names(self):
+        """
+        The names of metrics which can be used in computed summary metrics.
+        """
+        return self.timeseries_metric_names
+
+    @property
+    def summary_metrics(self):
+        """
+        Metrics which can exist in the org summary store.
+        """
+        metrics = self.metrics\
+            .filter(
+                or_(Metric.org_levels.contains(['summary']),
+                    and_(Metric.content_levels.contains(['timeseries']),
+                         Metric.org_levels.contains(['timeseries']))
+                    ))\
+            .filter(~Metric.faceted)\
+            .all()
+        return {m.name: m.to_dict() for m in metrics}
+
+    @property
+    def summary_metric_names(self):
+        """
+        Metrics which can exist in the org summary store.
+        """
+        metrics = self.metrics\
+            .filter(
+                or_(Metric.org_levels.contains(['summary']),
+                    and_(Metric.content_levels.contains(['summary']),
+                         Metric.org_levels.contains(['summary']))
+                    ))\
+            .filter(~Metric.faceted)\
+            .with_entities(Metric.name)\
+            .all()
+        return [m[0] for m in metrics]
 
     def to_dict(self, **kw):
 
@@ -116,28 +428,41 @@ class Org(db.Model):
         incl_tags = kw.get('incl_tags', False)
         incl_auths = kw.get('incl_auths', True)
         settings_as_dict = kw.get('settings_dict', True)
+        auths_as_dict = kw.get('auths_dict', True)
 
         d = {
             'id': self.id,
             'name': self.name,
             'timezone': self.timezone,
+            'domains': self.domains,
             'slug': self.slug,
             'created': self.created,
             'updated': self.updated
         }
+
         if incl_users:
             d['users'] = [
-                u.to_dict(incl_org=False, incl_apikey=False) for u in self.users]
+                u.to_dict(incl_org=False, incl_apikey=False)
+                for u in self.users
+            ]
+
         if incl_settings:
             if settings_as_dict:
                 d['settings'] = self.settings_dict
+
             else:
                 d['settings'] = self.settings
+
         if incl_auths:
-            d['auths'] = self.auths
+            if auths_as_dict:
+                d['auths'] = self.auths_dict
+            else:
+                d['auths'] = self.auths
+
         if incl_tags:
-            d['tags'] = [t.to_dict() for t in self.tags.query.all()]
+            d['tags'] = [t.to_dict() for t in self.tags]
+
         return d
 
     def __repr__(self):
-        return "<Org %s >" % (self.name)
+        return "<Org %s >" % (self.slug)

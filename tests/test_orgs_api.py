@@ -25,6 +25,7 @@ class TestOrgAPI(unittest.TestCase):
         n = fake.name()
         org1 = self.api.orgs.create(name=n, timezone='America/New_York')
         assert org1['name'] == n
+        assert(settings.SUPER_USER_EMAIL in [u['email'] for u in org1['users']])
         self.api.orgs.delete(org1['id'])
 
     def test_update(self):
@@ -42,25 +43,28 @@ class TestOrgAPI(unittest.TestCase):
 
     def test_list_users(self):
         users = self.api.orgs.list_users()
-        assert(settings.ADMIN_EMAIL in [u['email'] for u in users])
+        assert(settings.SUPER_USER_EMAIL in [u['email'] for u in users])
 
     def test_get_user(self):
-        user = self.api.orgs.get_user(user=settings.ADMIN_EMAIL)
+        user = self.api.orgs.get_user(user=settings.SUPER_USER_EMAIL)
         assert(self.org in [o['id'] for o in user['orgs']])
 
     def test_create_user(self):
-        user = self.api.orgs.create_user(email=fake.name(), password='foo', name=fake.name())
+        email = fake.name().replace(' ', '').strip() + "@foo.com"
+        user = self.api.orgs.create_user(email=email, password='foo', name=fake.name())
         assert(self.org in [o['id'] for o in user['orgs']])
 
     def test_remove_user(self):
-        user = self.api.orgs.create_user(email=fake.name(), password='foo', name=fake.name())
+        email = fake.name().replace(' ', '').strip() + "@foo.com"
+        user = self.api.orgs.create_user(email=email, password='foo', name=fake.name())
         resp = self.api.orgs.remove_user(user=user['id'])
         assert resp
         org = self.api.orgs.get(org=self.org)
         assert(user['id'] not in [u['id'] for u in org['users']])
 
     def test_add_user(self):
-        user = self.api.orgs.create_user(email=fake.name(), password='foo', name=fake.name())
+        email = fake.name().replace(' ', '').strip() + "@foo.com"
+        user = self.api.orgs.create_user(email=email, password='foo', name=fake.name())
         resp = self.api.orgs.remove_user(user=user['id'])
         assert resp
         user = self.api.orgs.add_user(user=user['id'])

@@ -1,8 +1,6 @@
-from collections import defaultdict
-
-from addict import Dict
-
 from newslynx.client import API
+from newslynx.exc import SousChefInitError
+from collections import defaultdict
 
 
 class SousChef(object):
@@ -12,30 +10,42 @@ class SousChef(object):
     and modifies NewsLynx via it's API.
     """
 
-    def __init__(self, user, org, recipe):
+    def __init__(self, *kw):
+        # parse kwargs
+
+        org = kw.get('org')
+        recipe = kw.get('recipe')
+        apikey = kw.get('apikey')
+
+        if not org or not recipe or not apikey:
+            raise SousChefInitError(
+                'A SousChef requires a "org", "recipe", and "apikey" to run.')
 
         # api connection
-        self.api = API(apikey=user.apikey, org=org.id)
+        self.api = API(apikey=apikey, org=org['id'])
 
         # full org object
-        self.org = Dict(org.to_dict(
-            incl_settings=True,
-            settings_as_dict=True,
-            incl_authorizations=True,
-            incl_users=True))
+        self.auths = org.pop('auths')
+        self.settings = org.pop('settings')
+        self.users = org.pop('users')
+        self.org = org
 
         # options for this recipe
-        self.options = Dict(recipe.options)
+        self.options = recipe['options']
+        self.recipe_id = recipe['id']
 
         # passthrough options between jobs.
-        self.last_job = Dict(recipe.last_job)
-        self.next_job = Dict(defaultdict())
+        self.last_job = recipe['last_job']
+        self.next_job = defaultdict()
 
     def setup(self):
         return True
 
     def run(self):
-        raise NotImplementedError
+        raise NotImplemented
+
+    def load(self, data):
+        return True
 
     def teardown(self):
         return True

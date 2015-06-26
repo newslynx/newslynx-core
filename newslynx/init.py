@@ -60,8 +60,8 @@ def load_sous_chefs():
             yield load_sous_chef(fp)
 
     # user-generated sous-chefs.
-    if hasattr(settings, 'SOUS_CHEF_DIR'):
-        sous_chef_dir = settings.SOUS_CHEF_DIR
+    if hasattr(settings, 'SOUS_CHEFS_DIR'):
+        sous_chef_dir = settings.SOUS_CHEFS_DIR
 
         if sous_chef_dir.startswith('~'):
             sous_chef_dir = \
@@ -90,36 +90,31 @@ def load_default_tags():
     Get all default tags for specified in the conf
     """
     # user-generated sous-chefs.
-    if hasattr(settings, 'DEFAULT_TAGS_DIR'):
-        default_tags_dir = settings.SOUS_CHEF_DIR
-
-        if default_tags_dir.startswith('~'):
-            default_tags_dir = \
-                os.path.expanduser(default_tags_dir)
-
-        if not os.path.exists(default_tags_dir):
+    if hasattr(settings, 'DEFAULT_TAGS'):
+        default_tags = settings.DEFAULT_TAGS
+        if default_tags.startswith('~'):
+            default_tags = \
+                os.path.expanduser(default_tags)
+        if not os.path.exists(default_tags):
             raise ConfigError(
                 "'{}' was explicitly declared as "
-                "the default_tags_dir but could "
+                "the default_tags config but could "
                 "not be found."
-                .format(default_tags_dir)
+                .format(default_tags)
             )
 
     else:
-        default_tags_dir = os.path.expanduser(
-            '~/.newslynx/defaults/tags/')
+        default_tags = os.path.expanduser(
+            '~/.newslynx/defaults/tags.yaml')
 
-    if os.path.exists(default_tags_dir):
-        for fp in recursive_listdir(default_tags_dir):
-            if _is_config_file(fp):
-                tag = _load_config_file(fp)
-
-                if isinstance(tag, list):
-                    for t in tag:
-                        yield t
-
-                else:
-                    yield tag
+    if os.path.exists(default_tags):
+        tags = _load_config_file(default_tags)
+        if not isinstance(tags, list):
+            raise ConfigError(
+                'Default tags config must be a list of objects.'
+            )
+        for t in tags:
+            yield t
 
 
 def load_default_recipes():
@@ -127,34 +122,33 @@ def load_default_recipes():
     Get all default tags for organizations specified in the conf.
     """
     # user-generated sous-chefs.
-    if hasattr(settings, 'DEFAULT_RECIPES_DIR'):
-        default_recipes_dir = settings.DEFAULT_RECIPES_DIR
+    if hasattr(settings, 'DEFAULT_RECIPES'):
+        default_recipes = settings.DEFAULT_RECIPES
 
-        if default_recipes_dir.startswith('~'):
-            default_recipes_dir = \
-                os.path.expanduser(default_recipes_dir)
+        if default_recipes.startswith('~'):
+            default_recipes = \
+                os.path.expanduser(default_recipes)
 
-        if not os.path.exists(default_recipes_dir):
+        if not os.path.exists(default_recipes):
             raise ConfigError(
                 "'{}' was explicitly declared as "
-                "the default_recipes_dir but could "
+                "the default_recipes config but could "
                 "not be found."
-                .format(default_recipes_dir)
+                .format(default_recipes)
             )
 
     else:
-        default_recipes_dir = os.path.expanduser(
-            '~/.newslynx/defaults/recipes/')
+        default_recipes = os.path.expanduser(
+            '~/.newslynx/defaults/recipes.yaml')
 
-    if os.path.exists(default_recipes_dir):
-        for fp in recursive_listdir(default_recipes_dir):
-            if _is_config_file(fp):
-                recipe = _load_config_file(fp)
-                if isinstance(recipe, list):
-                    for r in recipe:
-                        yield r
-                else:
-                    yield recipe
+    if os.path.exists(default_recipes):
+        recipes = _load_config_file(default_recipes)
+        if not isinstance(recipes, list):
+            raise ConfigError(
+                'Default recipe config files must contain a list of objects.'
+            )
+        for r in recipes:
+            yield r
 
 
 def load_sql():

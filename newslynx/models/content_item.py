@@ -47,6 +47,7 @@ class ContentItem(db.Model):
     title = db.Column(db.Text)
     description = db.Column(db.Text)
     body = db.Column(db.Text)
+    active = db.Column(db.Boolean, index=True)
     meta = db.Column(JSON)
 
     # relations
@@ -115,6 +116,7 @@ class ContentItem(db.Model):
         self.title = kw.get('title')
         self.description = kw.get('description')
         self.body = kw.get('body')
+        self.active = kw.get('active', True)
         self.meta = kw.get('meta', {})
 
     @property
@@ -192,6 +194,7 @@ class ContentItem(db.Model):
             'description': self.description,
             'subject_tag_ids': self.subject_tag_ids,
             'impact_tag_ids': self.impact_tag_ids,
+            'active': self.active,
             'meta': self.meta
         }
         # if incl_links:

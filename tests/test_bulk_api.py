@@ -16,9 +16,9 @@ from newslynx.models import (
 api = API(org=1)
 
 # # flush the cache to ensure realstic times.
-URLCache.flush()
-ExtractCache.flush()
-ThumbnailCache.flush()
+# URLCache.flush()
+# ExtractCache.flush()
+# ThumbnailCache.flush()
 
 
 def poll_status_url(status_url):
@@ -112,7 +112,6 @@ def test_bulk_content_items(feed_url='http://feeds.propublica.org/propublica/mai
     for entry in rss.get_entries(feed_url, domains):
         entry['type'] = 'article'
         if entry.get('url'):
-            entry.pop('links', None)
             data.append(entry)
 
     start = time.time()
@@ -133,7 +132,7 @@ def test_bulk_events(feed_url='http://feeds.propublica.org/propublica/main', dom
         entry['type'] = 'article'
         if entry.get('url'):
             data.append(entry)
-
+    print len(data)
     start = time.time()
     # make request and return status url
     res = api.events.bulk_create(data=data)
@@ -143,4 +142,4 @@ def test_bulk_events(feed_url='http://feeds.propublica.org/propublica/main', dom
         .format(len(data), round((end-start), 2))
 
 if __name__ == '__main__':
-    test_bulk_content_timeseries()
+    test_bulk_content_items()

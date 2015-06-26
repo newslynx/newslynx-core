@@ -1,5 +1,5 @@
 """
-Utilities used throughout the module.
+Utilities used throughout the project.
 """
 import os
 import collections
@@ -74,17 +74,3 @@ def gen_short_uuid(n=6):
     start = random.choice(range(1, (len(uuid) - n)+1))
     end = start + n
     return uuid[start:end]
-
-
-def check_plugin(m, *args):
-    """"
-    Check if a plugin has been activated.
-    """
-    tests = []
-    for a in args:
-        # check for optional plugins
-        if hasattr(m, a) and getattr(m, a, None):
-            tests.append(True)
-        else:
-            tests.append(False)
-    return all(tests)

@@ -55,6 +55,7 @@ def ingest(
             raise RequestError(
                 'Extraction failed on {type} - {url}'
                 .format(**obj))
+
         # extraction succeeded
         else:
             data = cache_response.value
@@ -240,6 +241,7 @@ def _associate_tags(c, org_id, tag_ids, session):
         if t.id not in c.subject_tag_ids:
             c.tags.append(t)
     return c
+
 # def _associate_content_items(c, org_id, urls):
 #     """
 #     Check if event has associations with content items.

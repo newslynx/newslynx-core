@@ -5,6 +5,7 @@ from werkzeug.security import (
 
 from newslynx.core import db
 from newslynx import settings
+from newslynx.client import API
 from newslynx.lib import dates
 from uuid import uuid4
 
@@ -20,6 +21,7 @@ class User(db.Model):
     password = db.Column(db.Text)
     apikey = db.Column(db.Text, index=True)
     admin = db.Column(db.Boolean, index=True)
+    super_user = db.Column(db.Boolean, index=True)
     created = db.Column(db.DateTime(timezone=True), default=dates.now)
     updated = db.Column(db.DateTime(timezone=True), onupdate=dates.now, default=dates.now)
 
@@ -28,7 +30,8 @@ class User(db.Model):
         self.email = kw.get('email')
         self.set_password(kw.get('password'))
         self.created = kw.get('created', dates.now())
-        self.admin = kw.get('admin', False)
+        self.admin = kw.get('admin', kw.get('super_user', False)) # super users are also admins.
+        self.super_user = kw.get('super_user', False)
         self.set_apikey(**kw)
 
     def set_password(self, password):
@@ -53,6 +56,9 @@ class User(db.Model):
     def org_ids(self):
         return [o.id for o in self.orgs]
 
+    def get_api(self):
+        return API(apikey=self.apikey)
+
     def to_dict(self, **kw):
         incl_org = kw.get('incl_org', True)
         incl_apikey = kw.get('incl_apikey', False)
@@ -62,7 +68,8 @@ class User(db.Model):
             'name': self.name,
             'email': self.email,
             'admin': self.admin,
-            'created': self.created
+            'created': self.created,
+            'updated': self.updated
         }
 
         if incl_org:

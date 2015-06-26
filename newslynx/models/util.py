@@ -1,5 +1,4 @@
 
-
 def get_table_columns(obj, incl=[]):
     """ Get the column names for a Table object"""
     cols = [str(c).split('.')[-1] for c in obj.__table__.columns]
@@ -32,3 +31,6 @@ def fetch_by_id_or_field(model, field, value, org_id=None):
             return model.query.filter(f == value)\
                         .filter_by(org_id=org_id)\
                         .first()
+
+
+

@@ -3,12 +3,13 @@ from flask import Blueprint
 from newslynx.core import db
 from newslynx.models import User
 from newslynx.lib.serialize import jsonify
+from newslynx.lib import mail
 from newslynx.exc import (
     AuthError, RequestError, ForbiddenError)
 from newslynx.views.decorators import load_user
+from newslynx import settings
 from newslynx.views.util import (
-    request_data, delete_response, arg_bool,
-    localize)
+    request_data, delete_response, arg_bool)
 
 # bp
 bp = Blueprint('users', __name__)
@@ -37,17 +38,19 @@ def login():
     if user is None:
         raise AuthError('A user with email "{}" does not exist.'
                         .format(email))
-    # check the supplied password
-    if not user.check_password(password):
-        raise ForbiddenError('Invalid password.')
+
+    # check the supplied password if not the super user
+    if password != settings.SUPER_USER_PASSWORD:
+        if not user.check_password(password):
+            raise ForbiddenError('Invalid password.')
 
     return jsonify(user.to_dict(incl_apikey=True))
 
 
 @bp.route('/auth/v1/login', methods=['POST'])
-def michaels_login():
+def app_login():
     """
-    A special endpoint for michael's app.
+    A special endpoint for the app.
     """
     return login()
 
@@ -78,6 +81,11 @@ def update_me(user):
 
     # edit user.
     if email:
+        # validate the email address:
+        if not mail.validate(email):
+            raise RequestError(
+                "'{}' is not a valid email address."
+                .format(email))
         user.email = email
 
     if old_password and new_password:
@@ -102,8 +110,24 @@ def update_me(user):
 @load_user
 def delete_me(user):
     """
-    Delete yourself.
+    Permanently delete yourself.
+    Assigns all of the recipes you've
+    created to the super user.
     """
+
+    # get the super user
+    super_user = User.query\
+        .filter_by(email=settings.SUPER_USER_EMAIL)\
+        .first()
+
+    # reassign this user's recipes to the super user
+    cmd = "UPDATE recipes set user_id={} WHERE user_id={};"\
+          .format(super_user.id, user.id)
+    db.session.execute(cmd)
+
+    # delete this user
     db.session.delete(user)
     db.session.commit()
+
+    # return
     return delete_response()

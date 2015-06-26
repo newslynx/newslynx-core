@@ -1,0 +1,128 @@
+name: Summarize Events
+slug: events-to-content-summaries
+description: |
+    Count impact tag levels and categories per content ttem.
+runs: newslynx.sc.internal.content_metrics.SummarizeEvents
+creates: metrics
+option_order: []
+options:
+    
+    hours_since_last_update:
+        input_type: number
+        value_types:
+            - numeric
+        required: false
+        default: 5
+        help:
+            placeholder: propalpatine
+
+metrics:
+
+    total_events:
+        display_name: Total Events
+        type: count 
+        content_levels:
+            - summary 
+            - comparison
+        org_levels:
+            - summary
+
+    total_event_tags:
+        display_name: Total Event Tags
+        type: count 
+        content_levels:
+            - summary 
+            - comparison
+        org_levels:
+            - summary
+
+    institution_level_events:
+        display_name: Institution Level Events
+        type: count 
+        content_levels:
+            - summary 
+            - comparison
+        org_levels:
+            - summary
+
+    media_level_events:
+        display_name: Media Level Events
+        type: count 
+        content_levels:
+            - summary 
+            - comparison
+        org_levels:
+            - summary
+
+    community_level_events:
+        display_name: Community Level Events
+        type: count 
+        content_levels:
+            - summary 
+            - comparison
+        org_levels:
+            - summary
+
+    individual_level_events:
+        display_name: Individual Level Events
+        type: count 
+        content_levels:
+            - summary 
+            - comparison
+        org_levels:
+            - summary
+
+    internal_level_events:
+        display_name: Internal Level Events
+        type: count 
+        content_levels:
+            - summary 
+            - comparison
+        org_levels:
+            - summary
+
+    promotion_category_events:
+        display_name: Promotion Category Events
+        type: count 
+        content_levels:
+            - summary 
+            - comparison
+        org_levels:
+            - summary
+
+    citation_category_events:
+        display_name: Citation Category Events
+        type: count 
+        content_levels:
+            - summary 
+            - comparison
+        org_levels:
+            - summary
+
+    change_category_events:
+        display_name: Change Category Events
+        type: count 
+        content_levels:
+            - summary 
+            - comparison
+        org_levels:
+            - summary
+
+    achievement_category_events:
+        display_name: Achievement Category Events
+        type: count 
+        content_levels:
+            - summary 
+            - comparison
+        org_levels:
+            - summary
+
+    other_category_events:
+        display_name: Other Category Events
+        type: count 
+        content_levels:
+            - summary 
+            - comparison
+        org_levels:
+            - summary
+    

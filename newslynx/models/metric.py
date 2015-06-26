@@ -1,10 +1,23 @@
-from sqlalchemy.dialects.postgresql import ENUM
+from sqlalchemy.dialects.postgresql import ENUM, ARRAY
 
 from newslynx.core import db
 from newslynx.lib import dates
+from newslynx.models import computed_metric_schema
 from newslynx.constants import (
-    METRIC_AGGREGATIONS, METRIC_LEVELS
+    METRIC_TYPES
 )
+
+# a lookup of metric type to postgresql aggregation function
+TYPE_TO_AGG_FX = {
+    "count": "sum",
+    "cumulative": "sum",
+    "percentile": "avg",
+    "median": "median",
+    "average": "avg",
+    "min_rank": "min",
+    "max_rank": "max",
+    "computed": "avg"
+}
 
 
 class Metric(db.Model):
@@ -13,26 +26,18 @@ class Metric(db.Model):
     A metric is a concept created by a recipe and (ultimately) associated with
     an org or an org and a content-item.
 
-    Metrics MUST have the following metadata:
-        - A associated recipe id.
-        - A unique name
-        - A unique slug (separated with underscores.)
-        - A function which we use to aggregate it.
-            - sum (for counts) => pageviews, share counts, unique visitors, etc.
-            - mean (for averages) => time on page / percent external traffic, etc.
-            - median (for averages) => time on page / percent external traffic, etc.
-            - min/max => (for ranks) (position on homepage, etc)
-        - A boolean indicating whether or not it is a timeseries (twiter shares / followers)
-        - A boolean indicating whether or not it is cumulative (twiter shares / followers)
-        - A boolean indicating whether or not it is a faceted metric. (pageviews per domain)
-        - A level at which it applies (content_item  / org).
-
-    Metrics are only created in SousChef configurations.
+    Metrics are primarily created in SousChef configurations.
     For instance, the Google Analytics Sous Chef will
     specify metadata about pageviews / time on page / entrances / exits / etc.
 
     When a recipe associated with this sous chef is created, records for each
     of these metrics will be inserted into this table.
+
+    ## TODO:
+    Computed metrics are formulas of existing metrics. For a computed metric to be
+    valid it's associated metrics must exist on the same level.
+
+    You cannot compute metrics from computed metrics.
     """
 
     __tablename__ = 'metrics'
@@ -45,16 +50,19 @@ class Metric(db.Model):
     recipe_id = db.Column(db.Integer, db.ForeignKey('recipes.id'), index=True)
     name = db.Column(db.Text, index=True)
     display_name = db.Column(db.Text)
-    aggregation = db.Column(ENUM(*METRIC_AGGREGATIONS, name='metric_aggregations_enum'), index=True)
-    level = db.Column(ENUM(*METRIC_LEVELS, name='metric_levels_enum'), index=True)
-    cumulative = db.Column(db.Boolean, index=True, default=False)
+    type = db.Column(ENUM(*METRIC_TYPES, name='metric_types_enum'), index=True)
+    agg = db.Column(db.Text, index=True)
+    content_levels = db.Column(ARRAY(db.Text), index=True)
+    org_levels = db.Column(ARRAY(db.Text), index=True)
     faceted = db.Column(db.Boolean, index=True, default=False)
-    timeseries = db.Column(db.Boolean, index=True, default=True)
+    computed = db.Column(db.Boolean, index=True, default=False)
+    formula = db.Column(db.Text)
     created = db.Column(db.DateTime(timezone=True), default=dates.now)
-    updated = db.Column(db.DateTime(timezone=True), onupdate=dates.now, default=dates.now)
+    updated = db.Column(
+        db.DateTime(timezone=True), onupdate=dates.now, default=dates.now)
 
     __table_args__ = (
-        db.UniqueConstraint('org_id', 'name', 'level'),
+        db.UniqueConstraint('org_id', 'name', 'type'),
     )
 
     def __init__(self, **kw):
@@ -62,27 +70,40 @@ class Metric(db.Model):
         self.recipe_id = kw.get('recipe_id')
         self.name = kw.get('name')
         self.display_name = kw.get('display_name')
-        self.aggregation = kw.get('aggregation')
-        self.level = kw.get('level')
-        self.cumulative = kw.get('cumulative')
-        self.faceted = kw.get('faceted')
-        self.timeseries = kw.get('timeseries')
+        self.type = kw.get('type')
+        self.agg = kw.get('agg', TYPE_TO_AGG_FX.get(kw.get('type')))
+        self.content_levels = kw.get('content_levels', [])
+        self.org_levels = kw.get('org_levels', [])
+        self.faceted = kw.get('faceted', False)
+        self.formula = kw.get('formula')
+
+    @property
+    def computed(self):
+        return self.type == 'computed'
+
+    @property
+    def formula_requires(self):
+        return computed_metric_schema.required_metrics(self.formula)
 
     def to_dict(self):
-        return {
+        d = {
             'id': self.id,
             'org_id': self.org_id,
             'recipe_id': self.recipe_id,
             'name': self.name,
             'display_name': self.display_name,
-            'aggregation': self.aggregation,
-            'level': self.level,
-            'cumulative': self.cumulative,
+            'type': self.type,
+            'agg': self.agg,
+            'content_levels': self.content_levels,
+            'org_levels': self.org_levels,
             'faceted': self.faceted,
-            'timeseries': self.timeseries,
             'created': self.created,
-            'updated': self.updated,
+            'updated': self.updated
         }
+        if self.computed:
+            d['formula'] = self.formula
+            d['formula_requires'] = self.formula_requires
+        return d
 
     def __repr__(self):
         return '<Metric %r >' % (self.name)

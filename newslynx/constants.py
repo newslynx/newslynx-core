@@ -3,13 +3,20 @@ Global defaults. These are non-configurable.
 """
 
 # METRICS
-METRIC_AGGREGATIONS = [
-    'median', 'avg', 'min',
-    'max', 'sum'
+METRIC_TYPES = [
+    'count', 'cumulative', 'percentile',
+    'median', 'average', 'min_rank',
+    'max_rank', 'computed'
 ]
 
-METRIC_LEVELS = [
-    'org', 'content_item', 'content_event_tag', 'all'
+
+METRIC_CONTENT_LEVELS = [
+    'timeseries', 'summary', 'comparison'
+]
+
+
+METRIC_ORG_LEVELS = [
+    'timeseries', 'summary'
 ]
 
 METRIC_FACET_KEYS = [
@@ -18,6 +25,10 @@ METRIC_FACET_KEYS = [
 
 METRIC_TS_UNITS = [
     'hour', 'day', 'month'
+]
+
+CONTENT_METRIC_COMPARISONS = [
+    'all', 'types', 'impact_tags', 'subject_tags'
 ]
 
 # EVENTS

@@ -1,9 +1,0 @@
-sous_chef: twitter-user-to-event
-name: Staff Twitter User to Promotion Event
-slug: twitter-user-to-event-promotion
-status: uninitialized
-options:
-    event_status: approved
-    set_event_tag_ids: ['internal-promotion']
-    schedule_by: minutes
-    minutes: 30
