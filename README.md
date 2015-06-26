@@ -13,6 +13,8 @@ cd newslynx
 python setup.py install
 ```
 
+* NOTE: If you're on a mac you should use [Postgres APP](http://postgresapp.com/)
+
 * (re)create a `postgresql` database
 
 ```
@@ -56,7 +58,12 @@ This is a result of our extensive use of `gevent`. We haven't yet figured out ho
 Exception KeyError: KeyError(4332017936,) in <module 'threading' from '/System/Library/Frameworks/Python.framework/Versions/2.7/lib/python2.7/threading.pyc'> ignored
 ```
 
+## BUILD PROCESS MAC:
 
+```
+brew reinstall postgresql --build-from-source --with-python
+
+```
 
 ## TODO 
 
