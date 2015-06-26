@@ -12,3 +12,6 @@ super_user: Merlynne Jones
 super_user_password: my-password
 super_user_email: merlynne@newslynx.org
 super_user_apikey: my-api-key
+
+# YOU REALLY NEED THIS!
+sqlalchemy_database_uri:
