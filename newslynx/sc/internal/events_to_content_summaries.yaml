@@ -5,17 +5,7 @@ description: |
 runs: newslynx.sc.internal.content_metrics.SummarizeEvents
 creates: metrics
 option_order: []
-options:
-    
-    hours_since_last_update:
-        input_type: number
-        value_types:
-            - numeric
-        required: false
-        default: 5
-        help:
-            placeholder: propalpatine
-
+options: {}
 metrics:
 
     total_events:

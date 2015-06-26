@@ -174,7 +174,7 @@ class FeedExtractor(object):
         candidates = self.get_candidates(entry, AUTHOR_CANDIDATE_JSONPATH)
         for c in candidates:
             for a in author.parse(c):
-                authors.appnd(a)
+                authors.append(a)
         return uniq(authors)
 
     # get images
