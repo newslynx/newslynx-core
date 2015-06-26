@@ -120,18 +120,17 @@ def update_sous_chef(user, sous_chef):
     return jsonify(sc)
 
 
-# @bp.route('/api/v1/sous-chefs/<sous_chef>', methods=['DELETE'])
-# @load_user
-# def delete_sous_chef(user, sous_chef):
+@bp.route('/api/v1/sous-chefs/<sous_chef>', methods=['DELETE'])
+@load_user
+def delete_sous_chef(user, sous_chef):
 
-#     sc = fetch_by_id_or_field(SousChef, 'slug', sous_chef)
-#     if not sc:
-#         raise NotFoundError(
-#             'A SousChef does not exist with ID/slug {}'
-#             .format(sous_chef))
-    
+    sc = fetch_by_id_or_field(SousChef, 'slug', sous_chef)
+    if not sc:
+        raise NotFoundError(
+            'A SousChef does not exist with ID/slug {}'
+            .format(sous_chef))
 
-#     db.session.delete(sc)
-#     db.session.commit()
+    db.session.delete(sc)
+    db.session.commit()
 
-#     return delete_response()
+    return delete_response()

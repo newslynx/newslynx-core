@@ -479,6 +479,13 @@ class Recipes(BaseClient):
         url = self._format_url('recipes', recipe_id)
         return self._request('DELETE', url, params=kw)
 
+    def cook(self, recipe_id, **kw):
+        """
+        Cook a recipe.
+        """
+        url = self._format_url('recipes', recipe_id, 'cook')
+        return self._request('GET', url, params=kw)
+
 
 class Events(BaseClient):
 
@@ -497,7 +504,7 @@ class Events(BaseClient):
 
     def bulk_create(self, data, **kw):
         """
-        Bulk create content items.
+        Bulk create events.
         """
         kw, params = self._split_auth_params_from_data(
             kw, kw_incl=['must_link'])
@@ -835,9 +842,39 @@ class Jobs(BaseClient):
 
 
 class SousChefs(BaseClient):
-    pass
+
+    def list(self, **kw):
+        """
+        Get all sous chefs / facets.
+        """
+        url = self._format_url('sous-chefs')
+        return self._request('GET', url, params=kw)
+
+    def create(self, **kw):
+        """
+        Create a sous chef.
+        """
+        kw, params = self._split_auth_params_from_data(kw)
+        url = self._format_url('sous-chefs')
+        return self._request('POST', url, data=kw, params=params)
+
+    def get(self, sous_chef_id, **kw):
+        """
+        Get a sous chef.
+        """
+        url = self._format_url('sous-chefs', sous_chef_id)
+        return self._request('GET', url, data=kw, params=kw)
+
+    def update(self, sous_chef_id, **kw):
+        """
+        Update a sous chef.
+        """
+        kw, params = self._split_auth_params_from_data(kw)
+        url = self._format_url('sous-chefs', sous_chef_id)
+        return self._request('PUT', url, data=kw, params=params)
 
 
+# TODO:
 class Reports(BaseClient):
     pass
 
