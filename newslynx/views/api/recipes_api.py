@@ -296,12 +296,12 @@ def cook_a_recipe(user, org, recipe_id):
     # cook recipe
     merlynne = Merlynne(**kw)
     try:
-        job_id = merlynne.cook_recipe(**kw)
+        job_id = merlynne.cook_recipe()
     except Exception as e:
         raise RequestError(
-            'There was a problem initializating the SousChef: {}'
+            'There was a problem initializing the SousChef: {}'
             .format(e.message))
 
     # # return job status url
-    ret = url_for_job_status(apikey=user.apikey, job_id=job_id, queue='merlynne')
+    ret = url_for_job_status(apikey=user.apikey, job_id=job_id, queue='recipe')
     return jsonify(ret, status=202)

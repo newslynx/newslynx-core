@@ -350,7 +350,7 @@ def search_content(user, org):
                 .format(kw['sort_field']))
 
         # fetch metrics
-        metrics_names = org.content_metric_summary_names()
+        metrics_names = org.content_summary_metric_names
 
         # make sure this is a valid metric to sort by.
         metric_name = parts[-1]

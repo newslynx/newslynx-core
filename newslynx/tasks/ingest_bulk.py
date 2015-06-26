@@ -202,7 +202,6 @@ class ContentItemBulkLoader(BulkLoader):
 
     returns = 'model'
     timeout = 240
-    concurrent = True
 
     def load_one(self, item, **kw):
         return ingest_content_item.ingest(item, **kw)

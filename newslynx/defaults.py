@@ -46,7 +46,7 @@ COMPARISON_CACHE_TTL = 86400 # 1 day
 # MERLYNNE KWARGS PREFIX
 MERLYNNE_KWARGS_PREFIX = "newslynx-merlynne-kwargs"
 MERLYNNE_KWARGS_TTL = 60
-
+MERLYNNE_RESULTS_TTL = 60
 
 # browser
 BROWSER_USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10; rv:33.0) Gecko/20100101 Firefox/33.0"
