@@ -54,7 +54,7 @@ beautifulsoup4==4.3.2
 readability-lxml==0.5.1
 pyopenssl
 ndg-httpsclient
-pyasn1
 jsonpath-rw>=1.4.0
 pillow
+pyasn1==0.1.7
 rq
