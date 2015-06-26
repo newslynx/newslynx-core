@@ -6,7 +6,7 @@ from newslynx.lib import dates
 
 class Article(ContentSousChef):
     timeout = 240
-    extract = True
+    extract = False
 
     def setup(self):
         # get max publish date of the last time we ran this.
