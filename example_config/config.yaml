@@ -1,72 +1,14 @@
-# app configurations #
+# api configurations #
 api_url: http://localhost:5000
 api_port: 5000
 api_version: v1
 
-# dev configuration
-debug_timing: true
+# app configurations
+newslynx_app_secret_key: chicken-burrito-grande
 
 # security
-secret_key: super-secret-key
-newslynx_app_secret_key: other-super-secret-key
-admin_user: Merlynne Jones
-admin_email: merlynne@example.com
-admin_password: super-secret-password
-super_user_password: tk
-
-# database config
-sqlalchemy_database_uri: postgres://username:password@localhost:5432/newslynx 
-sqlalchemy_pool_size: 1000
-sqlalchemy_pool_max_overflow: 100
-sqlalchemy_pool_timeout: 30
-sqlalchemy_echo: false
-
-# task queue
-redis_url: redis://localhost:6379/0
-scheduler_refresh_interval: 60
-
-# url cache
-url_cache_prefix: newslynx-url-cache
-url_cache_ttl: 259200 # 3 days
-url_cache_pool_size: 5
-
-# extraction cache
-extract_cache_prefix: newslynx-extract-cache
-extract_cache_ttl: 259200 # 3 days
-
-# browser
-browser_user_agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10; rv:33.0) Gecko/20100101 Firefox/33.0
-browser_timeout: 10
-browser_wait: 1
-browser_backoff: 2
-browser_max_retries: 5
-
-# twitter (for event creation + metrics)
-twitter_api_key: 
-twitter_api_secret: 
-
-# google analytics (for metrics)
-google_analytics_client_id:
-google_analytics_client_secret: 
-
-# facebook (for event creation)
-facebook_app_id: 
-facebook_app_secret: 
-
-# embedly (for content extraction)
-embedly_api_key: 
-
-# bitly (for url normalization + click stats)
-bitly_api_key: 
-
-
-# email #
-
-# for sending emails
-mail_username: merlynne@example.com
-mail_password: 3143214234
-mail_server: mail.example.com
-smtp_port: 587
-imap_port: 993
-
-
+secret_key: uqbar
+super_user: Merlynne Jones
+super_user_password: my-password
+super_user_email: merlynne@newslynx.org
+super_user_apikey: my-api-key
