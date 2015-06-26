@@ -19,7 +19,7 @@ log = logging.getLogger(__name__)
 class Merlynne(object):
 
     """
-    Merlynne is the boss. She orders SousChefs to cook your Recipes.
+    Merlynne is the boss.
     """
     __module__ = 'newslynx.merlynne'
 
@@ -42,7 +42,9 @@ class Merlynne(object):
         return kw_key
 
     def cook_recipe(self):
-
+        """
+        Full pipeline.
+        """
         # indicate that the recipe is running.
         self.recipe.last_run = dates.now()
         self.recipe.status = "running"
@@ -101,12 +103,17 @@ def run_sous_chef(sous_chef_path, recipe_id, kw_key):
         # update status and next job from sous chef.
         recipe.status = "stable"
         recipe.traceback = None
-        recipe.last_job = sc.next_job
+        # if something is set on this object, add it.
+        if len(sc.next_job.keys()):
+            recipe.last_job = sc.next_job
         db.session.add(recipe)
         db.session.commit()
         return True
 
     except Exception as e:
+
+        # keep track of the error.
+
         db.session.rollback()
         recipe.status = "error"
         recipe.traceback = format_exc()

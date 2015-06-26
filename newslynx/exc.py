@@ -1,5 +1,7 @@
 
 # API Errors #
+class JobError(Exception):
+    pass
 
 
 class RequestError(Exception):

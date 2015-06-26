@@ -125,7 +125,7 @@ class Org(db.Model):
         Simplified content items.
         """
         return [
-            {'id': c.id, 'url': c.url, 'type': c.type, 'title': c.title}
+            {'id': c.id, 'url': c.url, 'type': c.type, 'title': c.title, 'created': self.created}
             for c in self.content_items
         ]
 
@@ -424,6 +424,7 @@ class Org(db.Model):
 
         # parse kwargs
         incl_users = kw.get('incl_users', True)
+        incl_domains = kw.get('incl_domains', False)
         incl_settings = kw.get('incl_settings', True)
         incl_tags = kw.get('incl_tags', False)
         incl_auths = kw.get('incl_auths', True)
@@ -461,6 +462,9 @@ class Org(db.Model):
 
         if incl_tags:
             d['tags'] = [t.to_dict() for t in self.tags]
+
+        if incl_domains:
+            d['domains'] = self.domains
 
         return d
 

@@ -1,0 +1,11 @@
+#!/bin/sh
+
+for i in {1..5}
+do
+    rqworker bulk &
+done
+
+for i in {1..5}
+do
+    rqworker recipe &
+done

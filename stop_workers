@@ -1,0 +1,2 @@
+#!/bin/sh
+ps aux | grep rqworker  | awk '{print $2}' | xargs kill -9

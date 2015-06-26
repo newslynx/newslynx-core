@@ -1,3 +1,5 @@
+from inspect import isgenerator
+
 from newslynx.client import API
 from newslynx.exc import SousChefInitError
 from collections import defaultdict
@@ -47,7 +49,7 @@ class SousChef(object):
         raise NotImplemented
 
     def load(self, data):
-        return True
+        return data
 
     def teardown(self):
         return True
@@ -57,5 +59,47 @@ class SousChef(object):
         The SousChef's workflow.
         """
         self.setup()
-        self.run()
+        data = self.run()
+        resp = self.load(data)
         self.teardown()
+        return resp
+
+# TODO: Get Bulk Loading working here.
+
+
+class ContentSousChef(SousChef):
+    extract = True
+
+    def load(self, data):
+        if isgenerator(data):
+            data = list(data)
+        for item in data:
+            item.update({'extract': self.extract})
+            self.api.content.create(**item)
+
+
+class EventSousChef(SousChef):
+
+    def load(self, data, **kw):
+        if isgenerator(data):
+            data = list(data)
+        for item in data:
+            self.api.events.create(**item)
+
+
+class ContentTimeseriesSousChef(SousChef):
+
+    def load(self, data):
+        if isgenerator(data):
+            data = list(data)
+        status_resp = self.api.content.bulk_create_timeseries(data)
+        return self.api.jobs.poll_status(**status_resp)
+
+
+class ContentSummarySousChef(SousChef):
+
+    def load(self, data):
+        if isgenerator(data):
+            data = list(data)
+        status_resp = self.api.content.bulk_create_summary(data)
+        return self.api.jobs.poll_status(**status_resp)

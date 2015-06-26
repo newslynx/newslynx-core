@@ -172,7 +172,7 @@ def bulk_create_org_timeseries(user, org_id_slug):
     job_id = ingest_bulk.org_timeseries(
         req_data,
         org_id=org.id,
-        metrics_lookup=org.metrics_lookup,
+        metrics_lookup=org.timeseries_metrics,
         commit=False
     )
     ret = url_for_job_status(apikey=user.apikey, job_id=job_id, queue='bulk')

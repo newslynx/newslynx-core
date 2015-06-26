@@ -287,6 +287,7 @@ def cook_a_recipe(user, org, recipe_id):
             incl_auths=True,
             auths_as_dict=True,
             settings_as_dict=True,
+            incl_domains=True,
             incl_users=True),
         apikey=user.apikey,
         recipe=r.to_dict(),

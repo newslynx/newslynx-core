@@ -48,27 +48,11 @@ class TestSousChefJSONSchema(unittest.TestCase):
             "metrics": {
                 "ga_pageviews": {
                     "display_name": "Pageviews",
-                    "timeseries": True,
-                    "cumulative": False,
+                    "type": "count",
+                    "content_levels": ['timeseries', 'summary', 'comparison'],
+                    "org_levels": [],
                     "faceted": False,
-                    "aggregation": "sum",
-                    "level": "content_item"
-                },
-                "ga_entrances": {
-                    "display_name": "Entrances",
-                    "timeseries": True,
-                    "cumulative": False,
-                    "faceted": False,
-                    "aggregation": "sum",
-                    "level": "content_item"
-                },
-                "ga_exits": {
-                    "display_name": "Entrances",
-                    "timeseries": True,
-                    "cumulative": False,
-                    "faceted": False,
-                    "aggregation": "sum",
-                    "level": "content_item"
+                    "agg": "sum"
                 }
             },
             "options": {
@@ -87,162 +71,109 @@ class TestSousChefJSONSchema(unittest.TestCase):
         }
         sous_chef_schema.validate(sc)
 
-    def test_metrics_schema_missing_display_name(self):
-        sc = {
-            "name": "Google Analytics Content Timeseries",
-            "slug": "twitter-list",
-            "description": "Grabs timeseries metrics for content items from Google Analytics.",
-            "runs": "newslynx.sc.events.twitter.List",
-            "creates": "metrics",
-            "metrics": {
-                "ga_pageviews": {
-                    "timeseries": True,
-                    "cumulative": False,
-                    "faceted": False,
-                    "aggregation": "sum",
-                    "level": "content_item"
-                },
-                "ga_entrances": {
-                    "display_name": "Entrances",
-                    "timeseries": True,
-                    "cumulative": False,
-                    "faceted": False,
-                    "aggregation": "sum",
-                    "level": "content_item"
-                },
-                "ga_exits": {
-                    "display_name": "Entrances",
-                    "timeseries": True,
-                    "cumulative": False,
-                    "faceted": False,
-                    "aggregation": "sum",
-                    "level": "content_item"
-                }
-            },
-            "options": {
-                "age_of_article": {
-                    "input_type": "number",
-                    "value_types": ["numeric", "nulltype"],
-                    "accepts_list": False,
-                    "required": False,
-                    "default": None
-                }
-            }
-        }
-        try:
-            sous_chef_schema.validate(sc)
-        except SousChefSchemaError:
-            assert True
-        else:
-            assert False
+    # def test_metrics_schema_missing_display_name(self):
+    #     sc = {
+    #         "name": "Google Analytics Content Timeseries",
+    #         "slug": "twitter-list",
+    #         "description": "Grabs timeseries metrics for content items from Google Analytics.",
+    #         "runs": "newslynx.sc.events.twitter.List",
+    #         "creates": "metrics",
+    #         "metrics": {
+    #             "ga_pageviews": {
+    #                 "timeseries": True,
+    #                 "cumulative": False,
+    #                 "faceted": False,
+    #                 "aggregation": "sum",
+    #                 "level": "content_item"
+    #             },
+    #             "ga_entrances": {
+    #                 "display_name": "Entrances",
+    #                 "timeseries": True,
+    #                 "cumulative": False,
+    #                 "faceted": False,
+    #                 "aggregation": "sum",
+    #                 "level": "content_item"
+    #             },
+    #             "ga_exits": {
+    #                 "display_name": "Entrances",
+    #                 "timeseries": True,
+    #                 "cumulative": False,
+    #                 "faceted": False,
+    #                 "aggregation": "sum",
+    #                 "level": "content_item"
+    #             }
+    #         },
+    #         "options": {
+    #             "age_of_article": {
+    #                 "input_type": "number",
+    #                 "value_types": ["numeric", "nulltype"],
+    #                 "accepts_list": False,
+    #                 "required": False,
+    #                 "default": None
+    #             }
+    #         }
+    #     }
+    #     try:
+    #         sous_chef_schema.validate(sc)
+    #     except SousChefSchemaError:
+    #         assert True
+    #     else:
+    #         assert False
 
-    def test_metrics_schema_timeseries_faceted_error(self):
-        sc = {
-            "name": "Google Analytics Content Timeseries",
-            "slug": "twitter-list",
-            "description": "Grabs timeseries metrics for content items from Google Analytics.",
-            "runs": "newslynx.sc.events.twitter.List",
-            "creates": "metrics",
-            "metrics": {
-                "ga_pageviews": {
-                    "display_name": "Pageviews",
-                    "timeseries": True,
-                    "cumulative": False,
-                    "faceted": True,
-                    "aggregation": "sum",
-                    "level": "content_item"
-                },
-                "ga_entrances": {
-                    "display_name": "Entrances",
-                    "timeseries": True,
-                    "cumulative": False,
-                    "faceted": False,
-                    "aggregation": "sum",
-                    "level": "content_item"
-                },
-                "ga_exits": {
-                    "display_name": "Entrances",
-                    "timeseries": True,
-                    "cumulative": False,
-                    "faceted": False,
-                    "aggregation": "sum",
-                    "level": "content_item"
-                },
-            },
-            "options": {
-                "age_of_article": {
-                    "input_type": "number",
-                    "value_types": ["numeric", "nulltype"],
-                    "accepts_list": False,
-                    "required": False,
-                    "default": None,
-                    "help": {
-                        "description": "The age of content-items (in days) which metrics will be pulled for.",
-                        "placeholder": "cspan"
-                    }
-                }
-            }
-        }
-        try:
-            sous_chef_schema.validate(sc)
-        except SousChefSchemaError:
-            assert True
-        else:
-            assert False
+    # def test_metrics_schema_timeseries_faceted_error(self):
+    #     sc = {
+    #         "name": "Google Analytics Content Timeseries",
+    #         "slug": "twitter-list",
+    #         "description": "Grabs timeseries metrics for content items from Google Analytics.",
+    #         "runs": "newslynx.sc.events.twitter.List",
+    #         "creates": "metrics",
+    #         "metrics": {
+    #             "ga_pageviews": {
+    #                 "display_name": "Pageviews",
+    #                 "timeseries": True,
+    #                 "cumulative": False,
+    #                 "faceted": True,
+    #                 "aggregation": "sum",
+    #                 "level": "content_item"
+    #             },
+    #             "ga_entrances": {
+    #                 "display_name": "Entrances",
+    #                 "timeseries": True,
+    #                 "cumulative": False,
+    #                 "faceted": False,
+    #                 "aggregation": "sum",
+    #                 "level": "content_item"
+    #             },
+    #             "ga_exits": {
+    #                 "display_name": "Entrances",
+    #                 "timeseries": True,
+    #                 "cumulative": False,
+    #                 "faceted": False,
+    #                 "aggregation": "sum",
+    #                 "level": "content_item"
+    #             },
+    #         },
+    #         "options": {
+    #             "age_of_article": {
+    #                 "input_type": "number",
+    #                 "value_types": ["numeric", "nulltype"],
+    #                 "accepts_list": False,
+    #                 "required": False,
+    #                 "default": None,
+    #                 "help": {
+    #                     "description": "The age of content-items (in days) which metrics will be pulled for.",
+    #                     "placeholder": "cspan"
+    #                 }
+    #             }
+    #         }
+    #     }
+    #     try:
+    #         sous_chef_schema.validate(sc)
+    #     except SousChefSchemaError:
+    #         assert True
+    #     else:
+    #         assert False
 
-    def test_metrics_schema_non_timeseries_cumulative(self):
-        sc = {
-            "name": "Google Analytics Content Timeseries",
-            "slug": "twitter-list",
-            "description": "Grabs timeseries metrics for content items from Google Analytics.",
-            "runs": "newslynx.sc.events.twitter.List",
-            "creates": "metrics",
-            "metrics": {
-                "ga_pageviews": {
-                    "display_name": "Pageviews",
-                    "timeseries": False,
-                    "cumulative": True,
-                    "faceted": False,
-                    "aggregation": "sum",
-                    "level": "content_item"
-                },
-                "ga_entrances": {
-                    "display_name": "Entrances",
-                    "timeseries": True,
-                    "cumulative": False,
-                    "faceted": False,
-                    "aggregation": "sum",
-                    "level": "content_item"
-                },
-                "ga_exits": {
-                    "display_name": "Entrances",
-                    "timeseries": True,
-                    "cumulative": False,
-                    "faceted": False,
-                    "aggregation": "sum",
-                    "level": "content_item"
-                }
-            },
-            "options": {
-                "age_of_article": {
-                    "input_type": "number",
-                    "value_types": ["numeric", "nulltype"],
-                    "accepts_list": False,
-                    "required": False,
-                    "default": None,
-                    "help": {
-                        "description": "The age of content-items (in days) which metrics will be pulled for.",
-                        "placeholder": "cspan"
-                    }
-                }
-            }
-        }
-        try:
-            sous_chef_schema.validate(sc)
-        except SousChefSchemaError:
-            assert True
-        else:
-            assert False
 
     def test_metrics_schema_no_metrics(self):
         sc = {

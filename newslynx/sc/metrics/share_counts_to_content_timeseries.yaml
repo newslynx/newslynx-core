@@ -128,3 +128,15 @@ metrics:
         org_levels:
             - timeseries
             - summary
+
+    googleplus_shares:
+        display_name: Google Plus Shares
+        type: cumulative
+        content_levels:
+            - timeseries
+            - summary
+            - comparison
+        org_levels:
+            - timeseries
+            - summary
+

@@ -1,6 +1,7 @@
 import os
 import copy
 from inspect import isgenerator
+import time
 
 import requests
 from requests import Session, Request
@@ -8,7 +9,7 @@ from urlparse import urljoin
 
 from newslynx import settings
 from newslynx.lib.serialize import obj_to_json, json_to_obj
-from newslynx.exc import ERRORS, ClientError
+from newslynx.exc import ERRORS, ClientError, JobError
 from newslynx.logs import log
 
 
@@ -494,15 +495,14 @@ class Events(BaseClient):
         url = self._format_url('events')
         return self._request('POST', url, params=params, data=kw)
 
-    def bulk_create(self, **kw):
+    def bulk_create(self, data, **kw):
         """
         Bulk create content items.
         """
-        kw = self._check_bulk_kw(kw)
         kw, params = self._split_auth_params_from_data(
             kw, kw_incl=['must_link'])
         url = self._format_url('events', 'bulk')
-        return self._request('POST', url, params=params, data=kw['data'])
+        return self._request('POST', url, params=params, data=data)
 
     def get(self, event_id, **kw):
         """
@@ -579,14 +579,13 @@ class Content(BaseClient):
         url = self._format_url('content')
         return self._request('POST', url, params=params, data=kw)
 
-    def bulk_create(self, **kw):
+    def bulk_create(self, data, **kw):
         """
         Bulk create content items.
         """
-        kw = self._check_bulk_kw(kw)
         kw, params = self._split_auth_params_from_data(kw, kw_incl=['extract'])
         url = self._format_url('content', 'bulk')
-        return self._request('POST', url, params=params, data=kw['data'])
+        return self._request('POST', url, params=params, data=data)
 
     def update(self, content_id, **kw):
         """
@@ -618,14 +617,13 @@ class Content(BaseClient):
         url = self._format_url('content', content_id, 'timeseries')
         return self._request('POST', url, params=params, data=kw)
 
-    def bulk_create_timeseries(self, **kw):
+    def bulk_create_timeseries(self, data, **kw):
         """
         Bulk create timeseries metric(s) for content items.
         """
-        kw = self._check_bulk_kw(kw)
         kw, params = self._split_auth_params_from_data(kw)
         url = self._format_url('content', 'timeseries', 'bulk')
-        return self._request('POST', url, params=params, data=kw['data'])
+        return self._request('POST', url, params=params, data=data)
 
     def get_summary(self, content_id, **kw):
         """
@@ -642,14 +640,13 @@ class Content(BaseClient):
         url = self._format_url('content', content_id, 'summary')
         return self._request('POST', url, params=params, data=kw)
 
-    def bulk_create_summary(self, **kw):
+    def bulk_create_summary(self, data, **kw):
         """
         Bulk create summary metric(s) for content items.
         """
-        kw = self._check_bulk_kw(kw)
         kw, params = self._split_auth_params_from_data(kw)
         url = self._format_url('content', 'summary', 'bulk')
-        return self._request('POST', url, params=params, data=kw['data'])
+        return self._request('POST', url, params=params, data=data)
 
     def add_tag(self, content_id, tag_id, **kw):
         """
@@ -796,6 +793,47 @@ class SQL(BaseClient):
             yield d
 
 
+class Jobs(BaseClient):
+
+    def get_status(self, **kw):
+        """
+        Get a job's status.
+        """
+        status_url = kw.get('status_url')
+        if not status_url:
+            raise ClientError(
+                'You must pass in the "status_url" returned from a bulk/recipe endpoint.')
+        r = requests.get(status_url)
+        d = r.json()
+        # catch errors
+        if d.get('error'):
+            err = ERRORS.get(d['error'])
+            if not err:
+                raise ClientError(d)
+            raise err(d['message'])
+        return d
+
+    def poll_status(self, **kw):
+        """
+        Poll a job's status until it's successful.
+        """
+        interval = kw.get('interval', 5)
+        while True:
+            d = self.get_status(**kw)
+            print d
+            if not d.get('status'):
+                continue
+
+            if d.get('status') == 'success':
+                return True
+
+            elif d.get('status') == 'error':
+                raise JobError(d.get('message', ''))
+
+            else:
+                time.sleep(interval)
+
+
 class SousChefs(BaseClient):
     pass
 
@@ -825,3 +863,4 @@ class API(BaseClient):
         self.authors = Authors(**kw)
         self.extract = Extract(**kw)
         self.sql = SQL(**kw)
+        self.jobs = Jobs(**kw)

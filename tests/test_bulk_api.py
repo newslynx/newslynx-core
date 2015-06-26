@@ -57,7 +57,7 @@ def test_bulk_content_timeseries(nrows=10000):
         })
 
     # make request and return status url
-    res = api.content.bulk_create_timeseries(data=data)
+    res = api.content.bulk_create_timeseries(data)
     poll_status_url(res.get('status_url'))
     end = time.time()
     print "Bulk Loading {} Content Timeseries Metrics Took {} seconds"\
@@ -78,7 +78,7 @@ def test_bulk_content_summary(nrows=1000):
         })
 
     # make request and return status url
-    res = api.content.bulk_create_summary(data=data)
+    res = api.content.bulk_create_summary(data)
     poll_status_url(res.get('status_url'))
     end = time.time()
     print "Bulk Loading {} Content Summary Metrics Took {} seconds"\
@@ -92,8 +92,10 @@ def test_bulk_org_timeseries(nrows=1000):
     start = time.time()
     data = []
     for i in xrange(nrows):
+        hours = i
         data.append({
-            'metrics': {'ga_pageviews': i}
+            'metrics': {'ga_pageviews': i},
+            'datetime': (dates.now() - timedelta(days=30, hours=hours)).isoformat()
         })
 
     # make request and return status url
@@ -116,11 +118,7 @@ def test_bulk_content_items(feed_url='http://feeds.propublica.org/propublica/mai
 
     start = time.time()
     # make request and return status url
-    res = api.content.bulk_create(data=data, extract=True)
-    poll_status_url(res.get('status_url'))
-    end = time.time()
-    print "Bulk Loading {} Content Items Took {} seconds"\
-        .format(len(data), round((end-start), 2))
+    res = api.content.bulk_create(data=data)
 
 
 def test_bulk_events(feed_url='http://feeds.propublica.org/propublica/main', domains=['propublica.org']):
@@ -135,7 +133,7 @@ def test_bulk_events(feed_url='http://feeds.propublica.org/propublica/main', dom
     print len(data)
     start = time.time()
     # make request and return status url
-    res = api.events.bulk_create(data=data)
+    res = api.events.bulk_create(data)
     poll_status_url(res.get('status_url'))
     end = time.time()
     print "Bulk Loading {} Events Took {} seconds"\

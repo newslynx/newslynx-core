@@ -7,22 +7,24 @@ import time
 
 from functools import partial
 from rq.timeouts import JobTimeoutException
-from sqlalchemy.orm.exc import ObjectDeletedError
 
-from newslynx.core import queues
+from newslynx.core import queues, db
 from newslynx.core import rds, gen_session
 from newslynx.exc import (
     RequestError, InternalServerError)
-from newslynx.tasks import ingest_content_item
-from newslynx.tasks import ingest_event
-from newslynx.tasks import ingest_metric
 from newslynx.util import gen_uuid
 from newslynx.lib.serialize import (
     pickle_to_obj, obj_to_pickle)
 
+from . import ingest_content_item
+from . import ingest_event
+from . import ingest_metric
+
 
 class BulkLoader(object):
+
     __module__ = 'newslynx.tasks.bulk'
+
     returns = None  # either "model" or "query"
     timeout = 1000  # seconds
     result_ttl = 60  # seconds
@@ -45,9 +47,9 @@ class BulkLoader(object):
         and bubble them up
         """
         try:
-            return False, self.load_one(item, **kw)
+            return self.load_one(item, **kw)
         except Exception as e:
-            return True, e
+            return Exception(e.message)
 
     def _handle_errors(self, errors):
         if not isinstance(errors, list):
@@ -86,15 +88,15 @@ class BulkLoader(object):
 
             if self.concurrent:
                 pool = Pool(min([len(data), self.max_workers]))
-                for err, res in pool.imap_unordered(fx, data):
-                    if err:
+                for res in pool.imap_unordered(fx, data):
+                    if isinstance(res, Exception):
                         errors.append(res)
                     else:
                         outputs.append(res)
             else:
                 for item in data:
-                    err, res = fx(item)
-                    if err:
+                    res = fx(item)
+                    if isinstance(res, Exception):
                         errors.append(res)
                     else:
                         outputs.append(res)
@@ -109,6 +111,7 @@ class BulkLoader(object):
                     if o is not None:
                         try:
                             session.add(o)
+                            session.commit(o)
                         except Exception as e:
                             self._handle_errors(e)
 
@@ -120,6 +123,7 @@ class BulkLoader(object):
                             session.execute(query)
                         except Exception as e:
                             self._handle_errors(e)
+
             try:
                 session.commit()
 
@@ -166,7 +170,6 @@ class ContentTimeseriesBulkLoader(BulkLoader):
     timeout = 240
 
     def load_one(self, item, **kw):
-
         return ingest_metric.content_timeseries(item, **kw)
 
 
@@ -176,7 +179,6 @@ class ContentSummaryBulkLoader(BulkLoader):
     timeout = 480
 
     def load_one(self, item, **kw):
-
         return ingest_metric.content_summary(item, **kw)
 
 

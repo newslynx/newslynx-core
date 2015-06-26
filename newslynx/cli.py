@@ -14,7 +14,8 @@ from newslynx.models import sous_chef_schema
 from newslynx.dev import random_data
 from newslynx.init import load_sql
 from newslynx import settings
-
+from newslynx.models import URLCache, ExtractCache, ThumbnailCache
+from newslynx.models import ComparisonsCache
 
 log = logging.getLogger(__name__)
 
@@ -77,6 +78,18 @@ def gen_random_data():
 
     # generate random data
     random_data.run()
+
+
+@manager.command
+def flush_comparison_cache():
+    ComparisonsCache.flush()
+
+
+@manager.command
+def flush_work_cache():
+    URLCache.flush()
+    ExtractCache.flush()
+    ThumbnailCache.flush()
 
 
 def run():

@@ -498,7 +498,7 @@ def bulk_create_content(user, org):
         req_data,
         org_id=org.id,
         extract=extract)
-    session['started'] = dates.now()
+
     ret = url_for_job_status(apikey=user.apikey, job_id=job_id, queue='bulk')
     return jsonify(ret)
 

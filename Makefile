@@ -18,4 +18,3 @@ view_documentation:
 	cd docs/_build/html && python -m SimpleHTTPServer
 
 
-
