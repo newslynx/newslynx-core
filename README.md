@@ -5,7 +5,7 @@
 
 ## (Re)Setting up the dev environment
 
-* Install `newslynx`, prefrerably in a virtual environment.
+#### Install `newslynx`, prefrerably in a virtual environment.
 
 ```
 git clone https://github.com/newslynx/newslynx.git
@@ -13,7 +13,7 @@ cd newslynx
 python setup.py install
 ```
 
-* If you want to actively work on the codebase, install in `editable` mode:
+If you want to actively work on the codebase, install in `editable` mode:
 
 ```
 git clone https://github.com/newslynx/newslynx.git
@@ -21,7 +21,7 @@ cd newslynx
 pip install --editable . 
 ```
 
-* Install the dependencies (Mac OS X only for now):
+#### Install the dependencies (instructions for Mac OS X, for now):
 
 Install `redis`:
 
@@ -35,20 +35,20 @@ brew install redis
 brew install postgresql --build-from-source --with-python
 ```
 
-* (re)create a `postgresql` database
+(Re)create a `postgresql` database
 
 ```
 dropdb newslynx 
 createdb newslynx
 ```
 
-* set your configurations
+#### Set your configurations
 
 - fill out [`example_config/config.yaml`](example_config/config.yaml) and move it to `~/.newslynx/config.yaml`
 - follow the [SQLAlchemy Docs](http://docs.sqlalchemy.org/en/rel_1_0/core/engines.html#database-urls) for details on how to configure your `sqlalchemy_database_uri`.
 - Modify default recipes and tags in [`example_config/defaults/recipes.yaml`](example_config/defaults/recipes.yaml) and [`example_config/defaults/tags.yaml`](example_config/defaults/tags.yaml). These tags and recipes will be created everytime a new organization is added. If you'd simply like to use our defaults, type `make defaults`. This will move these files to `~/.newslynx/defaults`.
 
-* start the redis server
+#### Start the redis server
 
 Open another shell and run:
 
@@ -56,44 +56,35 @@ Open another shell and run:
 redis-server
 ```
 
-* initialize the database, super user, and instlald built-in sous chefs.
+#### Initialize the database, super user, and instlald built-in sous chefs.
 
 ```
 newslynx init
 ```
 
-* start the server
+#### Start the server
 
 - In debug mode: `newslynx debug`
 - Debug mode with errors: `newslynx debug --raise-errors`
 - Production `guniorn` server: `./run`
 
-* start the task workers
+#### Start the task workers
 
 ```
 ./start_workers
 ```
-
-* stop the tasks workers
-
+stop the tasks workers
 ```
-
 ./stop_workers
 ```
 
-* IGNORE THIS ERROR:
+#### IGNORE THIS ERROR:
 
 This is a result of our extensive use of `gevent`. We haven't yet figured out how to properly suppress this error. See more details [here](http://stackoverflow.com/questions/8774958/keyerror-in-module-threading-after-a-successful-py-test-run).
 
 ```
 Exception KeyError: KeyError(4332017936,) in <module 'threading' from '/System/Library/Frameworks/Python.framework/Versions/2.7/lib/python2.7/threading.pyc'> ignored
 ```
-
-
-
-
-
-
 
 ## TODO 
 - [ ] Implement Reports API (Are these just metrics?)
