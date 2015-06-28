@@ -94,6 +94,7 @@ SOUS_CHEF_CREATES = [
 
 # RECIPES
 RECIPE_STATUSES = [
+    'queued',
     'running', 'error', 'stable',
     'uninitialized', 'inactive'
 ]

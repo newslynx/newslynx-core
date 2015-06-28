@@ -10,8 +10,9 @@ newslynx_app_secret_key: chicken-burrito-grande
 secret_key: uqbar
 super_user: Merlynne Jones
 super_user_password: my-password
-super_user_email: merlynne@newslynx.org
-super_user_apikey: my-api-key
+super_user_email: merlynne@example.com
+super_user_apikey: apikey
 
-# YOU REALLY NEED THIS!
+# please see the SQL Alchemy docs: 
+# http://docs.sqlalchemy.org/en/rel_1_0/core/engines.html#database-urls
 sqlalchemy_database_uri:

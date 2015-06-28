@@ -9,6 +9,18 @@ from newslynx.lib.network import get_json
 
 VIDEO_EMBED_FORMAT = '<iframe src="{src}" width="{width}" height="{height}" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen> </iframe>'
 
+def video(u, **kw):
+    """
+    Embed a known video source.
+    """
+    if 'youtube' in u:
+        return youtube(u, **kw)
+    if 'vimeo' in u:
+        return vimeo(u, **kw)
+    if 'dailymotion' in u:
+        return dailymotion(u, **kw)
+    return None
+
 
 def youtube(u, **kw):
     """

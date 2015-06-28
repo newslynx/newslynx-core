@@ -14,6 +14,7 @@ from newslynx.lib import html
 from newslynx.lib import meta
 from newslynx.lib import author
 from newslynx.lib import image
+from newslynx.lib import embed
 
 try:
     from newslynx.core import embedly_api
@@ -70,10 +71,14 @@ def extract(source_url):
         'body': None
     }
 
-    # extract body from embedly + readability
+    # embed videos
+    if url.is_video(canonical_url):
+        data['body'] = embed.video(canonical_url)
+        return data
+
+    # extract article body
     if settings.EMBEDLY_ENABLED:
         data['body'] = body_via_embedly(canonical_url)
-
     if not data['body']:
         data['body'] = body_via_readability(page_html, canonical_url)
 

@@ -2,6 +2,7 @@ from newslynx.sc import ContentSousChef
 
 from newslynx.lib import rss
 from newslynx.lib import dates
+from newslynx.lib import url
 
 
 class Article(ContentSousChef):
@@ -21,14 +22,17 @@ class Article(ContentSousChef):
         Extract an RSS Feed and create articles.
         """
         feed_url = self.options['feed_url']
-        domains = self.org.get('domains', [])
-        entries = rss.get_entries(feed_url, [])
+        feed_domain = url.get_simple_domain(feed_url)
+        domains = self.org.get('domains', [''])
+        if feed_domain:
+            domains.append(feed_domain)
+        entries = rss.get_entries(feed_url, domains)
         self.publish_dates = []
 
         # iterate through RSS entries.
         for article in entries:
             article['type'] = 'article'  # set this type as article.
-
+            print  "ARTICLE", article.keys()
             # since we poll often, we can assume this is a good
             # approximation of an article publish date.
             if not article.get('created'):

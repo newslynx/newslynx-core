@@ -22,7 +22,6 @@ SQLALCHEMY_ECHO = False
 
 # TASK QUEUE
 REDIS_URL = "redis://localhost:6379/0"
-SCHEDULER_REFRESH_INTERVAL = 60
 
 # URL CACHE
 URL_CACHE_PREFIX = "newslynx-url-cache"
@@ -42,11 +41,17 @@ THUMBNAIL_DEFAULT_FORMAT = "PNG"
 # COMPARISON CACHE
 COMPARISON_CACHE_PREFIX = "newslynx-comparison-cache"
 COMPARISON_CACHE_TTL = 86400 # 1 day
+COMPARISON_PERCENTILES = [2.5, 5.0, 10.0, 25.0, 50.0, 75.0, 90.0, 95.0, 97.5]
+COMPARISON_FX = ['min', 'max', 'avg', 'median'] # TODO, make this actually modify data.
 
 # MERLYNNE KWARGS PREFIX
 MERLYNNE_KWARGS_PREFIX = "newslynx-merlynne-kwargs"
 MERLYNNE_KWARGS_TTL = 60
 MERLYNNE_RESULTS_TTL = 60
+
+# Scheduler
+SCHEDULER_REFRESH_INTERVAL = 60
+SCHEDULER_RESET_PAUSE_RANGE = [60, 600]
 
 # browser
 BROWSER_USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10; rv:33.0) Gecko/20100101 Firefox/33.0"

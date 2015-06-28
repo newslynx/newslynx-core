@@ -149,6 +149,8 @@ def img_url(soup, source_url=None):
     for tag in IMG_TAGS:
         data = _extract_tag_data(soup, tag)
         if data:
+            if data.startswith('//'):
+                data = 'http' + data
             return data
 
 

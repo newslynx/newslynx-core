@@ -112,8 +112,8 @@ def run_sous_chef(sous_chef_path, recipe_id, kw_key):
 
     except Exception as e:
 
-        # keep track of the error.
-
+        # always delete the kwargs.
+        rds.delete(kw_key)
         db.session.rollback()
         recipe.status = "error"
         recipe.traceback = format_exc()

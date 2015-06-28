@@ -350,7 +350,7 @@ def org_user(user, org_id_slug, user_email):
     return jsonify(org_user)
 
 
-@bp.route('/api/v1/orgs/<org_id_slug>/users/<user_email>', methods=['PUT', 'PATCH'])
+@bp.route('/api/v1/orgs/<org_id_slug>/users/<user_email>', methods=['PUT','PATCH'])
 @load_user
 def org_add_user(user, org_id_slug, user_email):
 
@@ -376,18 +376,50 @@ def org_add_user(user, org_id_slug, user_email):
     # get this new user by id / email
     new_org_user = fetch_by_id_or_field(User, 'email', user_email)
 
+    # get the form.
+    req_data = request_data()
+    email = req_data.get('email')
+    name = req_data.get('name')
+    admin = req_data.get('admin', False)
+    password = req_data.get('password')
+
+    if email and not mail.validate(email):
+        raise RequestError(
+            '{} is an invalid email address.'
+            .format(email))
+
+    # insert
     if not new_org_user:
-        raise RequestError('User "{}" does not exist'
-                           .format(user_email))
+        if not all([email, password, name]):
+            raise RequestError(
+                'An email, password, and name are required to create a User.')
+        
+        new_org_user = User(
+            email=email,
+            password=password,
+            name=name,
+            admin=admin)
+        org.users.append(new_org_user)
+        db.session.add(org)
 
-    # ensure that user is not already a part of this Org.
-    if new_org_user.id in org.user_ids:
-        raise RequestError('User "{}" is already a part of Org "{}"'
-                           .format(new_org_user.email, org.name))
+    # ensure the active user can edit this Org
+    elif new_org_user.id not in org.user_ids:
+        raise ForbiddenError(
+            "You are not allowed to access this Org.")
+    
+    # update
+    if name:
+        new_org_user.name = name
+    if email:
+        new_org_user.email = email 
+    if admin:
+        new_org_user.admin = admin 
+    if password:
+        new_org_user.set_password(password)
 
-    org.users.append(new_org_user)
+    new_org_user.admin = admin
+    db.session.add(new_org_user)
     db.session.commit()
-
     return jsonify(new_org_user)
 
 

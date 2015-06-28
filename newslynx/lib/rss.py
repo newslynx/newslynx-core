@@ -61,7 +61,12 @@ def get_entries(feed_url, domains=[]):
     Parser entries from an rss feed.
     """
     f = FeedExtractor(feed_url, domains)
-    return f.run()
+    parsed = False
+    for entry in f.run():
+        parsed = True
+        yield entry
+    if not parsed:
+        raise FeedExtractorError('No entries found for {}'.format(feed_url))
 
 
 def extract_entries(feed_url, domains=[]):
@@ -71,7 +76,7 @@ def extract_entries(feed_url, domains=[]):
     """
     entries = get_entries(feed_url, domains)
     urls = [e['url'] for e in entries if e.get('url')]
-    p = Pool(len(entries))
+    p = Pool(len(urls))
     for i, a in enumerate(p.imap_unordered(article.extract, urls)):
         yield a
 
@@ -86,6 +91,9 @@ def extract_articles(feed_url, domains=[]):
     p = Pool(len(entries))
     for i, a in enumerate(p.imap_unordered(article.extract, urls)):
         yield a
+
+class FeedExtractorError(Exception):
+    status_code = 400
 
 
 class FeedExtractor(object):
@@ -227,7 +235,7 @@ class FeedExtractor(object):
         if len(self.domains):
             urls = []
             for u in candidates:
-                if any([d in u for d in self.domains]):
+                if u and any([d in u for d in self.domains if d]):
                     urls.append(u)
         else:
             urls = copy(candidates)
@@ -273,7 +281,6 @@ class FeedExtractor(object):
             'links': self.get_links(body, entry_url),
         }
 
-    @network.retry(attempts=2)
     def fetch_feed(self):
         return feedparser.parse(self.feed_url)
 

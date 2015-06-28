@@ -11,6 +11,7 @@ from newslynx.init import (
     load_default_recipes, load_default_tags,
     load_sous_chefs)
 from newslynx.models import *
+from newslynx.models import recipe_schema
 from newslynx.core import db_session
 from newslynx.lib import dates
 from newslynx.lib.serialize import obj_to_json

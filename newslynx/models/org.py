@@ -1,4 +1,5 @@
 import copy
+
 from sqlalchemy import and_, or_, func
 from sqlalchemy.dialects.postgresql import ENUM, ARRAY
 
@@ -110,7 +111,9 @@ class Org(db.Model):
         domains = db.session.query(func.distinct(ContentItem.domain))\
             .filter_by(org_id=self.id)\
             .all()
-        return [d[0] for d in domains]
+        if not domains:
+            return []
+        return [d[0] for d in domains if d[0] is not None]
 
     @property
     def content_item_ids(self):

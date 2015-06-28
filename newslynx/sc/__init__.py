@@ -20,6 +20,7 @@ class SousChef(object):
         org = kw.get('org')
         recipe = kw.get('recipe')
         apikey = kw.get('apikey')
+        self._load = kw.get('load', True)
 
         if not org or not recipe or not apikey:
             raise SousChefInitError(
@@ -60,7 +61,12 @@ class SousChef(object):
         """
         self.setup()
         data = self.run()
+        if not self._load:
+            return data
         resp = self.load(data)
+        if resp:
+            if 'status_url' in resp:
+                self.api.jobs.poll(**resp)
         self.teardown()
         return resp
 

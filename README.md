@@ -13,7 +13,27 @@ cd newslynx
 python setup.py install
 ```
 
-* NOTE: If you're on a mac you should use [Postgres APP](http://postgresapp.com/)
+* If you want to actively work on the codebase, install in `editable` mode:
+
+```
+git clone https://github.com/newslynx/newslynx.git
+cd newslynx
+pip install --editable . 
+```
+
+* Install the dependencies (Mac OS X only for now):
+
+Install `redis`:
+
+```
+brew install redis
+```
+
+**NOTE** We recommend using [Postgres APP](http://postgresapp.com/). However, if you prefer the `brew` distribution, make sure to install it with plpythonu.
+
+```
+brew install postgresql --build-from-source --with-python
+```
 
 * (re)create a `postgresql` database
 
@@ -22,32 +42,43 @@ dropdb newslynx
 createdb newslynx
 ```
 
-* fill out [`example_config/config.yaml`](example_config/config.yaml) and move it to `~/.newslynx/config.yaml` 
-    
-* modify default recipes and tags in [`example_config/defaults/recipes/`](example_config/defaults/recipes/) and [`example_config/defaults/tags/`](example_config/defaults/tags/), respectively. These tags and recipes will be created everytime a new organization is added.
+* set your configurations
 
-* initialize the database:
+- fill out [`example_config/config.yaml`](example_config/config.yaml) and move it to `~/.newslynx/config.yaml`
+- follow the [SQLAlchemy Docs](http://docs.sqlalchemy.org/en/rel_1_0/core/engines.html#database-urls) for details on how to configure your `sqlalchemy_database_uri`.
+- Modify default recipes and tags in [`example_config/defaults/recipes.yaml`](example_config/defaults/recipes.yaml) and [`example_config/defaults/tags.yaml`](example_config/defaults/tags.yaml). These tags and recipes will be created everytime a new organization is added. If you'd simply like to use our defaults, type `make defaults`. This will move these files to `~/.newslynx/defaults`.
+
+* start the redis server
+
+Open another shell and run:
+
+```
+redis-server
+```
+
+* initialize the database, super user, and instlald built-in sous chefs.
 
 ```
 newslynx init
 ```
 
-* populate with sample data
+* start the server
+
+- In debug mode: `newslynx debug`
+- Debug mode with errors: `newslynx debug --raise-errors`
+- Production `guniorn` server: `./run`
+
+* start the task workers
 
 ```
-newslynx gen_random_data
+./start_workers
 ```
 
-* start the server in debug mode
+* stop the tasks workers
 
 ```
-newslynx runserver -d
-```
 
-* start a production server via `gunicorn`
-
-```
-./run
+./stop_workers
 ```
 
 * IGNORE THIS ERROR:
@@ -58,89 +89,13 @@ This is a result of our extensive use of `gevent`. We haven't yet figured out ho
 Exception KeyError: KeyError(4332017936,) in <module 'threading' from '/System/Library/Frameworks/Python.framework/Versions/2.7/lib/python2.7/threading.pyc'> ignored
 ```
 
-## BUILD PROCESS MAC:
 
-```
-brew reinstall postgresql --build-from-source --with-python
 
-```
+
+
+
 
 ## TODO 
-
-- [x] Migrate common utilites from other repos into single repo.
-- [x] Create Database Schema / Models 
-- [x] Create Blueprint-based app workflow 
-- [x] Re-implement OAuth endpoints 
-- [x] Implement Facebook OAuth
-- [x] Re-implement User / Login API
-- [x] Implement Org API
-- [x] Re-implement Settings API
-- [x] Re-implement Events API
-    - [x] Implement Postgres-based search
-    - [x] Make multiple search vectors
-- [ ] Re-implement Things API (aka Articles)
-    - [x] Implement Postgres-based search
-    - [x] Make multiple search vectors
-- [x] Re-implement Tags API
-- [x] Write out SousChefs JSONSchema
-- [x] Write out initial schemas:
-    - [x] article
-    - [x] twitter-list
-    - [x] twitter-user
-    - [x] facebook-page
-- [x] Write out default recipes + tags:
-    - [x] article
-    - [x] twitter-list
-    - [x] twitter-user
-    - [x] facebook-page
-    - [x] promotion impact tag
-- [x] Update create org endpoint to generate default recipes + tags.
-- [x] Implement SousChefs API 
-- [x] Implement Recipes API
-- [x] Implement Thing Creation API
-- [ ] Implement SQL Query API
-- [x] Implement Extraction API
-- [x] Implement Event Creation API
-- [x] Create thumbnails for images.
-   - [x] Add thumbnail worker redis cache.
-- [ ] Implement Metrics API:
-    - [x] Create metrics table which contains information
-          on each metric (name, timeseries agg method,
-          summary agg method, cumulative, metric 
-          category, level, etc)
-    - [x] Faceted metrics only need to declare their name 
-          name, not all their potential facet values.
-    - [x] Sous Chefs that create metrics must declare
-          which metrics they create.
-    - [ ] When a recipe is created for a sous chef that 
-          creates metrics, these metrics should be created for the associated organization.
-    - [x] Timeseries Metrics for things will only be   
-          collected 30 days after publication. After 
-          this period an article moves into an "archived"
-          state. 
-    - [x] Each Organization should have the following 
-          views/apis with these respective 
-          functionalites:
-          - [x Timeseries Aggregations
-             - [x] Thing level 
-                - [x] By hour + day + month
-             - [ ] Subject Tag Level (subsequent aggregations of things)
-                - [ ] By day.
-             - [x] Impact Tag Level (aggregations of events => non customizable.)
-             - [ ] Org Level (This should include 
-                   summaries of thing-level statistics,
-                   tag-level statistics, and event-level 
-                   statistics)
-                - [ ] By day, month
-             - [x] optionally return cumulative sums when
-                   appropriate
-          - [ ] Summary Stats
-            - [ ] Impact Tag Level
-            - [ ] Subject Tag Level
-            - [ ] Impact Tag Level
-            - [ ] Organization Level
-            - [ ] These should be Archived Every day. and percent changes should be computed over time periods.
-
 - [ ] Implement Reports API (Are these just metrics?)
     - [ ] reports are json objects
     - [ ] reports can be rendered with Jinja templates
@@ -150,13 +105,6 @@ brew reinstall postgresql --build-from-source --with-python
          or just force user s to "save as pdf"
     - [ ] reports can be saved + archived up to X days.
     - [ ] reports can o
-- [ ] Implement Redis Task Queue For Recipe Running
-    - [ ] Create gevent worker class to avoid reliance on
-          os.fork
-    - [ ] Figure out how to rate limit requests.
-- [x] Implement Modular SousChefs Class
-- [x] Figure out how best to use OAuth tokens in SousChefs. Ideally these should not be exposed to users.
-- [x] Implement API client
 - [ ] Re-implement SousChefs
     - [ ] RSS Feeds => Thing
     - [ ] Google Analytics => Metric

@@ -4,7 +4,7 @@ from inspect import isgenerator
 import time
 
 import requests
-from requests import Session, Request
+from requests import Session, Request, Response
 from urlparse import urljoin
 
 from newslynx import settings
@@ -34,6 +34,7 @@ class BaseClient(object):
 
         self.apikey = kw.get('apikey', os.getenv('NEWSLYNX_API_KEY'))
         self.org = kw.pop('org', os.getenv('NEWSLYNX_API_ORG_ID'))
+        self.raise_errors = kw.pop('raise_errors', True)
         self._version = kw.pop('version', 'v1')
         self._endpoint = self._url + 'api/' + self._version + "/"
 
@@ -80,10 +81,11 @@ class BaseClient(object):
 
         except Exception as e:
             err = e
+
             resp = None
 
         # handle errors
-        self._handle_errors(resp, err)
+        resp = self._handle_errors(resp, err)
 
         # format response
         return self._format_response(resp)
@@ -120,26 +122,37 @@ class BaseClient(object):
         """
         Handle all errors.
         """
-        if err:
-            raise err
+        if self.raise_errors:
+            if err:
+                raise err
 
-        # check status codes
-        elif resp.status_code not in GOOD_CODES:
+            # check status codes
+            elif resp.status_code not in GOOD_CODES:
+                try:
+                    d = resp.json()
+                except:
+                    raise ClientError(resp.content)
+
+                err = ERRORS.get(d['error'])
+                if not err:
+                    raise ClientError(resp.content)
+                raise err(d['message'])
+        else:
             try:
-                d = resp.json()
+                return resp.json()
             except:
-                raise ClientError(resp.content)
-
-            err = ERRORS.get(d['error'])
-            if not err:
-                raise ClientError(resp.content)
-            raise err(d['message'])
+                return {
+                    'error':'InternalServerError',
+                    'status_code': 500,
+                    'message':getattr(resp, 'content', None)
+                }
 
     def _format_response(self, resp):
         """
         Format a response with addict.Dict
         """
-
+        if not isinstance(resp, Response):
+            return resp
         # if there's no response just return true.
         if resp.status_code == 204:
             return True
@@ -193,11 +206,11 @@ class Orgs(BaseClient):
         url = self._format_url('orgs')
         return self._request('GET', url, params=kw)
 
-    def get(self, org=None, **kw):
+    def get(self, id=None, **kw):
         """
         Get an organization.
         """
-        org = self._check_org(org)
+        org = self._check_org(id)
         url = self._format_url('orgs', org)
         return self._request('GET', url, params=kw)
 
@@ -209,124 +222,130 @@ class Orgs(BaseClient):
         url = self._format_url('orgs')
         return self._request('POST', url, data=kw, params=params)
 
-    def update(self, org=None, **kw):
+    def update(self, id=None, **kw):
         """
         Update an organization.
         """
-        org = self._check_org(org)
+        org = self._check_org(id)
         kw, params = self._split_auth_params_from_data(kw)
         url = self._format_url('orgs', org)
         return self._request('PUT', url, data=kw, params=params)
 
-    def delete(self, org=None, **kw):
+    def delete(self, id=None, **kw):
         """
         Delete an organization.
         """
-        org = self._check_org(org)
+        org = self._check_org(id)
         url = self._format_url('orgs', org)
         return self._request('DELETE', url, params=kw)
 
-    def get_user(self, org=None, user=None, **kw):
+    def get_user(self, id=None, user_id=None, **kw):
         """
         Get a user profile from an organization
         """
-        org = self._check_org(org)
-        if not user:
+        org = self._check_org(id)
+        if not user_id:
             raise ValueError(
                 'You must pass in the user id or email as the second argument.')
 
-        url = self._format_url('orgs', org, 'users', user)
+        url = self._format_url('orgs', org, 'users', user_id)
         return self._request('GET', url, params=kw)
 
-    def list_users(self, org=None, **kw):
+    def list_users(self, id=None, **kw):
         """
         Get all user profiles under an organization.
         """
-        org = self._check_org(org)
+        org = self._check_org(id)
         url = self._format_url('orgs', org, 'users')
         return self._request('GET', url, params=kw)
 
-    def create_user(self, org=None, **kw):
+    def create_user(self, id=None, **kw):
         """
         Create a user under an org.
         """
-        org = self._check_org(org)
+        org = self._check_org(id)
         kw, params = self._split_auth_params_from_data(kw)
         url = self._format_url('orgs', org, 'users')
         return self._request('POST', url, data=kw, params=params)
 
-    def add_user(self, org=None, user=None, **kw):
+    def add_user(self, id=None, user_id=None, **kw):
         """
         Add an existing user to an organization.
         """
-        org = self._check_org(org)
-        url = self._format_url('orgs', org, 'users', user)
-        if not user:
+        org = self._check_org(id)
+        url = self._format_url('orgs', org, 'users', user_id)
+        if not user_id:
             raise ValueError(
                 'You must pass in the \'user\' id or email as the second argument.')
         return self._request('PUT', url, params=kw)
 
-    def remove_user(self, org=None, user=None, **kw):
+    def update_user(self, id=None, user_id=None, **kw):
+        """
+        mirrors add_user
+        """
+        return self.add_user(id=id, user_id=user_id, **kw)
+
+    def remove_user(self, id=None, user_id=None, **kw):
         """
         Remove an existing user from an organization.
         """
-        org = self._check_org(org)
-        if not user:
+        org = self._check_org(id)
+        if not user_id:
             raise ValueError(
                 'You must pass in the \'user\' id or email as the second argument.')
-        url = self._format_url('orgs', org, 'users', user)
+        url = self._format_url('orgs', org, 'users', user_id)
         return self._request('DELETE', url, params=kw)
 
-    def get_timeseries(self, org=None, **kw):
+    def get_timeseries(self, id=None, **kw):
         """
         Get a content item timeseries.
         """
-        org = self._check_org(org)
+        org = self._check_org(id)
         url = self._format_url('orgs', org, 'timeseries')
         return self._request('GET', url, params=kw)
 
-    def create_timeseries(self, org=None, **kw):
+    def create_timeseries(self, id=None, **kw):
         """
         Create timeseries metric(s) for a content item.
         """
-        org = self._check_org(org)
+        org = self._check_org(id)
         kw, params = self._split_auth_params_from_data(kw)
         url = self._format_url('orgs', org, 'timeseries')
         return self._request('POST', url, params=params, data=kw)
 
-    def bulk_create_timeseries(self, org=None, **kw):
+    def bulk_create_timeseries(self, id=None, **kw):
         """
         Bulk create timeseries metric(s) for content items.
         """
-        org = self._check_org(org)
+        org = self._check_org(id)
         kw = self._check_bulk_kw(kw)
         kw, params = self._split_auth_params_from_data(kw)
         url = self._format_url('orgs', org, 'timeseries', 'bulk')
         return self._request('POST', url, params=params, data=kw['data'])
 
-    def get_summary(self, org=None, **kw):
+    def get_summary(self, id=None, **kw):
         """
         Get an org's summary metrics.
         """
-        org = self._check_org(org)
+        org = self._check_org(id)
         url = self._format_url('orgs', org, 'summary')
         return self._request('GET', url, params=kw)
 
-    def create_summary(self, org=None, **kw):
+    def create_summary(self, id=None, **kw):
         """
         Create summary metric(s) for an organization.
         """
-        org = self._check_org(org)
+        org = self._check_org(id)
         kw, params = self._split_auth_params_from_data(kw)
         url = self._format_url('orgs', org, 'summary')
         return self._request('POST', url, params=params, data=kw)
 
-    def simple_content(self, org=None, **kw):
+    def simple_content(self, id=None, **kw):
         """
         Return a simplified, non-paginated list of all content items for an org.
         This is mostly useful for recipes.
         """
-        org = self._check_org(org)
+        org = self._check_org(id)
         url = self._format_url('orgs', org, 'simple-content')
         return self._request('GET', url, params=kw)
 
@@ -353,12 +372,12 @@ class Settings(BaseClient):
         url = self._format_url('settings')
         return self._request('GET', url, params=kw)
 
-    def get(self, name_id, **kw):
+    def get(self, id, **kw):
         """
         Get a particular setting.
         """
 
-        url = self._format_url('settings', name_id)
+        url = self._format_url('settings', id)
         return self._request('GET', url, **kw)
 
     def create(self, **kw):
@@ -375,7 +394,7 @@ class Settings(BaseClient):
         url = self._format_url('settings')
         return self._request('POST', url, data=kw, params=params)
 
-    def update(self, name_id, **kw):
+    def update(self, id, **kw):
         """
         Update a setting
         """
@@ -386,15 +405,15 @@ class Settings(BaseClient):
 
         kw, params = self._split_auth_params_from_data(kw)
 
-        url = self._format_url('settings', name_id)
+        url = self._format_url('settings', id)
         return self._request('PUT', url, data=kw, params=params)
 
-    def delete(self, name_id, **kw):
+    def delete(self, id, **kw):
         """
         Delete a setting.
         """
 
-        url = self._format_url('settings', name_id)
+        url = self._format_url('settings', id)
         return self._request('DELETE', url, params=kw)
 
 
@@ -415,27 +434,27 @@ class Tags(BaseClient):
         url = self._format_url('tags')
         return self._request('POST', url, data=kw, params=params)
 
-    def get(self, tag_id, **kw):
+    def get(self, id, **kw):
         """
         Get a tag
         """
-        url = self._format_url('tags', tag_id)
+        url = self._format_url('tags', id)
         return self._request('GET', url, data=kw, params=kw)
 
-    def update(self, tag_id, **kw):
+    def update(self, id, **kw):
         """
         Update a tag
         """
         kw, params = self._split_auth_params_from_data(kw)
-        url = self._format_url('tags', tag_id)
+        url = self._format_url('tags', id)
         return self._request('PUT', url, data=kw, params=params)
 
-    def delete(self, tag_id, **kw):
+    def delete(self, id, **kw):
         """
         Delete a tag
         """
         kw, params = self._split_auth_params_from_data(kw)
-        url = self._format_url('tags', tag_id)
+        url = self._format_url('tags', id)
         return self._request('DELETE', url, params=kw)
 
 
@@ -456,34 +475,34 @@ class Recipes(BaseClient):
         url = self._format_url('recipes')
         return self._request('POST', url, data=kw, params=params)
 
-    def get(self, recipe_id, **kw):
+    def get(self, id, **kw):
         """
         Get a tag
         """
-        url = self._format_url('recipes', recipe_id)
+        url = self._format_url('recipes', id)
         return self._request('GET', url, data=kw, params=kw)
 
-    def update(self, recipe_id, **kw):
+    def update(self, id, **kw):
         """
         Update a tag
         """
         kw, params = self._split_auth_params_from_data(kw)
-        url = self._format_url('recipes', recipe_id)
+        url = self._format_url('recipes', id)
         return self._request('PUT', url, data=kw, params=params)
 
-    def delete(self, recipe_id, **kw):
+    def delete(self, id, **kw):
         """
         Delete a tag
         """
         kw, params = self._split_auth_params_from_data(kw)
-        url = self._format_url('recipes', recipe_id)
+        url = self._format_url('recipes', id)
         return self._request('DELETE', url, params=kw)
 
-    def cook(self, recipe_id, **kw):
+    def cook(self, id, **kw):
         """
         Cook a recipe.
         """
-        url = self._format_url('recipes', recipe_id, 'cook')
+        url = self._format_url('recipes', id, 'cook')
         return self._request('GET', url, params=kw)
 
 
@@ -511,54 +530,54 @@ class Events(BaseClient):
         url = self._format_url('events', 'bulk')
         return self._request('POST', url, params=params, data=data)
 
-    def get(self, event_id, **kw):
+    def get(self, id, **kw):
         """
         Get an individual event.
         """
-        url = self._format_url('events', event_id)
+        url = self._format_url('events', id)
         return self._request('GET', url, params=kw)
 
-    def update(self, event_id, **kw):
+    def update(self, id, **kw):
         """
         Get an individual event.
         """
         kw, params = self._split_auth_params_from_data(kw)
-        url = self._format_url('events', event_id)
+        url = self._format_url('events', id)
         return self._request('PUT', url, data=kw, params=params)
 
-    def delete(self, event_id, **kw):
+    def delete(self, id, **kw):
         """
         Get an individual event.
         """
-        url = self._format_url('events', event_id)
+        url = self._format_url('events', id)
         return self._request('DELETE', url, params=kw)
 
-    def add_tag(self, event_id, tag_id, **kw):
+    def add_tag(self, id, tag_id, **kw):
         """
         Get an individual event.
         """
-        url = self._format_url('events', event_id, 'tags', tag_id)
+        url = self._format_url('events', id, 'tags', tag_id)
         return self._request('PUT', url, params=kw)
 
-    def remove_tag(self, event_id, tag_id, **kw):
+    def remove_tag(self, id, tag_id, **kw):
         """
         Get an individual event.
         """
-        url = self._format_url('events', event_id, 'tags', tag_id)
+        url = self._format_url('events', id, 'tags', tag_id)
         return self._request('DELETE', url, params=kw)
 
-    def add_content_item(self, event_id, content_id, **kw):
+    def add_content_item(self, id, content_item_id, **kw):
         """
         Get an individual event.
         """
-        url = self._format_url('events', event_id, 'content', content_id)
+        url = self._format_url('events', id, 'content', content_id)
         return self._request('PUT', url, params=kw)
 
-    def remove_content_item(self, event_id, content_id, **kw):
+    def remove_content_item(self, id, content_item_id, **kw):
         """
         Get an individual event.
         """
-        url = self._format_url('events', event_id, 'content', content_id)
+        url = self._format_url('events', id, 'content', content_item_id)
         return self._request('DELETE', url, params=kw)
 
 
@@ -571,11 +590,11 @@ class Content(BaseClient):
         url = self._format_url('content')
         return self._request('GET', url, params=kw)
 
-    def get(self, content_id, **kw):
+    def get(self, id=None, **kw):
         """
         Get an individual content item.
         """
-        url = self._format_url('content', content_id)
+        url = self._format_url('content', id)
         return self._request('GET', url, params=kw)
 
     def create(self, **kw):
@@ -594,34 +613,34 @@ class Content(BaseClient):
         url = self._format_url('content', 'bulk')
         return self._request('POST', url, params=params, data=data)
 
-    def update(self, content_id, **kw):
+    def update(self, id=None, **kw):
         """
         Update a content item.
         """
         kw, params = self._split_auth_params_from_data(kw)
-        url = self._format_url('content', content_id)
+        url = self._format_url('content', id)
         return self._request('PUT', url, params=params, data=kw)
 
-    def delete(self, content_id, **kw):
+    def delete(self, id=None, **kw):
         """
         Delete a content item.
         """
-        url = self._format_url('content', content_id)
+        url = self._format_url('content', id)
         return self._request('DELETE', url, params=kw)
 
-    def get_timeseries(self, content_id, **kw):
+    def get_timeseries(self, id=None, **kw):
         """
         Get a content item timeseries.
         """
-        url = self._format_url('content', content_id, 'timeseries')
+        url = self._format_url('content', id, 'timeseries')
         return self._request('GET', url, params=kw)
 
-    def create_timeseries(self, content_id, **kw):
+    def create_timeseries(self, id=None, **kw):
         """
         Create timeseries metric(s) for a content item.
         """
         kw, params = self._split_auth_params_from_data(kw)
-        url = self._format_url('content', content_id, 'timeseries')
+        url = self._format_url('content', id, 'timeseries')
         return self._request('POST', url, params=params, data=kw)
 
     def bulk_create_timeseries(self, data, **kw):
@@ -632,19 +651,19 @@ class Content(BaseClient):
         url = self._format_url('content', 'timeseries', 'bulk')
         return self._request('POST', url, params=params, data=data)
 
-    def get_summary(self, content_id, **kw):
+    def get_summary(self, id=None, **kw):
         """
         Get a content item timeseries.
         """
-        url = self._format_url('content', content_id, 'summary')
+        url = self._format_url('content', id, 'summary')
         return self._request('GET', url, params=kw)
 
-    def create_summary(self, content_id, **kw):
+    def create_summary(self, id=None, **kw):
         """
         Create summary metric(s) for a content item.
         """
         kw, params = self._split_auth_params_from_data(kw)
-        url = self._format_url('content', content_id, 'summary')
+        url = self._format_url('content', id, 'summary')
         return self._request('POST', url, params=params, data=kw)
 
     def bulk_create_summary(self, data, **kw):
@@ -655,18 +674,61 @@ class Content(BaseClient):
         url = self._format_url('content', 'summary', 'bulk')
         return self._request('POST', url, params=params, data=data)
 
-    def add_tag(self, content_id, tag_id, **kw):
+    def refresh_summaries(self, **kw):
+        """
+        Bulk create summary metric(s) for content items.
+        """
+        kw, params = self._split_auth_params_from_data(kw)
+        url = self._format_url('content', 'summary')
+        return self._request('PUT', url, params=params)
+
+    def add_tag(self, id=None, tag_id=None, **kw):
         """
         Tag a content item.
         """
-        url = self._format_url('content', content_id, 'tags', tag_id)
+        url = self._format_url('content', id, 'tags', tag_id)
         return self._request('PUT', url, params=kw)
 
-    def remove_tag(self, content_id, tag_id, **kw):
+    def remove_tag(self, id=None, tag_id=None, **kw):
         """
         Remove a tag from a content item.
         """
-        url = self._format_url('content', content_id, 'tags', tag_id)
+        url = self._format_url('content', id, 'tags', tag_id)
+        return self._request('DELETE', url, params=kw)
+
+    def list_comparisons(self, **kw):
+        """
+        Return all comparisons.
+        """
+        url = self._format_url('content', 'comparisons')
+        return self._request('GET', url, params=kw)
+
+    def refresh_comparisons(self, **kw):
+        """
+        Return all comparisons.
+        """
+        url = self._format_url('content', 'comparisons')
+        return self._request('PUT', url, params=kw)
+
+    def get_comparison(self, type=None, **kw):
+        """
+        Return all comparisons.
+        """
+        url = self._format_url('content', 'comparisons', type)
+        return self._request('GET', url, params=kw)
+
+    def refresh_comparison(self, type, **kw):
+        """
+        Return all comparisons.
+        """
+        url = self._format_url('content', 'comparisons', type)
+        return self._request('PUT', url, params=kw)
+
+    def remove_tag(self, id, tag_id, **kw):
+        """
+        Remove a tag from a content item.
+        """
+        url = self._format_url('content', id, 'tags', tag_id)
         return self._request('DELETE', url, params=kw)
 
 
@@ -751,26 +813,26 @@ class Metrics(BaseClient):
         url = self._format_url('metrics')
         return self._request('GET', url, params=kw)
 
-    def get(self, metric_id, **kw):
+    def get(self, id, **kw):
         """
         Get an individual metric
         """
-        url = self._format_url('metrics', metric_id)
+        url = self._format_url('metrics', id)
         return self._request('GET', url, params=kw)
 
-    def update(self, metric_id, **kw):
+    def update(self, id, **kw):
         """
         Update a metric.
         """
         kw, params = self._split_auth_params_from_data(kw)
-        url = self._format_url('metrics', metric_id)
+        url = self._format_url('metrics', id)
         return self._request('PUT', url, data=kw, params=params)
 
-    def delete(self, metric_id, **kw):
+    def delete(self, id, **kw):
         """
         Delete a metric and all instances it has been collected.
         """
-        url = self._format_url('metrics', metric_id)
+        url = self._format_url('metrics', id)
         return self._request('DELETE', url, params=kw)
 
 
@@ -802,7 +864,7 @@ class SQL(BaseClient):
 
 class Jobs(BaseClient):
 
-    def get_status(self, **kw):
+    def get(self, **kw):
         """
         Get a job's status.
         """
@@ -820,19 +882,18 @@ class Jobs(BaseClient):
             raise err(d['message'])
         return d
 
-    def poll_status(self, **kw):
+    def poll(self, **kw):
         """
         Poll a job's status until it's successful.
         """
         interval = kw.get('interval', 5)
         while True:
             d = self.get_status(**kw)
-            print d
             if not d.get('status'):
-                continue
+                yield d
 
             if d.get('status') == 'success':
-                return True
+                raise StopIteration
 
             elif d.get('status') == 'error':
                 raise JobError(d.get('message', ''))
@@ -883,7 +944,7 @@ class API(BaseClient):
 
     """
     A class for interacting with the TenderEngine API.
-    """
+    """ 
 
     def __init__(self, **kw):
         BaseClient.__init__(self, **kw)

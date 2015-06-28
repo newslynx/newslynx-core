@@ -17,10 +17,6 @@ from newslynx import settings
 
 log = logging.getLogger(__name__)
 
-# register blueprints
-register_blueprints(app, api, admin, auth)
-
-
 @app.errorhandler(401)
 @app.errorhandler(403)
 @app.errorhandler(404)
@@ -73,3 +69,8 @@ def end_timing(response):
 @app.teardown_appcontext
 def shutdown_sessions(exception=None):
     db.session.remove()
+
+
+# register blueprints
+register_blueprints(app, api, admin, auth)
+

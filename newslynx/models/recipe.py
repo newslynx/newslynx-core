@@ -87,6 +87,20 @@ class Recipe(db.Model):
         """
         self.options = obj_to_pickle(opts)
 
+    @property 
+    def scheduled(self, opts):
+        """
+        Is this recipe scheduled?
+        """
+        return self.schedule_by != 'unscheduled'
+
+    @property 
+    def active(self, opts):
+        """
+        Is this recipe scheduled?
+        """
+        return self.status != 'inactive'
+
     def to_dict(self):
         d = {
             'id': self.id,

@@ -1,5 +1,8 @@
+from gevent.pool import Pool 
+
 from newslynx.util import gen_uuid
 from newslynx.core import db
+from newslynx import settings
 from .util import ResultIter
 
 
@@ -13,8 +16,11 @@ class ContentComparison(object):
         if not isinstance(ids, list):
             ids = [ids]
         self.ids = ids
+        self.bulk_size = kw.get('bulk_size', 1000)
+        self.pool = Pool(kw.get('pool_size', 20))
+        self.rm_null = kw.get('rm_null', False)
         self.percentiles = kw.get(
-            'percentiles', [2.5, 5.0, 10.0, 25.0, 50.0, 75.0, 90.0, 95.0, 97.5])
+            'percentiles', settings.COMPARISON_PERCENTILES)
         self.metrics = getattr(org, self.metrics_attr)
 
     @property
@@ -25,15 +31,17 @@ class ContentComparison(object):
         return "(metrics ->> '{name}')::text::numeric as metric".format(**metric)
 
     def null_metric(self, metric):
-        return "(metrics ->> '{name}')::text::numeric IS NOT NULL".format(**metric)
+        return "AND (metrics ->> '{name}')::text::numeric IS NOT NULL".format(**metric)
 
     def init_query(self, metric):
         select = self.select_metric(metric)
         null_metric = self.null_metric(metric)
+        if not self.rm_null:
+            null_metric = ""
         return \
             """SELECT {select}
                FROM {table}
-               WHERE {id_col} in (select unnest({ids_array})) AND
+               WHERE {id_col} in (select unnest({ids_array}))
                {null_metric}
                """\
             .format(select=select, table=self.table,
@@ -78,14 +86,32 @@ class ContentComparison(object):
             """.format(**kw)
 
     @property
-    def query(self):
+    def queries(self):
+        """
+        Chunk queries.
+        """
         queries = []
         for metric in self.metrics.values():
             queries.append(self.metric_query(metric))
-        return "\nUNION ALL\n".join(queries)
+            if len(queries)  % self.bulk_size == 0:
+                yield "\nUNION ALL\n".join(queries)
+        yield "\nUNION ALL\n".join(queries)
 
+    def _execute_one(self, query):
+        """
+        Execute the chunked queries stream the results.
+        """
+        res = db.session.execute(query)
+        if res:
+            for r in ResultIter(res):
+                if r:
+                    yield r
+    
     def execute(self):
         """
-        Execute the query stream the results.
+        pooled execution.
         """
-        return ResultIter(db.session.execute(self.query))
+        for query in self.queries:
+            results = ResultIter(db.session.execute(query))
+            for r in results:
+                yield r
