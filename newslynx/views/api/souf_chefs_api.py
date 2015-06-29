@@ -116,7 +116,6 @@ def update_sous_chef(user, sous_chef):
             "An error occurred while updating SousChef '{}'. "
             "Here's the error message: {}"
             .format(sc.slug, e.message))
-
     return jsonify(sc)
 
 
@@ -132,5 +131,4 @@ def delete_sous_chef(user, sous_chef):
 
     db.session.delete(sc)
     db.session.commit()
-
     return delete_response()

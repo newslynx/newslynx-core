@@ -1,5 +1,6 @@
 import importlib
 from traceback import format_exc
+from inspect import isgenerator
 import logging
 import copy
 
@@ -30,6 +31,7 @@ class Merlynne(object):
         self.kw_prefix = settings.MERLYNNE_KWARGS_PREFIX
         self.kw_ttl = settings.MERLYNNE_KWARGS_TTL
         self.result_ttl = settings.MERLYNNE_RESULTS_TTL
+        self.passthrough = kw.get('passthrough', False)
         self.q = queues.get('recipe')
 
     def stash_kw(self, job_id):
@@ -63,15 +65,17 @@ class Merlynne(object):
         kw_key = self.stash_kw(job_id)
 
         # send it to the queue
-        self.q.enqueue(
-            run_sous_chef, self.sous_chef_path,
-            self.recipe.id, kw_key,
-            job_id=job_id, timeout=sc.timeout,
-            result_ttl=self.kw_ttl)
+        if not self.passthrough:
+            self.q.enqueue(
+                run_sous_chef, self.sous_chef_path,
+                self.recipe.id, kw_key,
+                job_id=job_id, timeout=sc.timeout,
+                result_ttl=self.kw_ttl)
 
-        # return the job id
-        return job_id
-
+            # return the job id
+            return job_id
+        # directly stream the results out.
+        return run_sous_chef(self.sous_chef_path, self.recipe.id, kw_key)
 
 def run_sous_chef(sous_chef_path, recipe_id, kw_key):
     """
@@ -98,11 +102,23 @@ def run_sous_chef(sous_chef_path, recipe_id, kw_key):
         sc = SousChef(**kw)
 
         # cook it.
-        sc.cook()
+        data = sc.cook()
+        
+        # passthrough the data.
+        if kw.get('passthrough', False):
+            return data
+
+        # otherwise just exhaust the generator
+        if isgenerator(data):
+            data = list(data)
+
+        # teardown this recipe
+        sc.teardown()
 
         # update status and next job from sous chef.
         recipe.status = "stable"
         recipe.traceback = None
+        
         # if something is set on this object, add it.
         if len(sc.next_job.keys()):
             recipe.last_job = sc.next_job
@@ -111,9 +127,10 @@ def run_sous_chef(sous_chef_path, recipe_id, kw_key):
         return True
 
     except Exception as e:
-
         # always delete the kwargs.
         rds.delete(kw_key)
+        if kw.get('passthrough', False):
+            raise MerlynneError(e)
         db.session.rollback()
         recipe.status = "error"
         recipe.traceback = format_exc()

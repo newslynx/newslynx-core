@@ -213,7 +213,6 @@ def jsonify(obj, status=200, headers=None, refs=False, encoder=JSONEncoder, is_r
         return data
 
     else:
-
         # accept callback
         if 'callback' in request.args:
             cb = request.args.get('callback')

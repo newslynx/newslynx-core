@@ -1,14 +1,15 @@
 from collections import defaultdict, Counter
+from inspect import isgenerator
 
 from sqlalchemy import or_
-from flask import Blueprint
+from flask import Blueprint, Response, stream_with_context
 
 from newslynx.core import db
 from newslynx.exc import RequestError, ConflictError
 from newslynx.models import SousChef, Recipe, Metric
 from newslynx.models import recipe_schema
 from newslynx.models.util import fetch_by_id_or_field
-from newslynx.lib.serialize import jsonify
+from newslynx.lib.serialize import jsonify, obj_to_json
 from newslynx.views.decorators import load_user, load_org
 from newslynx.views.util import *
 from newslynx.tasks import facet
@@ -292,17 +293,35 @@ def cook_a_recipe(user, org, recipe_id):
         apikey=user.apikey,
         recipe=r.to_dict(),
         recipe_obj=r,
-        sous_chef_path=r.sous_chef.runs)
+        passthrough=arg_bool('passthrough', default=False),
+        sous_chef_path=r.sous_chef.runs
+    )
 
-    # cook recipe
+    # initialize merlynne
     merlynne = Merlynne(**kw)
     try:
-        job_id = merlynne.cook_recipe()
+        resp = merlynne.cook_recipe()
+    
     except Exception as e:
         raise RequestError(
             'There was a problem initializing the SousChef: {}'
             .format(e.message))
 
-    # # return job status url
-    ret = url_for_job_status(apikey=user.apikey, job_id=job_id, queue='recipe')
-    return jsonify(ret, status=202)
+    # queued job
+    if not kw['passthrough']:
+
+        # # return job status url
+        ret = url_for_job_status(apikey=user.apikey, job_id=resp, queue='recipe')
+        return jsonify(ret, status=202)
+    
+    # format non-iterables.
+    if isinstance(resp, dict):
+        resp = [resp]
+
+    # stream results
+    def generate():
+        for item in resp:
+            yield obj_to_json(item) + "\n"
+
+    return Response(stream_with_context(generate()))
+

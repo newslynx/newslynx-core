@@ -1,9 +1,18 @@
 import re
+from copy import copy
+
 from colorama import Fore
 from newslynx.lib import serialize
 
+from newslynx.constants import (
+    NULL_VALUES, TRUE_VALUES, FALSE_VALUES)
 
+# lil' hacks.
 re_quoted_arg = re.compile(r'^[\'\"]?(.*)[\'\"]?$')
+trues = copy(TRUE_VALUES)
+trues.remove('1')
+falses = copy(FALSE_VALUES)
+falses.remove('0')
 
 def parse_runtime_args(arg_strings):
     """
@@ -23,7 +32,14 @@ def parse_runtime_args(arg_strings):
         else:
             m = re_quoted_arg.search("=".join(parts[1:]))
             value = m.group(0)
-            kwargs[key] = value
+            if value in NULL_VALUES:
+                kwargs[key] = None 
+            elif value in trues:
+                kwargs[key] = True 
+            elif value in falses:
+               kwargs[key] = False
+            else:
+                kwargs[key] = value
     return kwargs
 
 def load_data(path_or_string, opts):

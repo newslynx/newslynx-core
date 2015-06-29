@@ -114,10 +114,10 @@ class RecipeScheduler:
         """ 
         pause = recipe.minutes * 60
         if reset:
-            pause = min([self.min_pause, pause, self.random_pause()])
+            pause = min([pause, self.random_pause()])
 
         self.log("{} recipe ({} / {}) will run in {} seconds"
-                .format(recipe.schedule_by, recipe.slug, pause))
+                .format(recipe.schedule_by, recipe.id, recipe.slug, pause))
         time.sleep(pause)
 
         while 1:
@@ -206,8 +206,6 @@ class RecipeScheduler:
         if recipe.minutes and recipe.minutes != scheduled[id].minutes:
             return True
         if recipe.crontab and recipe.crontab != scheduled[id].crontab:
-            return True
-        if recipe.updated and recipe.updated < scheduled[id].updated:
             return True
         return False
 

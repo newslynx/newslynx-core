@@ -17,31 +17,42 @@ class SousChef(object):
     def __init__(self, **kw):
         # parse kwargs
 
-        org = kw.get('org')
-        recipe = kw.get('recipe')
-        apikey = kw.get('apikey')
-        self._load = kw.get('load', True)
+        self.org = kw.get('org')
+        self.recipe = kw.get('recipe')
+        self.apikey = kw.get('apikey')
+        self.passthrough = kw.get('passthrough', False)
 
-        if not org or not recipe or not apikey:
+        if not self.org or not self.recipe or not self.apikey:
             raise SousChefInitError(
                 'A SousChef requires a "org", "recipe", and "apikey" to run.')
 
         # api connection
-        self.api = API(apikey=apikey, org=org['id'])
+        self.api = API(apikey=self.apikey, org=self.org['id'])
 
         # full org object
-        self.auths = org.pop('auths')
-        self.settings = org.pop('settings')
-        self.users = org.pop('users')
-        self.org = org
+        self.auths = self.org.pop('auths')
+        self.settings = self.org.pop('settings')
+        self.users = self.org.pop('users')
 
         # options for this recipe
-        self.options = recipe['options']
-        self.recipe_id = recipe['id']
+        self.options = self.recipe['options']
+        self.recipe_id = self.recipe['id']
 
-        # passthrough options between jobs.
-        self.last_job = recipe['last_job']
+        # handle cache-clears between jobs.
         self.next_job = defaultdict()
+        if not self.passthrough:
+            lj = self.recipe.get('last_job', None)
+            if lj is None:
+                self.last_job = defaultdict()
+            elif not isinstance(lj, dict):
+                self.last_job = defaultdict()
+            else:
+                self.last_job = lj
+        
+        # passthrough jobs should not use contextual
+        # variables.
+        else:
+            self.last_job = defaultdict()
 
     def setup(self):
         return True
@@ -61,36 +72,29 @@ class SousChef(object):
         """
         self.setup()
         data = self.run()
-        if not self._load:
-            return data
-        resp = self.load(data)
-        if resp:
-            if 'status_url' in resp:
-                self.api.jobs.poll(**resp)
-        self.teardown()
-        return resp
+        # passthrough jobs should not 'load'
+        if not self.passthrough:
+            data = self.load(data) # load the data.
+        return data
 
 # TODO: Get Bulk Loading working here.
-
 
 class ContentSousChef(SousChef):
     extract = True
 
     def load(self, data):
-        if isgenerator(data):
-            data = list(data)
         for item in data:
+            item.update({'recipe_id': self.recipe_id})
             item.update({'extract': self.extract})
-            self.api.content.create(**item)
+            yield self.api.content.create(**item)
 
 
 class EventSousChef(SousChef):
 
-    def load(self, data, **kw):
-        if isgenerator(data):
-            data = list(data)
+    def load(self, data):
         for item in data:
-            self.api.events.create(**item)
+            item.update({'recipe_id': self.recipe_id})
+            yield self.api.events.create(**item)
 
 
 class ContentTimeseriesSousChef(SousChef):
@@ -99,7 +103,7 @@ class ContentTimeseriesSousChef(SousChef):
         if isgenerator(data):
             data = list(data)
         status_resp = self.api.content.bulk_create_timeseries(data)
-        return self.api.jobs.poll_status(**status_resp)
+        return self.api.jobs.poll(**status_resp)
 
 
 class ContentSummarySousChef(SousChef):
@@ -108,4 +112,4 @@ class ContentSummarySousChef(SousChef):
         if isgenerator(data):
             data = list(data)
         status_resp = self.api.content.bulk_create_summary(data)
-        return self.api.jobs.poll_status(**status_resp)
+        return self.api.jobs.poll(**status_resp)

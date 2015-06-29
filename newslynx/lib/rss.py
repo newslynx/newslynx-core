@@ -20,6 +20,7 @@ from newslynx.lib import article
 from newslynx.lib import network
 from newslynx.lib import image
 from newslynx.util import uniq
+from newslynx.exc import RequestError
 
 # JSONPATH CANDIDATES
 URL_CANDIDATE_JSONPATH = [
@@ -66,7 +67,7 @@ def get_entries(feed_url, domains=[]):
         parsed = True
         yield entry
     if not parsed:
-        raise FeedExtractorError('No entries found for {}'.format(feed_url))
+        raise RequestError('No entries found for {}'.format(feed_url))
 
 
 def extract_entries(feed_url, domains=[]):
@@ -91,9 +92,6 @@ def extract_articles(feed_url, domains=[]):
     p = Pool(len(entries))
     for i, a in enumerate(p.imap_unordered(article.extract, urls)):
         yield a
-
-class FeedExtractorError(Exception):
-    status_code = 400
 
 
 class FeedExtractor(object):

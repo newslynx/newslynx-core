@@ -16,6 +16,7 @@ class Article(ContentSousChef):
             self.max_date_last_run = dates.parse_iso(max_date_last_run)
         else:
             self.max_date_last_run = None
+        self.publish_dates = []
 
     def run(self):
         """
@@ -26,11 +27,9 @@ class Article(ContentSousChef):
         domains = self.org.get('domains', [''])
         if feed_domain:
             domains.append(feed_domain)
-        entries = rss.get_entries(feed_url, domains)
-        self.publish_dates = []
-
+        
         # iterate through RSS entries.
-        for article in entries:
+        for article in rss.get_entries(feed_url, domains):
             article['type'] = 'article'  # set this type as article.
 
             # since we poll often, we can assume this is a good

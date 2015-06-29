@@ -84,6 +84,7 @@ def run(opts, **kwargs):
             # commit
             db.session.commit()
             db.session.close()
+
     except Exception as e:
         db.session.rollback()
         db.session.close()
