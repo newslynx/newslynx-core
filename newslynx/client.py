@@ -759,48 +759,48 @@ class Authors(BaseClient):
         url = self._format_url('authors')
         return self._request('POST', url, params=params, data=kw)
 
-    def get(self, author_id, **kw):
+    def get(self, id, **kw):
         """
         Get an individual author.
         """
-        url = self._format_url('authors', author_id)
+        url = self._format_url('authors', id)
         return self._request('GET', url, params=kw)
 
-    def update(self, author_id, **kw):
+    def update(self, id, **kw):
         """
         Update an author.
         """
         kw, params = self._split_auth_params_from_data(kw)
-        url = self._format_url('authors', author_id)
+        url = self._format_url('authors', id)
         return self._request('PUT', url, data=kw, params=params)
 
-    def delete(self, author_id, **kw):
+    def delete(self, id, **kw):
         """
         Delete an author.
         """
-        url = self._format_url('authors', author_id)
+        url = self._format_url('authors', id)
         return self._request('DELETE', url, params=kw)
 
-    def add_content_item(self, author_id, content_id, **kw):
+    def add_content_item(self, id, content_item_id, **kw):
         """
         Add an author to a content item.
         """
-        url = self._format_url('authors', author_id, 'content', content_id)
+        url = self._format_url('authors', id, 'content', content_item_id)
         return self._request('PUT', url, params=kw)
 
-    def remove_content_item(self, author_id, content_id, **kw):
+    def remove_content_item(self, id, content_item_id, **kw):
         """
         Remove an author from a content item.
         """
-        url = self._format_url('authors', author_id, 'content', content_id)
+        url = self._format_url('authors', id, 'content', content_item_id)
         return self._request('DELETE', url, params=kw)
 
-    def merge(self, from_author_id, to_author_id, **kw):
+    def merge(self, id, to_id, **kw):
         """
         Remove an author from a content item.
         """
         url = self._format_url(
-            'authors', from_author_id, 'merge', to_author_id)
+            'authors', id, 'merge', to_id)
         return self._request('PUT', url, params=kw)
 
 
@@ -943,7 +943,7 @@ class Reports(BaseClient):
 class API(BaseClient):
 
     """
-    A class for interacting with the TenderEngine API.
+    A class for interacting with the NewsLynx API.
     """ 
 
     def __init__(self, **kw):

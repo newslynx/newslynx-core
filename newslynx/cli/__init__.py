@@ -35,12 +35,12 @@ def run():
     The main cli function.
     """
     # create an argparse instance
-    parser = argparse.ArgumentParser(prog='newslynx')
+    parser = argparse.ArgumentParser(prog='newslynx/nlynx')
     parser.add_argument('--no-color', dest='no_color', action="store_true", 
         default=False, help='Disable colored logging.')
 
     # add the subparser "container"
-    subparser = parser.add_subparsers(help='sub-command help', dest='cmd')
+    subparser = parser.add_subparsers(help='Subcommands', dest='cmd')
     subcommands = install_subcommands(subparser)
     
     # parse the arguments + options

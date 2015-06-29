@@ -24,9 +24,9 @@ def install(parser):
     api_parser.add_argument('collection', type=str, help='The API collection to access.',
         choices=COLLECTIONS)
     api_parser.add_argument('method', type=str, default=None,
-        help='The method for the collection. Use "{collection} ls" to list all methods for a given collection.')
+        help='The method for the collection. Use "ls" to list all methods for a given collection.')
     api_parser.add_argument("-d", dest="data", default=None, type=str,
-        help="a .json or .yaml file of the requests body")
+        help="a .json / .yaml file, or a json string of the request's body")
     api_parser.add_argument("-e", "--raise-errors", action='store_true',
         default=False,
         help="Raise Errors as statements. If missing, will return JSON.")
@@ -67,6 +67,7 @@ def run(opts, **kwargs):
     # allow for `-` instead of `_`:
     if opts.method:
         opts.method = opts.method.replace('-', "_")
+
     mobj = getattr(cobj, opts.method, None)
     if not mobj:
         options = CMD_TREE[opts.collection]
