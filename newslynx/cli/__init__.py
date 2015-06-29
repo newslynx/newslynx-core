@@ -36,6 +36,8 @@ def run():
     """
     # create an argparse instance
     parser = argparse.ArgumentParser(prog='newslynx')
+    parser.add_argument('--no-color', dest='no_color', action="store_true", 
+        default=False, help='Disable colored logging.')
 
     # add the subparser "container"
     subparser = parser.add_subparsers(help='sub-command help', dest='cmd')
@@ -48,14 +50,14 @@ def run():
     # run the necessary subcommand
     if opts.cmd not in subcommands:
         subcommands
-        echo_error(RuntimeError("No such subcommand."))
+        echo_error(RuntimeError("No such subcommand."), no_color=opts.no_color)
 
     try:
         subcommands[opts.cmd](opts, **kwargs)
     except KeyboardInterrupt as e:
-        echo('Interrupted by user, exiting', color=Fore.YELLOW)
+        echo('Interrupted by user, exiting', color=Fore.YELLOW, no_color=opts.no_color)
         sys.exit(2) # interrupt
     except Exception as e:
         tb = format_exc()
-        echo_error(e, tb)
+        echo_error(e, tb, no_color=opts.no_color)
         sys.exit(1)

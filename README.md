@@ -87,7 +87,8 @@ Exception KeyError: KeyError(4332017936,) in <module 'threading' from '/System/L
 ```
 
 ## TODO 
-- [ ] Implement Reports API (Are these just metrics?)
+- [ ] Fix Bulk Loading process.
+- [ ] Implement Reports API
     - [ ] reports are json objects
     - [ ] reports can be rendered with Jinja templates
     - [ ] reports can be rendered as pdfs 

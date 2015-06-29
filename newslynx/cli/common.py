@@ -26,7 +26,7 @@ def parse_runtime_args(arg_strings):
             kwargs[key] = value
     return kwargs
 
-def load_data(path_or_string):
+def load_data(path_or_string, opts):
     """
     Load data in from a filepath or a string
     """
@@ -51,25 +51,26 @@ def load_data(path_or_string):
             return kwargs
         except Exception as e:
             pass
-    echo_error(RuntimeError("Could not parse input data:\n'{}'".format(e.message)))
+    echo_error(RuntimeError("Could not parse input data:\n'{}'".format(e.message)),
+        no_color=opts.no_color)
     sys.exit(1)
 
 def echo(msg, **kwargs):
     """
     Cli logger.
     """
-    if kw.get('no_interactive', False):
+    if not kwargs.get('no_color', False):
         color = kwargs.get('color', Fore.GREEN)
         msg = '{0}{1}{2}'.format(color, msg, Fore.RESET)
     print(msg)
 
-def echo_error(e, tb=None):
+def echo_error(e, tb=None, **kwargs):
     """
     Error message.
     """
-    echo('{}: {}'.format(e.__class__.__name__, e.message), color=Fore.RED)
+    echo('{}: {}'.format(e.__class__.__name__, e.message), color=Fore.RED,  **kwargs)
     if tb:
-        echo(tb, color=Fore.YELLOW)
+        echo(tb, color=Fore.YELLOW,  **kwargs)
 
 def is_valid_file(arg):
     """

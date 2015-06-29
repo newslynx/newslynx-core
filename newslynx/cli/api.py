@@ -73,28 +73,28 @@ def run(opts, **kwargs):
         if opts.method != 'ls':
             e = RuntimeError("Method '{}' does not exist for collection '{}'"
                  .format(opts.method, opts.collection))
-            echo_error(e)
+            echo_error(e, no_color=opts.no_color)
         else:
-            echo("/{}".format(opts.collection), color=Fore.BLUE)
+            echo("/{}".format(opts.collection), color=Fore.BLUE, no_color=opts.no_color)
         msg = "choose from the following methods:\n\t- {}"\
               .format( "\n\t- ".join(options))
-        echo(msg, color=Fore.YELLOW)
+        echo(msg, color=Fore.YELLOW, no_color=opts.no_color)
         sys.exit(1)
 
     # parse body file / json string.
-    kwargs.update(load_data(opts.data))
+    kwargs.update(load_data(opts.data, opts))
     
     # execute method
     try:
         res = mobj(**kwargs)
     
     except KeyboardInterrupt as e:
-        echo_error("Interrupted by user. Exiting.", color=Fore.YELLOW)
+        echo_error("Interrupted by user. Exiting.", color=Fore.YELLOW, no_color=opts.no_color)
         sys.exit(2) # interrupt
     
     except Exception as e:
         tb = format_exc()
-        echo_error(e, tb)
+        echo_error(e, tb, no_color=opts.no_color)
         sys.exit(1)
     
     # stream output

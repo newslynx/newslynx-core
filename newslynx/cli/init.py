@@ -28,14 +28,16 @@ def run(opts, **kwargs):
     # create the database
     try:
         with app.app_context():
-            echo('Creating database "{}"'.format(settings.SQLALCHEMY_DATABASE_URI))
+            echo('Creating database "{}"'.format(settings.SQLALCHEMY_DATABASE_URI), 
+                no_color=opts.no_color)
             db.configure_mappers()
             db.create_all()
             
             # create the super user
             u = User.query.filter_by(email=settings.SUPER_USER_EMAIL).first()
             if not u:
-                echo('Creating super user "{}"'.format(settings.SUPER_USER_EMAIL))
+                echo('Creating super user "{}"'.format(settings.SUPER_USER_EMAIL),
+                    no_color=opts.no_color)
                 u = User(name=settings.SUPER_USER,
                          email=settings.SUPER_USER_EMAIL,
                          password=settings.SUPER_USER_PASSWORD,
@@ -46,7 +48,8 @@ def run(opts, **kwargs):
                 if getattr(settings, 'SUPER_USER_APIKEY', None):
                     u.apikey = settings.SUPER_USER_APIKEY
             else:
-                echo('Updating super user "{}"'.format(settings.SUPER_USER_EMAIL))
+                echo('Updating super user "{}"'.format(settings.SUPER_USER_EMAIL), 
+                    no_color=opts.no_color)
                 u.name=settings.SUPER_USER,
                 u.email=settings.SUPER_USER_EMAIL,
                 u.password=settings.SUPER_USER_PASSWORD,
@@ -54,7 +57,7 @@ def run(opts, **kwargs):
                 super_user=True
             db.session.add(u)
 
-            echo('(Re)Loading SQL Extensions')
+            echo('(Re)Loading SQL Extensions', no_color=opts.no_color)
             # load sql extensions + functions
             for sql in load_sql():
                 db.session.execute(sql)
@@ -65,11 +68,13 @@ def run(opts, **kwargs):
 
                 sc_obj = db.session.query(SousChef).filter_by(slug=sc['slug']).first()
                 if not sc_obj:
-                    echo('Importing Sous Chef "{}"'.format(sc['slug']))
+                    echo('Importing Sous Chef "{}"'.format(sc['slug']),
+                        no_color=opts.no_color)
                     sc_obj = SousChef(**sc)
                 
                 else:
-                    echo('Updating Sous Chef "{}"'.format(sc['slug']))
+                    echo('Updating Sous Chef "{}"'.format(sc['slug']),
+                        no_color=opts.no_color)
                     sc = sous_chef_schema.update(sc_obj.to_dict(), sc)
                     # udpate
                     for name, value in sc.items():

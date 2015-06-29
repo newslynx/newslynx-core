@@ -33,7 +33,7 @@ def run_flush_comparison_cache(opts, **kwargs):
     Flush the comparison cache.
     """
     ComparisonsCache.flush()
-    echo('Compaison cache flushed.')
+    echo('Compaison cache flushed.', no_color=opts.no_color)
 
 def run_flush_extract_cache(opts, **kwargs):
     """
@@ -42,7 +42,7 @@ def run_flush_extract_cache(opts, **kwargs):
     URLCache.flush()
     ExtractCache.flush()
     ThumbnailCache.flush()
-    echo('Extraction caches flushed.')
+    echo('Extraction caches flushed.', no_color=opts.no_color)
 
 
 

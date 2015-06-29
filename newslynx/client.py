@@ -144,7 +144,7 @@ class BaseClient(object):
                 return {
                     'error':'InternalServerError',
                     'status_code': 500,
-                    'message':getattr(resp, 'content', None)
+                    'message':getattr(resp, 'content', 'Are you sure the API is running?')
                 }
 
     def _format_response(self, resp):
