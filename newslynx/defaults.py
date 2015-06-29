@@ -42,7 +42,7 @@ THUMBNAIL_DEFAULT_FORMAT = "PNG"
 COMPARISON_CACHE_PREFIX = "newslynx-comparison-cache"
 COMPARISON_CACHE_TTL = 86400 # 1 day
 COMPARISON_PERCENTILES = [2.5, 5.0, 10.0, 25.0, 50.0, 75.0, 90.0, 95.0, 97.5]
-COMPARISON_FX = ['min', 'max', 'avg', 'median'] # TODO, make this actually modify data.
+COMPARISON_FUNCTIONS = ['min', 'max', 'avg', 'median'] # TODO, make this actually modify data.
 
 # MERLYNNE KWARGS PREFIX
 MERLYNNE_KWARGS_PREFIX = "newslynx-merlynne-kwargs"

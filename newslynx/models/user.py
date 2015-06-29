@@ -49,7 +49,7 @@ class User(db.Model):
 
     @property
     def display_orgs(self):
-        return [o.to_dict(incl_users=False, incl_settings=False, incl_auths=False)
+        return [o.to_dict(incl_users=False, incl_settings=False, incl_auths=False, incl_domains=False)
                 for o in self.orgs]
 
     @property

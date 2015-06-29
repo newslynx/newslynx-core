@@ -438,7 +438,6 @@ class Org(db.Model):
             'id': self.id,
             'name': self.name,
             'timezone': self.timezone,
-            'domains': self.domains,
             'slug': self.slug,
             'created': self.created,
             'updated': self.updated

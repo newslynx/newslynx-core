@@ -1,4 +1,5 @@
 from flask import Blueprint
+from slugify import slugify 
 
 from newslynx.core import db
 from newslynx.models import User, Org, SousChef, Recipe, Tag, Metric
@@ -187,6 +188,9 @@ def org_update(user, org_id_slug):
 
     if 'slug' in req_data:
         org.slug = req_data['slug']
+
+    elif 'name' in req_data:
+        org.slug = slugify(req_data['name'])
 
     if 'timezone' in req_data:
         org.timezone = req_data['timezone']

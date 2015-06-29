@@ -171,7 +171,7 @@ class Me(BaseClient):
 
     def get(self, **kw):
         """
-        Fetch your user profile.
+        Fetch your account.
         """
 
         url = self._format_url('me')
@@ -179,7 +179,7 @@ class Me(BaseClient):
 
     def update(self, **kw):
         """
-        Update your user profile.
+        Update your account.
         """
         kw, params = self._split_auth_params_from_data(
             kw, kw_incl=['refresh_apikey'])
@@ -191,7 +191,7 @@ class Me(BaseClient):
 
     def orgs(self, **kw):
         """
-        Get orgs you have access to.
+        List the orgs you have access to.
         """
         url = self._format_url('orgs')
         return self._request('GET', url, params=kw)
