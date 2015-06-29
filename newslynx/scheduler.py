@@ -16,13 +16,6 @@ from newslynx.core import gen_session
 from newslynx import settings
 
 
-def run(**kwargs):
-    """
-    A shortcut for running the scheduler daemon.
-    """
-    RecipeScheduler(**kwargs).run()
-
-
 class RecipeScheduler:
 
     """
@@ -33,6 +26,7 @@ class RecipeScheduler:
         self._running_recipes = {}
         self._greenlets = {}
         self.refresh_interval = kwargs.get('interval', settings.SCHEDULER_REFRESH_INTERVAL)
+        self.jigger = kwargs.get('jigger', settings.SCHEDULER_RESET_PAUSE_RANGE)
 
     def log(self, msg):
         print msg
@@ -82,7 +76,7 @@ class RecipeScheduler:
         job = api.recipes.cook(recipe.id)
         self.log('Job ID: {job_id}'.format(**job))
 
-        # job the job status
+        # poll the job's status
         for res in api.jobs.poll(**job):
             self.log(res)
 
@@ -100,7 +94,7 @@ class RecipeScheduler:
         pause = dates.seconds_until(time_of_day, now=recipe.org.now) 
 
         if reset:
-            pause = min([pause, self.random_pause()])
+            pause = min([self.min_pause, pause, self.random_pause()])
 
         self.log("{} recipe ({} / {}) will run in {} seconds"
                 .format(recipe.schedule_by, recipe.id, recipe.slug, pause))
@@ -120,7 +114,7 @@ class RecipeScheduler:
         """ 
         pause = recipe.minutes * 60
         if reset:
-            pause = min([pause, self.random_pause()])
+            pause = min([self.min_pause, pause, self.random_pause()])
 
         self.log("{} recipe ({} / {}) will run in {} seconds"
                 .format(recipe.schedule_by, recipe.slug, pause))
@@ -147,7 +141,7 @@ class RecipeScheduler:
 
         # reset.
         if reset:
-            pause = min([pause, self.random_pause()])
+            pause = min([self.min_pause, pause, self.random_pause()])
 
         self.log("{} recipe ({} / {}) will run in {} seconds"
                 .format(recipe.schedule_by, recipe.id, recipe.slug, pause))
@@ -165,8 +159,11 @@ class RecipeScheduler:
         """
         A random pause when resetting a scheduled recipe.
         """
-        return random.choice(range(*settings.SCHEDULER_RESET_PAUSE_RANGE))
+        return random.choice(range(*self.jigger))
 
+    @property
+    def min_pause(self):
+        return min(self.jigger)
             
     def run_recipe(self, recipe, reset=False):
         """
