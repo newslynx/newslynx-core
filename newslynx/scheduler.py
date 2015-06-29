@@ -19,13 +19,13 @@ from newslynx import settings
 class RecipeScheduler:
 
     """
-    An in-memory scheduler daemon that runs recipes in greenlets.
+    A dynamic, in-memory scheduling daemon that runs recipes in greenlets and 
+    responds to updates.
     """
 
     def __init__(self, **kwargs):
         self._running_recipes = {}
         self._greenlets = {}
-        self.refresh_interval = kwargs.get('interval', settings.SCHEDULER_REFRESH_INTERVAL)
         self.jigger = kwargs.get('jigger', settings.SCHEDULER_RESET_PAUSE_RANGE)
 
     def log(self, msg):
@@ -273,13 +273,15 @@ class RecipeScheduler:
                 self._greenlets[id] = \
                     gevent.spawn(self.run_recipe, recipe, reset)
 
-    def run(self):
+    def run(self, **kw):
         """
         Endlessly run and update scheduled recipes.
         """
+        interval = float(kw.get('interval', settings.SCHEDULER_REFRESH_INTERVAL))
+        self.log('Starting Scheduler at {} with refresh interval of {} seconds'.format(dates.now(), interval))
         while True:
             self.set_session()
             self.update_scheduled_recipes()
             self.run_scheduled_recipes()
-            time.sleep(self.refresh_interval)
+            time.sleep(interval)
             self.session.flush()
