@@ -650,7 +650,6 @@ def localize(org):
 
 # Blueprints
 
-
 def register_blueprints(app, *mods):
     """
     List all Blueprint instances underneath
@@ -667,11 +666,11 @@ def register_blueprints(app, *mods):
                 name = fp.replace('.py', '')
 
                 # WARNING MAJOR HACK AHEAD.
-                # try:
-                m = importlib.import_module(
-                    '%s.%s' % (package_name, name))
-                # except:
-                #     continue
+                try:
+                    m = importlib.import_module(
+                        '%s.%s' % (package_name, name))
+                except:
+                    continue
 
                 for item in dir(m):
                     item = getattr(m, item)
