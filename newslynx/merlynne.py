@@ -74,6 +74,7 @@ class Merlynne(object):
 
             # return the job id
             return job_id
+
         # directly stream the results out.
         return run_sous_chef(self.sous_chef_path, self.recipe.id, kw_key)
 
@@ -131,6 +132,7 @@ def run_sous_chef(sous_chef_path, recipe_id, kw_key):
         rds.delete(kw_key)
         if kw.get('passthrough', False):
             raise MerlynneError(e)
+    
         db.session.rollback()
         recipe.status = "error"
         recipe.traceback = format_exc()
