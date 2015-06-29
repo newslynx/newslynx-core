@@ -19,7 +19,7 @@ COLLECTIONS = [c for c in dir(_api) if _keep(c)]
 CMD_TREE = {c:[m.replace('_', '-') for m in dir(getattr(_api, c)) if _keep(m)] 
             for c in COLLECTIONS}
 
-def install(parser):
+def setup(parser):
     api_parser = parser.add_parser("api", help="Access API methods.")
     api_parser.add_argument('collection', type=str, help='The API collection to access.',
         choices=COLLECTIONS)

@@ -22,7 +22,7 @@ class CLIScheduler(RecipeScheduler):
         return echo(msg, color=Fore.BLUE, no_color=self.opts.no_color)
 
 
-def install(parser):
+def setup(parser):
     """
     Install this parser. Basic for now.
     """

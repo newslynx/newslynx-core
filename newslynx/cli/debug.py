@@ -11,7 +11,7 @@ from newslynx.views import app
 from newslynx import settings
 
 
-def install(parser):
+def setup(parser):
     """
     Mimics functionality of Flask-Script
     """

@@ -17,7 +17,7 @@ from newslynx.views import app
 from newslynx.core import db_session, db
 from newslynx import settings
 
-def install(parser):
+def setup(parser):
     """
     Install this parser. Basic for now.
     """

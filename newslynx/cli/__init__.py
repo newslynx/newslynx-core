@@ -21,13 +21,13 @@ MODULES = [
     debug
 ]
 
-def install_subcommands(subparser):
+def setup(subparser):
     """
     Install all subcommands.
     """
     subcommands = {}
     for module in MODULES:
-        cmd_name, run_func = module.install(subparser)
+        cmd_name, run_func = module.setup(subparser)
         subcommands[cmd_name] = run_func
     return subcommands
 
@@ -42,7 +42,7 @@ def run():
 
     # add the subparser "container"
     subparser = parser.add_subparsers(help='Subcommands', dest='cmd')
-    subcommands = install_subcommands(subparser)
+    subcommands = setup(subparser)
     
     # parse the arguments + options
     opts, kwargs = parser.parse_known_args()
@@ -55,9 +55,11 @@ def run():
 
     try:
         subcommands[opts.cmd](opts, **kwargs)
+
     except KeyboardInterrupt as e:
         echo('Interrupted by user, exiting', color=Fore.YELLOW, no_color=opts.no_color)
         sys.exit(2) # interrupt
+
     except Exception as e:
         tb = format_exc()
         echo_error(e, tb, no_color=opts.no_color)

@@ -6,7 +6,7 @@ from newslynx.cli.common import echo
 from newslynx.models import URLCache, ExtractCache, ThumbnailCache
 from newslynx.models import ComparisonsCache
 
-def install(parser):
+def setup(parser):
     tasks = run(None, _install=True)
     dev_parser = parser.add_parser("dev", help="Development utilities.")
     dev_parser.add_argument('task', type=str, help='The develpment task to run.', choices=tasks)
