@@ -64,6 +64,14 @@ class ComparisonsCache(Cache):
             'subject_tags': SubjectTagsComparisonCache(),
             'impact_tags': ImpactTagsComparisonCache()
         }
+    
+    def invalidate(self, *args, **kwargs):
+        """
+        Invalidate all caches.
+        """
+        for cache in self.comparison_lookup.values():
+            cache.invalidate(*args, **kwargs)
+        self.redis.delete(self.format_key(*args, **kwargs))
 
     def work(self, org_id):
 
