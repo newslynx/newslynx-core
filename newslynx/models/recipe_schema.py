@@ -375,6 +375,8 @@ class RecipeSchema(object):
         Validate recipe schedule options.
         """
         # check that the associated schedule field is set.
+        if not self.recipe.get('schedule_by', None):
+            self.recipe['schedule_by'] = 'unscheduled'
         for typ in RECIPE_SCHEDULE_METHODS:
             if typ != 'unscheduled' and \
                self.recipe.get('schedule_by') == typ and \

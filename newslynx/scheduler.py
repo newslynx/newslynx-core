@@ -43,20 +43,30 @@ class RecipeScheduler:
             msg = 'Resetting {} recipe ({} / {}) at {}'\
             .format(recipe.schedule_by, recipe.id, recipe.slug, dates.now())
             self.log(msg)
-        self._running_recipes['{}:reset'.format(recipe.id)] = reset
+        self._running_recipes['{}:reset'.format(recipe.id)] = reset        
         self._running_recipes[recipe.id] = recipe
 
-    def remove_recipe(self, recipe):
+    def remove_recipe(self, recipe, **kw):
         """
         Remove a scheduled job from the list of scheduled jobs.
         """
-        msg = 'Removing {} recipe ({} / {}) at {}'\
-            .format(recipe.schedule_by, recipe.id, recipe.slug, dates.now())
-        self.log(msg)
+        
+        if kw.get('log', True):
+            msg = 'Removing {} recipe ({} / {}) at {}'\
+                .format(recipe.schedule_by, recipe.id, recipe.slug, dates.now())
+            self.log(msg)
         self._running_recipes.pop(recipe.id)
         self._running_recipes.pop('{}:reset'.format(recipe.id))
-        gevent.kill(self._greenlets[recipe.id])
-        self._greenlets.pop(recipe.id)
+        greenlet = self._greenlets.pop(recipe.id)
+        if greenlet:
+            gevent.kill(greenlet)
+
+    def reset_recipe(self, recipe):
+        """
+        Reset a recipe.
+        """
+        self.remove_recipe(recipe, log=False)
+        self.add_recipe(recipe, reset=True)
 
     def cook(self, recipe):
         """
@@ -68,10 +78,7 @@ class RecipeScheduler:
 
         # api connection.
         api = API(apikey=recipe.user.apikey, org=recipe.org_id)
-        
-        # queue the recipe.
-        api.recipes.update(recipe.id, status='queued')
-        
+                
         # cook the recipe
         job = api.recipes.cook(recipe.id)
         self.log('Job ID: {job_id}'.format(**job))
@@ -185,7 +192,9 @@ class RecipeScheduler:
         We only run recipes whose status is not 'uninitialized'.
         """
         recipes = self.session.query(Recipe)\
-            .filter(Recipe.status != 'uninitialized')
+            .filter(Recipe.status != 'uninitialized')\
+            .filter(Recipe.status != 'inactive')\
+            .filter(Recipe.schedule_by != 'unscheduled')
         d = {}
         for r in recipes.all():
             d[r.id] = r
@@ -196,17 +205,25 @@ class RecipeScheduler:
         Has this recipe been updated?
         """
         id = recipe.id
+        
         # we should not update recipes if they're in the queue.
         if recipe.status == 'queued':
             return False
-        if recipe.schedule_by and recipe.schedule_by != scheduled[id].schedule_by:
+
+        # we should update recipes if their schedule has changed.
+        if recipe.schedule_by and recipe.schedule_by != scheduled.schedule_by:
             return True
-        if recipe.time_of_day and recipe.time_of_day != scheduled[id].time_of_day:
+        if recipe.time_of_day and recipe.time_of_day != scheduled.time_of_day:
             return True
-        if recipe.minutes and recipe.minutes != scheduled[id].minutes:
+        if recipe.minutes and recipe.minutes != scheduled.minutes:
             return True
-        if recipe.crontab and recipe.crontab != scheduled[id].crontab:
+        if recipe.crontab and recipe.crontab != scheduled.crontab:
             return True
+        
+        # we should update recipes if their core options have changed
+        if recipe.options_hash != scheduled.options_hash:
+            return True
+
         return False
 
     def update_scheduled_recipes(self):
@@ -225,9 +242,10 @@ class RecipeScheduler:
         # if the recipe is running and has been deleted, remove it
         # alternatively, if it has been "unscheduled", remove it
         # alteratively, if it's schedule has changed, remove it and re-add it
-        for id, recipe in self._running_recipes.iteritems():
-            if str(id).endswith('reset'):
+        for id, recipe in self._running_recipes.items():
+            if 'reset' in str(id):
                 continue
+
             if id not in scheduled_recipes:
                 self.remove_recipe(recipe)
 
@@ -238,16 +256,15 @@ class RecipeScheduler:
                 self.remove_recipe(recipe)
 
             # check for any sign of a change to a recipe.
-            elif self.is_updated(recipe, scheduled_recipes):
-                self.remove_recipe(recipe)
-                self.add_recipe(scheduled_recipes[id], reset=True)
+            elif self.is_updated(recipe, scheduled_recipes[id]):
+                self.reset_recipe(scheduled_recipes[id])
 
     def run_scheduled_recipes(self):
         """
         Run all scheduled recipes in individual greenlets
         """
         for id, recipe in self._running_recipes.iteritems():
-            if str(id).endswith('reset'):
+            if 'reset' in str(id):
                 continue
             
             # if this recipe is not already running, run it.

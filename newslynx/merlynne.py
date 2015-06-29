@@ -47,12 +47,6 @@ class Merlynne(object):
         """
         Full pipeline.
         """
-        # indicate that the recipe is running.
-        self.recipe.last_run = dates.now()
-        self.recipe.status = "running"
-        db.session.add(self.recipe)
-        db.session.commit()
-
         # generate a job id
         job_id = gen_uuid()
 
@@ -66,6 +60,12 @@ class Merlynne(object):
 
         # send it to the queue
         if not self.passthrough:
+
+            # indicate that the recipe is running.
+            self.recipe.status = "queued"
+            db.session.add(self.recipe)
+            db.session.commit()
+
             self.q.enqueue(
                 run_sous_chef, self.sous_chef_path,
                 self.recipe.id, kw_key,
@@ -102,6 +102,12 @@ def run_sous_chef(sous_chef_path, recipe_id, kw_key):
         # initialize it with kwargs
         sc = SousChef(**kw)
 
+        # indicate that the job is running
+        if not kw.get('passthrough', False):
+            recipe.status = 'running'
+            db.session.add(recipe)
+            db.session.commit()
+
         # cook it.
         data = sc.cook()
         
@@ -119,8 +125,7 @@ def run_sous_chef(sous_chef_path, recipe_id, kw_key):
         # update status and next job from sous chef.
         recipe.status = "stable"
         recipe.traceback = None
-        
-        # if something is set on this object, add it.
+        recipe.last_run = dates.now()
         if len(sc.next_job.keys()):
             recipe.last_job = sc.next_job
         db.session.add(recipe)
@@ -128,14 +133,15 @@ def run_sous_chef(sous_chef_path, recipe_id, kw_key):
         return True
 
     except Exception as e:
+        
         # always delete the kwargs.
         rds.delete(kw_key)
         if kw.get('passthrough', False):
             raise MerlynneError(e)
-    
         db.session.rollback()
         recipe.status = "error"
         recipe.traceback = format_exc()
+        recipe.last_run = dates.now()
         db.session.add(recipe)
         db.session.commit()
         return MerlynneError(e)

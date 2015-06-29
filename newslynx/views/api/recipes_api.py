@@ -309,7 +309,10 @@ def cook_a_recipe(user, org, recipe_id):
 
     # queued job
     if not kw['passthrough']:
-
+        # set its status as 'queued'
+        r.status = 'queued'
+        db.session.add(r)
+        db.session.commit()
         # # return job status url
         ret = url_for_job_status(apikey=user.apikey, job_id=resp, queue='recipe')
         return jsonify(ret, status=202)

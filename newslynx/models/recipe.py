@@ -1,3 +1,5 @@
+from hashlib import md5
+
 from sqlalchemy.dialects.postgresql import JSON, ENUM
 from slugify import slugify
 
@@ -29,7 +31,7 @@ class Recipe(db.Model):
 
     # date fields
     created = db.Column(db.DateTime(timezone=True), default=dates.now)
-    updated = db.Column(db.DateTime(timezone=True), onupdate=dates.now, default=dates.now)
+    updated = db.Column(db.DateTime(timezone=True), default=dates.now, onupdate=dates.now)
     last_run = db.Column(db.DateTime(timezone=True), index=True)
 
     # scheduler fields
@@ -44,6 +46,7 @@ class Recipe(db.Model):
 
     # options
     options = db.Column(db.Text)
+    options_hash = db.Column(db.Text)
 
     # relations
     events = db.relationship('Event', lazy='dynamic')
@@ -85,7 +88,9 @@ class Recipe(db.Model):
         """
         pickle dump the options.
         """
-        self.options = obj_to_pickle(opts)
+        p = obj_to_pickle(opts)
+        self.options = p
+        self.options_hash = str(md5(p).hexdigest())
 
     @property 
     def scheduled(self):

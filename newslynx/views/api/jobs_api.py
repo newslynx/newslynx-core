@@ -82,6 +82,6 @@ def get_status(user, job_id):
         # job will return an error if unsuccessful
         else:
             ret['status'] = 'error'
-            ret['message'] = rv.message
+            ret['message'] = str(rv.message)
 
     return jsonify(ret)
