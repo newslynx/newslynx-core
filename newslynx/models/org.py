@@ -46,7 +46,8 @@ class Org(db.Model):
     content_items = db.relationship(
         'ContentItem', lazy='dynamic', cascade='all')
     metrics = db.relationship('Metric', lazy='dynamic', cascade='all')
-    recipes = db.relationship('Recipe', lazy='dynamic', cascade='all')
+    recipes = db.relationship('Recipe', lazy='dynamic', cascade='all', 
+        backref=db.backref('org', lazy='joined', uselist=False))
     authors = db.relationship('Author', lazy='dynamic')
     tags = db.relationship('Tag', lazy='dynamic', cascade='all')
     timeseries = db.relationship(
@@ -57,6 +58,13 @@ class Org(db.Model):
         self.name = kw.get('name')
         self.timezone = kw.get('timezone', 'UTC')
         self.slug = kw.get('slug', slugify(kw['name']))
+
+    @property
+    def now(self):
+        """
+        The current local time for the Org.
+        """
+        return dates.local(self.timezone)
 
     @property
     def settings_dict(self):

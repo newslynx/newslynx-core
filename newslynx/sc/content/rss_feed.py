@@ -32,7 +32,7 @@ class Article(ContentSousChef):
         # iterate through RSS entries.
         for article in entries:
             article['type'] = 'article'  # set this type as article.
-            print  "ARTICLE", article.keys()
+
             # since we poll often, we can assume this is a good
             # approximation of an article publish date.
             if not article.get('created'):

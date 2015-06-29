@@ -9,13 +9,14 @@ import argparse
 
 from colorama import Fore
 
-from newslynx.cli import api, version, dev, init, debug
+from newslynx.cli import api, version, dev, init, debug, cron
 from newslynx.cli.common import echo, echo_error, parse_runtime_args
 
 MODULES = [
     api,
     dev,
     init,
+    cron,
     version,
     debug
 ]

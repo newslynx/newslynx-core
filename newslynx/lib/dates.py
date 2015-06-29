@@ -166,6 +166,16 @@ def convert_to_utc(dt):
     dt = dt.replace(tzinfo=pytz.utc)
     return dt
 
+def local(tz):
+    """
+    Get the current local time for a timezone.
+    """
+    dt = now()
+    tz = pytz.timezone(tz)
+    dt = dt.astimezone(tz)
+    dt = dt.replace(tzinfo=tz)
+    return dt
+
 
 def force_datetime(dt, tz=None):
     """
@@ -197,6 +207,32 @@ def cron(crontab):
         return CronTab(crontab)
     except Exception as e:
         raise ValueError(e.message)
+
+def parse_time_of_day(string):
+    """
+    12:00 AM
+    12:00 PM
+    """    
+    m = re_time.search(string)
+    hour = int(m.group(1))
+    minute = int(m.group(2))
+    am_pm = m.group(3)
+
+    # catch 12 AM
+    if am_pm == 'AM' and hour == 12:
+        hour = 0
+    if am_pm == 'PM' and hour != 12:
+        hour += 12 
+    return time(hour, minute)
+
+def seconds_until(time_until, now=now()):
+    """
+    Seconds until a given time.
+    """
+    when = datetime.combine(now, time_until)
+    when = when.replace(tzinfo=now.tzinfo)
+    when = when.astimezone(now.tzinfo)
+    return abs(now - when).seconds
 
 
 def time_of_day_to_cron(time_of_day):

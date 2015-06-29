@@ -88,14 +88,14 @@ class Recipe(db.Model):
         self.options = obj_to_pickle(opts)
 
     @property 
-    def scheduled(self, opts):
+    def scheduled(self):
         """
         Is this recipe scheduled?
         """
         return self.schedule_by != 'unscheduled'
 
     @property 
-    def active(self, opts):
+    def active(self):
         """
         Is this recipe scheduled?
         """

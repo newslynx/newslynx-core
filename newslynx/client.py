@@ -85,10 +85,7 @@ class BaseClient(object):
             resp = None
 
         # handle errors
-        resp = self._handle_errors(resp, err)
-
-        # format response
-        return self._format_response(resp)
+        return self._format_response(resp, err)
 
     def _split_auth_params_from_data(self, kw, kw_incl=[]):
         params = {}
@@ -118,9 +115,9 @@ class BaseClient(object):
             kw['data'] = list(kw['data'])
         return kw
 
-    def _handle_errors(self, resp, err=None):
+    def _format_response(self, resp, err=None):
         """
-        Handle all errors.
+        Handle all errors + format response.
         """
         if self.raise_errors:
             if err:
@@ -129,7 +126,7 @@ class BaseClient(object):
             # check status codes
             elif resp.status_code not in GOOD_CODES:
                 try:
-                    d = resp.json()
+                    return resp.json()
                 except:
                     raise ClientError(resp.content)
 
@@ -137,6 +134,11 @@ class BaseClient(object):
                 if not err:
                     raise ClientError(resp.content)
                 raise err(d['message'])
+            elif resp.status_code == 204:
+                return True
+            else:
+                return resp.json()
+
         else:
             try:
                 return resp.json()
@@ -146,17 +148,6 @@ class BaseClient(object):
                     'status_code': 500,
                     'message':getattr(resp, 'content', 'Are you sure the API is running?')
                 }
-
-    def _format_response(self, resp):
-        """
-        Format a response with addict.Dict
-        """
-        if not isinstance(resp, Response):
-            return resp
-        # if there's no response just return true.
-        if resp.status_code == 204:
-            return True
-        return resp.json()
 
     def login(self, **kw):
         """
@@ -886,9 +877,9 @@ class Jobs(BaseClient):
         """
         Poll a job's status until it's successful.
         """
-        interval = kw.get('interval', 5)
+        interval = kw.get('interval', 10)
         while True:
-            d = self.get_status(**kw)
+            d = self.get(**kw)
             if not d.get('status'):
                 yield d
 
