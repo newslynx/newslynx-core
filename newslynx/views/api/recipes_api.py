@@ -1,5 +1,6 @@
 from collections import defaultdict, Counter
 from inspect import isgenerator
+import copy
 
 from sqlalchemy import or_
 from flask import Blueprint, Response, stream_with_context
@@ -214,6 +215,9 @@ def update_recipe(user, org, recipe_id):
         raise RequestError('Recipe with id/slug {} does not exist.'
                            .format(recipe_id))
 
+    # keep track of current coptions hash.
+    current_option_hash = copy.copy(r.options_hash)
+
     # fetch request date and update / validate.
     req_data = request_data()
     new_recipe = recipe_schema.update(r, req_data, r.sous_chef.to_dict())
@@ -231,6 +235,11 @@ def update_recipe(user, org, recipe_id):
     # update all other fields
     for col, val in new_recipe.items():
         setattr(r, col, val)
+
+    # if the new options hash is different than the old one, we should
+    # override the last_job column to be null
+    if current_option_hash != r.options_hash:
+        r.last_job = {}
 
     db.session.add(r)
     db.session.commit()
