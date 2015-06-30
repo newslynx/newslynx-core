@@ -28,20 +28,24 @@ class RecipeScheduler:
         self._greenlets = {}
         self.jigger = kwargs.get('jigger', settings.SCHEDULER_RESET_PAUSE_RANGE)
         self.log = kwargs.get('log', ColorLog(**kwargs))
+        self.org_id = kwargs.get('org_id', None)
+
+    def set_session(self):
+        self.session = gen_session()
 
     def fmt_recipe(self, recipe):
-        r = "< {} | {} | {} >".format(recipe.org.slug, recipe.id, recipe.slug)
-        return r
+        return "< {} | {} | {} | {} >"\
+            .format(recipe.org.slug, recipe.id, recipe.slug, recipe.schedule_by)
 
     def add_recipe(self, recipe, reset=False):
         """
         Add a scheduled recipe to the list of scheduled recipes.
         """
         if not reset:
-            self.log.info('{} adding '
+            self.log.info('adding {} '
                 .format(self.fmt_recipe(recipe)))
         else:
-            self.log.warning('{} resetting '
+            self.log.error('resetting {}'
                 .format(self.fmt_recipe(recipe)))
         self._running_recipes['{}:reset'.format(recipe.id)] = reset        
         self._running_recipes[recipe.id] = recipe
@@ -52,7 +56,7 @@ class RecipeScheduler:
         """
         
         if kw.get('log', True):
-            self.log.error('{} removing '
+            self.log.error('removing {} '
                 .format(self.fmt_recipe(recipe)))
         self._running_recipes.pop(recipe.id)
         self._running_recipes.pop('{}:reset'.format(recipe.id))
@@ -71,24 +75,32 @@ class RecipeScheduler:
         """
         Cook a recipe.
         """
-        self.log.info('{} cooking '
-            .format(self.fmt_recipe(recipe)))
+        self.log.info('cooking {}'
+            .format(self.fmt_recipe(recipe)), color='lightmagenta_ex')
+        
+        start = time.time()
 
         # api connection.
         api = API(apikey=recipe.user.apikey, org=recipe.org_id)
                 
         # cook the recipe
-        job = api.recipes.cook(recipe.id)
-        print "JOB", job
-        self.log.info('{} running job {job_id}'
-            .format(self.fmt_recipe(recipe), **job))
+        try:
+            job = api.recipes.cook(recipe.id)
+        
+        except Exception as e:
+            self.log.error('error {}'.format(self.fmt_recipe(recipe)))
+            self.log.exception(e, tb=True)
 
-        # poll the job's status
-        for res in api.jobs.poll(**job):
-            self.log.warning(res)
+        else:
+            self.log.warning('running {} job {job_id}'
+                .format(self.fmt_recipe(recipe), **job), color='lightmagenta_ex')
 
-    def set_session(self):
-        self.session = gen_session()
+            # poll the job's status
+            for res in api.jobs.poll(**job):
+                self.log.warning(res)
+            duration = round((time.time() - start), 2)
+            self.log.info('cooked {} in {}s'
+                .format(self.fmt_recipe(recipe), duration), color='lightmagenta_ex')
 
     def run_time_of_day(self, recipe, reset):
         """
@@ -103,7 +115,7 @@ class RecipeScheduler:
         if reset:
             pause = min([self.min_pause, pause, self.random_pause()])
 
-        self.log.info('{} first run in {}s'
+        self.log.warning('first run of {} in {}s'
             .format(self.fmt_recipe(recipe), round(pause, 2)))
         time.sleep(pause)
 
@@ -113,8 +125,8 @@ class RecipeScheduler:
             self.cook(recipe)
             # lock to org's timezone.
             pause = dates.seconds_until(time_of_day,  now=recipe.org.now)
-            self.log.warning('{} run #{} in {}s'
-                .format(self.fmt_recipe(recipe), runs, round(pause, 2)))
+            self.log.warning('run #{} of {} in {}s'
+                .format(runs, self.fmt_recipe(recipe), round(pause, 2)))
             time.sleep(pause)
 
     def run_minutes(self, recipe, reset):
@@ -125,7 +137,7 @@ class RecipeScheduler:
         if reset:
             pause = min([pause, self.random_pause()])
 
-        self.log.info('{} first run in {}s'
+        self.log.warning('first run of {} in {}s'
             .format(self.fmt_recipe(recipe), round(pause, 2)))
         time.sleep(pause)
 
@@ -137,8 +149,8 @@ class RecipeScheduler:
             self.cook(recipe)
             duration = time.time() - start
             pause = (recipe.minutes * 60) - duration
-            self.log.info('{} run #{} in {}s'
-                .format(self.fmt_recipe(recipe), runs, round(pause, 2)))
+            self.log.warning('run #{} of {} in {}s'
+                .format(runs, self.fmt_recipe(recipe), round(pause, 2)))
             time.sleep(pause)
 
     def run_cron(self, recipe, reset):
@@ -154,7 +166,7 @@ class RecipeScheduler:
         if reset:
             pause = min([self.min_pause, pause, self.random_pause()])
 
-        self.log.info('{} first run in {}s'
+        self.log.warning('first run of {} in {}s'
             .format(self.fmt_recipe(recipe), round(pause, 2)))
         time.sleep(pause)
 
@@ -164,8 +176,8 @@ class RecipeScheduler:
             self.cook(recipe)
             # lock to org's timezone.
             pause = cron.next(now=recipe.org.now)
-            self.log.info('{} run #{} in {}s'
-                .format(self.fmt_recipe(recipe), runs, round(pause, 2)))
+            self.log.warning('run #{} of {} in {}s'
+                .format(runs, self.fmt_recipe(recipe), round(pause, 2)))
             time.sleep(pause)
 
     def random_pause(self):
@@ -201,6 +213,10 @@ class RecipeScheduler:
             .filter(Recipe.status != 'uninitialized')\
             .filter(Recipe.status != 'inactive')\
             .filter(Recipe.schedule_by != 'unscheduled')
+
+        # allow this daemon to focus on one org in particular
+        if self.org_id:
+            recipes = recipes.filter_by(org_id=self.org_id)
         d = {}
         for r in recipes.all():
             d[r.id] = r
