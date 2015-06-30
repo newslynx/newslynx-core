@@ -96,13 +96,13 @@ def load_default_tags():
             default_tags = \
                 os.path.expanduser(default_tags)
         if not os.path.exists(default_tags):
-            raise ConfigError(
-                "'{}' was explicitly declared as "
-                "the default_tags config but could "
-                "not be found."
-                .format(default_tags)
-            )
-
+            path = "/".join(default_tags.split("/")[-1])
+            try:
+                os.makedirs(path)
+            except OSError:
+                pass
+            with open(default_tags, 'wb') as f:
+                f.write('-')
     else:
         default_tags = os.path.expanduser(
             '~/.newslynx/defaults/tags.yaml')

@@ -5,7 +5,7 @@ Default configurations that can be overriden by
 import os
 from newslynx.util import here 
 
-_DEFAULT_CONFIG = here(__file__, "config.yaml")
+_DEFAULT_CONFIG = here(__file__, "dot_newslynx/config.yaml")
 _CONFIG_REQUIRES = [
     'super_user',
     'super_user_email',
@@ -13,6 +13,10 @@ _CONFIG_REQUIRES = [
     'sqlalchemy_database_uri',
     'secret_key'
 ]
+_DEFAULT_DEFAULTS = here(__file__, "dot_newslynx/defaults/")
+
+DEFAULT_TAGS = os.path.expanduser('~/.newslynx/defaults/tags.yaml')
+DEFAULT_RECIPES = os.path.expanduser('~/.newslynx/defaults/recipes.yaml')
 CONFIG_FILE = os.path.expanduser('~/.newslynx/config.yaml')
 
 # app configurations #
@@ -42,7 +46,7 @@ URL_CACHE_POOL_SIZE = 5
 
 # EXTRACTION CACHE
 EXTRACT_CACHE_PREFIX = "newslynx-extract-cache"
-EXTRACT_CACHE_TTL = 259200 # 3 DAYS
+EXTRACT_CACHE_TTL = 259200 # 3 DAYS	
 
 # THUMBNAIL SETTINGS
 THUMBNAIL_CACHE_PREFIX = "newslynx-thumbnail-cache"

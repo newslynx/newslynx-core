@@ -61,7 +61,7 @@ def run(opts, log, **kwargs):
             .format(opts.collection))
         log.exception(e, tb=False)
         log.warning("Choose from the following collections:\n\t- {}"
-             .format(opts.collection, "\n\t- {}".join(COLLECTIONS)))
+             .format(opts.collection, "\n\t- {}".join(COLLECTIONS)), line=False)
         sys.exit(1)
 
 
@@ -71,6 +71,8 @@ def run(opts, log, **kwargs):
 
     mobj = getattr(cobj, opts.method, None)
     if not mobj:
+        
+        COLLECTIONS = [c for c in dir(api) if _keep(c)]
         
         # compute the tree here to save on processing time.
         CMD_TREE = {c:[m.replace('_', '-') for m in dir(getattr(api, c)) if _keep(m)] 
@@ -83,11 +85,11 @@ def run(opts, log, **kwargs):
             log.exception(e, tb=False)
         
         else:
-            log.info("/{}".format(opts.collection), line=False, color='blue')
+            log.info("/{}\n".format(opts.collection), line=False, color='blue')
         
         msg = "choose from the following methods:\n\t- {}"\
             .format( "\n\t- ".join(options))
-        log.warning(msg)
+        log.warning(msg, line=False)
         sys.exit(1)
 
     # parse body file / json string.

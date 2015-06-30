@@ -1,0 +1,95 @@
+
+## CONTENT ITEMS
+
+- sous_chef: rss-feed-to-article
+  name: Ingest Articles from an RSS Feed
+  slug: rss-feed-to-article
+  status: uninitialized
+  options: {}
+
+## PROMOTIONS
+
+- sous_chef: twitter-list-to-event
+  name: Staff Twitter List to Promotion Event
+  slug: twitter-list-to-event-promotion
+  status: uninitialized
+  options:
+    event_status: approved
+    set_event_tag_ids: ['internal-promotion']
+    min_followers: 0
+    schedule_by: minutes
+    minutes: 15
+
+- sous_chef: twitter-user-to-event
+  name: Staff Twitter User to Promotion Event
+  slug: twitter-user-to-event-promotion
+  status: uninitialized
+  options:
+    event_status: approved
+    set_event_tag_ids: ['internal-promotion']
+    schedule_by: minutes
+    minutes: 30
+
+- sous_chef: facebook-page-to-event
+  name: Staff Facebook Page to Promotion Event
+  slug: facebook-page-to-event-promotion
+  status: uninitialized
+  options:
+    event_status: approved
+    set_event_tag_ids: ['internal-promotion']
+    schedule_by: minutes
+    minutes: 30
+
+
+## CONTENT METRICS
+
+- sous_chef: google-analytics-to-content-timeseries
+  status: uninitialized
+  options:
+    schedule_by: time_of_day
+    time_of_day: "12:30 AM"
+
+- sous_chef: google-analytics-to-content-device-summaries
+  status: uninitialized
+  options:
+    schedule_by: time_of_day
+    time_of_day: "1:00 AM"
+
+- sous_chef: google-analytics-to-content-domain-facets
+  status: uninitialized
+  options:
+    schedule_by: time_of_day
+    time_of_day: "1:30 AM"
+
+- sous_chef: share-counts-to-content-timeseries
+  status: uninitialized
+  options:
+    schedule_by: minutes
+    minutes: 50
+
+- sous_chef: events-to-content-summaries
+  status: uninitialized
+  options:
+    schedule_by: minutes
+    minutes: 360
+
+## ORG METRICS
+
+- sous_chef: facebook-page-to-org-timeseries
+  status: uninitialized
+  options:
+    schedule_by: minutes
+    minutes: 50
+
+- sous_chef: twitter-user-to-org-timeseries
+  status: uninitialized
+  options:
+    schedule_by: minutes
+    minutes: 50
+
+
+
+
+
+
+

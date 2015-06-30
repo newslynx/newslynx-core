@@ -1,0 +1,112 @@
+
+## SUBJECT TAGS
+
+- name: Politics
+  slug: politics
+  color: '#a6cee3'
+  type: subject
+
+- name: Environment
+  slug: environment
+  color: '#33a02c'
+  type: subject
+
+- name: Health
+  slug: health
+  color: '#e31a1c'
+  type: subject
+
+- name: Education
+  slug: education
+  color: '#ff7f03'
+  type: subject
+
+- name: Economy
+  slug: economy
+  color: '#6a3d9a'
+  type: subject
+
+- name: Feature
+  slug: feature
+  color: '#b2df8a'
+  type: subject
+
+## IMPACT TAGS
+
+- name: Reprint / pickup
+  slug: reprint-pickup
+  category: citation
+  level: media
+  color: '#6699cc'
+  type: impact
+
+- name: Localization
+  slug: localization
+  category: citation
+  level: media
+  color: '#66cccc'
+  type: impact
+
+- name: Editorial
+  slug: editorial
+  category: citation
+  level: media
+  color: '#99cc99'
+  type: impact
+
+- name: Staff interview / appearance
+  slug: staff-appearance
+  category: citation
+  level: media
+  color: '#d27b53'
+  type: impact
+
+- name: Influencer mention
+  slug: influencer-mention
+  category: citation
+  level: individual
+  color: '#cc99cc'
+  type: impact
+
+- name: Celebrity commentary
+  slug: celebrity-commentary
+  category: citation
+  level: individual
+  color: '#f2777a'
+  type: impact
+
+- name: Humorist / pop-culture appearance
+  slug: humorist-pop-culture
+  category: citation
+  level: media
+  color: '#ccebc5'
+  type: impact
+
+- name: Internal discussion
+  slug: internal-discussion
+  category: citation
+  level: individual
+  color: '#f99157'
+  type: impact
+
+- name: Gov't investigation
+  slug: govt-investigation
+  category: change
+  level: institution
+  color: '#ffcc66'
+  type: impact
+
+- name: Policy / regulation change
+  slug: policy-reg-change
+  category: change
+  level: institution
+  color: '#bc80bd'
+  type: impact
+
+- name: Internal Promotion
+  slug: promotion-internal
+  type: impact
+  level: internal
+  category: promotion
+  color: '#ccebc5'
+
