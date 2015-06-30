@@ -15,7 +15,7 @@ super_user_password: admin
 super_user_apikey: mj
 
 # The Database URI (This is mandatory!)
-sqlalchemy_database_uri: null
+sqlalchemy_database_uri: postgres://localhost:5432/newslynx
 
 # Filepaths to default recipes + tags to add for each
 # new organization.
