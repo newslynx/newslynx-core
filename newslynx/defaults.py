@@ -3,10 +3,16 @@ Default configurations that can be overriden by
 ~/.newslynx/config.yaml or ENV variables.
 """
 import os
-
 from newslynx.util import here 
 
-_DEFAULT_CONFIG_ = here(__file__, "config.yaml")
+_DEFAULT_CONFIG = here(__file__, "config.yaml")
+_CONFIG_REQUIRES = [
+    'super_user',
+    'super_user_email',
+    'super_user_password',
+    'sqlalchemy_database_uri',
+    'secret_key'
+]
 CONFIG_FILE = os.path.expanduser('~/.newslynx/config.yaml')
 
 # app configurations #

@@ -6,7 +6,7 @@ from sqlalchemy import or_
 from flask import Blueprint, Response, stream_with_context
 
 from newslynx.core import db
-from newslynx.exc import RequestError, ConflictError
+from newslynx.exc import RequestError, ConflictError, NotFoundError
 from newslynx.models import SousChef, Recipe, Metric
 from newslynx.models import recipe_schema
 from newslynx.models.util import fetch_by_id_or_field
@@ -155,12 +155,12 @@ def create_recipe(user, org):
 
     sous_chef = req_data.pop('sous_chef', arg_str('sous_chef', None))
     if not sous_chef:
-        raise RequestError(
+        raise  NotFoundError(
             'You must pass in a SousChef ID or slug to create a recipe.')
 
     sc = fetch_by_id_or_field(SousChef, 'slug', sous_chef)
     if not sc:
-        raise RequestError(
+        raise  NotFoundError(
             'A SousChef does not exist with ID/slug {}'
             .format(sous_chef))
 
@@ -212,7 +212,7 @@ def update_recipe(user, org, recipe_id):
 
     r = fetch_by_id_or_field(Recipe, 'slug', recipe_id, org_id=org.id)
     if not r:
-        raise RequestError('Recipe with id/slug {} does not exist.'
+        raise NotFoundError('Recipe with id/slug {} does not exist.'
                            .format(recipe_id))
 
     # keep track of current coptions hash.
@@ -254,7 +254,7 @@ def delete_recipe(user, org, recipe_id):
 
     r = fetch_by_id_or_field(Recipe, 'slug', recipe_id, org_id=org.id)
     if not r:
-        raise RequestError('Recipe with id/slug {} does not exist.'
+        raise NotFoundError('Recipe with id/slug {} does not exist.'
                            .format(recipe_id))
     force = arg_bool('force', default=False)
 
@@ -288,7 +288,7 @@ def cook_a_recipe(user, org, recipe_id):
     """
     r = fetch_by_id_or_field(Recipe, 'slug', recipe_id, org_id=org.id)
     if not r:
-        raise RequestError('Recipe with id/slug {} does not exist.'
+        raise NotFoundError('Recipe with id/slug {} does not exist.'
                            .format(recipe_id))
 
     # setup kwargs for merlynne

@@ -6,7 +6,7 @@ import click
 from colorama import Fore
 import argparse
 
-from newslynx.cli.common import echo, echo_error, load_data
+from newslynx.cli.common import load_data
 from newslynx.client import API
 from newslynx.lib import serialize
 from newslynx.init import load_sous_chefs

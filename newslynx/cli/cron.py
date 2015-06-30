@@ -1,10 +1,6 @@
-import sys
-import os
-from inspect import isgenerator
-
-import click
-from colorama import Fore
-import argparse
+"""
+Run the cron daemon.
+"""
 
 def setup(parser):
     """
@@ -13,7 +9,7 @@ def setup(parser):
     from newslynx import settings
 
     cron_parser = parser.add_parser("cron", help="Spawns the dynamic scheduling daemon.")
-    cron_parser.add_argument('-r', '--refersh-interval', dest='interval',
+    cron_parser.add_argument('-i', '--interval', dest='interval',
         type=int, default=settings.SCHEDULER_REFRESH_INTERVAL)
     return 'cron', run
 

@@ -1,9 +1,6 @@
-import pkg_resources
-
-from colorama import Fore
-
-from newslynx.cli.common import echo
-
+"""
+Report the version of newslynx.
+"""
 def setup(parser):
     api_parser = parser.add_parser("version", help="Report the version.")
     return 'version', run
@@ -12,5 +9,6 @@ def run(opts, log, **kwargs):
     """
     Report the version.
     """
-    v = pkg_resources.get_distribution("newslynx").version
-    log.info(v, line=False, color='magenta')
+    import pkg_resources
+    v = pkg_resources.get_distribution("newslynx").version + "\n"
+    log.info(v, line=False, color='blue')

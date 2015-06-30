@@ -1,20 +1,9 @@
-import sys
-import os
-from inspect import isgenerator
-
-import click
-from colorama import Fore
-import argparse
-
-from newslynx.cli.common import echo, echo_error, load_data
-from newslynx.views import app
-from newslynx import settings
-
-
 def setup(parser):
     """
     Mimics functionality of Flask-Script
     """
+    from newslynx import settings
+
     srv_parser = parser.add_parser("debug", help="Run the development server.")
     srv_parser.add_argument('--host', dest="host", default='127.0.0.1', help="The API's address")
     srv_parser.add_argument('--port', dest="port", default=settings.API_PORT, type=int, help="The API's Port")
@@ -27,6 +16,8 @@ def run(opts, log, **kwargs):
     """
     Runs the debug server.
     """
+    from newslynx.views import app
+    
     app.run(host=opts.host,
             port=int(opts.port),
             debug=opts.passthrough_errors,

@@ -9,7 +9,7 @@ from newslynx.lib import mail
 from newslynx.lib.serialize import jsonify
 from newslynx.exc import (
     AuthError, RequestError, ForbiddenError, NotFoundError,
-    ConfigError)
+    ConfigError, ConflictError)
 from newslynx.views.decorators import load_user
 from newslynx.views.util import (
     request_data, delete_response, arg_bool, localize)
@@ -60,7 +60,10 @@ def org_create(user):
     )
     org.users.append(user)
     db.session.add(org)
-    db.session.commit()
+    try:
+        db.session.commit()
+    except Exception as e:
+        raise ConflictError(e.message)
 
     # add default tags
     for tag in load_default_tags():

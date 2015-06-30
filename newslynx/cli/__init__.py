@@ -7,9 +7,11 @@ from inspect import isgenerator
 from traceback import format_exc
 import argparse
 
+from sqlalchemy import create_engine
 from colorama import Fore
-from newslynx.cli.common import echo, echo_error, parse_runtime_args
-from newslynx.logs import ColorLog 
+
+from newslynx.cli.common import parse_runtime_args
+from newslynx.logs import ColorLog, StdLog
 from newslynx.exc import ConfigError
 
 
@@ -18,12 +20,13 @@ def setup(subparser):
     Install all subcommands.
     """
 
-    from newslynx.cli import api, version, dev, init, debug, cron
+    from newslynx.cli import api, version, dev, init, debug, cron, config
     MODULES = [
         api,
         dev,
         init,
         cron,
+        config,
         version,
         debug
     ]
@@ -38,6 +41,8 @@ def run():
     The main cli function.
     """
     log = ColorLog()
+    opts = None 
+    kwargs = {}
     try:
         # create an argparse instance
         parser = argparse.ArgumentParser(prog='newslynx/nlynx')
@@ -51,6 +56,9 @@ def run():
         # parse the arguments + options
         opts, kwargs = parser.parse_known_args()
         kwargs = parse_runtime_args(kwargs)
+
+        if opts.no_color:
+            log = StdLog()
 
         # run the necessary subcommand
         if opts.cmd not in subcommands:
@@ -69,8 +77,9 @@ def run():
             sys.exit(1)
 
     except ConfigError as e:
+        from newslynx.cli import config 
         log.exception(e, tb=False)
-
+        config.run(opts, log, **kwargs)
 
     except KeyboardInterrupt as e:
         log.warning('Interrupted by user, exiting', line=False)

@@ -1,25 +1,20 @@
-import sys
 import os
+import sys
 from inspect import isgenerator
-from traceback import format_exc
-
-from colorama import Fore
-import argparse
-
-from newslynx.cli.common import echo, echo_error, load_data
-from newslynx.client import API
-from newslynx.lib import serialize
 
 # build up collections and command tree.
 _ignore_attrs = ['apikey', 'org', 'login', 'raise_errors']
 def _keep(m):
     return not m.startswith('_') and m not in _ignore_attrs
-_api = API()
-COLLECTIONS = [c for c in dir(_api) if _keep(c)] 
-CMD_TREE = {c:[m.replace('_', '-') for m in dir(getattr(_api, c)) if _keep(m)] 
-            for c in COLLECTIONS}
+
 
 def setup(parser):
+    
+    # dynamically list collections
+    from newslynx.client import API
+    _api = API()
+    COLLECTIONS = [c for c in dir(_api) if _keep(c)]
+
     api_parser = parser.add_parser("api", help="Access API methods.")
     api_parser.add_argument('collection', type=str, help='The API collection to access.',
         choices=COLLECTIONS)
@@ -45,6 +40,12 @@ def setup(parser):
 
 
 def run(opts, log, **kwargs):
+    
+    from newslynx.lib import serialize
+    from newslynx.cli.common import load_data
+
+    # dynamically list collections
+    from newslynx.client import API
 
     # connect to the api
     api = API(
@@ -70,6 +71,10 @@ def run(opts, log, **kwargs):
 
     mobj = getattr(cobj, opts.method, None)
     if not mobj:
+        
+        # compute the tree here to save on processing time.
+        CMD_TREE = {c:[m.replace('_', '-') for m in dir(getattr(api, c)) if _keep(m)] 
+                    for c in COLLECTIONS}
         options = CMD_TREE[opts.collection]
         
         if opts.method != 'ls':
@@ -86,7 +91,8 @@ def run(opts, log, **kwargs):
         sys.exit(1)
 
     # parse body file / json string.
-    kwargs.update(load_data(opts.data, opts))
+    d = load_data(opts.data)
+    kwargs.update(d)
     
     # execute method
     try:

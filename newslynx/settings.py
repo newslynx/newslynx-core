@@ -22,15 +22,6 @@ from newslynx.exc import ConfigError
 from newslynx.lib.serialize import yaml_stream_to_obj
 from newslynx import defaults
 
-_CONFIG_REQUIRES = [
-    'super_user',
-    'super_user_email',
-    'super_user_password',
-    'sqlalchemy_database_uri',
-    'secret_key'
-]
-
-
 def _load_config():
     """
     Load newslynx configurations from file / env variables.
@@ -60,11 +51,12 @@ def _load_config():
             config[name] = value
 
     # check for required config parametrics
-    for k in _CONFIG_REQUIRES:
+    for k in defaults._CONFIG_REQUIRES:
         if k not in config:
             raise ConfigError(
                 'Required setting "{}"" is missing from {} / ENV variables'
                 .format(k, config_file))
+    config['config_file'] = config_file
     return config
 
 
