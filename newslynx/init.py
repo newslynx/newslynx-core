@@ -59,30 +59,30 @@ def load_sous_chefs():
         if _is_config_file(fp):
             yield load_sous_chef(fp)
 
-    # user-generated sous-chefs.
-    if hasattr(settings, 'SOUS_CHEFS_DIR'):
-        sous_chef_dir = settings.SOUS_CHEFS_DIR
+    # # user-generated sous-chefs.
+    # if hasattr(settings, 'SOUS_CHEFS_DIR'):
+    #     sous_chef_dir = settings.SOUS_CHEFS_DIR
 
-        if sous_chef_dir.startswith('~'):
-            sous_chef_dir = \
-                os.path.expanduser(sous_chef_dir)
+    #     if sous_chef_dir.startswith('~'):
+    #         sous_chef_dir = \
+    #             os.path.expanduser(sous_chef_dir)
 
-        if not os.path.exists(sous_chef_dir):
-            raise ConfigError(
-                "'{}' was explicitly declared as "
-                "the sous_chef_dir but could "
-                "not be found."
-                .format(sous_chef_dir)
-            )
+    #     if not os.path.exists(sous_chef_dir):
+    #         raise ConfigError(
+    #             "'{}' was explicitly declared as "
+    #             "the sous_chef_dir but could "
+    #             "not be found."
+    #             .format(sous_chef_dir)
+    #         )
 
-    else:
-        sous_chef_dir = os.path.expanduser(
-            '~/.newslynx/sous-chefs/')
+    # else:
+    #     sous_chef_dir = os.path.expanduser(
+    #         '~/.newslynx/sous-chefs/')
 
-    if os.path.exists(sous_chef_dir):
-        for fp in recursive_listdir(sous_chef_dir):
-            if _is_config_file(fp):
-                yield load_sous_chef(fp)
+    # if os.path.exists(sous_chef_dir):
+    #     for fp in recursive_listdir(sous_chef_dir):
+    #         if _is_config_file(fp):
+    #             yield load_sous_chef(fp)
 
 
 def load_default_tags():

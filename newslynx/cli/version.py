@@ -8,9 +8,9 @@ def setup(parser):
     api_parser = parser.add_parser("version", help="Report the version.")
     return 'version', run
 
-def run(opts, **kwargs):
+def run(opts, log, **kwargs):
     """
     Report the version.
     """
-    echo(pkg_resources.get_distribution("newslynx").version, 
-        color=Fore.BLUE, no_color=opts.no_color)
+    v = pkg_resources.get_distribution("newslynx").version
+    log.info(v, line=False, color='magenta')

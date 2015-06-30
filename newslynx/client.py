@@ -7,7 +7,6 @@ import requests
 from requests import Session, Request, Response
 from urlparse import urljoin
 
-from newslynx import settings
 from newslynx.lib.serialize import obj_to_json, json_to_obj
 from newslynx.exc import ERRORS, ClientError, JobError
 from newslynx.logs import log
@@ -26,7 +25,7 @@ class BaseClient(object):
     def __init__(self, **kw):
 
         # defaults / helpers
-        self._url = kw.pop('url', settings.API_URL)
+        self._url = kw.pop('url',  os.getenv('NEWSLYNX_API_URL', 'http://localhost:5000'))
 
         # standardize url
         if not self._url.endswith('/'):

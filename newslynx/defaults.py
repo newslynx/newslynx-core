@@ -2,6 +2,12 @@
 Default configurations that can be overriden by
 ~/.newslynx/config.yaml or ENV variables.
 """
+import os
+
+from newslynx.util import here 
+
+_DEFAULT_CONFIG_ = here(__file__, "config.yaml")
+CONFIG_FILE = os.path.expanduser('~/.newslynx/config.yaml')
 
 # app configurations #
 API_URL = "http://localhost:5000"

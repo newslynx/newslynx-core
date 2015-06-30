@@ -24,20 +24,18 @@ def setup(parser):
     init_parser = parser.add_parser("init", help="Initializes the database, super user, and core sous chefs.")
     return 'init', run
 
-def run(opts, **kwargs):
+def run(opts, log, **kwargs):
     # create the database
     try:
         with app.app_context():
-            echo('Creating database "{}"'.format(settings.SQLALCHEMY_DATABASE_URI), 
-                no_color=opts.no_color)
+            log.info('Creating database "{}"'.format(settings.SQLALCHEMY_DATABASE_URI))
             db.configure_mappers()
             db.create_all()
             
             # create the super user
             u = User.query.filter_by(email=settings.SUPER_USER_EMAIL).first()
             if not u:
-                echo('Creating super user "{}"'.format(settings.SUPER_USER_EMAIL),
-                    no_color=opts.no_color)
+                log.info('Creating super user "{}"'.format(settings.SUPER_USER_EMAIL))
                 u = User(name=settings.SUPER_USER,
                          email=settings.SUPER_USER_EMAIL,
                          password=settings.SUPER_USER_PASSWORD,
@@ -48,8 +46,7 @@ def run(opts, **kwargs):
                 if getattr(settings, 'SUPER_USER_APIKEY', None):
                     u.apikey = settings.SUPER_USER_APIKEY
             else:
-                echo('Updating super user "{}"'.format(settings.SUPER_USER_EMAIL), 
-                    no_color=opts.no_color)
+                log.warning('Updating super user "{}"'.format(settings.SUPER_USER_EMAIL))
                 u.name=settings.SUPER_USER,
                 u.email=settings.SUPER_USER_EMAIL,
                 u.password=settings.SUPER_USER_PASSWORD,
@@ -57,7 +54,7 @@ def run(opts, **kwargs):
                 super_user=True
             db.session.add(u)
 
-            echo('(Re)Loading SQL Extensions', no_color=opts.no_color)
+            log.info('(Re)Loading SQL Extensions')
             # load sql extensions + functions
             for sql in load_sql():
                 db.session.execute(sql)
@@ -68,13 +65,11 @@ def run(opts, **kwargs):
 
                 sc_obj = db.session.query(SousChef).filter_by(slug=sc['slug']).first()
                 if not sc_obj:
-                    echo('Importing Sous Chef "{}"'.format(sc['slug']),
-                        no_color=opts.no_color)
+                    log.info('Importing Sous Chef "{}"'.format(sc['slug']))
                     sc_obj = SousChef(**sc)
                 
                 else:
-                    echo('Updating Sous Chef "{}"'.format(sc['slug']),
-                        no_color=opts.no_color)
+                    log.warning('Updating Sous Chef "{}"'.format(sc['slug']))
                     sc = sous_chef_schema.update(sc_obj.to_dict(), sc)
                     # udpate
                     for name, value in sc.items():

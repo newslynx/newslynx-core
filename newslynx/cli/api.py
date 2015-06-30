@@ -44,7 +44,7 @@ def setup(parser):
     return 'api', run
 
 
-def run(opts, **kwargs):
+def run(opts, log, **kwargs):
 
     # connect to the api
     api = API(
@@ -56,13 +56,13 @@ def run(opts, **kwargs):
     # get the collection
     cobj = getattr(api, opts.collection, None)
     if not cobj:
-        e = RuntimeError("Error: Collection '{}' does not exist."
+        e = RuntimeError("Collection '{}' does not exist."
             .format(opts.collection))
-        echo_error(e)
-        echo("Choose from the following collections:\n\t- {}"
-             .format(opts.collection, "\n\t- {}".join(COLLECTIONS)),
-             color = fore.WHITE)
+        log.exception(e, tb=False)
+        log.warning("Choose from the following collections:\n\t- {}"
+             .format(opts.collection, "\n\t- {}".join(COLLECTIONS)))
         sys.exit(1)
+
 
     # allow for `-` instead of `_`:
     if opts.method:
@@ -71,15 +71,18 @@ def run(opts, **kwargs):
     mobj = getattr(cobj, opts.method, None)
     if not mobj:
         options = CMD_TREE[opts.collection]
+        
         if opts.method != 'ls':
             e = RuntimeError("Method '{}' does not exist for collection '{}'"
                  .format(opts.method, opts.collection))
-            echo_error(e, no_color=opts.no_color)
+            log.exception(e, tb=False)
+        
         else:
-            echo("/{}".format(opts.collection), color=Fore.BLUE, no_color=opts.no_color)
+            log.info("/{}".format(opts.collection), line=False, color='blue')
+        
         msg = "choose from the following methods:\n\t- {}"\
-              .format( "\n\t- ".join(options))
-        echo(msg, color=Fore.YELLOW, no_color=opts.no_color)
+            .format( "\n\t- ".join(options))
+        log.warning(msg)
         sys.exit(1)
 
     # parse body file / json string.
@@ -90,14 +93,13 @@ def run(opts, **kwargs):
         res = mobj(**kwargs)
     
     except KeyboardInterrupt as e:
-        echo_error("Interrupted by user. Exiting.", color=Fore.YELLOW, no_color=opts.no_color)
+        log.warning("Interrupted by user.\n", line=False)
         sys.exit(2) # interrupt
     
     except Exception as e:
-        tb = format_exc()
-        echo_error(e, tb, no_color=opts.no_color)
+        log.exception(e, tb=True)
         sys.exit(1)
-    
+
     # stream output
     if isgenerator(res):
         for r in res:

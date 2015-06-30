@@ -26,6 +26,7 @@ import bitly_api as bitly
 
 from newslynx import settings
 from newslynx.constants import TASK_QUEUE_NAMES
+from newslynx.exc import ConfigError
 
 # import logs module to set handler
 from newslynx import logs
@@ -64,18 +65,21 @@ def enum_vectorizer(column):
 make_searchable()
 
 # Database
-db = SQLAlchemy(app, session_options={'query_cls': SearchQuery})
-db.engine.pool._use_threadlocal = True
-engine = create_engine(settings.SQLALCHEMY_DATABASE_URI)
-engine.pool._use_threadlocal = True
+try:
+    db = SQLAlchemy(app, session_options={'query_cls': SearchQuery})
+    db.engine.pool._use_threadlocal = True
+    engine = create_engine(settings.SQLALCHEMY_DATABASE_URI)
+    engine.pool._use_threadlocal = True
 
 
-# session for interactions outside of app context.
-def gen_session():
-    return scoped_session(sessionmaker(bind=engine))
+    # session for interactions outside of app context.
+    def gen_session():
+        return scoped_session(sessionmaker(bind=engine))
 
-db_session = gen_session()
-db_session.execute('SET TIMEZONE TO UTC')
+    db_session = gen_session()
+    db_session.execute('SET TIMEZONE TO UTC')
+except Exception as e:
+    raise ConfigError(e.message)
 
 
 # redis connection

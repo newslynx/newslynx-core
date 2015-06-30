@@ -12,7 +12,7 @@ def setup(parser):
     dev_parser.add_argument('task', type=str, help='The develpment task to run.', choices=tasks)
     return 'dev', run
 
-def run(opts, **kwargs):
+def run(opts, log, **kwargs):
     tasks = {
         'gen-random-data': run_random_data,
         'flush-comparison-cache': run_flush_comparison_cache,
@@ -22,27 +22,27 @@ def run(opts, **kwargs):
         return tasks
     return tasks.get(opts.task.replace('_', '-'))(opts, **kwargs)
 
-def run_random_data(opts, **kwargs):
+def run_random_data(opts, log, **kwargs):
     """
     Generate random data to play with.
     """
     return random_data.run(**kwargs)
 
-def run_flush_comparison_cache(opts, **kwargs):
+def run_flush_comparison_cache(opts, log, **kwargs):
     """
     Flush the comparison cache.
     """
     ComparisonsCache.flush()
-    echo('Compaison cache flushed.', no_color=opts.no_color)
+    log.info('Compaison cache flushed.')
 
-def run_flush_extract_cache(opts, **kwargs):
+def run_flush_extract_cache(opts, log, **kwargs):
     """
     Flush the extraction cache.
     """
     URLCache.flush()
     ExtractCache.flush()
     ThumbnailCache.flush()
-    echo('Extraction caches flushed.', no_color=opts.no_color)
+    log.info('Extraction caches flushed.')
 
 
 

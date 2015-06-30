@@ -1,0 +1,23 @@
+#   _   _   _   _   _   _   _   _
+#  / \ / \ / \ / \ / \ / \ / \ / \
+# ( n | e | w | s | l | y | n | x )
+#  \_/ \_/ \_/ \_/ \_/ \_/ \_/ \_/
+
+#  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+# Secret Stuff
+
+secret_key: changeme
+app_secret_key: changemetoo
+super_user: Merlynne Jones
+super_user_email: merlynne@nwsln.cz
+super_user_password: admin
+super_user_apikey: mj
+
+# The Database URI (This is mandatory!)
+sqlalchemy_database_uri: null
+
+# Filepaths to default recipes + tags to add for each
+# new organization.
+default_recipes: ~/.newslynx/defaults/recipes.yaml
+default_tags: ~/.newslynx/defaults/tags.yaml
