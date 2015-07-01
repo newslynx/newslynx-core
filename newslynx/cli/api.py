@@ -1,3 +1,7 @@
+"""
+Full access to the API client.
+"""
+
 import os
 import sys
 from inspect import isgenerator
@@ -116,10 +120,3 @@ def run(opts, log, **kwargs):
     else:
         sys.stdout.write(serialize.obj_to_json(res))
     sys.exit(0)
-
-
-
-
-
-
-

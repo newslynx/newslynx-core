@@ -1,3 +1,7 @@
+"""
+NewsLynx's CLI
+"""
+
 from gevent.monkey import patch_all 
 patch_all()
 
@@ -14,6 +18,11 @@ from newslynx.cli.common import parse_runtime_args
 from newslynx.logs import ColorLog, StdLog
 from newslynx.exc import ConfigError
 
+LOGO = """
+ / \ / \ / \ / \ / \ / \ / \ / \ 
+( n | e | w | s | l | y | n | x )
+ \_/ \_/ \_/ \_/ \_/ \_/ \_/ \_/
+"""  
 
 def setup(subparser):
     """
@@ -41,13 +50,6 @@ def run():
     """
     The main cli function.
     """
-
-    logo = """
-     / \ / \ / \ / \ / \ / \ / \ / \ 
-    ( n | e | w | s | l | y | n | x )
-     \_/ \_/ \_/ \_/ \_/ \_/ \_/ \_/
-    """  
-
     log = ColorLog()
     opts = None 
     kwargs = {}
@@ -86,7 +88,7 @@ def run():
 
     except ConfigError as e:
         from newslynx.cli import config 
-        log.info(logo +"\n", line=False, color='lightwhite_ex')
+        log.info(LOGO +"\n", line=False, color='lightwhite_ex')
         log.exception(e, tb=False, line=False)
         log.info("\n\n", line=False)
         kwargs['re'] = False

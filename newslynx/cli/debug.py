@@ -1,3 +1,7 @@
+"""
+Run a debug server.
+"""
+
 def setup(parser):
     """
     Mimics functionality of Flask-Script
@@ -26,3 +30,4 @@ def run(opts, log, **kwargs):
             processes=False,
             use_reloader=False,
             passthrough_errors=opts.passthrough_errors)
+

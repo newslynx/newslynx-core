@@ -1,3 +1,7 @@
+"""
+Initialize Database, Super User, and Sous Chefs
+"""
+
 import sys
 import os
 from inspect import isgenerator
