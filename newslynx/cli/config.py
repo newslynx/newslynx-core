@@ -115,7 +115,7 @@ def run(opts, log, **kwargs):
                 else:
                     conf_str += "\n" + newval
         
-        log.info('\nWould you like to use our defaults for tags and recipes? ', color='blue', line=False)
+        log.info('\nWould you like to use our default tags and recipes? ', color='blue', line=False)
         log.info(' y/(n): ', line=False, color='yellow')
         resp = raw_input("")
         modules = [

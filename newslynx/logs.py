@@ -90,9 +90,5 @@ class StdLog(ColorLog):
     """
     A standard logger.
     """
-    def __init__(self, **kw):
-        self.date_format  = kw.get('date_format', '%H:%M:%S')
-        self._now = kw.get('now', datetime.now)
-
     def colorize(self, msg, **kw):
         return msg
