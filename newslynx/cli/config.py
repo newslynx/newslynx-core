@@ -8,7 +8,7 @@ import re
 re_conf = '{}:[^\n]+'
 
 def setup(parser):
-    conf_parser = parser.add_parser("config", help="Spawns the dynamic scheduling daemon.")
+    conf_parser = parser.add_parser("config", help="Setup your .newslynx config file.")
     return 'config', run
 
 
@@ -62,10 +62,10 @@ def run(opts, log, **kwargs):
             conf_obj = yaml_to_obj(conf_str)
         except Exception as e:
 
-            log.info('\nNo configurations exist in: \n', line=False, color="yellow")
+            log.info('\n\nNo configurations exist in: \n', line=False, color="yellow")
             log.info(config_file, color='magenta', line=False)
 
-            log.info('\nGenerating default config file in: \n', line=False, color="yellow")
+            log.info('\n\nGenerating default config file in: \n', line=False, color="yellow")
             log.info(config_file, color='magenta', line=False)
 
             config_dir = "/".join(config_file.split('/')[:-1])
@@ -133,9 +133,9 @@ def run(opts, log, **kwargs):
                     os.makedirs(default_dir)
                 except OSError:
                     pass
-                log.info('Storing default ', line=False, color="yellow")
+                log.info('\nStoring default ', line=False, color="yellow")
                 log.info(name, line=False, color='green')
-                log.info(' in ', line=False, color="blue")
+                log.info(' in:\n', line=False, color="blue")
                 log.info(m +"\n", line=False, color='magenta')
                
                 with open(m, 'wb') as f1:
@@ -157,8 +157,12 @@ def run(opts, log, **kwargs):
         with open(config_file, 'wb') as f:
             f.write(conf_str)
 
-        log.info('\nNow run ', line=False, color="blue")
-        log.info("newslynx init \n", color="green", line=False)
+        log.info("\nYou can change these configurations at any time by modifying:\n", line=False, color="blue")
+        log.info(config_file, line=False, color='magenta')
+
+        log.info('\n\nNow run ', line=False, color="blue")
+        log.info("newslynx init ", color="green", line=False)
+        log.info("to get started \n", color="blue", line=False)
         sys.exit(0)
 
     except KeyboardInterrupt as e:

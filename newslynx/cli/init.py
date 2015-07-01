@@ -28,14 +28,14 @@ def run(opts, log, **kwargs):
     # create the database
     try:
         with app.app_context():
-            log.info('Creating database "{}"'.format(settings.SQLALCHEMY_DATABASE_URI))
+            log.info('Creating database "{}"\n'.format(settings.SQLALCHEMY_DATABASE_URI), line=False)
             db.configure_mappers()
             db.create_all()
             
             # create the super user
             u = User.query.filter_by(email=settings.SUPER_USER_EMAIL).first()
             if not u:
-                log.info('Creating super user "{}"'.format(settings.SUPER_USER_EMAIL))
+                log.info('Creating super user "{}"\n'.format(settings.SUPER_USER_EMAIL), line=False)
                 u = User(name=settings.SUPER_USER,
                          email=settings.SUPER_USER_EMAIL,
                          password=settings.SUPER_USER_PASSWORD,
@@ -46,7 +46,7 @@ def run(opts, log, **kwargs):
                 if getattr(settings, 'SUPER_USER_APIKEY', None):
                     u.apikey = settings.SUPER_USER_APIKEY
             else:
-                log.warning('Updating super user "{}"'.format(settings.SUPER_USER_EMAIL))
+                log.warning('Updating super user "{}"\n'.format(settings.SUPER_USER_EMAIL), line=False)
                 u.name=settings.SUPER_USER,
                 u.email=settings.SUPER_USER_EMAIL,
                 u.password=settings.SUPER_USER_PASSWORD,
@@ -54,7 +54,7 @@ def run(opts, log, **kwargs):
                 super_user=True
             db.session.add(u)
 
-            log.info('(Re)Loading SQL Extensions')
+            log.info('(Re)Loading SQL Extensions\n', line=False)
             # load sql extensions + functions
             for sql in load_sql():
                 db.session.execute(sql)
@@ -65,11 +65,11 @@ def run(opts, log, **kwargs):
 
                 sc_obj = db.session.query(SousChef).filter_by(slug=sc['slug']).first()
                 if not sc_obj:
-                    log.info('Importing Sous Chef "{}"'.format(sc['slug']))
+                    log.info('Importing Sous Chef "{}"\n'.format(sc['slug']), line=False)
                     sc_obj = SousChef(**sc)
                 
                 else:
-                    log.warning('Updating Sous Chef "{}"'.format(sc['slug']))
+                    log.warning('Updating Sous Chef "{}"\n'.format(sc['slug']), line=False)
                     sc = sous_chef_schema.update(sc_obj.to_dict(), sc)
                     # udpate
                     for name, value in sc.items():
@@ -79,6 +79,10 @@ def run(opts, log, **kwargs):
             # commit
             db.session.commit()
             db.session.close()
+
+        log.info('\nSuccess!\n', line=False)
+        log.warning('\nYou can now start the API by running ', color="blue", line=False)
+        log.info('newslynx debug\n\n', color="green", line=False)
 
     except Exception as e:
         db.session.rollback()
