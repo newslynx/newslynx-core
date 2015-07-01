@@ -10,6 +10,7 @@ from newslynx.views.decorators import load_user, load_org
 from newslynx.views.util import (
     request_data, delete_response, arg_int, arg_str)
 from newslynx.constants import TRUE_VALUES
+from newslynx.lib import doc
 
 # bp
 bp = Blueprint('reports', __name__)
@@ -71,20 +72,42 @@ def create_report(user, org):
     return jsonify(r)
 
 
-@bp.route('/api/v1/reports/<id>', methods=['GET'])
+@bp.route('/api/v1/reports/<id>.<format>', methods=['GET'])
 @load_user
 @load_org
-def get_report(user, org, id):
+def get_report(user, org, id, format):
 
     r = Report.query.filter_by(id=id, org_id=org.id).first()
     if not r:
         raise NotFoundError(
             'Report "{}" does not yet exist for Org "{}"'
             .format(id, org.name))
-    format = arg_str('format', default='json')
+
+    # handle format aliases
+    if format == "opendocument":
+        format = "odt"
+
+    # handle simple types
     if format == "json":
         return jsonify(r)
-    return Response(r.render(format))
+
+    # html
+    if format == 'html' and r.template.format == "html":
+        return Response(r.render())
+
+    # markdown to html
+    elif format == 'html' and r.template.format == "md":
+        contents = doc.convert(r.render(), "md", "html")
+        return Response(contents)
+
+    # conversions.
+    try:
+        resp = doc.convert_response(r.render(), r.template.format, format)
+    except Exception as e:
+        raise RequestError(e.message)
+    h = 'inline; filename="{}"'.format(r.filename(format))
+    resp.headers['Content-Disposition'] = h
+    return resp
 
 
 @bp.route('/api/v1/reports/<id>', methods=['PUT', 'PATCH'])
@@ -113,7 +136,6 @@ def update_report(user, org, id):
             raise RequestError(
                 'Report data could not be parsed: {}'
                 .format(e.message))
-
     if name:
         r.name = name 
     if slug:

@@ -88,13 +88,9 @@ class Document(object):
             PANDOC_PATH, temp_file.name, '-o %s' % output_filename]
         subprocess_arguments.extend(self.arguments)
         cmd = " ".join(subprocess_arguments)
-
         fin = os.popen(cmd)
         msg = fin.read()
         fin.close()
-        if msg:
-            print "Pandoc message:", msg
-
         os.remove(temp_file.name)
 
         if exists(output_filename):

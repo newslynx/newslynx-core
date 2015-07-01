@@ -1,3 +1,6 @@
+"""
+All things related to sending + recieving of emails.
+"""
 from newslynx.lib.pkg.validate_email import validate_email
 
 

@@ -8,7 +8,6 @@ from newslynx.core import db
 from newslynx.lib import dates
 from newslynx.lib.pkg import pandoc
 
-from tempfile import NamedTemporaryFile
 
 class Report(db.Model):
 
@@ -44,31 +43,16 @@ class Report(db.Model):
             'has_template': self.template_id is not None,
             'data': self.data
         }
+
+    def filename(self, format):
+        """
+        Create a filename for a report.
+        """
+        return "{}-{}.{}".format(self.slug, 
+            self.created.strftime('%Y-%m-%d-%H-%m-%s'), format)
     
-    def render(self, format):
-        contents = self.template.render(data=self.data)
-        if self.template.format == 'html':
-            return contents, 'application/html'
-        p = pandoc.Document()
-        p.markdown = contents 
-        if format == "html":
-            return p.html
-        
-        elif format == "pdf":
-            tempfile = NamedTemporaryFile(mode="wb", suffix=".pdf", delete=False)
-            output_file = p.to_file(tempfile.name)
-            if not output_file:
-                return None
-            contents = open(output_file).read()
-            try:
-                os.remove(output_file)
-                os.remove(tempfile.name)
-            except OSError:
-                pass
-            return contents
-
-
-
+    def render(self):
+        return self.template.render(data=self.data, report=self.to_dict().pop('data'))
 
     def __repr__(self):
         return "<Report %r / %r >" % (self.org_id, self.slug)
