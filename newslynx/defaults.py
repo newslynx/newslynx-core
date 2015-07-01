@@ -17,7 +17,7 @@ _DEFAULT_DEFAULTS = here(__file__, "dot_newslynx/defaults/")
 
 DEFAULT_TAGS = os.path.expanduser('~/.newslynx/defaults/tags.yaml')
 DEFAULT_RECIPES = os.path.expanduser('~/.newslynx/defaults/recipes.yaml')
-CONFIG_FILE = os.path.expanduser('~/.newslynx/config.yaml')
+CONFIG_FILE = os.getenv('NEWSLYNX_CONFIG_FILE', os.path.expanduser('~/.newslynx/config.yaml'))
 
 # app configurations #
 API_URL = "http://localhost:5000"
@@ -71,7 +71,7 @@ SCHEDULER_RESET_PAUSE_RANGE = [20, 200]
 
 # browser
 BROWSER_USER_AGENT = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10; rv:33.0) Gecko/20100101 Firefox/33.0"
-BROWSER_TIMEOUT = 7
+BROWSER_TIMEOUT = 6
 BROWSER_WAIT = 1
 BROWSER_BACKOFF = 2
 BROWSER_MAX_RETRIES = 5

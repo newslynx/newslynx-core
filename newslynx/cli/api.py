@@ -51,7 +51,7 @@ def run(opts, log, **kwargs):
     api = API(
         apikey=opts.apikey, 
         org=opts.org, 
-        api_url=opts.api_url,
+        api_url=opts.apiurl,
         raise_errors=opts.raise_errors)
 
     # get the collection

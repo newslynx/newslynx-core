@@ -81,7 +81,7 @@ class ColorLog(object):
 
     def exception(self, e, **kw):
         kw.setdefault('tb', True)
-        self.error('{} : {}'.format(e.__class__.__name__, e.message))
+        self.error('{} : {}'.format(e.__class__.__name__, e.message),  **kw)
         if kw['tb']:
             tb = format_exc()
             self.warning(tb, **kw)

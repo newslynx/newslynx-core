@@ -20,11 +20,12 @@ def setup(subparser):
     Install all subcommands.
     """
 
-    from newslynx.cli import api, version, dev, init, debug, cron, config
+    from newslynx.cli import api, version, dev, init, debug, cron, config, echo
     MODULES = [
         api,
         dev,
         init,
+        echo,
         cron,
         config,
         version,
@@ -40,6 +41,13 @@ def run():
     """
     The main cli function.
     """
+
+    logo = """
+     / \ / \ / \ / \ / \ / \ / \ / \ 
+    ( n | e | w | s | l | y | n | x )
+     \_/ \_/ \_/ \_/ \_/ \_/ \_/ \_/
+    """  
+
     log = ColorLog()
     opts = None 
     kwargs = {}
@@ -78,7 +86,10 @@ def run():
 
     except ConfigError as e:
         from newslynx.cli import config 
-        log.exception(e, tb=False)
+        log.info(logo +"\n", line=False, color='lightwhite_ex')
+        log.exception(e, tb=False, line=False)
+        log.info("\n\n", line=False)
+        kwargs['re'] = False
         config.run(opts, log, **kwargs)
 
     except KeyboardInterrupt as e:

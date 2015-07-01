@@ -58,3 +58,4 @@ jsonpath-rw>=1.4.0
 pillow
 pyasn1==0.1.7
 rq
+colorama

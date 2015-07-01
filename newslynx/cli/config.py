@@ -14,12 +14,6 @@ def setup(parser):
 
 
 def run(opts, log, **kwargs):
-    logo = """
-     / \ / \ / \ / \ / \ / \ / \ / \ 
-    ( n | e | w | s | l | y | n | x )
-     \_/ \_/ \_/ \_/ \_/ \_/ \_/ \_/
-    """  
-
     from sqlalchemy import create_engine
     from newslynx.defaults import (
         _DEFAULT_CONFIG, _CONFIG_REQUIRES, _DEFAULT_DEFAULTS)
@@ -45,9 +39,12 @@ def run(opts, log, **kwargs):
 
     from newslynx.lib.serialize import yaml_to_obj
 
+    reconf = ""
+    if kwargs.get('re', True):
+        reconf = "re-"
+
     try:
-        log.info(logo +"\n", line=False, color='lightwhite_ex')
-        log.info('Would you like to configure NewsLynx now ?', line=False, color="blue")
+        log.info('Would you like to {}configure NewsLynx now ?'.format(reconf), line=False, color="blue")
         log.info(' y/(n): ', line=False, color='yellow')
         resp = raw_input("")
         if not resp.startswith('y'):
@@ -85,7 +82,7 @@ def run(opts, log, **kwargs):
             val = conf_obj.get(k)
             log.info('\nOkay to use ', line=False, color="blue")
             log.info(val, line=False, color="green")
-            log.info(' for your ', line=False, color='blue')
+            log.info('\nfor your ', line=False, color='blue')
             log.info(k, line=False, color="magenta")
             log.info(' ? ', line=False, color="blue")
             log.info(' y/(n): ', line=False, color='yellow')
