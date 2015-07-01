@@ -31,8 +31,8 @@ class BaseClient(object):
         if not self._url.endswith('/'):
             self._url += '/'
 
-        self.apikey = kw.get('apikey', os.getenv('NEWSLYNX_API_KEY'))
-        self.org = kw.pop('org', os.getenv('NEWSLYNX_API_ORG_ID'))
+        self.apikey = kw.get('apikey', os.getenv('NEWSLYNX_APIKEY'))
+        self.org = kw.pop('org', os.getenv('NEWSLYNX_ORG'))
         self.raise_errors = kw.pop('raise_errors', True)
         self._version = kw.pop('version', 'v1')
         self._endpoint = self._url + 'api/' + self._version + "/"

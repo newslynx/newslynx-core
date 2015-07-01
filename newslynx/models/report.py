@@ -40,7 +40,7 @@ class Report(db.Model):
             'slug': self.slug,
             'created': self.created,
             'updated': self.updated,
-            'has_template': self.template_id is not None,
+            'has_template': self.has_template,
             'data': self.data
         }
 
@@ -50,6 +50,10 @@ class Report(db.Model):
         """
         return "{}-{}.{}".format(self.slug, 
             self.created.strftime('%Y-%m-%d-%H-%m-%s'), format)
+
+    @property 
+    def has_template(self):
+        return self.template_id is not None
     
     def render(self):
         return self.template.render(**self.to_dict())

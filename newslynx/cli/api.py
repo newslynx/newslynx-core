@@ -33,12 +33,12 @@ def setup(parser):
         default=os.getenv('NEWSLYNX_API_URL'), 
         help="The base url of Newslynx's API. Will default to $NEWSLYNX_API_URL")
     api_parser.add_argument('-k', '--apikey', dest="apikey", type=str,
-        default=os.getenv('NEWSLYNX_API_KEY'), 
-        help="Your API key. Will default to $NEWSLYNX_API_KEY")
+        default=os.getenv('NEWSLYNX_APIKEY'), 
+        help="Your API key. Will default to $NEWSLYNX_APIKEY")
     api_parser.add_argument('-o', '--org', dest="org", type=str, 
         help="The ID/Slug of the organization you'd like to access. "
-             "Will default to $NEWSLYNX_API_ORG",
-        default=os.getenv('NEWSLYNX_API_ORG'))
+             "Will default to $NEWSLYNX_ORG",
+        default=os.getenv('NEWSLYNX_ORG'))
 
     return 'api', run
 

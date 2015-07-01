@@ -87,6 +87,11 @@ def get_report(user, org, id, format):
     if format == "opendocument":
         format = "odt"
 
+    if not r.has_template and format != "json":
+        raise RequestError(
+            'This report is not associated with a template '
+            'so it can only be rendered as json.')
+
     # handle simple types
     if format == "json":
         return jsonify(r)
