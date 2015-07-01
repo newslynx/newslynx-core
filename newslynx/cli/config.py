@@ -166,5 +166,5 @@ def run(opts, log, **kwargs):
         sys.exit(0)
 
     except KeyboardInterrupt as e:
-        log.warning('\nInterrupted by user, exiting\n', line=False)
+        log.warning('\nInterrupted by user.\n', line=False)
         sys.exit(2) # interrupt

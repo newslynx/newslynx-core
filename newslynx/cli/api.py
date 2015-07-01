@@ -25,7 +25,7 @@ def setup(parser):
     api_parser.add_argument("-e", "--raise-errors", action='store_true',
         default=False,
         help="Raise Errors as statements. If missing, will return JSON.")
-    api_parser.add_argument('-u', '--api-url', type=str,
+    api_parser.add_argument('-u', '--apiurl', type=str,
         default=os.getenv('NEWSLYNX_API_URL'), 
         help="The base url of Newslynx's API. Will default to $NEWSLYNX_API_URL")
     api_parser.add_argument('-k', '--apikey', dest="apikey", type=str,
@@ -101,7 +101,7 @@ def run(opts, log, **kwargs):
         res = mobj(**kwargs)
     
     except KeyboardInterrupt as e:
-        log.warning("Interrupted by user.\n", line=False)
+        log.warning("\nInterrupted by user.\n", line=False)
         sys.exit(2) # interrupt
     
     except Exception as e:

@@ -69,7 +69,7 @@ def run():
             subcommands[opts.cmd](opts, log, **kwargs)
 
         except KeyboardInterrupt as e:
-            log.warning('\nInterrupted by user, exiting\n', line=False)
+            log.warning('\nInterrupted by user.\n', line=False)
             sys.exit(2) # interrupt
 
         except Exception as e:
@@ -82,6 +82,6 @@ def run():
         config.run(opts, log, **kwargs)
 
     except KeyboardInterrupt as e:
-        log.warning('\nInterrupted by user, exiting\n', line=False)
+        log.warning('\nInterrupted by user.\n', line=False)
         sys.exit(2) # interrupt
 
