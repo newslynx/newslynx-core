@@ -28,16 +28,28 @@ class Org(db.Model):
         db.DateTime(timezone=True), onupdate=dates.now, default=dates.now)
 
     # joins
-    auths = db.relationship('Auth',
-                            backref=db.backref('org'),
-                            lazy='joined',
-                            cascade="all, delete-orphan")
-    settings = db.relationship('Setting',
-                               backref=db.backref('org'),
-                               lazy='joined',
-                               cascade="all, delete-orphan")
+    auths = db.relationship(
+        'Auth',
+        backref=db.backref('org'),
+        lazy='joined',
+        cascade="all, delete-orphan")
+    settings = db.relationship(
+        'Setting',
+        backref=db.backref('org'),
+        lazy='joined',
+        cascade="all, delete-orphan")
 
     # dynamic relations
+    templates = db.relationship(
+        'Template',
+        backref=db.backref('org'),
+        lazy='dynamic',
+        cascade="all, delete-orphan")
+    reports = db.relationship(
+        'Report',
+        backref=db.backref('org'),
+        lazy='dynamic',
+        cascade="all, delete-orphan")
     users = db.relationship(
         'User', secondary=orgs_users,
         backref=db.backref('orgs', lazy='joined'),

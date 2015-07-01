@@ -139,6 +139,8 @@ class BaseClient(object):
                 return resp.json()
 
         else:
+            if resp.status_code == 204:
+                return True
             try:
                 return resp.json()
             except:
@@ -944,9 +946,99 @@ class SousChefs(BaseClient):
         return self._request('PUT', url, data=kw, params=params)
 
 
+class Templates(BaseClient):
+
+    def list(self, **kw):
+        """
+        List templates for an organization.
+        """
+
+        url = self._format_url('templates')
+        return self._request('GET', url, params=kw)
+
+    def get(self, id, **kw):
+        """
+        Get a particular template
+        """
+
+        url = self._format_url('templates', id)
+        return self._request('GET', url, **kw)
+
+    def create(self, **kw):
+        """
+        Create a template
+        """
+        # jsonify value
+        kw, params = self._split_auth_params_from_data(kw)
+        # TODO handle template files.
+        url = self._format_url('templates')
+        return self._request('POST', url, data=kw, params=params)
+
+    def update(self, id, **kw):
+        """
+        Update a template.
+        """
+
+        kw, params = self._split_auth_params_from_data(kw)
+        # TODO handle template files.
+        url = self._format_url('templates', id)
+        return self._request('PUT', url, data=kw, params=params)
+
+    def delete(self, id, **kw):
+        """
+        Delete a template. Cascades all reports.
+        """
+
+        url = self._format_url('templates', id)
+        return self._request('DELETE', url, params=kw)
+
+
 # TODO:
+
 class Reports(BaseClient):
-    pass
+
+    def list(self, **kw):
+        """
+        List reports for an organization.
+        """
+
+        url = self._format_url('reports')
+        return self._request('GET', url, params=kw)
+
+    def get(self, id, **kw):
+        """
+        Get a particular report. TODO handle rendering.
+        """
+        url = self._format_url('reports', id)
+        return self._request('GET', url, **kw)
+
+    def create(self, **kw):
+        """
+        Create a report
+        """
+        # jsonify value
+        kw, params = self._split_auth_params_from_data(kw)
+        # TODO handle report files.
+        url = self._format_url('reports')
+        return self._request('POST', url, data=kw, params=params)
+
+    def update(self, id, **kw):
+        """
+        Update a report.
+        """
+
+        kw, params = self._split_auth_params_from_data(kw)
+        # TODO handle report files.
+        url = self._format_url('reports', id)
+        return self._request('PUT', url, data=kw, params=params)
+
+    def delete(self, id, **kw):
+        """
+        Delete a report. Cascades all reports.
+        """
+
+        url = self._format_url('reports', id)
+        return self._request('DELETE', url, params=kw)
 
 
 class API(BaseClient):
@@ -967,6 +1059,7 @@ class API(BaseClient):
         self.content = Content(**kw)
         self.metrics = Metrics(**kw)
         self.reports = Reports(**kw)
+        self.templates = Templates(**kw)
         self.authors = Authors(**kw)
         self.extract = Extract(**kw)
         self.sql = SQL(**kw)

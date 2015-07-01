@@ -6,6 +6,10 @@ from newslynx.lib import serialize
 from newslynx.constants import (
     NULL_VALUES, TRUE_VALUES, FALSE_VALUES)
 
+ACCEPTABLE_FILE_FORMATS = [
+    'yml', 'yaml', 'json'
+]
+
 # lil' hacks.
 re_quoted_arg = re.compile(r'^[\'\"]?(.*)[\'\"]?$')
 trues = copy(TRUE_VALUES)
@@ -41,6 +45,11 @@ def parse_runtime_args(arg_strings):
                 kwargs[key] = value
     return kwargs
 
+def acceptable_file(path_or_string):
+    for fmt in ACCEPTABLE_FILE_FORMATS:
+        if path_or_string.lower().endswith('.{}'.format(fmt)):
+            return True
+    return False
 
 def load_data(path_or_string):
     """
@@ -56,9 +65,7 @@ def load_data(path_or_string):
 
     except ValueError as e:
         # only deal with these formats.
-        if not ( path_or_string.endswith('.yaml') or 
-            path_or_string.endswith('.yml') or 
-            path_or_string.endswith('.json') ):
+        if not acceptable_file(path_or_string):
            return kwargs
 
         fp = os.path.expand_user(path_or_string)

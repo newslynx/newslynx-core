@@ -11,6 +11,8 @@ from .content_item import ContentItem
 from .content_metric import ContentMetricTimeseries, ContentMetricSummary
 from .user import User
 from .sous_chef import SousChef
+from .template import Template
+from .report import Report
 from .work_cache import URLCache, ExtractCache, ThumbnailCache
 from .compare_cache import (
     ComparisonsCache, AllContentComparisonCache,

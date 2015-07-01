@@ -99,7 +99,14 @@ def run(opts, log, **kwargs):
     # parse body file / json string.
     d = load_data(opts.data)
     kwargs.update(d)
-    
+
+    # special handling for templates
+    if opts.collection == 'templates':
+        tmpl = kwargs.get('template', '').lower()
+        if tmpl.endswith('html') or tmpl.endswith('md') or \
+           tmpl.endswith('markdown'):
+           kwargs['template'] = open(tmpl).read()
+
     # execute method
     try:
         res = mobj(**kwargs)

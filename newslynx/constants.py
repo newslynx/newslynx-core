@@ -141,6 +141,10 @@ TASK_QUEUE_NAMES = [
     'recipe',
     'bulk'
 ]
+TEMPLATE_FORMATS = [
+    'html',
+    'md'
+]
 
 # boolean parsing.
 TRUE_VALUES = [
