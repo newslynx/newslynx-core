@@ -52,7 +52,7 @@ class Report(db.Model):
             self.created.strftime('%Y-%m-%d-%H-%m-%s'), format)
     
     def render(self):
-        return self.template.render(data=self.data, report=self.to_dict().pop('data'))
+        return self.template.render(**self.to_dict())
 
     def __repr__(self):
         return "<Report %r / %r >" % (self.org_id, self.slug)
