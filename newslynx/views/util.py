@@ -656,6 +656,9 @@ def register_blueprints(app, *mods):
                 except:
                     continue
 
+                m = importlib.import_module(
+                    '%s.%s' % (package_name, name))       
+
                 for item in dir(m):
                     item = getattr(m, item)
                     if isinstance(item, Blueprint):

@@ -222,6 +222,13 @@ def apply_content_item_filters(q, **kw):
         recipe_ids = [r[0] for r in sous_chef_recipes]
         q = q.filter(~ContentItem.recipe_id.in_(recipe_ids))
 
+    # apply ids filter.
+    if len(kw['include_content_items']):
+        q = q.filter(ContentItem.id.in_(kw['include_content_items']))
+
+    if len(kw['exclude_content_items']):
+        q = q.filter(~ContentItem.id.in_(kw['exclude_content_items']))
+
     return q, list(all_event_ids)
 
 
@@ -233,28 +240,29 @@ def apply_content_item_filters(q, **kw):
 def search_content(user, org):
     """
     args:
-        q              | search query
-        url            | a regex for a url
-        domain         | a domain to match on
-        fields         | a comma-separated list of fields to include in response
-        page           | page number
-        per_page       | number of items per page.
-        sort           | variable to order by, preface with '-' to sort desc.
-        created_after  | isodate variable to filter results after
-        created_before | isodate variable to filter results before
-        updated_after  | isodate variable to filter results after
-        updated_before | isodate variable to filter results before
-        type           | ['pending', 'approved', 'deleted']
-        facets         | a comma-separated list of facets to include, default=[]
-        tag            | a comma-separated list of tags to filter by
-        categories     | a comma-separated list of tag_categories to filter by
-        levels         | a comma-separated list of tag_levels to filter by
-        subject_tag_ids| a comma-separated list of subject_tag_ids to filter by
-        impact_tag_ids | a comma-separated list of impact_tag_ids to filter by
-        recipe_ids     | a comma-separated list of recipes to filter by
-        sous_chefs     | a comma-separated list of sous_chefs to filter by
-        url_regex      | what does it sound like
-        url            | duh
+        q                | search query
+        url              | a regex for a url
+        domain           | a domain to match on
+        fields           | a comma-separated list of fields to include in response
+        page             | page number
+        per_page         | number of items per page.
+        sort             | variable to order by, preface with '-' to sort desc.
+        created_after    | isodate variable to filter results after
+        created_before   | isodate variable to filter results before
+        updated_after    | isodate variable to filter results after
+        updated_before   | isodate variable to filter results before
+        type             | ['pending', 'approved', 'deleted']
+        facets           | a comma-separated list of facets to include, default=[]
+        tag              | a comma-separated list of tags to filter by
+        categories       | a comma-separated list of tag_categories to filter by
+        levels           | a comma-separated list of tag_levels to filter by
+        content_item_ids | a comma-separated list of content_item_ids to filter by.
+        subject_tag_ids  | a comma-separated list of subject_tag_ids to filter by
+        impact_tag_ids   | a comma-separated list of impact_tag_ids to filter by
+        recipe_ids       | a comma-separated list of recipes to filter by
+        sous_chefs       | a comma-separated list of sous_chefs to filter by
+        url_regex        | what does it sound like
+        url              | duh
     """
 
     # parse arguments
@@ -273,6 +281,8 @@ def search_content(user, org):
         arg_list('impact_tag_ids', default=[], typ=int, exclusions=True)
     include_recipes, exclude_recipes = \
         arg_list('recipe_ids', default=[], typ=int, exclusions=True)
+    include_content_items, exclude_content_items = \
+        arg_list('ids', default=[], typ=int, exclusions=True)
     include_sous_chefs, exclude_sous_chefs = \
         arg_list('sous_chefs', default=[], typ=str, exclusions=True)
     include_authors, exclude_authors = \
@@ -315,6 +325,9 @@ def search_content(user, org):
         exclude_recipes=exclude_recipes,
         include_sous_chefs=include_sous_chefs,
         exclude_sous_chefs=exclude_sous_chefs,
+        include_content_items=include_content_items,
+        exclude_content_items=exclude_content_items,
+        sort_ids=arg_bool('sort_ids', default=False),
         url=arg_str('url', default=None),
         url_regex=arg_str('url_regex', default=None),
         org_id=org.id
@@ -390,15 +403,20 @@ def search_content(user, org):
         content_query = content_query.with_entities(*cols)
 
     # apply sort if we havent already sorted by query relevance.
-    if kw['sort_field'] != 'relevance':
+    if not kw['sort_ids']:
+        if kw['sort_field'] != 'relevance':
+            if not metric_sort:
+                p = "ContentItem.{sort_field}.{direction}"
+            else:
+                p = "ContentMetricSummary.metrics['{sort_field}'].cast(Numeric).{direction}"
 
-        if not metric_sort:
-            p = "ContentItem.{sort_field}.{direction}"
-        else:
-            p = "ContentMetricSummary.metrics['{sort_field}'].cast(Numeric).{direction}"
+            content_query = content_query\
+                .order_by(eval(p.format(**kw))().nullslast())
 
-        content_query = content_query\
-            .order_by(eval(p.format(**kw))().nullslast())
+    elif len(include_content_items):
+        ids = [str(i) for i in include_content_items]
+        sort_str = "idx(ARRAY[{}], content.id)".format(",".join(ids))
+        content_query = content_query.order_by(sort_str)
 
     # facets
     validate_content_item_facets(kw['facets'])

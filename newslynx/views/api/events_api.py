@@ -140,8 +140,14 @@ def apply_event_filters(q, **kw):
             .all()
         q = q.filter(~Event.recipe_id.in_([r[0] for r in sous_chef_recipes]))
 
-    return q
+    # apply ids filter.
+    if len(kw['include_events']):
+        q = q.filter(Event.id.in_(kw['include_events']))
 
+    if len(kw['exclude_events']):
+        q = q.filter(~Event.id.in_(kw['exclude_events']))
+
+    return q
 
 # endpoints
 
@@ -170,6 +176,7 @@ def search_events(user, org):
         levels           | a comma-separated list of tag_levels to filter by
         tag_ids          | a comma-separated list of tag_ids to filter by
         content_item_ids | a comma-separated list of content_item_ids to filter by
+        event_ids        | a comma-separated list of events ids to filter by.
         recipe_ids       | a comma-separated list of recipes to filter by
         sous_chefs       | a comma-separated list of sous_chefs to filter by
         incl_thumbnail   | whether or not to include the thumbnail
@@ -204,6 +211,9 @@ def search_events(user, org):
     include_categories, exclude_categories = \
         arg_list('categories', default=[], typ=str, exclusions=True)
 
+    include_events, exclude_events = \
+        arg_list('ids', default=[], typ=int, exclusions=True)
+
     kw = dict(
         search_query=arg_str('q', default=None),
         search_vector=arg_str('search', default='all'),
@@ -233,6 +243,9 @@ def search_events(user, org):
         exclude_recipes=exclude_recipes,
         include_sous_chefs=include_sous_chefs,
         exclude_sous_chefs=exclude_sous_chefs,
+        include_events=include_events,
+        exclude_events=exclude_events,
+        sort_ids=arg_bool('sort_ids', default=False),
         apikey=user.apikey,
         org_id=org.id
     )
@@ -267,9 +280,16 @@ def search_events(user, org):
         event_query = event_query.with_entities(*columns)
 
     # apply sort if we havent already sorted by query relevance.
-    if kw['sort_field'] != 'relevance':
-        sort_obj = eval('Event.{sort_field}.{direction}'.format(**kw))
-        event_query = event_query.order_by(sort_obj())
+        
+    if not kw['sort_ids']:
+        if kw['sort_field'] != 'relevance':
+            sort_obj = eval('Event.{sort_field}.{direction}'.format(**kw))
+            event_query = event_query.order_by(sort_obj())
+    
+    elif len(include_events):
+        ids = [str(i) for i in include_events]
+        sort_str = "idx(ARRAY[{}], events.id)".format(",".join(ids))
+        event_query = event_query.order_by(sort_str)
 
     # facets
     validate_event_facets(kw['facets'])
@@ -484,6 +504,7 @@ def event_delete(user, org, event_id):
     e = Event.query\
         .filter_by(id=event_id, org_id=org.id)\
         .first()
+
     if not e:
         raise NotFoundError(
             'An Event with ID {} does not exist.'

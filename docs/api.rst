@@ -3053,6 +3053,17 @@ Params
 |                    | results by. Choose from        |                  |                |
 |                    | ``manual`` or ``recipe``.      |                  |                |
 +--------------------+--------------------------------+------------------+----------------+
+| ``ids``            | A comma-separated list of      | null             | false          |
+|                    | event ``ids`` to filter        |                  |                |
+|                    | results by. Preface any element|                  |                |
+|                    | with **!** or **-** to exclude |                  |                |
+|                    | it.                            |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+| ``sort_ids``       | Whether or not use order of the| false            | false          |
+|                    | above ``ids`` to sort the      |                  |                |
+|                    | results by. Will override      |                  |                |
+|                    | arguments passed to ``sort``.  |                  |                |
++--------------------+--------------------------------+------------------+----------------+
 | ``tag_ids``        | A comma-separated list of      | null             | false          |
 |                    | ``tag_ids`` to filter results  |                  |                |
 |                    | results by. Preface any element|                  |                |
@@ -3744,6 +3755,17 @@ Params
 |                    | results by. Choose from        |                  |                |
 |                    | ``manual`` or ``recipe``.      |                  |                |
 +--------------------+--------------------------------+------------------+----------------+
+| ``ids``            | A comma-separated list of      | null             | false          |
+|                    | content item ``ids`` to filter |                  |                |
+|                    | results by. Preface any element|                  |                |
+|                    | with **!** or **-** to exclude |                  |                |
+|                    | it.                            |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+| ``sort_ids``       | Whether or not use order of the| false            | false          |
+|                    | above ``ids`` to sort the      |                  |                |
+|                    | results by. Will override      |                  |                |
+|                    | arguments passed to ``sort``.  |                  |                |
++--------------------+--------------------------------+------------------+----------------+
 | ``url``            | A url to filter                | null             | false          |
 |                    | results by.                    |                  |                |
 +--------------------+--------------------------------+------------------+----------------+
@@ -3930,6 +3952,7 @@ A :ref:`endpoint-content-items-json` object, but the only required field is ``ti
 
 * ``tag_ids`` - An array of tags to assign to this content item.
 * ``author_ids`` - An array of author ids to assign to this content item.
+* ``authors`` - An array of author names to assign to this content item. The API will attempt to reconcile these names with existing authors, if the author does not exist, the API will create one.
 
 *Provenance*
 
