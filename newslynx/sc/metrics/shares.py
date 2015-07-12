@@ -26,5 +26,4 @@ class TimeseriesCounts(ContentTimeseriesSousChef):
                 data = shares.count(url)
                 data.pop('url', None)
                 data['content_item_id'] = content_item.get('id')
-                print data
                 yield data
