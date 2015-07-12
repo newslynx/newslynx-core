@@ -83,18 +83,23 @@ class ContentSousChef(SousChef):
     extract = True
 
     def load(self, data):
-        for item in data:
-            item.update({'recipe_id': self.recipe_id})
-            item.update({'extract': self.extract})
-            yield self.api.content.create(**item)
+        to_post = []
+        for d in data:
+            d['recipe_id'] = self.recipe_id
+            to_post.append(d)
+        status_resp = self.api.content.bulk_create(to_post)
+        return self.api.jobs.poll(**status_resp)
 
 
 class EventSousChef(SousChef):
 
     def load(self, data):
-        for item in data:
-            item.update({'recipe_id': self.recipe_id})
-            yield self.api.events.create(**item)
+        to_post = []
+        for d in data:
+            d['recipe_id'] = self.recipe_id
+            to_post.append(d)
+        status_resp = self.api.events.bulk_create(to_post)
+        return self.api.jobs.poll(**status_resp)
 
 
 class ContentTimeseriesSousChef(SousChef):

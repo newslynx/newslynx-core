@@ -13,8 +13,10 @@ def setup(parser):
     return 'config', run
 
 
-
 def run(opts, log, **kwargs):
+
+    ## First lazy load all the libraries
+    ## and catch import errors.
     from sqlalchemy import create_engine
     from newslynx.defaults import (
         _DEFAULT_CONFIG, _CONFIG_REQUIRES, _DEFAULT_DEFAULTS)
@@ -30,7 +32,8 @@ def run(opts, log, **kwargs):
         config_file = None
         tags_file = None
         recipes_file = None
-    
+
+    # if custom settings are missing, use defaults.
     if not config_file:
         config_file = default_config_file
     if not tags_file:
@@ -40,11 +43,15 @@ def run(opts, log, **kwargs):
 
     from newslynx.lib.serialize import yaml_to_obj
 
+    # are we re-configuring?
     reconf = ""
     if kwargs.get('re', True):
         reconf = "re-"
 
     try:
+
+        # Deal with location of configurations.
+
         log.info('Would you like to {}configure NewsLynx now ?'.format(reconf), line=False, color="blue")
         log.info(' y/(n): ', line=False, color='yellow')
         resp = raw_input("")
@@ -58,7 +65,10 @@ def run(opts, log, **kwargs):
         try:
             conf_str = open(config_file).read()
             conf_obj = yaml_to_obj(conf_str)
+        
         except Exception as e:
+
+            # Load in defaults if missing.
 
             log.info('\n\nNo configurations exist in: \n', line=False, color="yellow")
             log.info(config_file, color='magenta', line=False)
@@ -77,6 +87,8 @@ def run(opts, log, **kwargs):
                     conf_obj = yaml_to_obj(conf_str)
                     f1.write(conf_str)
         log.info("\n", color=None, line=False)
+
+        # Reset Required Keys
         
         # check required configs
         for k in _CONFIG_REQUIRES:
@@ -113,6 +125,8 @@ def run(opts, log, **kwargs):
                 else:
                     conf_str += "\n" + newval
         
+        # Install default tags and recipes
+
         log.info('\nWould you like to use our default tags and recipes? ', color='blue', line=False)
         log.info(' y/(n): ', line=False, color='yellow')
         resp = raw_input("")
@@ -131,6 +145,7 @@ def run(opts, log, **kwargs):
                     os.makedirs(default_dir)
                 except OSError:
                     pass
+                
                 log.info('\nStoring default ', line=False, color="yellow")
                 log.info(name, line=False, color='green')
                 log.info(' in:\n', line=False, color="blue")
@@ -150,6 +165,8 @@ def run(opts, log, **kwargs):
         else: 
             pass
 
+        # Write updated config
+
         log.info('\nStoring new configurations to:\n', line=False, color="blue")
         log.info(config_file +"\n", color='magenta', line=False)
         with open(config_file, 'wb') as f:
@@ -157,6 +174,8 @@ def run(opts, log, **kwargs):
 
         log.info("\nYou can change these configurations at any time by modifying:\n", line=False, color="blue")
         log.info(config_file, line=False, color='magenta')
+
+        # What to do next?
 
         log.info('\n\nNow run ', line=False, color="blue")
         log.info("newslynx init ", color="green", line=False)

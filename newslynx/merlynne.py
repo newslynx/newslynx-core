@@ -78,6 +78,7 @@ class Merlynne(object):
         # directly stream the results out.
         return run_sous_chef(self.sous_chef_path, self.recipe.id, kw_key)
 
+
 def run_sous_chef(sous_chef_path, recipe_id, kw_key):
     """
     Do the work. This exists outside the class

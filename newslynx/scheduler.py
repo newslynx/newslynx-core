@@ -16,67 +16,78 @@ from newslynx.core import gen_session
 from newslynx import settings
 from newslynx.logs import ColorLog
 
+
 class RecipeScheduler:
 
     """
     A dynamic, in-memory scheduling daemon that runs recipes in greenlets and 
-    responds to updates.
+    responds to updates by polling the database.
     """
 
     def __init__(self, **kwargs):
-        self._running_recipes = {}
-        self._greenlets = {}
+        self.running = {}
+        self.greenlets = {}
         self.jigger = kwargs.get('jigger', settings.SCHEDULER_RESET_PAUSE_RANGE)
         self.log = kwargs.get('log', ColorLog(**kwargs))
         self.org_id = kwargs.get('org_id', None)
 
+    def random_pause(self):
+        """
+        A random pause when resetting a scheduled recipe.
+        """
+        return random.choice(range(*self.jigger))
+
+    @property
+    def min_pause(self):
+        return min(self.jigger)
+
     def set_session(self):
         self.session = gen_session()
 
-    def fmt_recipe(self, recipe):
+    def fmt(self, recipe):
         return "< {} | {} | {} | {} >"\
             .format(recipe.org.slug, recipe.id, recipe.slug, recipe.schedule_by)
 
-    def add_recipe(self, recipe, reset=False):
+    def add(self, recipe, reset=False):
         """
         Add a scheduled recipe to the list of scheduled recipes.
         """
         if not reset:
             self.log.info('adding {} '
-                .format(self.fmt_recipe(recipe)))
+                .format(self.fmt(recipe)))
         else:
             self.log.error('resetting {}'
-                .format(self.fmt_recipe(recipe)))
-        self._running_recipes['{}:reset'.format(recipe.id)] = reset        
-        self._running_recipes[recipe.id] = recipe
+                .format(self.fmt(recipe)))
+        self.running['{}:reset'.format(recipe.id)] = reset        
+        self.running[recipe.id] = recipe
 
-    def remove_recipe(self, recipe, **kw):
+    def rm(self, recipe, **kw):
         """
         Remove a scheduled job from the list of scheduled jobs.
         """
         
         if kw.get('log', True):
             self.log.error('removing {} '
-                .format(self.fmt_recipe(recipe)))
-        self._running_recipes.pop(recipe.id)
-        self._running_recipes.pop('{}:reset'.format(recipe.id))
-        greenlet = self._greenlets.pop(recipe.id)
+                .format(self.fmt(recipe)))
+        self.running.pop(recipe.id)
+        self.running.pop('{}:reset'.format(recipe.id))
+        greenlet = self.greenlets.pop(recipe.id)
         if greenlet:
             gevent.kill(greenlet)
 
-    def reset_recipe(self, recipe):
+    def reset(self, recipe):
         """
         Reset a recipe.
         """
-        self.remove_recipe(recipe, log=False)
-        self.add_recipe(recipe, reset=True)
+        self.rm(recipe, log=False)
+        self.add(recipe, reset=True)
 
     def cook(self, recipe):
         """
         Cook a recipe.
         """
         self.log.info('cooking {}'
-            .format(self.fmt_recipe(recipe)), color='lightmagenta_ex')
+            .format(self.fmt(recipe)), color='lightmagenta_ex')
         
         start = time.time()
 
@@ -88,21 +99,29 @@ class RecipeScheduler:
             job = api.recipes.cook(recipe.id)
         
         except Exception as e:
-            self.log.error('error {}'.format(self.fmt_recipe(recipe)))
+            self.log.error('error {}'.format(self.fmt(recipe)))
             self.log.exception(e, tb=True)
 
         else:
             self.log.warning('running {} job {job_id}'
-                .format(self.fmt_recipe(recipe), **job), color='lightmagenta_ex')
+                .format(self.fmt(recipe), **job), color='lightmagenta_ex')
 
-            # poll the job's status
-            for res in api.jobs.poll(**job):
-                self.log.warning(res)
-            duration = round((time.time() - start), 2)
-            self.log.info('cooked {} in {}s'
-                .format(self.fmt_recipe(recipe), duration), color='lightmagenta_ex')
+            try:
+                # poll the job's status
+                for res in api.jobs.poll(**job):
+                    self.log.warning(res)
 
-    def run_time_of_day(self, recipe, reset):
+            except Exception as e:
+                self.log.error('error {}'.format(self.fmt(recipe)))
+                self.log.exception(e, tb=True)
+
+            else:
+                duration = round((time.time() - start), 2)
+                self.log.info('cooked {} in {}s'
+                    .format(self.fmt(recipe), duration), color='lightmagenta_ex')
+
+
+    def time_of_day(self, recipe, reset):
         """
         Run a daily recipe.
         """ 
@@ -116,7 +135,7 @@ class RecipeScheduler:
             pause = min([self.min_pause, pause, self.random_pause()])
 
         self.log.warning('first run of {} in {}s'
-            .format(self.fmt_recipe(recipe), round(pause, 2)))
+            .format(self.fmt(recipe), round(pause, 2)))
         time.sleep(pause)
 
         runs = 1
@@ -126,10 +145,11 @@ class RecipeScheduler:
             # lock to org's timezone.
             pause = dates.seconds_until(time_of_day,  now=recipe.org.now)
             self.log.warning('run #{} of {} in {}s'
-                .format(runs, self.fmt_recipe(recipe), round(pause, 2)))
+                .format(runs, self.fmt(recipe), round(pause, 2)))
             time.sleep(pause)
 
-    def run_minutes(self, recipe, reset):
+
+    def minutes(self, recipe, reset):
         """
         Run a minutes recipe.
         """ 
@@ -138,7 +158,7 @@ class RecipeScheduler:
             pause = min([pause, self.random_pause()])
 
         self.log.warning('first run of {} in {}s'
-            .format(self.fmt_recipe(recipe), round(pause, 2)))
+            .format(self.fmt(recipe), round(pause, 2)))
         time.sleep(pause)
 
         runs = 1
@@ -150,12 +170,13 @@ class RecipeScheduler:
             duration = time.time() - start
             pause = (recipe.minutes * 60) - duration
             self.log.warning('run #{} of {} in {}s'
-                .format(runs, self.fmt_recipe(recipe), round(pause, 2)))
+                .format(runs, self.fmt(recipe), round(pause, 2)))
             time.sleep(pause)
 
-    def run_cron(self, recipe, reset):
+
+    def crontab(self, recipe, reset):
         """
-        Run a cron recipe.
+        Run a crontab recipe.
         """ 
         cron = dates.cron(recipe.crontab)
         
@@ -167,7 +188,8 @@ class RecipeScheduler:
             pause = min([self.min_pause, pause, self.random_pause()])
 
         self.log.warning('first run of {} in {}s'
-            .format(self.fmt_recipe(recipe), round(pause, 2)))
+            .format(self.fmt(recipe), round(pause, 2)))
+        
         time.sleep(pause)
 
         runs = 1
@@ -177,37 +199,29 @@ class RecipeScheduler:
             # lock to org's timezone.
             pause = cron.next(now=recipe.org.now)
             self.log.warning('run #{} of {} in {}s'
-                .format(runs, self.fmt_recipe(recipe), round(pause, 2)))
+                .format(runs, self.fmt(recipe), round(pause, 2)))
             time.sleep(pause)
 
-    def random_pause(self):
-        """
-        A random pause when resetting a scheduled recipe.
-        """
-        return random.choice(range(*self.jigger))
-
-    @property
-    def min_pause(self):
-        return min(self.jigger)
             
-    def run_recipe(self, recipe, reset=False):
+    def run_one(self, recipe, reset=False):
         """
         Run a scheduled recipe indefinitely
         """
         
         if recipe.schedule_by == 'time_of_day':
-            self.run_time_of_day(recipe, reset)
+            self.time_of_day(recipe, reset)
         
         elif recipe.schedule_by == 'minutes':
-            self.run_minutes(recipe, reset)
+            self.minutes(recipe, reset)
         
         elif recipe.schedule_by == 'crontab':
-            self.run_cron(recipe, reset)
+            self.crontab(recipe, reset)
 
-    def get_scheduled_recipes(self):
+    def poll(self):
         """
         Get stored schedules from the Database.
-        We only run recipes whose status is not 'uninitialized'.
+        We dont run 'uninitialized',
+         `inactive`, or 'unscheduled' recipes.
         """
         recipes = self.session.query(Recipe)\
             .filter(Recipe.status != 'uninitialized')\
@@ -226,8 +240,7 @@ class RecipeScheduler:
         """
         Has this recipe been updated?
         """
-        id = recipe.id
-        
+
         # we should not update recipes if they're in the queue.
         if recipe.status == 'queued':
             return False
@@ -235,10 +248,13 @@ class RecipeScheduler:
         # we should update recipes if their schedule has changed.
         if recipe.schedule_by and recipe.schedule_by != scheduled.schedule_by:
             return True
+        
         if recipe.time_of_day and recipe.time_of_day != scheduled.time_of_day:
             return True
+        
         if recipe.minutes and recipe.minutes != scheduled.minutes:
             return True
+        
         if recipe.crontab and recipe.crontab != scheduled.crontab:
             return True
         
@@ -246,54 +262,52 @@ class RecipeScheduler:
         if recipe.options_hash != scheduled.options_hash:
             return True
 
+        # dont update
         return False
 
-    def update_scheduled_recipes(self):
+    def update(self):
         """
         Get the list of recipes in the database and
-        update the list of running schedules in the
-        scheduler.
+        update the scheduler.
         """
-        scheduled_recipes = self.get_scheduled_recipes()
+        scheduled_recipes = self.poll()
 
         # if the recipe is not running, add it
         for id, recipe in scheduled_recipes.iteritems():
-            if id not in self._running_recipes:
-                self.add_recipe(recipe, reset=False)
+            if id not in self.running:
+                self.add(recipe, reset=False)
 
         # if the recipe is running and has been deleted, remove it
         # alternatively, if it has been "unscheduled", remove it
         # alteratively, if it's schedule has changed, remove it and re-add it
-        for id, recipe in self._running_recipes.items():
+        for id, recipe in self.running.items():
             if 'reset' in str(id):
                 continue
 
-            if id not in scheduled_recipes:
-                self.remove_recipe(recipe)
-
-            elif not scheduled_recipes[id].scheduled:
-                self.remove_recipe(recipe)
-
-            elif not scheduled_recipes[id].active:
-                self.remove_recipe(recipe)
+            if id not in scheduled_recipes or /
+               not scheduled_recipes[id].scheduled or /
+               not scheduled_recipes[id].active:
+                
+                self.rm(recipe)
 
             # check for any sign of a change to a recipe.
             elif self.is_updated(recipe, scheduled_recipes[id]):
-                self.reset_recipe(scheduled_recipes[id])
+                self.reset(scheduled_recipes[id])
 
-    def run_scheduled_recipes(self):
+    def spawn(self):
         """
         Run all scheduled recipes in individual greenlets
         """
-        for id, recipe in self._running_recipes.iteritems():
+        for id, recipe in self.running.iteritems():
+            # ignore this helper key.
             if 'reset' in str(id):
                 continue
             
             # if this recipe is not already running, run it.
-            if id not in self._greenlets:
-                reset = self._running_recipes['{}:reset'.format(id)]
-                self._greenlets[id] = \
-                    gevent.spawn(self.run_recipe, recipe, reset)
+            if id not in self.greenlets:
+                reset = self.running['{}:reset'.format(id)]
+                self.greenlets[id] = \
+                    gevent.spawn(self.run_one, recipe, reset)
 
     def run(self, **kw):
         """
@@ -303,9 +317,9 @@ class RecipeScheduler:
         self.log.info('starting with refresh interval of {}s'.format(interval))
         while 1:
             self.set_session()
-            self.update_scheduled_recipes()
-            self.run_scheduled_recipes()
+            self.update()
+            self.spawn()
             time.sleep(interval)
             self.session.flush()
-            self.log.info('refreshing'.format(interval))
+            self.log.info('refreshing')
 

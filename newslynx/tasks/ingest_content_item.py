@@ -23,7 +23,7 @@ def ingest(
         extract=True,
         kill_session=True):
     """
-    Ingest an Event.
+    Ingest a Content Item.
     """
 
     # distinct session for this eventlet.
@@ -58,16 +58,18 @@ def ingest(
 
         # extraction succeeded
         else:
+            
+            # preference input values over extracted ones.
             data = cache_response.value
-            obj.update(data)
+            data.update(obj)
+            obj = data
 
-    else:
-        obj['title'] = ingest_util.prepare_str(obj, 'title')
-        obj['description'] = ingest_util.prepare_str(obj, 'description')
-        obj['body'] = ingest_util.prepare_str(obj, 'body')
-        obj['created'] = ingest_util.prepare_str(obj, 'created')
-        if not obj['created']:
-            obj.pop('created')
+    obj['title'] = ingest_util.prepare_str(obj, 'title')
+    obj['description'] = ingest_util.prepare_str(obj, 'description')
+    obj['body'] = ingest_util.prepare_str(obj, 'body')
+    obj['created'] = ingest_util.prepare_str(obj, 'created')
+    if not obj['created']:
+        obj.pop('created')
 
     # get thumbnail
     obj['thumbnail'] = ingest_util.prepare_thumbnail(obj, 'img_url')
@@ -91,7 +93,6 @@ def ingest(
 
     # if not, create it
     if not c:
-
         # create event
         c = ContentItem(org_id=org_id, **obj)
 
@@ -99,17 +100,6 @@ def ingest(
     else:
         for k, v in obj.items():
             setattr(c, k, v)
-
-    # extract urls and normalize urls asynchronously.
-    # urls = ingest_util.extract_urls(
-    #     obj,
-    #     url_fields,
-    #     source=data.get('url'),
-    #     links=_links)
-
-    # detect content_items
-    # if len(_links):
-    #     c = _associate_content_items(c, org_id, _links)
 
     # associate tags
     if len(tag_ids):
@@ -121,7 +111,6 @@ def ingest(
         for a in _authors:
             if a.id not in c.author_ids:
                 c.authors.append(a)
-
     session.add(c)
     session.commit()
     if kill_session:

@@ -541,7 +541,7 @@ class TSQuery(object):
 
     def execute(self):
         """
-        Execute the query stream the results.
+        Execute the query and stream the results.
         """
         return ResultIter(db.session.execute(self.query))
 
