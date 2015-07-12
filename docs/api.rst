@@ -105,11 +105,19 @@ All endpoints are prefaced by ``/api/:version``. The current (and only version) 
 **Endpoints**
 --------------
 
-All endpoints return ``json``. If you'd like to follow along with these examples, go ahead and set your api key as an environment variables:
+All endpoints, unless ortherwise noted, return ``json``. If you'd like to follow along with these examples, go ahead and set your api key as an environment variables:
 
 .. code-block:: bash 
 
     export NEWSLYNX_API_KEY='djljahflsdkfhasldkfhasldfa'
+
+
+.. _compression:
+
+**Compression**
+------------------
+
+All endpoints can return responses with ``gzip`` compression so long as the ``Accept-Encoding`` header of the request is set to ``gzip``.
 
 
 .. _endpoints-user:
