@@ -189,11 +189,11 @@ def apply_content_item_filters(q, **kw):
     # apply tags filter
     if len(kw['include_subject_tags']):
         q = q.filter(ContentItem.tags.any(
-            Tag.id.in_(kw['include_tags'])))
+            Tag.id.in_(kw['include_subject_tags'])))
 
     if len(kw['exclude_subject_tags']):
         q = q.filter(~ContentItem.tags.any(
-            Tag.id.in_(kw['exclude_tags'])))
+            Tag.id.in_(kw['exclude_subject_tags'])))
 
     # apply authors filter
     if len(kw['include_authors']):
