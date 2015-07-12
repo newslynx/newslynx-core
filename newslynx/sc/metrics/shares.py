@@ -16,7 +16,7 @@ class TimeseriesCounts(ContentTimeseriesSousChef):
         """
         Count shares for all content items.
         """
-        print "HWLLLDSAF"
+
         for content_item in self.api.orgs.simple_content():
             created = dates.parse_iso(content_item['created'])
             if created < self.max_age:
