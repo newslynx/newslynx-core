@@ -16,6 +16,7 @@ from newslynx.views.util import *
 from newslynx.tasks import facet
 from newslynx.tasks import ingest_event
 from newslynx.tasks import ingest_bulk
+from newslynx.tasks import rollup_metric
 from newslynx.constants import EVENT_FACETS
 
 # blueprint
@@ -483,6 +484,10 @@ def event_update(user, org, event_id):
     # updates an organization id
     e.org_id = org.id
 
+    # update event metrics associated with these content item ids
+    if len(e.content_item_ids):
+        rollup_metric.event_tags_to_summary(org, e.content_item_ids)
+
     # commit changes
     db.session.add(e)
     db.session.commit()
@@ -514,6 +519,10 @@ def event_delete(user, org, event_id):
         db.session.delete(e)
         db.session.commit()
         return delete_response()
+
+    # update event metrics associated with these content item ids
+    if len(e.content_item_ids):
+        rollup_metric.event_tags_to_summary(org, e.content_item_ids)
 
     # remove associations
     # from:
@@ -569,6 +578,9 @@ def event_add_tag(user, org, event_id, tag_id):
     if tag.id not in e.tag_ids:
         e.tags.append(tag)
 
+    # update event metrics associated with these content item ids
+    if len(e.content_item_ids):
+        rollup_metric.event_tags_to_summary(org, e.content_item_ids)
 
     db.session.add(e)
     db.session.commit()
@@ -603,6 +615,10 @@ def event_delete_tag(user, org, event_id, tag_id):
     for tag in e.tags:
         if tag.id == tag_id:
             e.tags.remove(tag)
+
+    # update metrics associated with these content item ids
+    if len(e.content_item_ids):
+        rollup_metric.event_tags_to_summary(org, e.content_item_ids)
 
     db.session.add(e)
     db.session.commit()
@@ -644,6 +660,9 @@ def event_add_thing(user, org, event_id, content_item_id):
     db.session.add(e)
     db.session.commit()
 
+    # update event-level metrics for this content item id
+    rollup_metric.event_tags_to_summary(org, [content_item_id])
+
     # return modified event
     return jsonify(e)
 
@@ -682,6 +701,9 @@ def event_delete_content_item(user, org, event_id, content_item_id):
 
     db.session.add(e)
     db.session.commit()
+
+    # update event-level metrics for this content item id
+    rollup_metric.event_tags_to_summary(org, [content_item_id])
 
     # return modified event
     return jsonify(e)

@@ -61,11 +61,13 @@ def content_timeseries_to_summary(org, num_hours=24):
     return True
 
 
-def event_tags_to_summary(org):
+def event_tags_to_summary(org, content_item_ids=[]):
     """
     Count up impact tag categories + levels assigned to events
     by the content_items they're associated with.
     """
+    if not isinstance(content_item_ids, list):
+        content_item_ids = [content_item_ids]
 
     # build up list of metrics to compute
     event_tag_metrics = ['total_events', 'total_event_tags']
@@ -95,13 +97,44 @@ def event_tags_to_summary(org):
         case_statements.append(case_pattern.format(**kw))
         event_tag_metrics.append(kw['name'])
 
+    content_ids_filter = ""
+    if len(content_item_ids):
+        content_ids_filter = "AND content_item_id in ({})"\
+            .format(",".join([str(i) for i in content_item_ids]))
+
     # query formatting kwargs
     qkw = {
         "metrics": ", ".join(event_tag_metrics),
         "case_statements": ",\n".join(case_statements),
         "org_id": org.id,
-        "null_metrics": obj_to_json({k: 0 for k in event_tag_metrics})
+        "null_metrics": obj_to_json({k: 0 for k in event_tag_metrics}),
+        "content_ids_filter": content_ids_filter
     }
+
+    # optionally add in null-query
+    null_q = """
+        -- Content Items With No Approved Events
+        , null_metrics AS (
+            SELECT upsert_content_metric_summary(t.org_id, t.content_item_id, '{null_metrics}')
+            FROM (
+                SELECT org_id, id as content_item_id
+                FROM content
+                WHERE org_id = {org_id} AND
+                id NOT IN (
+                    SELECT distinct(content_item_id)
+                    FROM content_event_metrics
+                    )
+            ) t
+        )
+    """.format(**qkw)
+
+    # add in null query if we're not filtering 
+    # by specific content item ids.
+    qkw['null_query'] = ""
+    qkw['final_query'] = "select * from positive_metrics"
+    if not content_ids_filter:
+        qkw['null_query'] = null_q
+        qkw['final_query'] = "select * from positive_metrics, null_metrics"
 
     q = """
         WITH content_event_tags AS (
@@ -120,6 +153,7 @@ def event_tags_to_summary(org):
                         events.status = 'approved'
                 ) t
                 WHERE content_item_id IS NOT NULL
+                {content_ids_filter}
         ),
         content_event_tag_counts AS (
             SELECT
@@ -144,22 +178,9 @@ def event_tags_to_summary(org):
             SELECT
                 upsert_content_metric_summary(org_id, content_item_id, metrics::text)
             FROM content_event_metrics
-        ),
-
-        -- Content Items With No Approved Events
-        null_metrics AS (
-            SELECT upsert_content_metric_summary(t.org_id, t.content_item_id, '{null_metrics}')
-            FROM (
-                SELECT org_id, id as content_item_id
-                FROM content
-                WHERE org_id = {org_id} AND
-                id NOT IN (
-                    SELECT distinct(content_item_id)
-                    FROM content_event_metrics
-                    )
-            ) t
         )
-        SELECT * from positive_metrics, null_metrics
+        {null_query}
+        {final_query}
         """.format(**qkw)
     db.session.execute(q)
     db.session.commit()

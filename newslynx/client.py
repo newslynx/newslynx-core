@@ -586,7 +586,7 @@ class Events(BaseClient):
         """
         Get an individual event.
         """
-        url = self._format_url('events', id, 'content', content_id)
+        url = self._format_url('events', id, 'content', content_item_id)
         return self._request('PUT', url, params=kw)
 
     def remove_content_item(self, id, content_item_id, **kw):
