@@ -232,19 +232,19 @@ class SearchString(object):
             unidecode(text.lower().decode('utf-8')), errors='ignore')
 
         # optionally remove punctuation
-        if kw.get('remove_punct', True):
+        if kw.get('rm_punct', True):
             text = "".join(map(lambda x: x if x not in punct else " ", text))
 
         # optionally remove digits
-        if kw.get('remove_digits', True):
+        if kw.get('rm_digits', True):
             text = "".join(map(lambda x: x if x not in digits else " ", text))
 
         # optionally remove whitespace
-        if kw.get('remove_html', True):
+        if kw.get('rm_html', True):
             text = html.strip_tags(text)
 
         # optionally remove whitespace
-        if kw.get('remove_whitespace', True):
+        if kw.get('rm_whitespace', True):
             text = re_whitespace.sub(" ", text).strip()
 
         return text

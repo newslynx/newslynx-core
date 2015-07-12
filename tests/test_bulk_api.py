@@ -13,7 +13,7 @@ from newslynx.lib import rss
 from newslynx.models import (
     ExtractCache, URLCache, ThumbnailCache)
 
-api = API(org=1)
+api = API(org=1, raise_errors=True)
 
 # # flush the cache to ensure realstic times.
 # URLCache.flush()
@@ -119,6 +119,11 @@ def test_bulk_content_items(feed_url='http://feeds.propublica.org/propublica/mai
     start = time.time()
     # make request and return status url
     res = api.content.bulk_create(data=data)
+    poll_status_url(res.get('status_url'))
+    end = time.time()
+    print "Bulk Loading {} Content Items Took {} seconds"\
+        .format(len(data), round((end-start), 2))
+
 
 
 def test_bulk_events(feed_url='http://feeds.propublica.org/propublica/main', domains=['propublica.org']):
@@ -130,7 +135,6 @@ def test_bulk_events(feed_url='http://feeds.propublica.org/propublica/main', dom
         entry['type'] = 'article'
         if entry.get('url'):
             data.append(entry)
-    print len(data)
     start = time.time()
     # make request and return status url
     res = api.events.bulk_create(data)
@@ -140,4 +144,4 @@ def test_bulk_events(feed_url='http://feeds.propublica.org/propublica/main', dom
         .format(len(data), round((end-start), 2))
 
 if __name__ == '__main__':
-    test_bulk_content_items()
+    test_bulk_events()

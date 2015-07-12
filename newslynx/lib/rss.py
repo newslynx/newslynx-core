@@ -279,9 +279,6 @@ class FeedExtractor(object):
             'links': self.get_links(body, entry_url),
         }
 
-    def fetch_feed(self):
-        return feedparser.parse(self.feed_url)
-
     def run(self):
         """
         Parse an Rss Feed.

@@ -11,17 +11,16 @@ _ignore_attrs = ['apikey', 'org', 'login', 'raise_errors']
 def _keep(m):
     return not m.startswith('_') and m not in _ignore_attrs
 
-
 def setup(parser):
     
     # dynamically list collections
     from newslynx.client import API
-    _api = API()
-    COLLECTIONS = [c for c in dir(_api) if _keep(c)]
+    api = API()
+    collections = [c for c in dir(api) if _keep(c)]
 
     api_parser = parser.add_parser("api", help="Access API methods.")
     api_parser.add_argument('collection', type=str, help='The API collection to access.',
-        choices=COLLECTIONS)
+        choices=collections)
     api_parser.add_argument('method', type=str, default=None,
         help='The method for the collection. Use "ls" to list all methods for a given collection.')
     api_parser.add_argument("-d", dest="data", default=None, type=str,
@@ -61,11 +60,14 @@ def run(opts, log, **kwargs):
     # get the collection
     cobj = getattr(api, opts.collection, None)
     if not cobj:
+
+        # report options
+        collections = [c for c in dir(api) if _keep(c)]
         e = RuntimeError("Collection '{}' does not exist."
             .format(opts.collection))
         log.exception(e, tb=False)
         log.warning("Choose from the following collections:\n\t- {}"
-             .format(opts.collection, "\n\t- {}".join(COLLECTIONS)), line=False)
+             .format(opts.collection, "\n\t- {}".join(collections)), line=False)
         sys.exit(1)
 
 
@@ -73,16 +75,11 @@ def run(opts, log, **kwargs):
     if opts.method:
         opts.method = opts.method.replace('-', "_")
 
+    # get the method
     mobj = getattr(cobj, opts.method, None)
     if not mobj:
         
-        COLLECTIONS = [c for c in dir(api) if _keep(c)]
-        
-        # compute the tree here to save on processing time.
-        CMD_TREE = {c:[m.replace('_', '-') for m in dir(getattr(api, c)) if _keep(m)] 
-                    for c in COLLECTIONS}
-        options = CMD_TREE[opts.collection]
-        
+        # report options          
         if opts.method != 'ls':
             e = RuntimeError("Method '{}' does not exist for collection '{}'"
                  .format(opts.method, opts.collection))
@@ -90,7 +87,11 @@ def run(opts, log, **kwargs):
         
         else:
             log.info("/{}\n".format(opts.collection), line=False, color='blue')
-        
+    
+        # compute the tree here to save on processing time.
+        options = [m.replace('_', '-') for m in dir(cobj) if _keep(m)]
+
+        # list of methods for this collection
         msg = "choose from the following methods:\n\t- {}"\
             .format( "\n\t- ".join(options))
         log.warning(msg, line=False)
@@ -100,7 +101,8 @@ def run(opts, log, **kwargs):
     d = load_data(opts.data)
     kwargs.update(d)
 
-    # special handling for templates
+    # special handling for templates.
+    # allows you to load files.
     if opts.collection == 'templates':
         tmpl = kwargs.get('template', '').lower()
         if tmpl.endswith('html') or tmpl.endswith('md') or \

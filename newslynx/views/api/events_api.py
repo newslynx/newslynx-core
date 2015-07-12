@@ -357,7 +357,7 @@ def bulk_create_event(user, org):
     Create an event.
     """
     req_data = request_data()
-    print "REQ DATA", req_data
+
     # check for valid format.
     if not isinstance(req_data, list):
         raise RequestError(

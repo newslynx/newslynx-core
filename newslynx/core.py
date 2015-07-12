@@ -71,7 +71,6 @@ try:
     engine = create_engine(settings.SQLALCHEMY_DATABASE_URI)
     engine.pool._use_threadlocal = True
 
-
     # session for interactions outside of app context.
     def gen_session():
         return scoped_session(sessionmaker(bind=engine))

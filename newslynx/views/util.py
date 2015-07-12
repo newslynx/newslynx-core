@@ -171,21 +171,6 @@ def request_data():
     return data
 
 
-def request_bulk_data():
-    """
-    Fetch request data from jsonlines.
-    """
-    data = request.get_json(silent=True)
-    if data is None:
-        try:
-            data = json_to_obj(request.data)
-        except:
-            data = None
-    if data is None:
-        data = dict(request.form.items())
-    return data
-
-
 def listify_data_arg(name):
     """
     Allow for multiple list formats of
@@ -647,7 +632,6 @@ def localize(org):
     else:
         db.session.execute("SET TIMEZONE TO UTC")
 
-
 # Blueprints
 
 def register_blueprints(app, *mods):
@@ -666,11 +650,11 @@ def register_blueprints(app, *mods):
                 name = fp.replace('.py', '')
 
                 # WARNING MAJOR HACK AHEAD.
-                # try:
-                m = importlib.import_module(
-                    '%s.%s' % (package_name, name))
-                # except:
-                #     continue
+                try:
+                    m = importlib.import_module(
+                        '%s.%s' % (package_name, name))
+                except:
+                    continue
 
                 for item in dir(m):
                     item = getattr(m, item)

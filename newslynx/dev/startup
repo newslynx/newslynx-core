@@ -1,0 +1,12 @@
+#!/bin/sh
+
+
+nlynx api orgs create name='Wisconsin Watch' timezone='America/New_York'
+
+nlynx api recipes update id=1 feed_url='http://wisconsinwatch.org/feed'
+
+nlynx api recipes cook id=1 
+
+nlynx api recipes updated id=8 
+
+nlynx api recipes cook id=1

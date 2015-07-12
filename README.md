@@ -56,7 +56,7 @@ Open another shell and run:
 redis-server
 ```
 
-#### Initialize the database, super user, and instlald built-in sous chefs.
+#### Initialize the database, super user, and instlall built-in sous chefs.
 
 ```
 newslynx init
@@ -78,6 +78,11 @@ stop the tasks workers
 ./stop_workers
 ```
 
+#### Start the cron daemon
+```
+newslynx cron
+```
+
 #### IGNORE THIS ERROR:
 
 This is a result of our extensive use of `gevent`. We haven't yet figured out how to properly suppress this error. See more details [here](http://stackoverflow.com/questions/8774958/keyerror-in-module-threading-after-a-successful-py-test-run).
@@ -88,20 +93,11 @@ Exception KeyError: KeyError(4332017936,) in <module 'threading' from '/System/L
 
 ## TODO 
 - [ ] Fix Bulk Loading process.
-- [ ] Implement Reports API
-    - [ ] reports are json objects
-    - [ ] reports can be rendered with Jinja templates
-    - [ ] reports can be rendered as pdfs 
-        * see: https://pypi.python.org/pypi/pdfkit or
-         http://stackoverflow.com/questions/23359083/how-to-convert-webpage-into-pdf-by-using-python 
-         or just force user s to "save as pdf"
-    - [ ] reports can be saved + archived up to X days.
-    - [ ] reports can o
 - [ ] Re-implement SousChefs
-    - [ ] RSS Feeds => Thing
+    - [x] RSS Feeds => Thing
     - [ ] Google Analytics => Metric
     - [ ] Google Alerts => Event
-    - [ ] Social Shares => Metric
+    - [x] Social Shares => Metric
     - [ ] Homepage Promotions => Metric
     - [ ] Twitter Promotions => Metric
     - [ ] Facebook Promotions => Metric

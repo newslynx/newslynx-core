@@ -293,6 +293,7 @@ def refresh_one_content_comparisons(user, org, type):
     """
     Get one content comparison.
     """
+    type = type.replace('-', "_")
     if type not in CONTENT_METRIC_COMPARISONS:
         raise RequestError(
             "'{}' is an invalid content metric comparison. Choose from {}"

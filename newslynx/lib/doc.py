@@ -14,6 +14,7 @@ FILE_FORMATS = ['pdf', 'odt']
 INPUT_FORMATS = list(_d.INPUT_FORMATS)
 OUTPUT_FORMATS = list(_d.OUTPUT_FORMATS)
 
+# TODO: fill this in.
 FORMAT_TO_MIMETYPE = {
     'native':'',
     'html':'text/html',
@@ -93,14 +94,17 @@ def convert(contents, from_, to_):
             raise Exception('No output from pandoc.')
         return contents
     except Exception as e:
-        raise Exception('I/O conversion failed: {}'.format(e.message))
+        raise Exception(
+            'I/O conversion failed: {}'
+            .format(e.message))
 
 
 def convert_file(d, from_, to_):
     """
     Convert via tempfile. Robust to errors + tempfile leakage.
     """
-    tempfile = NamedTemporaryFile(mode="wb", suffix=".{}".format(to_), delete=False)
+    tempfile = NamedTemporaryFile(mode="wb", 
+        suffix=".{}".format(to_), delete=False)
     
     try:
         output_file = d.to_file(tempfile.name)
@@ -124,12 +128,4 @@ def convert_file(d, from_, to_):
     except OSError:
         pass
     return contents
-
-
-
-# contents = """
-# ### HELLO 
-# whats up
-# """
-# print convert(contents, "markdown", "html")
 

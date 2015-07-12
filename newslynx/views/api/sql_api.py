@@ -59,4 +59,9 @@ def exec_query(user):
                 yield resp
     if stream:
         return Response(stream_with_context(generate()))
-    return jsonify(list(generate()))
+
+    data = list(generate())
+    if len(data) == 1:
+        if data[0]['success']:
+            data = data[0]
+    return jsonify(data)

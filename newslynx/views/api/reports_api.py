@@ -59,6 +59,7 @@ def create_report(user, org):
         name=name,
         data=data,
         template_id=template_id)
+    
     if slug:
         r.slug = slug
 
@@ -174,3 +175,4 @@ def delete_report(user, org, id):
     db.session.delete(r)
     db.session.commit()
     return delete_response()
+

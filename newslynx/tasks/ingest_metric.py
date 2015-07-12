@@ -37,13 +37,9 @@ def content_timeseries(
         ds = obj.pop('datetime')
         dt = dates.parse_iso(ds)
         cmd_kwargs['datetime'] = dates.floor(
-            dt, unit='hour', value=1).isoformat()
+            dt, unit='hour', value=1).isoformat() # TODO: MAKE THIS CONFIGURABLE
 
-    metrics = ingest_util.prepare_metrics(
-        obj,
-        metrics_lookup,
-        valid_levels=['content_item', 'all'],
-        check_timeseries=True)
+    metrics = ingest_util.prepare_metrics(obj, metrics_lookup)
 
     # upsert command
     cmd = """SELECT upsert_content_metric_timeseries(
@@ -59,6 +55,7 @@ def content_timeseries(
         except Exception as err:
             raise RequestError(err.message)
         cmd_kwargs['metrics'] = metrics
+        return cmd_kwargs
     return cmd
 
 
@@ -83,11 +80,7 @@ def content_summary(
         "content_item_id": content_item_id
     }
 
-    metrics = ingest_util.prepare_metrics(
-        obj,
-        metrics_lookup,
-        valid_levels=['content_item', 'all'],
-        check_timeseries=False)
+    metrics = ingest_util.prepare_metrics(obj, metrics_lookup)
 
     # upsert command
     cmd = """SELECT upsert_content_metric_summary(
@@ -102,6 +95,7 @@ def content_summary(
         except Exception as err:
             raise RequestError(err.message)
         cmd_kwargs['metrics'] = metrics
+        return cmd_kwargs
     return cmd
 
 
@@ -128,11 +122,7 @@ def org_timeseries(
         cmd_kwargs['datetime'] = dates.floor(
             dt, unit='hour', value=1).isoformat()
 
-    metrics = ingest_util.prepare_metrics(
-        obj,
-        metrics_lookup,
-        valid_levels=['org', 'all'],
-        check_timeseries=True)
+    metrics = ingest_util.prepare_metrics(obj, metrics_lookup)
 
     # upsert command
     cmd = """SELECT upsert_org_metric_timeseries(
@@ -162,12 +152,7 @@ def org_summary(
     cmd_kwargs = {
         "org_id": org_id
     }
-
-    metrics = ingest_util.prepare_metrics(
-        obj,
-        metrics_lookup,
-        valid_levels=['org', 'all'],
-        check_timeseries=False)
+    metrics = ingest_util.prepare_metrics(obj, metrics_lookup)
 
     # upsert command
     cmd = """SELECT upsert_org_metric_summary(
@@ -181,4 +166,5 @@ def org_summary(
         except Exception as err:
             raise RequestError(err.message)
         cmd_kwargs['metrics'] = metrics
+        return cmd_kwargs
     return cmd

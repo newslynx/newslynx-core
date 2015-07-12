@@ -80,7 +80,6 @@ class BaseClient(object):
 
         except Exception as e:
             err = e
-
             resp = None
 
         # handle errors
@@ -123,22 +122,28 @@ class BaseClient(object):
                 raise err
 
             # check status codes
-            elif resp.status_code not in GOOD_CODES:
+            if resp.status_code not in GOOD_CODES:
                 try:
-                    return resp.json()
+                    d = resp.json()
                 except:
-                    raise ClientError(resp.content)
-
+                    raise ClientError('Response could not be parsed.')
                 err = ERRORS.get(d['error'])
                 if not err:
                     raise ClientError(resp.content)
                 raise err(d['message'])
+            
             elif resp.status_code == 204:
                 return True
             else:
                 return resp.json()
 
         else:
+            if resp is None:
+                return {
+                    'error':'InternalServerError',
+                    'status_code': 500,
+                    'message':'Are you sure the API is running?'
+                }
             if resp.status_code == 204:
                 return True
             try:

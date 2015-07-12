@@ -29,7 +29,7 @@ class BulkLoader(object):
     timeout = 1000  # seconds
     result_ttl = 60  # seconds
     kwargs_ttl = 1000  # in case there is a backup in the queue
-    max_workers = 7
+    max_workers = 5
     concurrent = True
     kwargs_key = 'rq:kwargs:{}'
     q = queues.get('bulk')
@@ -54,7 +54,7 @@ class BulkLoader(object):
     def _handle_errors(self, errors):
         if not isinstance(errors, list):
             errors = [errors]
-        return RequestError(
+        raise RequestError(
             'There was an error while bulk uploading: '
             '{}'.format(errors[0].message))
 
@@ -65,7 +65,6 @@ class BulkLoader(object):
         start = time.time()
         try:
             # create a session specific to this task
-            session = gen_session()
 
             # get the inputs from redis
             kwargs = self.redis.get(kwargs_key)
@@ -100,7 +99,6 @@ class BulkLoader(object):
                         errors.append(res)
                     else:
                         outputs.append(res)
-
             # return errors
             if len(errors):
                 self._handle_errors(errors)
@@ -110,8 +108,7 @@ class BulkLoader(object):
                 for o in outputs:
                     if o is not None:
                         try:
-                            session.add(o)
-                            session.commit(o)
+                            db.session.add(o)
                         except Exception as e:
                             self._handle_errors(e)
 
@@ -120,20 +117,19 @@ class BulkLoader(object):
                 for query in outputs:
                     if query is not None:
                         try:
-                            session.execute(query)
+                            db.session.execute(query)
                         except Exception as e:
                             self._handle_errors(e)
 
             try:
-                session.commit()
+                db.session.commit()
 
             except Exception as e:
-                session.rollback()
-                session.remove()
+                db.session.rollback()
                 self._handle_errors(e)
 
             # return true if everything worked.
-            session.close()
+            db.session.close()
             return True
 
         except JobTimeoutException:
@@ -207,7 +203,6 @@ class ContentItemBulkLoader(BulkLoader):
 
     def load_one(self, item, **kw):
         return ingest_content_item.ingest(item, **kw)
-
 
 # make sure the functions are importable + pickleable
 content_timeseries = ContentTimeseriesBulkLoader().run
