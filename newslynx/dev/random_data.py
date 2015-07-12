@@ -82,19 +82,6 @@ def random_hash():
     return hashlib.md5(str(uuid.uuid1())).hexdigest()
 
 
-def random_meta():
-    meta = {
-        'followers': choice(range(1, 100)),
-        'address': fake.street_address(),
-        'text': fake.lorem()[:10]
-    }
-    keys = meta.keys()
-    for i in range(0, choice(range(0, len(keys)))):
-        k = keys[i]
-        meta.pop(k)
-    return meta
-
-
 # GENERATORS #
 
 
@@ -203,8 +190,7 @@ def gen_authors(org):
         c = Author(
             org_id=org.id,
             name=name,
-            created=random_date(100, 200),
-            meta=random_meta())
+            created=random_date(100, 200))
         db_session.add(c)
         db_session.commit()
         authors.append(c)
@@ -217,7 +203,7 @@ def gen_events(org, recipes, impact_tags, content_items, n_events):
     for i in xrange(n_events):
         status = choice(EVENT_STATUSES)
         provenance = choice(EVENT_PROVENANCES)
-        r = choice(recipes)
+        r = choice([r for r in recipes if r.sous_chef.creates == 'events'])
         authors = random_authors(4)
 
         if provenance == 'manual':
@@ -239,17 +225,15 @@ def gen_events(org, recipes, impact_tags, content_items, n_events):
             updated=random_date(1, 9),
             authors=authors,
             status=status,
-            provenance=provenance,
-            meta=random_meta())
+            provenance=provenance)
+
+        if 'twitter' in r.slug:
+            e.meta = {'followers': random_int(1, 10000)}
 
         t = choice(impact_tags)
         e.tags.append(t)
         c = choice(content_items)
         e.content_items.append(c)
-        # if t.id not in c.tag_ids:
-        #     c.tags.append(t)
-        # db_session.add(c)
-
         if provenance == 'manual':
             e.recipe_id = None
 
@@ -262,7 +246,7 @@ def gen_events(org, recipes, impact_tags, content_items, n_events):
 # content_items
 def gen_content_item(org, recipes, subject_tags, authors):
 
-    r = choice(recipes)
+    r = choice([r for r in recipes if r.sous_chef.creates=='content'])
     st = choice(subject_tags)
     c = choice(authors)
     provenance = choice(CONTENT_ITEM_PROVENANCES)
@@ -282,8 +266,7 @@ def gen_content_item(org, recipes, subject_tags, authors):
         description=random_text(100),
         body=random_text(500),
         img_url=IMG_URL,
-        thumbnail=thumbnail,
-        meta=random_meta())
+        thumbnail=thumbnail)
 
     if provenance == 'manual':
         t.recipe_id = None
@@ -335,6 +318,44 @@ def gen_org_metric_timeseries(org, metrics, n_org_timeseries_metrics=1000):
         cmd = """SELECT upsert_org_metric_timeseries(
                     {org_id},
                     '{datetime}',
+                    '{metrics}');
+               """.format(**cmd_kwargs)
+        db_session.execute(cmd)
+    db_session.commit()
+
+
+def gen_content_metric_summaries(org, content_items, metrics):
+
+    for c in content_items:
+        _metrics = {}
+        for m in metrics:
+            if 'summary' in m.content_levels and not 'timeseries' in m.content_levels:
+                if not m.faceted:
+                    _metrics[m.name] = random_int(1, 1000)
+                else:
+                    _metrics[m.name] = [
+                        {
+                            'facet': 'google.com',
+                            'value': random_int(1, 1000),
+                        },
+                        {
+                            'facet': 'twitter.com',
+                            'value': random_int(1, 1000)
+                        },
+                        {
+                            'facet': 'facebook.com',
+                            'value': random_int(1, 1000)
+                        }
+                    ]
+        cmd_kwargs = {
+            'org_id': org.id,
+            'content_item_id': c.id,
+            'metrics': obj_to_json(_metrics)
+        }
+        # upsert command
+        cmd = """SELECT upsert_content_metric_summary(
+                    {org_id},
+                    {content_item_id},
                     '{metrics}');
                """.format(**cmd_kwargs)
         db_session.execute(cmd)
@@ -399,6 +420,9 @@ def main(
     # generate events
     gen_events(org, recipes, impact_tags, content_items, n_events)
     db_session.commit()
+
+    # generate content summaries
+    gen_content_metric_summaries(org, content_items, metrics)
 
     # rollup metrics
     if verbose:
