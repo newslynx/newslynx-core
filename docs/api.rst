@@ -3452,7 +3452,7 @@ Permanently delete an Event.
 
 .. _endpoints-events-add-tag:
 
-**PUT** ``/events/:event_id/tag/:tag_id``
+**PUT** ``/events/:event_id/tags/:tag_id``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Add a tag to an event.
