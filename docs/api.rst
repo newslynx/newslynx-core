@@ -3757,8 +3757,14 @@ Params
 |                    | with **!** or **-** to exclude |                  |                |
 |                    | it.                            |                  |                |
 +--------------------+--------------------------------+------------------+----------------+
-| ``tag_ids``        | A comma-separated list of      | null             | false          |
-|                    | ``tag_ids`` to filter          |                  |                |
+| ``impact_tag_ids`` | A comma-separated list of      | null             | false          |
+|                    | ``impact_tag_ids`` to filter   |                  |                |
+|                    | results by. Preface any element|                  |                |
+|                    | with **!** or **-** to exclude |                  |                |
+|                    | it.                            |                  |                |
++--------------------+--------------------------------+------------------+----------------+
+| ``subject_tag_ids``| A comma-separated list of      | null             | false          |
+|                    | ``subject_tag_ids`` to filter  |                  |                |
 |                    | results by. Preface any element|                  |                |
 |                    | with **!** or **-** to exclude |                  |                |
 |                    | it.                            |                  |                |
@@ -3857,11 +3863,11 @@ Search content items created manually.
     
     curl http://localhost:5000/api/v1/content\?org\=1\&apikey\=$NEWSLYNX_API_KEY\&provenance\=manual&q=foobar
 
-List content items that only have certain tags and have *not* been created by certain recipes.
+List content items that only have certain subject tags and have *not* been created by certain recipes.
 
 .. code-block:: bash
     
-    curl http://localhost:5000/api/v1/content\?org\=1\&apikey\=$NEWSLYNX_API_KEY\&recipes=-1\&tag_ids=1,2,3
+    curl http://localhost:5000/api/v1/content\?org\=1\&apikey\=$NEWSLYNX_API_KEY\&recipes=-1\&subject_tag_ids=1,2,3
 
 Sort content items by their number of Twitter Shares.
 
