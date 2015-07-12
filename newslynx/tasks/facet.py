@@ -5,7 +5,8 @@ from sqlalchemy import func, desc
 from newslynx.models import (
     Event, Recipe, Tag, SousChef, ContentItem, Author)
 from newslynx.models.relations import (
-    events_tags, content_items_tags, content_items_authors)
+    events_tags, content_items_tags, content_items_authors,
+    content_items_events)
 from newslynx.core import db
 
 
@@ -40,8 +41,7 @@ def events_by_tags(event_ids):
 
     # explicitly shutdown session started in greenlet
     db.session.remove()
-    return [dict(zip(['id', 'count'], c))
-            for c in tag_counts]
+    return [dict(zip(['id', 'count'], c)) for c in tag_counts]
 
 
 def events_by_categories(event_ids):
@@ -146,7 +146,7 @@ def events(by, event_ids):
     fx_lookup = {
         'recipes': events_by_recipes,
         'tags': events_by_tags,
-        'impact_tags': events_by_tags, # THIS IS A HACK FOR NOW!
+        'impact_tags': events_by_tags, 
         'categories': events_by_categories,
         'levels': events_by_levels,
         'sous_chefs': events_by_sous_chefs,
@@ -278,7 +278,7 @@ def content_items_by_recipes(content_item_ids):
     return [dict(zip(['id', 'count'], r)) for r in recipe_counts]
 
 
-def content_items_by_tags(content_item_ids):
+def content_items_by_subject_tags(content_item_ids):
     """
     Count the number of content_items associated with tags.
     """
@@ -311,6 +311,28 @@ def content_items_by_sous_chefs(content_item_ids):
     return [dict(zip(['slug', 'count'], c)) for c in task_counts]
 
 
+def content_items_by_impact_tags(content_item_ids):
+    """
+    Count the number of content_items associated with sous chefs.
+    """
+    tag_counts = db.session\
+        .query(Tag.id, func.count(Tag.id))\
+        .outerjoin(events_tags)\
+        .outerjoin(content_items_events, events_tags.c.event_id == content_items_events.c.event_id)\
+        .filter(content_items_events.c.content_item_id.in_(content_item_ids))\
+        .order_by(desc(func.count(Tag.id)))\
+        .group_by(Tag.id)\
+        .all()
+
+    # explicitly shutdown session started in greenlet
+    db.session.remove()
+    return [dict(zip(['id', 'count'], c)) for c in tag_counts]
+
+
+    # explicitly shutdown session started in greenlet
+    db.session.remove()
+    return [dict(zip(['slug', 'count'], c)) for c in task_counts]
+
 def content_items(by, content_item_ids):
     """
     Simplified mapping of facet functions
@@ -318,7 +340,8 @@ def content_items(by, content_item_ids):
     fx_lookup = {
         'recipes': content_items_by_recipes,
         'authors': content_items_by_authors,
-        'subject_tags': content_items_by_tags,
+        'subject_tags': content_items_by_subject_tags,
+        'impact_tags': content_items_by_impact_tags,
         'sous_chefs': content_items_by_sous_chefs,
         'site_names': content_items_by_site_names,
         'statuses': content_items_by_types,

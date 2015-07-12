@@ -130,8 +130,9 @@ def apply_content_item_filters(q, **kw):
             .all()
         event_ids = [e[0] for e in event_ids]
         for e in event_ids:
-            all_event_ids.remove(e)
-        q = q.filter(ContentItem.events.any(Event.id.in_(event_ids)))
+            if e in all_event_ids:
+                all_event_ids.remove(e)
+        q = q.filter(~ContentItem.events.any(Event.id.in_(event_ids)))
 
     if len(kw['include_levels']):
 
@@ -155,9 +156,10 @@ def apply_content_item_filters(q, **kw):
 
         event_ids = [e[0] for e in event_ids]
         for e in event_ids:
-            all_event_ids.remove(e)
+            if e in all_event_ids:
+                all_event_ids.remove(e)
 
-        q = q.filter(ContentItem.events.any(
+        q = q.filter(~ContentItem.events.any(
             Event.id.in_(event_ids)))
 
     if len(kw['include_impact_tags']):
@@ -182,8 +184,9 @@ def apply_content_item_filters(q, **kw):
 
         event_ids = [e[0] for e in event_ids]
         for e in event_ids:
-            all_event_ids.remove(e)
-        q = q.filter(ContentItem.events.any(
+            if e in all_event_ids:
+                all_event_ids.remove(e)
+        q = q.filter(~ContentItem.events.any(
             Event.id.in_(event_ids)))
 
     # apply tags filter
