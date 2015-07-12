@@ -61,8 +61,9 @@ def ingest(
             
             # preference input values over extracted ones.
             data = cache_response.value
-            data.update(obj)
-            obj = data
+            if data:
+                data.update(obj)
+                obj = data
 
     obj['title'] = ingest_util.prepare_str(obj, 'title')
     obj['description'] = ingest_util.prepare_str(obj, 'description')

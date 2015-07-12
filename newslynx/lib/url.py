@@ -91,6 +91,10 @@ def prepare(url, source=None, canonicalize=True, expand=True, keep_params=('id',
             if not is_abs(url):
                 url = urljoin(source, url)
 
+    # check for missing scheme
+    if not get_scheme(url):
+        url = "http://{}".format(url)
+
     # check short urls
     if expand:
         if is_shortened(url):

@@ -99,7 +99,8 @@ def title(soup, source_url=None):
             return text.prepare(data)
 
     # fallback on page title
-    return text.prepare(soup.title.text.strip())
+    if soup.title:
+        return text.prepare(soup.title.text.strip())
 
 
 def description(soup, source_url=None):

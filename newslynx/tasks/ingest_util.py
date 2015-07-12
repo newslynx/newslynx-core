@@ -72,6 +72,7 @@ def prepare_url(o, field, source=None):
         return None
     if o[field] is None:
         return None
+    
     # prepare it first before the sending to the canoncilation cache
     u = url.prepare(o[field], source=source, canonicalize=False, expand=False)
     cache_response = url_cache.get(u)
