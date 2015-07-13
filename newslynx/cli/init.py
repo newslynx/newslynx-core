@@ -10,7 +10,7 @@ import click
 from colorama import Fore
 import argparse
 
-from newslynx.cli.common import load_data
+from newslynx.cli.common import load_data, LOGO
 from newslynx.client import API
 from newslynx.lib import serialize
 from newslynx.init import load_sous_chefs
@@ -30,6 +30,7 @@ def setup(parser):
 
 def run(opts, log, **kwargs):
     # create the database
+    log.info(LOGO +"\n", line=False, color='lightwhite_ex')
     try:
         with app.app_context():
             log.info('Creating database "{}"\n'.format(settings.SQLALCHEMY_DATABASE_URI), line=False)

@@ -56,7 +56,7 @@ metrics:
         org_levels:
             - summary
 
-    ga_pageviews_tablet:
+    ga_pageviews_desktop:
         display_name: Pageviews
         type: count
         content_levels:
