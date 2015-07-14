@@ -108,5 +108,19 @@ metrics:
         formula: '{ga_entrances} / NULLIF({ga_pageviews}, 0)'
         agg: avg
 
+    ga_per_internal:
+        display_name: Percent Internal Traffic 
+        type: computed
+        content_levels:
+            - timeseries 
+            - summary 
+            - comparison 
+        org_levels:
+            - timeseries
+            - summary 
+        formula: '(1 - ({ga_entrances} / NULLIF({ga_pageviews}, 0))'
+        agg: avg
+
+
 
 
