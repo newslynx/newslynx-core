@@ -1,15 +1,14 @@
-name: Twitter List To Event
-slug: twitter-list-to-event
-description: Extracts events from a twitter list.
-runs: newslynx.sc.events.twitter.List
+name: Twitter Search To Event
+slug: twitter-search-to-event
+description: Extracts events from a Twitter API query.
+runs: newslynx.sc.events.twitter.Search
 creates: events
 option_order:
     - name
     - slug
     - description
-    - list_owner_screen_name
-    - list_slug
-    - search_query
+    - api_query
+    - result_type
     - min_followers
     - schedule_by
     - crontab
@@ -22,22 +21,42 @@ option_order:
     - set_event_tag_ids
 options:
     
-    list_owner_screen_name:
+    api_query:
         input_type: text
-        value_types:
+        value_types: 
             - string
         required: true
         help:
-            placeholder: cspan
-    
-    list_slug:
+            placeholder: “fracking"
+            link: https://dev.twitter.com/rest/public/search
+            description: The query to the Twitter API to return the initial batch of tweets.
+
+    result_type:
+        input_type: select
+        input_options:
+            - recent
+            - popular
+            - both
+        value_types: 
+            - string
+        required: false
+        default: recent
+        help:
+            placeholder: “recent"
+            link: https://dev.twitter.com/rest/public/search
+            description: The type of tweets to return from the Twitter API.
+
+    search_query:
         input_type: text
         value_types:
-            - string
-        required: true
+            - searchstring
+            - nulltype
+        default: null
+        required: false
         help:
-            placeholder: members-of-congress
-    
+            placeholder: "propalpatine | /.*prplp.tn.*/"
+            description: The query we use for additional filtration on text and urls.
+
     min_followers:
         input_type: number
         value_types:
@@ -48,16 +67,6 @@ options:
         help:
             placeholder: "5000"
             description: Filter out tweets from users with less than X followers. 
-
-    search_query:
-        input_type: text
-        value_types:
-            - searchstring
-            - nulltype
-        default: null
-        required: false
-        help:
-            placeholder: "~fracking | drilling"
 
     event_status:
         input_type: select
@@ -109,4 +118,8 @@ options:
             description: |
                 A list of Content Item IDs and Titles to automatically
                 apply to events created by this Recipe.
-            placeholder: "Search by article title..."
+            placeholder: "Search by content title..."
+
+
+
+

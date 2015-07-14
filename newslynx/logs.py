@@ -31,11 +31,13 @@ urllib3_log.setLevel(logging.ERROR)
 iso8601_log = logging.getLogger("iso8601")
 iso8601_log.setLevel(logging.ERROR)
 
+
 def color(c):
     c = getattr(Fore, c.upper(), None)
     if not c:
         c = Fore.WHITE
     return c
+
 
 class ColorLog(object):
     """
@@ -45,7 +47,7 @@ class ColorLog(object):
         self.date_format  = kw.get('date_format', '%H:%M:%S')
         self._now = kw.get('now', datetime.now)
 
-    @property 
+    @property
     def now(self):
         return self._now().strftime(self.date_format)
 
@@ -58,7 +60,7 @@ class ColorLog(object):
     def format(self, msg, **kw):
         msg = self.colorize(msg, **kw)
         if kw.get('line', True):
-            msg  = "{} | {}\n".format(self.colorize(self.now, color='blue'), msg)
+            msg = "{} | {}\n".format(self.colorize(self.now, color='blue'), msg)
         return msg
 
     def stdout(self, msg, **kw):
@@ -70,7 +72,7 @@ class ColorLog(object):
     def info(self, msg, **kw):
         kw.setdefault('color', 'green')
         self.stderr(msg, **kw)
-    
+
     def warning(self, msg, **kw):
         kw.setdefault('color', 'yellow')
         self.stderr(msg, **kw)

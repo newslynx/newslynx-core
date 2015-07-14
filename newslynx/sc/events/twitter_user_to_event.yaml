@@ -90,25 +90,7 @@ options:
             description: |
                 A list of Content Item IDs and Titles to automatically
                 apply to events created by this Recipe.
-            placeholder: "Search by article title..."
-
-    min_followers:
-        input_type: number
-        value_types:
-            - numeric
-            - nulltype
-        default: 0
-        required: false
-        help:
-            placeholder: "Show from people with X followers, e.g. 5000."
-        
-
-    # internal options
-    minutes:
-        input_type: number
-        value_types:
-            - numeric
-        default: 30
+            placeholder: "Search by content title..."
 
 
 

@@ -7,6 +7,10 @@ build:
 	
 	python setup.py install
 
+defaults:
+
+	cp newslynx/dot_newslynx/defaults/* ~/.newslynx/defaults/
+
 documentation:
 	sphinx-build -b html docs/ docs/_build/html
 

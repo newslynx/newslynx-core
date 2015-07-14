@@ -98,7 +98,7 @@ def ingest(
     links = ingest_util.prepare_links(links, org_domains)
 
     # detect content_items
-    if len(links):
+    if len(links) or len(content_item_ids):
         e, has_content_items = _associate_content_items(
             e, org_id, links, content_item_ids, session)
 
@@ -178,9 +178,9 @@ def _associate_content_items(e, org_id, urls, content_item_ids, session):
         has_content_items = True
 
         # upsert content_items.
-        for t in content_items:
-            if t.id not in e.content_item_ids:
-                e.content_items.append(t)
+        for c in content_items:
+            if c.id not in e.content_item_ids:
+                e.content_items.append(c)
     return e, has_content_items
 
 

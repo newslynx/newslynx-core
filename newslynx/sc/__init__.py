@@ -3,6 +3,7 @@ from inspect import isgenerator
 from newslynx.client import API
 from newslynx.exc import SousChefInitError
 from collections import defaultdict
+from newslynx.logs import StdLog
 
 
 class SousChef(object):
@@ -16,7 +17,7 @@ class SousChef(object):
 
     def __init__(self, **kw):
         # parse kwargs
-
+        self.log = StdLog()  # TODO: logging configuration.
         self.org = kw.get('org')
         self.recipe = kw.get('recipe')
         self.apikey = kw.get('apikey')
@@ -39,20 +40,19 @@ class SousChef(object):
         self.recipe_id = self.recipe['id']
 
         # handle cache-clears between jobs.
-        self.next_job = defaultdict()
+        self.next_job = defaultdict(dict)
         if not self.passthrough:
             lj = self.recipe.get('last_job', None)
             if lj is None:
-                self.last_job = defaultdict()
+                self.last_job = defaultdict(dict)
             elif not isinstance(lj, dict):
-                self.last_job = defaultdict()
+                self.last_job = defaultdict(dict)
             else:
                 self.last_job = lj
-        
         # passthrough jobs should not use contextual
         # variables.
         else:
-            self.last_job = defaultdict()
+            self.last_job = defaultdict(dict)
 
     def setup(self):
         return True
@@ -72,12 +72,12 @@ class SousChef(object):
         """
         self.setup()
         data = self.run()
+
         # passthrough jobs should not 'load'
         if not self.passthrough:
-            data = self.load(data) # load the data.
+            data = self.load(data)  # load the data.
         return data
 
-# TODO: Get Bulk Loading working here.
 
 class ContentSousChef(SousChef):
     extract = True

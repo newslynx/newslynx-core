@@ -1,38 +1,42 @@
 from gevent.monkey import patch_all
 patch_all()
 
-from gevent.pool import Pool 
+from gevent.pool import Pool
 
-from datetime import datetime 
+from datetime import datetime
 import copy
-import time 
-from functools import partial
+import time
+import logging
 
 import pytz
 import twython
-from twython import Twython 
+from twython import Twython
 
 from newslynx import settings
-from newslynx.util import uniq 
+from newslynx.util import uniq
+from newslynx.lib import url
 from newslynx.lib import embed
 
 TWITTER_DATE_FORMAT = '%a %b %d %H:%M:%S +0000 %Y'
 
+log = logging.getLogger(__name__)
+
 
 class Twitter(object):
+
     """
     utilities for coercing twitter data into newsylnx formats.
     """
 
     default_kws = {
-      'max_id': None,
-      'throttle' : 15,
-      'count' : 200,
-      'max_requests' : 2,
-      'num_workers': 20,
-      'wait': 1,
-      'backoff': 2,
-      'timeout': 10 
+        'max_id': None,
+        'throttle': 15,
+        'count': 200,
+        'max_requests': 2,
+        'num_workers': 20,
+        'wait': 1,
+        'backoff': 2,
+        'timeout': 10
     }
 
     def connect(self, **auth):
@@ -40,11 +44,11 @@ class Twitter(object):
         Given environment variables / auth, connect to twitter's api
         """
         self.conn = Twython(
-            app_key = auth.get('app_key', settings.TWITTER_API_KEY),
-            app_secret = auth.get('app_secret', settings.TWITTER_API_SECRET),
-            oauth_token =  auth.get('oauth_token'),
-            oauth_token_secret = auth.get('oauth_token_secret'),
-            access_token = auth.get('access_token', None)
+            app_key=auth.get('app_key', settings.TWITTER_API_KEY),
+            app_secret=auth.get('app_secret', settings.TWITTER_API_SECRET),
+            oauth_token=auth.get('oauth_token'),
+            oauth_token_secret=auth.get('oauth_token_secret'),
+            access_token=auth.get('access_token', None)
         )
 
     def list_to_event(self, **kw):
@@ -82,15 +86,15 @@ class Twitter(object):
 
     def _paginate(self, func, **kw):
         """
-        Paginate through the api, catching errors 
-        and stopping if we finish or reach 
+        Paginate through the api, catching errors
+        and stopping if we finish or reach
         `max_requests`
         """
         defs = copy.copy(self.default_kws)
         defs.update(kw)
         kw = defs
 
-        # if we passed in a `max_id`, 
+        # if we passed in a `max_id`,
         # decrement it by 1
         if kw['max_id']:
             kw['max_id'] = kw['max_id'] - 1
@@ -116,7 +120,7 @@ class Twitter(object):
             # if we got a max_id, proceed
             if not max_id:
                 break
-              
+
             # update max_id kwarg
             kw['max_id'] = max_id - 1
 
@@ -124,16 +128,16 @@ class Twitter(object):
             for t in tweets:
                 yield t
 
-            # if we've reached the max number of pages, break 
+            # if we've reached the max number of pages, break
             max_requests = kw.get('max_requests')
             if max_requests and p > max_requests:
                 break
-            
+
             # increment page
             p += 1
 
             # throttle requests
-            time.sleep(kw.get('throttle')) 
+            time.sleep(kw.get('throttle'))
 
     def _get_max_id(self, tweets):
         """
@@ -143,10 +147,9 @@ class Twitter(object):
         ids = [t['id'] for t in tweets if t and 'id' in t]
 
         if len(ids) == 0:
-            return None 
+            return None
         max_id = sorted(ids)[0]
         return max_id
-
 
     def _catch_err(self, func, **kw):
         """
@@ -174,17 +177,18 @@ class Twitter(object):
             now = time.time()
             if now - t0 > timeout:
                 err_msg = "Timing out beacause of {0}".format(e)
-                print err_msg
-                # raise TimeoutError(err_msg)
-                tweets = []
-                break
+                log.warning(err_msg)
+                return []
+
         return tweets
 
 
 class TwitterEvent(object):
+
     """
     Parses a tweet into  Newslynx Event
     """
+
     def __init__(self, **tweet):
 
         # get nested dicts
@@ -192,7 +196,7 @@ class TwitterEvent(object):
         self._user = tweet.get('user')
         self._tweet = tweet
 
-    @property 
+    @property
     def source_id(self):
         return self._tweet.get('id_str', None)
 
@@ -202,11 +206,11 @@ class TwitterEvent(object):
             .format(self.authors[0], self.source_id)
 
     @property
-    def description(self):
+    def body(self):
         return self._tweet.get('text', '').encode('utf-8')
 
     @property
-    def body(self):
+    def embed(self):
         return embed.twitter(self.url)
 
     @property
@@ -223,22 +227,28 @@ class TwitterEvent(object):
             c = datetime.strptime(c, TWITTER_DATE_FORMAT)
             return c.replace(tzinfo=pytz.utc)
         return None
-    
-    @property 
+
+    @property
     def img_url(self):
         media = uniq([h['media_url'] for h in self._entities.get('media', [])])
         if len(media):
             return media[0]
         return self._user.get('profile_image_url', None)
 
-    @property 
+    @property
     def links(self):
-        return uniq([u['expanded_url'] for u in self._entities.get('urls', [])])
+        candidates = uniq([u['expanded_url']
+                           for u in self._entities.get('urls', [])])
+        urls = []
+        for c in candidates:
+            urls.append(url.prepare(c, expand=True, canonicalize=True))
+        return uniq(urls)
 
     @property
     def meta(self):
         return {
             'followers': self._user.get('followers_count'),
+            'embed': self.embed,
             'friends': self._user.get('friends_count'),
             'hashtags': uniq([h['text'] for h in self._entities.get('hashtags', [])])
         }
@@ -248,10 +258,16 @@ class TwitterEvent(object):
             'source_id': self.source_id,
             'url': self.url,
             'img_url': self.img_url,
-            'description': self.description,
             'body': self.body,
             'created': self.created,
             'authors': self.authors,
             'links': self.links,
             'meta': self.meta
         }
+
+if __name__ == '__main__':
+    kw = {"oauth_token_secret": "9Kyd7Y5Vzw4mFg5UWd9KdICAi6vZnSwK4M0HxRzAnysD7", "oauth_token": "432708845-j25oCkAR37fDSO5P5K4g7rSW8gBUC3wahLp4sS24"}
+    twt = Twitter()
+    twt.connect(**kw)
+    for t in twt.list_to_event(slug='members-of-congress', owner_screen_name='cspan'):
+        print t['links']
