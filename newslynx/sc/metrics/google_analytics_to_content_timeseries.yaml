@@ -118,7 +118,7 @@ metrics:
         org_levels:
             - timeseries
             - summary 
-        formula: '(1 - ({ga_entrances} / NULLIF({ga_pageviews}, 0))'
+        formula: '1 - ({ga_entrances} / NULLIF({ga_pageviews}, 0))'
         agg: avg
 
 
