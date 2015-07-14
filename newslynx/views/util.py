@@ -649,7 +649,7 @@ def register_blueprints(app, *mods):
 
                 name = fp.replace('.py', '')
 
-                WARNING MAJOR HACK AHEAD.
+                # WARNING MAJOR HACK AHEAD.
                 try:
                     m = importlib.import_module(
                         '%s.%s' % (package_name, name))
