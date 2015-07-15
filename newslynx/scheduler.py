@@ -20,7 +20,7 @@ from newslynx.logs import ColorLog
 class RecipeScheduler:
 
     """
-    A dynamic, in-memory scheduling daemon that runs recipes in greenlets and 
+    A dynamic, in-memory scheduling daemon that runs recipes in greenlets and
     responds to updates by polling the database.
     """
 

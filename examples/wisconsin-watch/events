@@ -1,0 +1,5 @@
+#!/bin/sh 
+
+nlynx api recipes cook id=5
+nlynx api recipes update id=3 screen_name='WisWatch'
+nlynx api recipes cook id=3

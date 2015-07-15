@@ -1,0 +1,4 @@
+#!/bin/sh 
+
+nlynx api content refresh-summaries
+nlynx api content search | jq '.content_items[].metrics'
