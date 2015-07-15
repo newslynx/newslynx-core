@@ -19,7 +19,7 @@ All endpoints except for: :ref:`endpoints-user-login`, require an ``apikey`` pas
 
 .. _authentication-organizations:
 
-Organizaitons
+Organizations
 +++++++++++++
 
 All endpoints unrelated to :ref:`endpoints-orgs` require an ``org`` query-string parameter.  Since users can belong to multiple organizations, we use this parameter to ensure:
