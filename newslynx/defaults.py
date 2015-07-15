@@ -3,7 +3,7 @@ Default configurations that can be overriden by
 ~/.newslynx/config.yaml or ENV variables.
 """
 import os
-from newslynx.util import here 
+from newslynx.util import here
 
 _DEFAULT_CONFIG = here(__file__, "dot_newslynx/config.yaml")
 _CONFIG_REQUIRES = [
@@ -17,7 +17,8 @@ _DEFAULT_DEFAULTS = here(__file__, "dot_newslynx/defaults/")
 
 DEFAULT_TAGS = os.path.expanduser('~/.newslynx/defaults/tags.yaml')
 DEFAULT_RECIPES = os.path.expanduser('~/.newslynx/defaults/recipes.yaml')
-CONFIG_FILE = os.getenv('NEWSLYNX_CONFIG_FILE', os.path.expanduser('~/.newslynx/config.yaml'))
+CONFIG_FILE = os.getenv('NEWSLYNX_CONFIG_FILE', 
+	                    os.path.expanduser('~/.newslynx/config.yaml'))
 
 # app configurations #
 API_URL = "http://localhost:5000"
@@ -41,24 +42,25 @@ REDIS_URL = "redis://localhost:6379/0"
 
 # URL CACHE
 URL_CACHE_PREFIX = "newslynx-url-cache"
-URL_CACHE_TTL = 1209600 # 14 DAYS
+URL_CACHE_TTL = 1209600  # 14 DAYS
 URL_CACHE_POOL_SIZE = 5
 
 # EXTRACTION CACHE
 EXTRACT_CACHE_PREFIX = "newslynx-extract-cache"
-EXTRACT_CACHE_TTL = 259200 # 3 DAYS	
+EXTRACT_CACHE_TTL = 259200  # 3 DAYS
 
 # THUMBNAIL SETTINGS
 THUMBNAIL_CACHE_PREFIX = "newslynx-thumbnail-cache"
-THUMBNAIL_CACHE_TTL = 1209600 # 14 DAYS
+THUMBNAIL_CACHE_TTL = 1209600  # 14 DAYS
 THUMBNAIL_SIZE = [150, 150]
 THUMBNAIL_DEFAULT_FORMAT = "PNG"
 
 # COMPARISON CACHE
 COMPARISON_CACHE_PREFIX = "newslynx-comparison-cache"
-COMPARISON_CACHE_TTL = 86400 # 1 day
+COMPARISON_CACHE_TTL = 86400  # 1 day
 COMPARISON_PERCENTILES = [2.5, 5.0, 10.0, 25.0, 75.0, 90.0, 95.0, 97.5]
-COMPARISON_FUNCTIONS = ['min', 'max', 'avg', 'median'] # TODO, make this actually modify data.
+# TODO, make this actually modify data.
+COMPARISON_FUNCTIONS = ['min', 'max', 'avg', 'median']
 
 # MERLYNNE KWARGS PREFIX
 MERLYNNE_KWARGS_PREFIX = "newslynx-merlynne-kwargs"
@@ -78,3 +80,4 @@ BROWSER_MAX_RETRIES = 2
 
 # pandoc
 PANDOC_PATH = "/usr/local/bin/pandoc"
+
