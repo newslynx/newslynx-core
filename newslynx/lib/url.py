@@ -741,7 +741,7 @@ def _bypass_bitly_warning(url):
     return url
 
 
-@network.retry(attempts=settings.BROWSER_MAX_RETRIES)
+@network.retry(attempts=1)
 def _unshorten(url, pattern=None):
     """
     dual-method approach to unshortening a url

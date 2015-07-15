@@ -40,6 +40,19 @@ options:
         help:
             placeholder: "~fracking | drilling"
 
+    must_link:
+        input_type: radio
+        input_options:
+            - true
+            - false
+        value_types:
+            - boolean
+        default: false
+        required: false
+        help:
+            placeholder: "false"
+            description: Only create an event if there is a link to an existing content item.
+
     event_status:
         input_type: select
         input_options:
@@ -50,6 +63,7 @@ options:
         default: pending
         help:
             placeholder: "pending"
+
 
     set_event_title:
         input_type: text

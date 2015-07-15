@@ -14,9 +14,10 @@
     slug: twitter-list-to-event-promotion
     status: uninitialized
     options:
+      must_link: true
       event_status: approved
       set_event_title: "Tweet from {authors} at {created}"
-      set_event_tag_ids: ['internal-promotion']
+      set_event_tag_ids: ['promotion-internal']
       min_followers: 0
       schedule_by: minutes
       minutes: 15
@@ -26,9 +27,10 @@
     slug: twitter-user-to-event-promotion
     status: uninitialized
     options:
+      must_link: true
       event_status: approved
       set_event_title: "Tweet from {authors} at {created}"
-      set_event_tag_ids: ['internal-promotion']
+      set_event_tag_ids: ['promotion-internal']
       schedule_by: minutes
       minutes: 30
 
@@ -37,9 +39,10 @@
     slug: facebook-page-to-event-promotion
     status: uninitialized
     options:
+      must_link: true
       event_status: approved
       set_event_title: "Facebook Page Promotion"
-      set_event_tag_ids: ['internal-promotion']
+      set_event_tag_ids: ['promotion-internal']
       schedule_by: minutes
       minutes: 30
 
@@ -49,6 +52,7 @@
     name: Search for tweets that link to content items and create events.
     status: stable
     options:
+      must_link: true
       event_status: approved
       set_event_title: "Tweet from {authors} at {created}"
       schedule_by: minutes

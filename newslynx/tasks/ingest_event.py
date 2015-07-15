@@ -96,7 +96,6 @@ def ingest(
 
     # extract urls and normalize urls asynchronously.
     links = ingest_util.prepare_links(links, org_domains)
-
     # detect content_items
     if len(links) or len(content_item_ids):
         e, has_content_items = _associate_content_items(

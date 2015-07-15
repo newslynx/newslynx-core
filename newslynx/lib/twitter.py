@@ -130,7 +130,7 @@ class Twitter(object):
 
             # if we've reached the max number of pages, break
             max_requests = kw.get('max_requests')
-            if max_requests and p > max_requests:
+            if max_requests and p >= max_requests:
                 break
 
             # increment page

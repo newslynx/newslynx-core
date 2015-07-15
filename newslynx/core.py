@@ -68,13 +68,15 @@ make_searchable()
 try:
     db = SQLAlchemy(app, session_options={'query_cls': SearchQuery})
     db.engine.pool._use_threadlocal = True
-    engine = create_engine(settings.SQLALCHEMY_DATABASE_URI)
-    engine.pool._use_threadlocal = True
+    engine = create_engine(settings.SQLALCHEMY_DATABASE_URI,
+        strategy='threadlocal',
+        max_overflow=settings.SQLALCHEMY_POOL_MAX_OVERFLOW,
+        pool_size=settings.SQLALCHEMY_POOL_SIZE
+    )
 
     # session for interactions outside of app context.
     def gen_session():
         return scoped_session(sessionmaker(bind=engine))
-
     db_session = gen_session()
     db_session.execute('SET TIMEZONE TO UTC')
 except Exception as e:

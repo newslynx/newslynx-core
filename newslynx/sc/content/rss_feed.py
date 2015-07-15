@@ -1,13 +1,13 @@
-from newslynx.sc import ContentSousChef
+from newslynx.sc import SousChef
 
 from newslynx.lib import rss
 from newslynx.lib import dates
 from newslynx.lib import url
 
 
-class Article(ContentSousChef):
+class Article(SousChef):
     timeout = 240
-    extract = False
+    extract = True
 
     def setup(self):
         # get max publish date of the last time we ran this.
@@ -27,7 +27,7 @@ class Article(ContentSousChef):
         domains = self.org.get('domains', [''])
         if feed_domain:
             domains.append(feed_domain)
-        
+      
         # iterate through RSS entries.
         for article in rss.get_entries(feed_url, domains):
             article['type'] = 'article'  # set this type as article.
@@ -46,6 +46,14 @@ class Article(ContentSousChef):
             elif article['created'] > self.max_date_last_run:
                 self.publish_dates.append(article['created'])
                 yield article
+
+    def load(self, data):
+        to_post = []
+        for d in data:
+            d['recipe_id'] = self.recipe_id
+            to_post.append(d)
+        status_resp = self.api.content.bulk_create(to_post)
+        return self.api.jobs.poll(**status_resp)
 
     def teardown(self):
         if len(self.publish_dates):

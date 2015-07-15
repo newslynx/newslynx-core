@@ -103,7 +103,8 @@ def get_request_kwargs(timeout=None, useragent=None):
     return {
         'headers': {'User-Agent': useragent or settings.BROWSER_USER_AGENT},
         'timeout': timeout or settings.BROWSER_TIMEOUT,
-        'allow_redirects': True
+        'allow_redirects': True,
+        'verify': True
     }
 
 

@@ -172,7 +172,7 @@ class ContentTimeseriesBulkLoader(BulkLoader):
 class ContentSummaryBulkLoader(BulkLoader):
 
     returns = 'query'
-    timeout = 480
+    timeout = 640
 
     def load_one(self, item, **kw):
         return ingest_metric.content_summary(item, **kw)
@@ -190,7 +190,7 @@ class OrgTimeseriesBulkLoader(BulkLoader):
 class EventBulkLoader(BulkLoader):
 
     returns = 'model'
-    timeout = 480
+    timeout = 640
 
     def load_one(self, item, **kw):
         return ingest_event.ingest(item, **kw)
