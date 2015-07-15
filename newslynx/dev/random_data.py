@@ -3,6 +3,8 @@ import hashlib
 from datetime import datetime, timedelta
 import random
 from random import choice
+from string import letters
+import copy
 
 from faker import Faker
 
@@ -34,6 +36,8 @@ SUBJECT_TAG_NAMES = ['Environment', 'Money & politics', 'Government', 'Health']
 
 AUTHORS = ['Michael Keller', 'Brian Abelson', 'Merlynne Jones']
 
+# a lookup of letters to their number
+letters_to_int = dict(zip(list(set(letters.lower())), range(1,27)))
 
 def random_date(n1, n2):
     dt = datetime.utcnow() - timedelta(days=choice(range(n1, n2)))
@@ -80,6 +84,13 @@ def random_email():
 
 def random_hash():
     return hashlib.md5(str(uuid.uuid1())).hexdigest()
+
+def str_to_num(name):
+    num = 0
+    for c in name.lower():
+        if c in letters_to_int:
+            num += letters_to_int[c]
+    return num
 
 
 # GENERATORS #
@@ -279,27 +290,42 @@ def gen_content_item(org, recipes, subject_tags, authors):
 
 
 def gen_content_metric_timeseries(org, content_items, metrics, n_content_item_timeseries_metrics=1000):
-    for _ in xrange(n_content_item_timeseries_metrics):
-        _metrics = {}
-        for m in metrics:
-            if 'timeseries' in m.content_levels:
-                _metrics[m.name] = random_int(1, 1000)
+    # all
+    date_list = []
+    start = dates.now() - timedelta(days=7)
+    for hour in range(1, (7*24)+1):
+        date_list.append(start + timedelta(hours=hour))
 
-        cmd_kwargs = {
-            'org_id': org.id,
-            'content_item_id': choice(content_items).id,
-            'datetime': dates.floor(random_date(1, 7), unit='hour', value=1),
-            'metrics': obj_to_json(_metrics)
-        }
-        # upsert command
-        cmd = """SELECT upsert_content_metric_timeseries(
-                    {org_id},
-                    {content_item_id},
-                    '{datetime}',
-                    '{metrics}');
-               """.format(**cmd_kwargs)
-        db_session.execute(cmd)
+    for c in content_items:
+        last_values = {}
+        for i, d in enumerate(date_list):
+            _metrics = {}
+            for m in metrics:
+                if 'timeseries' in m.content_levels:
+                    if m.type=='cumulative':
+                        if m.name not in last_values:
+                            last_values[m.name] = 0
+                        last_values[m.name] += random_int(0, 100)
+                        _metrics[m.name] = copy.copy(last_values[m.name])
+                    else:
+                        _metrics[m.name] = random_int(1, 1000)
+
+            cmd_kwargs = {
+                'org_id': org.id,
+                'content_item_id': c.id,
+                'datetime': d.isoformat(),
+                'metrics': obj_to_json(_metrics)
+            }
+            # upsert command
+            cmd = """SELECT upsert_content_metric_timeseries(
+                        {org_id},
+                        {content_item_id},
+                        '{datetime}',
+                        '{metrics}');
+                   """.format(**cmd_kwargs)
+            db_session.execute(cmd)
     db_session.commit()
+
 
 
 def gen_org_metric_timeseries(org, metrics, n_org_timeseries_metrics=1000):
@@ -307,7 +333,10 @@ def gen_org_metric_timeseries(org, metrics, n_org_timeseries_metrics=1000):
         _metrics = {}
         for m in metrics:
             if 'timeseries' in m.org_levels:
-                _metrics[m.name] = random_int(1, 120)
+                if m.type != 'cumulative':
+                    _metrics[m.name] = random_int(1, 1000)
+                else:
+                    _metrics[m.name] = _ * random_int(2, 10)
 
         cmd_kwargs = {
             'org_id': org.id,

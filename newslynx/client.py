@@ -502,23 +502,24 @@ class Recipes(BaseClient):
         url = self._format_url('recipes', id, 'cook')
         if not kw.get('passthrough', False):
             return self._request('GET', url, params=kw)
-        
+
         # add apikey/org when required or set by user.
         kw.update({'apikey': self.apikey})
         if 'org' not in kw:
             kw['org'] = self.org
         r = requests.get(url, params=kw, stream=True)
-        
+
         # stream results.
         def _generate():
             for line in r.iter_lines():
                 d = json_to_obj(line)
                 # catch errors
                 if d.get('error'):
-                    err = ERRORS.get(d['error'])
-                    if not err:
-                        raise ClientError(d)
-                    raise err(d['message'])
+                    if self.raise_errors:
+                        err = ERRORS.get(d['error'])
+                        if not err:
+                            raise ClientError(d)
+                        raise err(d['message'])
                 yield d
         return _generate()
 

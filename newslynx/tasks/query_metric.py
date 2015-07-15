@@ -2,7 +2,7 @@ from datetime import datetime, date
 import copy
 
 from newslynx.core import db
-from .util import ResultIter
+from newslynx.tasks.util import ResultIter
 from newslynx.util import uniq
 
 
@@ -295,9 +295,16 @@ class TSQuery(object):
         if not self.group_by_id:
             init_id_col = ""
 
+        # optionally ignore date
+        date_select = "date_trunc('{unit}', {date_col}) as {date_col},"\
+            .format(**self.query_kw)
+        if self.unit is None:
+            date_select = ""
+
         return self.add_kw(
             select=self.init_selects,
-            init_id_col=init_id_col
+            init_id_col=init_id_col,
+            date_select=date_select
         )
 
     @property
@@ -308,7 +315,7 @@ class TSQuery(object):
         return \
             """SELECT
                     {init_id_col}
-                    date_trunc('{unit}', {date_col}) as {date_col},
+                    {date_select}
                     {select}
                 FROM {table}
                     WHERE {id_col} IN (select unnest({ids_array}))
@@ -322,16 +329,37 @@ class TSQuery(object):
         """
         # group by ID ?
         agg_id_col = "{0},".format(self.id_col)
+        sel_id_col = agg_id_col.replace(',', '')
         agg_order_by = ",{0}".format(self.id_col)
+
+        # if we're ignoring the date, we need to get 
+        # change these commas
+        if not self.unit:
+            sel_id_col += ","
+            agg_id_col = agg_id_col.replace(',', '')
+            agg_order_by = agg_order_by.replace(',', '')
+
         if not self.group_by_id:
             agg_id_col = ""
+            sel_id_col = ""
             agg_order_by = ""
+
+        # optionally ignore date
+        date_select = "date_trunc('{unit}', {date_col}) as {date_col},"\
+                      .format(**self.query_kw)
+        date_col = copy.copy(self.date_col)
+        if self.unit is None:
+            date_select = ""
+            date_col = ""
 
         return self.add_kw(
             select=self.agg_selects,
+            date_select=date_select,
             init_query=self.init_query,
             agg_id_col=agg_id_col,
-            agg_order_by=agg_order_by
+            sel_id_col=sel_id_col,
+            agg_order_by=agg_order_by,
+            date_col=date_col
         )
 
     @property
@@ -340,8 +368,8 @@ class TSQuery(object):
         The aggregation query.
         """
         return \
-            """SELECT {agg_id_col}
-                    date_trunc('{unit}', {date_col}) as {date_col},
+            """SELECT {sel_id_col}
+                    {date_select}
                     {select}
                 FROM ({init_query}) t1
                 GROUP BY {agg_id_col} {date_col}
@@ -448,10 +476,15 @@ class TSQuery(object):
         }
         if not self.group_by_id:
             kw['com_id_col'] = ""
+
+        if self.unit is None:
+            kw['date_col'] = ""
+        else:
+            kw['date_col'] = copy.copy(self.date_col) + ","
         return \
             """SELECT
                 {com_id_col}
-                {date_col},
+                {date_col}
                 {select}
                FROM ({init_q}) tttt
             """.format(**self.add_kw(**kw))
@@ -512,23 +545,26 @@ class TSQuery(object):
 
             if not self.compute:
                 return self.init_query
-            else:
-                return self.computed_query(self.init_query)
+            return self.computed_query(self.init_query)
+
+        # aggregate by content id query
+        elif self.unit is None:
+            if not self.compute:
+                return self.agg_query
+            return self.computed_query(self.agg_query)
 
         # simple aggregate query
         elif self.sparse and not self.transform:
 
             if not self.compute:
                 return self.agg_query
-            else:
-                return self.computed_query(self.agg_query)
+            return self.computed_query(self.agg_query)
 
         # non-sparse query
         elif not self.sparse and not self.transform:
             if not self.compute:
                 return self.non_sparse_query
-            else:
-                return self.computed_query(self.non_sparse_query)
+            return self.computed_query(self.non_sparse_query)
 
         # cumulative
         elif self.transform == 'cumulative':

@@ -143,13 +143,13 @@ def update_report(user, org, id):
                 'Report data could not be parsed: {}'
                 .format(e.message))
     if name:
-        r.name = name 
+        r.name = name
     if slug:
-        r.slug = slug 
+        r.slug = slug
     elif name:
         r.slug = slugify(name)
     if data:
-        r.data = data 
+        r.data = data
     if template_id:
         r.template_id = template_id
 

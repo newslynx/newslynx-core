@@ -17,7 +17,7 @@ def content_timeseries_to_summary(org, num_hours=24):
 
     # just use this to generate a giant timeseries select with computed
     # metrics.
-    ts = QueryContentMetricTimeseries(org, org.content_item_ids)
+    ts = QueryContentMetricTimeseries(org, org.content_item_ids, unit=None)
 
     # generate aggregation statments + list of metric names.
     summary_pattern = "{agg}({name}) AS {name}"
@@ -128,7 +128,7 @@ def event_tags_to_summary(org, content_item_ids=[]):
         )
     """.format(**qkw)
 
-    # add in null query if we're not filtering 
+    # add in null query if we're not filtering
     # by specific content item ids.
     qkw['null_query'] = ""
     qkw['final_query'] = "select * from positive_metrics"

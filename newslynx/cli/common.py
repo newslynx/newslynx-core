@@ -10,6 +10,12 @@ ACCEPTABLE_FILE_FORMATS = [
     'yml', 'yaml', 'json'
 ]
 
+LOGO = """
+ / \ / \ / \ / \ / \ / \ / \ / \ 
+( n | e | w | s | l | y | n | x )
+ \_/ \_/ \_/ \_/ \_/ \_/ \_/ \_/
+""" 
+
 # lil' hacks.
 re_quoted_arg = re.compile(r'^[\'\"]?(.*)[\'\"]?$')
 trues = copy(TRUE_VALUES)

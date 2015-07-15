@@ -35,7 +35,6 @@ options:
             description: |
                 The content item types to calculate share counts for.
 
-
 metrics:
 
     ga_pageviews:
@@ -92,7 +91,7 @@ metrics:
         org_levels:
             - timeseries
             - summary 
-        formula: '{ga_total_time_on_page} / {ga_pageviews}'
+        formula: '{ga_total_time_on_page} / NULLIF({ga_pageviews}, 0)'
         agg: avg
 
     ga_per_external:
@@ -105,8 +104,22 @@ metrics:
         org_levels:
             - timeseries
             - summary 
-        formula: '{ga_entrances} / {ga_pageviews}'
+        formula: '{ga_entrances} / NULLIF({ga_pageviews}, 0)'
         agg: avg
+
+    ga_per_internal:
+        display_name: Percent Internal Traffic 
+        type: computed
+        content_levels:
+            - timeseries 
+            - summary 
+            - comparison 
+        org_levels:
+            - timeseries
+            - summary 
+        formula: '1 - ({ga_entrances} / NULLIF({ga_pageviews}, 0))'
+        agg: avg
+
 
 
 

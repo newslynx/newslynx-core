@@ -1,0 +1,66 @@
+name: Search For Links to Content Items
+slug: twitter-search-content-item-links-to-event
+description: |
+    This Sous Chef looks up all content items via the API and searches 
+    Twitter for tweets that links to the same URLs.
+runs: newslynx.sc.events.twitter.SearchContentItemLinks
+creates: events
+option_order:
+    - name
+    - slug
+    - description
+    - schedule_by
+    - crontab
+    - minutes
+    - time_of_day
+    - event_status
+    - set_event_content_items
+    - set_event_title
+    - set_event_description
+    - set_event_tag_ids
+
+options:
+
+    event_status:
+        input_type: select
+        input_options:
+            - pending
+            - approved
+        value_types: 
+            - string
+        default: approved
+        help:
+            placeholder: "approved"
+
+    set_event_title:
+        input_type: text
+        value_types: 
+            - string
+        default: null
+        help:
+            placeholder: "Promotion Event"
+
+    set_event_description:
+        input_type: paragraph
+        value_types: 
+            - string
+        default: null
+
+    set_event_tag_ids:
+        input_type: checkbox
+        input_options: []
+        accepts_list: true
+        required: true 
+        value_types:
+            - string 
+            - numeric 
+        default: []
+        help:
+            description: |
+                A list of Tag IDs or slugs to automatically
+                apply to events created by this recipe.
+            placeholder: "pending"
+
+
+
+

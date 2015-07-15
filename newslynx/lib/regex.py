@@ -147,7 +147,6 @@ re_short_domains = re.compile(r"""
   (^bbc.in$)|
   (^ift\.tt$)|
   (^amzn.to$)|
-  (^p\.tl$)|
   (^trib\.al$)|
   (^1od\.biz$)|
   (^ht\.ly$)|
@@ -158,8 +157,8 @@ re_short_domains = re.compile(r"""
   (^trib\.al$)|
   (^ow\.ly$)|
   (^mojo\.ly$)|
+  (^1\.usa\.gov$)|
   (^propub\.ca$)|
-  (^feeds\.propublica\.org$)|
   (^ckbe\.at$)|
   (^polti\.co$)|
   (^pocket\.co$)|

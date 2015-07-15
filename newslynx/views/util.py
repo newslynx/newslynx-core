@@ -626,8 +626,8 @@ def localize(org):
     """
     Localize a session to an org's settings.
     """
-    localize = arg_bool('localize', default=False)
-    if localize:
+    _localize = arg_bool('localize', default=False)
+    if _localize:
         db.session.execute("SET TIMEZONE TO '{}'".format(org.timezone))
     else:
         db.session.execute("SET TIMEZONE TO UTC")
@@ -657,7 +657,7 @@ def register_blueprints(app, *mods):
                     continue
 
                 # m = importlib.import_module(
-                #     '%s.%s' % (package_name, name))       
+                #     '%s.%s' % (package_name, name))    
 
                 for item in dir(m):
                     item = getattr(m, item)

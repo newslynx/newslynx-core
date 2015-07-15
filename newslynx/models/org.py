@@ -97,10 +97,10 @@ class Org(db.Model):
         """
         An org's authorizations formatted as a dictionary.
         """
-        settings = {}
+        auths = {}
         for a in self.auths:
-            settings[s.name] = a.value
-        return settings
+            auths[a.name] = a.value
+        return auths
 
     @property
     def super_user(self):

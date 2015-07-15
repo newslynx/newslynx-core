@@ -308,13 +308,13 @@ def cook_a_recipe(user, org, recipe_id):
 
     # initialize merlynne
     merlynne = Merlynne(**kw)
-    try:
-        resp = merlynne.cook_recipe()
+    resp = merlynne.cook_recipe()
     
-    except Exception as e:
-        raise RequestError(
-            'There was a problem initializing the SousChef: {}'
-            .format(e.message))
+    # except Exception as e:
+    #     p
+    #     raise RequestError(
+    #         'There was a problem initializing the SousChef: {}'
+    #         .format(e.message))
 
     # queued job
     if not kw['passthrough']:

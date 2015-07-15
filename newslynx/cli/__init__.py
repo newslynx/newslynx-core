@@ -14,15 +14,11 @@ import argparse
 from sqlalchemy import create_engine
 from colorama import Fore
 
-from newslynx.cli.common import parse_runtime_args
+from newslynx.cli.common import parse_runtime_args, LOGO
 from newslynx.logs import ColorLog, StdLog
 from newslynx.exc import ConfigError
 
-LOGO = """
- / \ / \ / \ / \ / \ / \ / \ / \ 
-( n | e | w | s | l | y | n | x )
- \_/ \_/ \_/ \_/ \_/ \_/ \_/ \_/
-"""  
+
 
 def setup(subparser):
     """
@@ -72,7 +68,6 @@ def run():
 
         # run the necessary subcommand
         if opts.cmd not in subcommands:
-            subcommands
             echo_error(RuntimeError("No such subcommand."), no_color=opts.no_color)
 
         try:
@@ -87,8 +82,8 @@ def run():
             sys.exit(1)
 
     except ConfigError as e:
-        from newslynx.cli import config 
         log.info(LOGO +"\n", line=False, color='lightwhite_ex')
+        from newslynx.cli import config 
         log.exception(e, tb=False, line=False)
         log.info("\n\n", line=False)
         kwargs['re'] = False
