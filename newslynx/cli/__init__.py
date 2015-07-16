@@ -54,6 +54,8 @@ def run():
         parser = argparse.ArgumentParser(prog='newslynx/nlynx')
         parser.add_argument('--no-color', dest='no_color', action="store_true", 
             default=False, help='Disable colored logging.')
+        parser.add_argument('--no-interactive', dest='no_interactive', action="store_true",
+            default=False, help='Dont prompt for config.')
 
         # add the subparser "container"
         subparser = parser.add_subparsers(help='Subcommands', dest='cmd')
@@ -82,12 +84,16 @@ def run():
             sys.exit(1)
 
     except ConfigError as e:
-        log.info(LOGO +"\n", line=False, color='lightwhite_ex')
-        from newslynx.cli import config 
-        log.exception(e, tb=False, line=False)
-        log.info("\n\n", line=False)
-        kwargs['re'] = False
-        config.run(opts, log, **kwargs)
+        if not opts.no_interactive:
+            log.info(LOGO +"\n", line=False, color='lightwhite_ex')
+            log.info("\n\n", line=False)
+            log.exception(e, tb=False, line=False)
+            from newslynx.cli import config
+            kwargs['re'] = False
+            config.run(opts, log, **kwargs)
+        else:
+            log.exception(e, tb=False, line=False)
+            sys.exit(1)
 
     except KeyboardInterrupt as e:
         log.warning('\nInterrupted by user.\n', line=False)
