@@ -1,6 +1,6 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 import copy
-from collections import defaultdict
+from collections import defaultdict, Counter
 
 import googleanalytics as ga
 
@@ -84,9 +84,14 @@ class SCGoogleAnalytics(SousChef):
             u = c.pop('url', None)
             domain = c.pop('domain', None)
             if u and domain:
+                # parse path
                 p = url.get_path(u)
-                if not p or p == "/":
-                    p = ""
+                # standardize home domains.
+                if p == "" or p == "/":
+                    p = "/"
+                elif not p:
+                    continue
+                # build up list of ids.
                 self.domain_lookup[domain][p].append(c['id'])
             elif u:
                 self.url_lookup[u].append(c['id'])
@@ -97,24 +102,25 @@ class SCGoogleAnalytics(SousChef):
         """
         domain = row.pop('domain', None)
         path = row.pop('path', None)
-        prof_url = prof.raw.get('websiteUrl')
+        prof_url = prof.raw.get('websiteUrl', None)
 
         # get the canonical domain:
+        base = None
         if not domain or 'not set' in domain:
-            base = copy.copy(prof_url)
+            if prof_url:
+                base = copy.copy(prof_url)
 
         # absolutify paths with domains.
         elif not path.startswith('/'):
             base = copy.copy(path)
+
         else:
             base = copy.copy(domain)
+        if not base:
+            raise Exception('Could not process {}{}'.format(domain, path))
 
         base_url = url.prepare(base, canonicalize=False, expand=False)
         domain = url.get_domain(base_url)
-
-        # standardize with lookup.
-        if path == "/":
-            path = ""
 
         # lookup via domain + path.
         found = False
@@ -124,8 +130,9 @@ class SCGoogleAnalytics(SousChef):
                 r = copy.copy(row)
                 r['content_item_id'] = cid
                 yield r
+
+        # lookup via full url
         if not found:
-            # lookup via full url
             u = url.join(base_url, path)
             for cid in self.url_lookup.get(u, []):
                 r = copy.copy(row)
@@ -142,11 +149,11 @@ class SCGoogleAnalytics(SousChef):
         for prof in self.profiles:
             data = self.fetch(prof)
             for row in self.format(data, prof):
-                for r in self.reconcile_urls(row, prof):
-                    yield r
+                yield row
 
     def load(self, data):
-        status_resp = self.api.content.bulk_create_timeseries(list(data))
+        d = list(data)
+        status_resp = self.api.content.bulk_create_timeseries(data=d)
         return self.api.jobs.poll(**status_resp)
 
 
@@ -198,9 +205,14 @@ class ContentTimeseries(SCGoogleAnalytics):
             tz = pytz.utc
         dt = datetime.strptime(ds, '%Y%m%d%H')
         dt = dt.replace(tzinfo=tz)
-        return dates.convert_to_utc(dt)
+        dt = dates.convert_to_utc(dt)
 
-    def format(self, data, prof):
+        # round to nearest hour
+        dt += timedelta(minutes=30)
+        dt -= timedelta(minutes=dt.minute % 60)
+        return dt
+
+    def pre_format(self, data, prof):
         """
         Cleanup numbers, date, and column names.
         """
@@ -214,26 +226,116 @@ class ContentTimeseries(SCGoogleAnalytics):
         if tz:
             tz = pytz.timezone(tz)
 
-        # get website url from profile
-        prof_url = prof.raw.get('websiteUrl', None)
-
         # iterate through results and parse.
         for row in data:
             row = self.format_row_names(row)
+
             # format date
-            row['datetime'] = self.format_date(row['datetime'])
+            row['datetime'] = self.format_date(row['datetime'], tz=tz)
+
             # format numerics
             for k, v in copy.copy(row).items():
                 if k not in ['datetime', 'domain', 'path']:
                     row[k] = stats.parse_number(v)
-            yield row
 
+            # reconcile urls.
+            for r in self.reconcile_urls(row, prof):
+                yield r
 
+    def format(self, data, prof):
+        """
+        because of how we parse the urls, there can be multiple distinct rows of datetime + content_item id.
+        normalize them here.
+        """
+        d = defaultdict(lambda: defaultdict(Counter))
+
+        for r in self.pre_format(data, prof):
+            for m, v in r.items():
+                if m not in ['content_item_id', 'datetime']:
+                    d[r['content_item_id']][r['datetime']][m] += v
+
+        for cid in d.keys():
+            for dt in d[cid].keys():
+                metrics = dict(d[cid].get(dt, {}))
+                metrics.update({'content_item_id': cid, 'datetime': dt})
+                yield metrics
 
 
 class ContentDomainFacets(SousChef):
-    pass
+
+    SEARCH_REFERRERS = [
+        'google', 'bing', 'ask', 'aol',
+        'yahoo', 'comcast', 'search-results',
+        'disqus', 'cnn', 'aol', 'baidu'
+    ]
 
 
-class ContentDeviceSummaries(SousChef):
-    pass
+class ContentDeviceSummaries(SCGoogleAnalytics):
+
+    METRICS = {
+        'pageviews': 'pageviews'
+    }
+
+    DIMENSIONS = {
+        'hostname': 'domain',
+        'pagePath': 'path',
+        'deviceCategory': 'device'
+    }
+
+    def fetch(self, prof):
+        q = prof.core.query(self.METRICS.keys(), self.DIMENSIONS.keys())\
+                     .range('2015-06-01', days=90)
+        r = q.execute()
+        return r.rows
+
+    def format_row_names(self, row):
+        """
+        Rename rows based on metric / dimension lookups.
+        """
+        new_row = {}
+        for k, v in row._asdict().iteritems():
+            k = k.replace('_', '').lower().strip()
+            if k in self.col_lookup:
+                new_row[self.col_lookup[k]] = v
+            else:
+                new_row[k] = v
+        return new_row
+
+    def pre_format(self, data, prof):
+        """
+        Lookup content item ids.
+        """
+        # create lookups.
+        self.col_lookup = {k.lower(): v for k, v in self.METRICS.items()}
+        self.col_lookup.update({k.lower(): v for k, v in self.DIMENSIONS.items()})
+        for row in data:
+            row = self.format_row_names(row)
+            row['device'] = row['device'].lower()
+            for r in self.reconcile_urls(row, prof):
+                yield r
+
+    def format(self, data, prof):
+
+        # group counts.
+        counts = defaultdict(Counter)
+        for row in self.pre_format(data, prof):
+            counts[row['content_item_id']][
+                row['device']] += row.get('pageviews', 0)
+
+        for cid, facets in counts.iteritems():
+            row = {'content_item_id': cid}
+
+            # fill in zeros.
+            for k in ['mobile', 'desktop', 'tablet']:
+                if k not in facets:
+                    facets[k] = 0
+            # populate metrics.
+            for k, v in facets.items():
+                row['ga_pageviews_'+k] = v
+
+            yield row
+
+    def load(self, data):
+        d = list(data)
+        status_resp = self.api.content.bulk_create_summary(data=d)
+        return self.api.jobs.poll(**status_resp)
