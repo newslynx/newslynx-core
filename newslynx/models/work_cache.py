@@ -43,13 +43,8 @@ class ExtractCache(Cache):
         return self._extract(url, type)
 
     # a lookup of content types to extractors
-    def _extract(self, url, type):
-        if type == 'article':
-            return article.extract(url)
-        else:
-            raise NotImplemented(
-                "NewsLynx only has support for Article Extraction.")
-
+    def _extract(self, url, type=None):
+        return article.extract(url, type=type)
 
 class ThumbnailCache(Cache):
 

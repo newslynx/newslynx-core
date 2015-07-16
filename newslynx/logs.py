@@ -31,6 +31,12 @@ urllib3_log.setLevel(logging.ERROR)
 iso8601_log = logging.getLogger("iso8601")
 iso8601_log.setLevel(logging.ERROR)
 
+oauth2client_client_log = logging.getLogger('oauth2client')
+oauth2client_client_log.setLevel(logging.ERROR)
+
+googleapiclient = logging.getLogger('googleapiclient')
+googleapiclient.setLevel(logging.ERROR)
+
 
 def color(c):
     c = getattr(Fore, c.upper(), None)

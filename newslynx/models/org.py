@@ -148,7 +148,8 @@ class Org(db.Model):
         Simplified content items.
         """
         return [
-            {'id': c.id, 'url': c.url, 'type': c.type, 'title': c.title, 'created': self.created}
+            {'id': c.id, 'url': c.url, 'type': c.type, 'title': c.title,
+             'created': c.created, 'domain': c.domain}
             for c in self.content_items
         ]
 

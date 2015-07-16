@@ -34,7 +34,7 @@ class SCTwitterEvent(SousChef):
         """
         self.lookup = {
             c['url']: c['id'] for c in self.api.orgs.simple_content()
-                if c.get('url', None)
+            if c.get('url', None)
         }
 
     def fetch(self, **kw):
@@ -239,7 +239,8 @@ class SearchContentItemLinks(SCTwitterEvent):
 
     def fetch(self, **kw):
         """
-        Fetch tweets for all queries, keeping
+        Fetch tweets for all queries, keeping track of max ID for
+        each unique query.
         """
         # we should include embeds on this sous chef.
         setattr(self.twitter, 'incl_embed', True)
@@ -260,6 +261,9 @@ class SearchContentItemLinks(SCTwitterEvent):
                 yield tweet
 
     def teardown(self):
+        """
+        Store max Ids.
+        """
         if len(self.qids.keys()):
             max_ids = {k: max(v) for k, v in self.qids.iteritems()}
             self.next_job['max_ids'] = max_ids

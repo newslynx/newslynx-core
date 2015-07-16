@@ -125,6 +125,13 @@ def prepare(url, source=None, canonicalize=True, expand=True, keep_params=('id',
     return url
 
 
+def join(base, path):
+    """
+    Join two url elements.
+    """
+    return urljoin(prepare(base, canonicalize=False, expand=False), path)
+
+
 def unshorten(orig_url, **kw):
     """
     Unshorten a url.
@@ -173,6 +180,11 @@ def get_domain(url, **kw):
     """
     if url is None:
         return None
+
+    # check for missing scheme
+    if not get_scheme(url):
+        url = "http://{}".format(url)
+
     domain = urlparse(url, **kw).netloc
     domain = re_www.sub('', domain)
     return domain
@@ -209,6 +221,11 @@ def get_path(url, **kw):
     """
     if url is None:
         return None
+
+    # check for missing scheme
+    if not get_scheme(url):
+        url = "http://{}".format(url)
+
     return urlparse(url, **kw).path
 
 
@@ -218,6 +235,11 @@ def get_slug(url):
     """
     if url is None:
         return None
+
+    # check for missing scheme
+    if not get_scheme(url):
+        url = "http://{}".format(url)
+
     url = get_path(url.decode('utf-8', 'ignore'))
     url = re_html.sub('', url).strip().lower()
     url = re_slug.sub(r'-', url)
@@ -237,6 +259,11 @@ def get_hash(url):
     """
     if url is None:
         return None
+
+    # check for missing scheme
+    if not get_scheme(url):
+        url = "http://{}".format(url)
+
     url = re_http.sub('', url)
     url = re_www.sub('', url)
     url = re_html.sub('', url).strip()
@@ -249,6 +276,11 @@ def get_path_hash(url, **kw):
     """
     if url is None:
         return None
+
+    # check for missing scheme
+    if not get_scheme(url):
+        url = "http://{}".format(url)
+
     url = get_path(url, **kw)
     url = re_html.sub('', url)
     return hashlib.md5(url).hexdigest()
@@ -260,6 +292,11 @@ def get_query_string(url, **kw):
     """
     if url is None:
         return None
+
+    # check for missing scheme
+    if not get_scheme(url):
+        url = "http://{}".format(url)
+
     return urlparse(url, **kw).query
 
 
@@ -272,6 +309,11 @@ def get_filetype(url, **kw):
     """
     if url is None:
         return None
+
+    # check for missing scheme
+    if not get_scheme(url):
+        url = "http://{}".format(url)
+
     path = get_path(url, **kw)
     # Eliminate the trailing '/', we are extracting the file
     if path.endswith('/'):
