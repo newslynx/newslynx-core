@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 import copy
 from collections import defaultdict, Counter
+from operator import itemgetter 
 
 import googleanalytics as ga
 
@@ -151,10 +152,6 @@ class SCGoogleAnalytics(SousChef):
             for row in self.format(data, prof):
                 yield row
 
-    def load(self, data):
-        d = list(data)
-        status_resp = self.api.content.bulk_create_timeseries(data=d)
-        return self.api.jobs.poll(**status_resp)
 
 
 class ContentTimeseries(SCGoogleAnalytics):
@@ -179,7 +176,7 @@ class ContentTimeseries(SCGoogleAnalytics):
 
     def fetch(self, prof):
         q = prof.core.query(self.METRICS.keys(), self.DIMENSIONS.keys())\
-                     .range('2015-06-01', days=90)\
+                     .range('2015-05-01', days=180)\
                      .sort(*self.SORT_KEYS)
         r = q.execute()
         return r.rows
@@ -260,14 +257,127 @@ class ContentTimeseries(SCGoogleAnalytics):
                 metrics.update({'content_item_id': cid, 'datetime': dt})
                 yield metrics
 
+    def load(self, data):
+        d = list(data)
+        status_resp = self.api.content.bulk_create_timeseries(data=d)
+        return self.api.jobs.poll(**status_resp)
 
-class ContentDomainFacets(SousChef):
+# class ContentDomainFacets(SousChef):
+#     pass
+
+
+class ContentDomainFacets(SCGoogleAnalytics):
+
+    METRICS = {
+        'pageviews': 'pageviews',
+    }
+
+    DIMENSIONS = {
+        'hostname': 'domain',
+        'pagePath': 'path',
+        'fullReferrer': 'referrer'
+    }
 
     SEARCH_REFERRERS = [
         'google', 'bing', 'ask', 'aol',
         'yahoo', 'comcast', 'search-results',
         'disqus', 'cnn', 'aol', 'baidu'
     ]
+
+    def parse_referrer(self, row):
+        """
+        Parse a referrer.
+        """
+        referrer = row.get('referrer')
+
+        if referrer == "(not set)":
+            row['referrer'] = 'null'
+            row['ref_domain'] = 'null'
+
+        elif referrer == "(direct)":
+            row['referrer'] = 'direct'
+            row['ref_domain'] = 'direct'
+
+        elif referrer in self.SEARCH_REFERRERS:
+            row['referrer'] = referrer 
+            row['ref_domain'] = referrer
+
+        elif 't.co' in referrer:
+            row['referrer'] = url.prepare(referrer, expand=False, canonicalize=False)
+            row['ref_domain'] = 'twitter'
+
+        elif 'facebook' in referrer:
+            row['referrer'] = url.prepare(referrer, expand=False, canonicalize=False)
+            row['ref_domain'] = 'facebook'
+
+        else:
+            row['referrer'] = url.prepare(referrer, expand=False, canonicalize=False)
+            row['ref_domain'] = url.get_simple_domain(row['referrer'])
+
+        return row
+
+    def fetch(self, prof):
+        q = prof.core.query(self.METRICS.keys(), self.DIMENSIONS.keys())\
+                     .range('2015-05-01', days=180)
+        r = q.execute()
+        return r.rows
+
+    def format_row_names(self, row):
+        """
+        Rename rows based on metric / dimension lookups.
+        """
+        new_row = {}
+        for k, v in row._asdict().iteritems():
+            k = k.replace('_', '').lower().strip()
+            if k in self.col_lookup:
+                new_row[self.col_lookup[k]] = v
+            else:
+                new_row[k] = v
+        return new_row
+
+    def pre_format(self, data, prof):
+        """
+        Parse + reconcile
+        """
+        self.col_lookup = {k.lower(): v for k, v in self.METRICS.items()}
+        self.col_lookup.update({k.lower(): v for k, v in self.DIMENSIONS.items()})
+        for row in data:
+            row = self.format_row_names(row)
+            row = self.parse_referrer(row)
+            row['pageviews'] = stats.parse_number(row.get('pageviews', 0))
+            for r in self.reconcile_urls(row, prof):
+                yield r
+
+    def format(self, data, prof):
+
+        # build up facets.
+        facets = defaultdict(lambda: defaultdict(lambda: defaultdict(float)))
+        for row in self.pre_format(data, prof):
+            cid = row['content_item_id']
+            facets[cid]['ga_pageviews_by_domain'][row['ref_domain']] \
+                += row['pageviews']
+            if url.is_article(row['referrer']):
+                facets[cid]['ga_pageviews_by_article_referrer'][row['referrer']] \
+                    += row['pageviews']
+
+        # format into newslnyx facets.
+        for cid, value in dict(facets).iteritems():
+            row = {'content_item_id': cid}
+            for metric, _facets in value.iteritems():
+                row[metric] = []
+                n_facets = 0
+                for k, v in sorted(_facets.iteritems(), key=itemgetter(1), reverse=True):
+                    n_facets += 1
+                    if n_facets >= self.options['max_facets']:
+                        break
+                    row[metric].append({'facet': k, 'value': v})
+            yield row
+
+
+    def load(self, data):
+        d = list(data)
+        status_resp = self.api.content.bulk_create_summary(data=d)
+        return self.api.jobs.poll(**status_resp)
 
 
 class ContentDeviceSummaries(SCGoogleAnalytics):
@@ -329,9 +439,10 @@ class ContentDeviceSummaries(SCGoogleAnalytics):
             for k in ['mobile', 'desktop', 'tablet']:
                 if k not in facets:
                     facets[k] = 0
+
             # populate metrics.
             for k, v in facets.items():
-                row['ga_pageviews_'+k] = v
+                row['ga_pageviews_'+k] = stats.parse_number(v)
 
             yield row
 

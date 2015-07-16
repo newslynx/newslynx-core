@@ -26,7 +26,7 @@ options:
         help:
             placeholder: 20
             description: |
-                The maximum number of domain facets to include.
+                The maximum number of facets to include. Will sort by pageviews.
 
     content_item_types:
         input_type: text
@@ -50,6 +50,14 @@ metrics:
 
     ga_pageviews_by_domain:
         display_name: Pageviews By Refering Domain
+        type: count
+        content_levels:
+            - summary
+        org_levels: []
+        faceted: true
+
+    ga_pageviews_by_article_referrer:
+        display_name: Pageviews By Refering article.
         type: count
         content_levels:
             - summary

@@ -114,6 +114,7 @@ def split_meta(obj, cols):
     obj['meta'] = meta
     return obj
 
+
 def prepare_metrics(obj, metric_lookup):
     """
     Given a lookup of all metrics this object can contain,
@@ -138,6 +139,7 @@ def prepare_metrics(obj, metric_lookup):
                 "Metric '{}' is faceted, but it\'s elements are not properly formatted. "
                 "Each facet must be a dictionary of '{\"facet\":\"facet_name\", \"value\": 1234}"
                 .format(k))
-        # parse number
-        obj[k] = stats.parse_number(obj[k])
+
+        if not m['faceted']:
+            obj[k] = stats.parse_number(obj[k])
     return obj

@@ -79,9 +79,7 @@ def content_summary(
         "org_id": org_id,
         "content_item_id": content_item_id
     }
-
     metrics = ingest_util.prepare_metrics(obj, metrics_lookup)
-
     # upsert command
     cmd = """SELECT upsert_content_metric_summary(
                 {org_id},
