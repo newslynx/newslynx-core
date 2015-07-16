@@ -61,3 +61,4 @@ rq
 colorama
 twython
 requests_toolbelt
+cryptography>=0.7

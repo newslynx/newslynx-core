@@ -1,7 +1,11 @@
+"""
+Google Analytics Sous Chefs.
+"""
+
 from datetime import datetime, timedelta
 import copy
 from collections import defaultdict, Counter
-from operator import itemgetter 
+from operator import itemgetter
 
 import googleanalytics as ga
 
@@ -196,7 +200,7 @@ class ContentTimeseries(SCGoogleAnalytics):
 
     def format_date(self, ds, tz=None):
         """
-        Convert datehour to utc based on profiles timezone
+        Convert datehour to utc based on the profile's timezone
         """
         if not tz:
             tz = pytz.utc
@@ -299,7 +303,7 @@ class ContentDomainFacets(SCGoogleAnalytics):
             row['ref_domain'] = 'direct'
 
         elif referrer in self.SEARCH_REFERRERS:
-            row['referrer'] = referrer 
+            row['referrer'] = referrer
             row['ref_domain'] = referrer
 
         elif 't.co' in referrer:
