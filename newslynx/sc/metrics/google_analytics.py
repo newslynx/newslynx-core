@@ -117,12 +117,14 @@ class SCGoogleAnalytics(SousChef):
             path = ""
 
         # lookup via domain + path.
+        found = False
         if domain in self.domain_lookup and path in self.domain_lookup[domain]:
             for cid in self.domain_lookup.get(domain, {}).get(path, []):
+                found = True
                 r = copy.copy(row)
                 r['content_item_id'] = cid
                 yield r
-        else:
+        if not found:
             # lookup via full url
             u = url.join(base_url, path)
             for cid in self.url_lookup.get(u, []):
@@ -182,8 +184,8 @@ class ContentTimeseries(SCGoogleAnalytics):
         new_row = {}
         for k, v in row._asdict().iteritems():
             k = k.replace('_', '').lower().strip()
-            if k in self.LOOKUP:
-                new_row[self.LOOKUP[k]] = v
+            if k in self.col_lookup:
+                new_row[self.col_lookup[k]] = v
             else:
                 new_row[k] = v
         return new_row
@@ -202,9 +204,10 @@ class ContentTimeseries(SCGoogleAnalytics):
         """
         Cleanup numbers, date, and column names.
         """
+
         # create lookups.
-        self.LOOKUP = {k.lower(): v for k, v in self.METRICS.items()}
-        self.LOOKUP.update({k.lower(): v for k, v in self.DIMENSIONS.items()})
+        self.col_lookup = {k.lower(): v for k, v in self.METRICS.items()}
+        self.col_lookup.update({k.lower(): v for k, v in self.DIMENSIONS.items()})
 
         # get timezone from profile
         tz = prof.raw.get('timezone', None)
