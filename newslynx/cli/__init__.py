@@ -84,7 +84,7 @@ def run():
             sys.exit(1)
 
     except ConfigError as e:
-        if not opts.no_interactive:
+        if opts and not opts.no_interactive:
             log.info(LOGO +"\n", line=False, color='lightwhite_ex')
             log.info("\n\n", line=False)
             log.exception(e, tb=False, line=False)
