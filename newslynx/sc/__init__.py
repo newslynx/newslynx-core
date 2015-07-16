@@ -72,7 +72,6 @@ class SousChef(object):
         """
         self.setup()
         data = self.run()
-
         # passthrough jobs should not 'load'
         if not self.passthrough:
             data = self.load(data)  # load the data.

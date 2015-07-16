@@ -32,8 +32,10 @@ class SCTwitterEvent(SousChef):
         """
         Get an org's content item id lookups.
         """
-        self.lookup = {c['url']: c['id'] for c in self.api.orgs.simple_content()
-                if c.get('url', None)}
+        self.lookup = {
+            c['url']: c['id'] for c in self.api.orgs.simple_content()
+                if c.get('url', None)
+        }
 
     def fetch(self, **kw):
         """
@@ -47,7 +49,7 @@ class SCTwitterEvent(SousChef):
         events except for users.
 
         By using .get() on the options, we'll effectively ignore
-        sous chefs that don't have these.
+        sous chefs that don't have certain options.
         """
         tests = []
 
@@ -72,7 +74,7 @@ class SCTwitterEvent(SousChef):
                     continue
                 if id not in tweet['content_item_ids']:
                     tweet['content_item_ids'].append(id)
-           
+
             # optionally filter
             if self.options.get('must_link', False):
                 if len(tweet['content_item_ids']):
@@ -115,6 +117,9 @@ class SCTwitterEvent(SousChef):
         return tweet
 
     def connect(self):
+        """
+        Connect to twitter. Raise an error if user has not authenticated.
+        """
         tokens = self.auths.get('twitter', None)
         if not tokens:
             raise Exception('This Sous Chef requires a Twitter Authorization.')
@@ -126,6 +131,10 @@ class SCTwitterEvent(SousChef):
                 'Error Connecting to Twitter: {}'.format(e.message))
 
     def run(self):
+        """
+        Connect to twitter, fetch the lookup of content items, fetch tweets,
+        filter, and format.
+        """
         self.connect()
         self._get_link_lookup()
         for tweet in self.fetch(since_id=self.last_job.get('max_id', None)):
@@ -134,6 +143,9 @@ class SCTwitterEvent(SousChef):
                 yield self.format(tweet)
 
     def load(self, data):
+        """
+        Prepare resulting tweets for bulk loading.
+        """
         self.ids = []
         to_post = []
         for d in data:
@@ -141,12 +153,15 @@ class SCTwitterEvent(SousChef):
             d['recipe_id'] = self.recipe_id
             to_post.append(d)
         if len(to_post):
-            status_resp = self.api.events.bulk_create(data=to_post,
+            status_resp = self.api.events.bulk_create(
+                data=to_post,
                 must_link=self.options.get('must_link'))
             return self.api.jobs.poll(**status_resp)
 
-
     def teardown(self):
+        """
+        Keep track of max id.
+        """
         if len(self.ids):
             self.next_job['max_id'] = max(self.ids)
 
@@ -207,7 +222,7 @@ class SearchContentItemLinks(SCTwitterEvent):
     @property
     def queries(self):
         """
-        Programmatically generate search queries based on a user's domains
+        Programmatically generate search queries based on a org's domains
         """
         domains = self.org.get('domains', [])
         domains.extend(self.settings.get('short_urls', []))
@@ -224,8 +239,11 @@ class SearchContentItemLinks(SCTwitterEvent):
 
     def fetch(self, **kw):
         """
-        Fetch tweets for all queries, keeping 
+        Fetch tweets for all queries, keeping
         """
+        # we should include embeds on this sous chef.
+        setattr(self.twitter, 'incl_embed', True)
+
         self.qids = defaultdict(list)
         for q in self.queries:
             # fetch tweets

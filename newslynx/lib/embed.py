@@ -74,4 +74,6 @@ def twitter(u, **kw):
         'hide_media': kw.get('hide_media', True)
     }
     embed_data = get_json(endpoint, **params)
-    return embed_data['html']
+    if not embed_data:
+        return None
+    return embed_data.get('html')
