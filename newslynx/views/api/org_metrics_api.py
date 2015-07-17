@@ -7,8 +7,7 @@ from newslynx.exc import NotFoundError, ForbiddenError
 from newslynx.models import Org
 from newslynx.lib.serialize import jsonify
 from newslynx.views.util import request_data
-from newslynx.tasks import ingest_metric
-from newslynx.tasks import ingest_bulk
+from newslynx.tasks import load
 from newslynx.tasks.query_metric import QueryOrgMetricTimeseries
 from newslynx.models.util import fetch_by_id_or_field
 from newslynx.views.util import (
@@ -66,11 +65,11 @@ def org_metrics_summary(user, org_id_slug):
 
     req_data = request_data()
 
-    ret = ingest_metric.org_summary(
+    ret = load.org_summary(
         req_data,
         org_id=org.id,
-        valid_metrics=org.org_summary_metric_names,
-        commit=True
+        mertrics_lookup=org.summary_metrics,
+        queue=False
     )
     return jsonify(ret)
 
@@ -169,11 +168,11 @@ def bulk_create_org_timeseries(user, org_id_slug):
 
     req_data = request_data()
 
-    job_id = ingest_bulk.org_timeseries(
+    job_id = load.org_timeseries(
         req_data,
         org_id=org.id,
         metrics_lookup=org.timeseries_metrics,
-        commit=False
+        queued=True
     )
     ret = url_for_job_status(apikey=user.apikey, job_id=job_id, queue='bulk')
     return jsonify(ret)

@@ -1,0 +1,58 @@
+name: Reddit Search Content Item Links to Event
+slug: reddit-search-content-item-links-to-event
+description: Extracts linked events from a Reddit API query.
+runs: newslynx.sc.events.reddit.SearchContentItemLinks
+creates: events
+option_order:
+    - name
+    - slug
+    - description
+    - must_link
+    - schedule_by
+    - crontab
+    - minutes
+    - time_of_day
+    - event_status
+    - set_event_title
+    - set_event_description
+    - set_event_tag_ids
+options:
+
+    event_status:
+        input_type: select
+        input_options:
+            - pending
+            - approved
+        value_types: 
+            - string
+        default: pending
+        help:
+            placeholder: "pending"
+
+    set_event_title:
+        input_type: text
+        value_types: 
+            - string
+        default: null
+        help:
+            placeholder: "Promotion Event"
+
+    set_event_description:
+        input_type: paragraph
+        value_types: 
+            - string
+        default: null
+
+    set_event_tag_ids:
+        input_type: checkbox
+        input_options: []
+        accepts_list: true 
+        value_types:
+            - string 
+            - numeric 
+        default: []
+        help:
+            description: |
+                A list of Tag IDs or slugs to automatically
+                apply to events created by this recipe.
+            placeholder: "pending"

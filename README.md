@@ -95,16 +95,16 @@ Exception KeyError: KeyError(4332017936,) in <module 'threading' from '/System/L
 - [ ] Fix Bulk Loading process.
 - [ ] Re-implement SousChefs
     - [x] RSS Feeds => Thing
-    - [ ] Google Analytics => Metric
+    - [x] Google Analytics => Metric
     - [ ] Google Alerts => Event
     - [x] Social Shares => Metric
     - [ ] Homepage Promotions => Metric
-    - [ ] Twitter Promotions => Metric
+    - [x] Twitter Promotions => Metric
     - [ ] Facebook Promotions => Metric
-    - [ ] Twitter List => Event 
-    - [ ] Twitter User => Event 
+    - [x] Twitter List => Event 
+    - [x] Twitter User => Event 
     - [ ] Facebook Page => Event 
-    - [ ] Reddit => Event
+    - [x] Reddit => Event
     - [ ] HackerNews => Event
 - [ ] Implement New SousChefs 
     - [ ] IFTTT integrations

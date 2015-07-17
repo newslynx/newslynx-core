@@ -58,6 +58,16 @@
       schedule_by: minutes
       minutes: 15
 
+  - sous_chef: reddit-search-content-item-links-to-event
+    status: uninitialized
+    options:
+      must_link: true
+      event_status: pending
+      set_event_title: "Post from {authors} at {created}"
+      schedule_by: minutes
+      minutes: 15
+
+
 
 
   ## CONTENT METRICS

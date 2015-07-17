@@ -59,6 +59,7 @@ THUMBNAIL_DEFAULT_FORMAT = "PNG"
 COMPARISON_CACHE_PREFIX = "newslynx-comparison-cache"
 COMPARISON_CACHE_TTL = 86400  # 1 day
 COMPARISON_PERCENTILES = [2.5, 5.0, 10.0, 25.0, 75.0, 90.0, 95.0, 97.5]
+
 # TODO, make this actually modify data.
 COMPARISON_FUNCTIONS = ['min', 'max', 'avg', 'median']
 
@@ -80,4 +81,12 @@ BROWSER_MAX_RETRIES = 2
 
 # pandoc
 PANDOC_PATH = "/usr/local/bin/pandoc"
+
+# reddit
+REDDIT_USER_AGENT = 'Newslynx'
+
+# Metrics Timeseries Rollup
+METRICS_MIN_TIMESERIES_UNIT = 'hour'
+METRICS_MIN_TIMESERIES_VALUE = 1
+
 

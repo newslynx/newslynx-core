@@ -14,8 +14,7 @@ from newslynx.lib.serialize import jsonify
 from newslynx.views.decorators import load_user, load_org
 from newslynx.views.util import *
 from newslynx.tasks import facet
-from newslynx.tasks import ingest_event
-from newslynx.tasks import ingest_bulk
+from newslynx.tasks import load
 from newslynx.tasks import rollup_metric
 from newslynx.constants import EVENT_FACETS
 
@@ -359,15 +358,18 @@ def create_event(user, org):
             "Non-bulk endpoints require a single json object."
         )
 
-    e = ingest_event.ingest(
+    events = load.events(
         req_data,
         org_id=org.id,
         org_domains=org.domains,
         must_link=arg_bool('must_link', False),
-        kill_session=False)
-    if not e:
-        return jsonify(None)
-    return jsonify(e.to_dict(incl_body=True, incl_img=True))
+        recipe_id=arg_int('recipe_id', default=None),
+        queued=False)
+
+    if len(events) == 1:
+        events = events[0]
+
+    return jsonify(events)
 
 
 @bp.route('/api/v1/events/bulk', methods=['POST'])
@@ -384,12 +386,14 @@ def bulk_create_event(user, org):
         raise RequestError(
             "Non-bulk endpoints require a list of json objects.")
 
-    job_id = ingest_bulk.events(
+    job_id = load.events(
         req_data,
         org_id=org.id,
         org_domains=org.domains,
         must_link=arg_bool('must_link', False),
-        kill_session=True)
+        recipe_id=arg_int('recipe_id', default=None),
+        queued=True)
+
     ret = url_for_job_status(apikey=user.apikey, job_id=job_id, queue='bulk')
     return jsonify(ret, status=202)
 

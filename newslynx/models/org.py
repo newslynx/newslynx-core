@@ -419,12 +419,7 @@ class Org(db.Model):
         Metrics which can exist in the org summary store.
         """
         metrics = self.metrics\
-            .filter(
-                or_(Metric.org_levels.contains(['summary']),
-                    and_(Metric.content_levels.contains(['timeseries']),
-                         Metric.org_levels.contains(['timeseries']))
-                    ))\
-            .filter(~Metric.faceted)\
+            .filter(Metric.org_levels.contains(['summary']))\
             .all()
         return {m.name: m.to_dict() for m in metrics}
 

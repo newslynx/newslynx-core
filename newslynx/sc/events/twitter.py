@@ -3,6 +3,7 @@ from datetime import datetime
 
 from newslynx.lib.twitter import Twitter
 from newslynx.sc import SousChef
+from newslynx.util import uniq
 
 
 class SCTwitterEvent(SousChef):
@@ -32,10 +33,9 @@ class SCTwitterEvent(SousChef):
         """
         Get an org's content item id lookups.
         """
-        self.lookup = {
-            c['url']: c['id'] for c in self.api.orgs.simple_content()
-            if c.get('url', None)
-        }
+        self.lookup = defaultdict(list)
+        for c in self.api.orgs.simple_content():
+            self.lookup[c['url']].append(c['id'])
 
     def fetch(self, **kw):
         """
@@ -69,11 +69,12 @@ class SCTwitterEvent(SousChef):
             tweet['content_item_ids'] = []
             links = tweet.pop('links', [])
             for link in links:
-                id = self.lookup.get(link, None)
-                if not id:
+                ids = self.lookup.get(link, [])
+                if not len(ids):
                     continue
-                if id not in tweet['content_item_ids']:
-                    tweet['content_item_ids'].append(id)
+                for id in ids:
+                    if id not in tweet['content_item_ids']:
+                        tweet['content_item_ids'].append(id)
 
             # optionally filter
             if self.options.get('must_link', False):
@@ -113,7 +114,6 @@ class SCTwitterEvent(SousChef):
                         tweet['content_item_ids'].append(c.get('id'))
                 elif isinstance(c, int):
                     tweet['content_item_ids'].append(c)
-        tweet['content_item_ids'] = list(set(tweet['content_item_ids']))
         return tweet
 
     def connect(self):
@@ -227,7 +227,7 @@ class SearchContentItemLinks(SCTwitterEvent):
         domains = self.org.get('domains', [])
         domains.extend(self.settings.get('short_urls', []))
         domains.extend(self.settings.get('short_domains', []))
-        domains = list(set(domains))
+        domains = uniq(domains)
         _queries = []
         for d in domains:
             term = d.replace(".", " ").strip().lower()
@@ -235,7 +235,7 @@ class SearchContentItemLinks(SCTwitterEvent):
             _queries.append(q)
         if not len(_queries):
             raise Exception('This Org has no domain.')
-        return list(set(_queries))
+        return uniq(_queries)
 
     def fetch(self, **kw):
         """

@@ -1,16 +1,16 @@
-name: Twitter User To Event
-slug: twitter-user-to-event
-description: Extracts events from a twitter user's timeline.
-runs: newslynx.sc.events.twitter.User
+name: Reddit Search to Event
+slug: reddit-search-to-event
+description: Extracts events from a Reddit API query.
+runs: newslynx.sc.events.reddit.Search
 creates: events
 option_order:
     - name
     - slug
     - description
-    - screen_name
-    - search_query
+    - query 
+    - sort
+    - subreddit
     - must_link
-    - min_followers
     - schedule_by
     - crontab
     - minutes
@@ -22,24 +22,38 @@ option_order:
     - set_event_tag_ids
 options:
     
-    screen_name:
+    query:
         input_type: text
         value_types: 
             - string
-        allow_multiple: true
         required: true
         help:
-            placeholder: cspan
-    
-    search_query:
+            placeholder: “url:cats"
+            link: https://www.reddit.com/wiki/search
+            description: The query to the Reddit API to return the initial batch of events.
+
+    sort:
+        input_type: select
+        input_options:
+            - new
+        value_types: 
+            - string
+        required: false
+        default: new
+        help:
+            placeholder: “new"
+            link: https://www.reddit.com/wiki/search
+            description: The sort order to return from the Reddit API.
+
+    subreddit:
         input_type: text
         value_types:
-            - searchstring
-            - nulltype
+            - string
         default: null
         required: false
         help:
-            placeholder: "~fracking | drilling"
+            placeholder: "news"
+            description: The name of the subreddit to filter results by.
 
     must_link:
         input_type: radio
@@ -64,7 +78,6 @@ options:
         default: pending
         help:
             placeholder: "pending"
-
 
     set_event_title:
         input_type: text
@@ -105,9 +118,4 @@ options:
             description: |
                 A list of Content Item IDs and Titles to automatically
                 apply to events created by this Recipe.
-            placeholder: "Search by content title..."
-
-
-
-
-
+            placeholder: "Search by article title..."

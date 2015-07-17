@@ -127,6 +127,10 @@ class ContentItem(db.Model):
     def author_ids(self):
         return [a.id for a in self.authors]
 
+    @property
+    def uniqkey(self):
+        return self.url + "||" + self.type
+
     # @property
     # def out_link_ids(self):
     #     out_links = db.session.query(relations.content_items_content_items.c.to_content_item_id)\

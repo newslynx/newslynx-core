@@ -2,7 +2,7 @@
 NewsLynx's CLI
 """
 
-from gevent.monkey import patch_all 
+from gevent.monkey import patch_all
 patch_all()
 
 import sys

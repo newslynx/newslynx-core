@@ -7,8 +7,7 @@ from newslynx.exc import NotFoundError, RequestError, InternalServerError
 from newslynx.models import ContentItem
 from newslynx.lib.serialize import jsonify
 from newslynx.views.util import request_data, url_for_job_status
-from newslynx.tasks import ingest_bulk
-from newslynx.tasks import ingest_metric
+from newslynx.tasks import load
 from newslynx.tasks import rollup_metric
 from newslynx.constants import CONTENT_METRIC_COMPARISONS
 from newslynx.tasks.query_metric import QueryContentMetricTimeseries
@@ -93,22 +92,23 @@ def create_content_item_timeseries(user, org, content_item_id):
             'A ContentItem with ID {} does not exist'
             .format(content_item_id))
 
-    req_data = request_data()
-
-    # check for valid format.
-    if not isinstance(req_data, dict):
-        raise RequestError(
-            "Non-bulk endpoints require a single json object."
-        )
-
     # insert content item id
-    req_data['content_item_id'] = content_item_id
-
-    ret = ingest_metric.content_timeseries(
-        req_data,
+    req_data = request_data()
+    if not isinstance(req_data, list):
+        req_data = [req_data]
+    data = []
+    for row in req_data:
+        row.update( {'content_item_id':c.id})
+        data.append(row)
+   
+   # load.
+    ret = load.content_timeseries(
+        data,
         org_id=org.id,
         metrics_lookup=org.content_timeseries_metrics,
-        commit=True)
+        content_item_ids=[content_item_id],
+        queue=False)
+
     return jsonify(ret)
 
 
@@ -119,26 +119,14 @@ def bulk_create_content_timeseries(user, org):
     """
     bulk upsert timseries metrics for an organization's content items.
     """
-    req_data = request_data()
-
-    # check for valid format.
-    if not isinstance(req_data, list):
-        raise RequestError(
-            "Bulk endpoints require a list of json objects."
-        )
-
-    # check for content_item_id.
-    if not 'content_item_id' in req_data[0].keys():
-        raise RequestError(
-            'You must pass in a content_item_id with each record.'
-        )
-
-    job_id = ingest_bulk.content_timeseries(
-        req_data,
+    # bulk load in a queue
+    job_id = load.content_timeseries(
+        request_data(),
         org_id=org.id,
         metrics_lookup=org.content_timeseries_metrics,
         content_item_ids=org.content_item_ids,
-        commit=False)
+        queue=True)
+
     ret = url_for_job_status(apikey=user.apikey, job_id=job_id, queue='bulk')
     return jsonify(ret, status=202)
 

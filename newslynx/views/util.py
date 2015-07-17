@@ -648,17 +648,11 @@ def register_blueprints(app, *mods):
                     'templates' not in fp):
 
                 name = fp.replace('.py', '')
-
-                # WARNING MAJOR HACK AHEAD.
                 try:
                     m = importlib.import_module(
                         '%s.%s' % (package_name, name))
                 except:
                     continue
-
-                # m = importlib.import_module(
-                #     '%s.%s' % (package_name, name))    
-
                 for item in dir(m):
                     item = getattr(m, item)
                     if isinstance(item, Blueprint):
