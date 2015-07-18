@@ -2,11 +2,11 @@
 How many of this by that.
 
 These functions all service the event and content search endpoints and are
-designed to be executed concurrently in greenlets 
+designed to be executed concurrently in greenlets
 (Hence the repetitive db.session.remove())
 """
 
-from collections import defaultdict, Counter
+from collections import defaultdict
 
 from sqlalchemy import func, desc
 
@@ -147,6 +147,21 @@ def events_by_provenances(event_ids):
     return [dict(zip(['provenance', 'count'], c)) for c in status_counts]
 
 
+def events_by_domains(event_ids):
+    """
+    Count the number of content_items associated with domains.
+    """
+    domain_counts = db.session\
+        .query(Event.domain, func.count(Event.domain))\
+        .filter(Event.id.in_(event_ids))\
+        .order_by(desc(func.count(Event.domain)))\
+        .group_by(Event.domain).all()
+
+    # explicitly shutdown session started in greenlet
+    db.session.remove()
+    return [dict(zip(['domain', 'count'], r)) for r in domain_counts]
+
+
 def events(by, event_ids):
     """
     Simplified mapping of facet functions
@@ -154,13 +169,14 @@ def events(by, event_ids):
     fx_lookup = {
         'recipes': events_by_recipes,
         'tags': events_by_tags,
-        'impact_tags': events_by_tags, 
+        'impact_tags': events_by_tags,
         'categories': events_by_categories,
         'levels': events_by_levels,
         'sous_chefs': events_by_sous_chefs,
         'content_items': events_by_content_items,
         'statuses': events_by_statuses,
-        'provenances': events_by_provenances
+        'provenances': events_by_provenances,
+        'domains': events_by_domains
     }
     return fx_lookup.get(by)(event_ids)
 

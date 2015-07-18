@@ -47,7 +47,8 @@ EVENT_PROVENANCES = [
 EVENT_FACETS = [
     'tags', 'content_items', 'levels',
     'categories', 'sous_chefs',
-    'recipes', 'statuses', 'provenances'
+    'recipes', 'statuses', 'provenances',
+    'domains'
 ]
 
 EVENT_SEARCH_VECTORS = [

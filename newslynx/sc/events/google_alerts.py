@@ -112,7 +112,9 @@ class Feed(SousChef):
         return obj
 
     def run(self):
-
+        """
+        Fetch and format google alerts.
+        """
         feed_url = self.options['feed_url']
         feed_domain = url.get_simple_domain(feed_url)
 

@@ -48,7 +48,7 @@ def list_sous_chefs(user):
     # exclude sous chefs
     if len(exclude_sous_chefs):
         sous_chef_query = sous_chef_query\
-            .filter(SousChef.slug.in_(include_sous_chefs))
+            .filter(~SousChef.slug.in_(exclude_sous_chefs))
 
     # sort
     if sort_field:
