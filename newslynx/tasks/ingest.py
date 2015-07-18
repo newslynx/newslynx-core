@@ -27,7 +27,7 @@ from datetime import datetime
 from newslynx.core import db
 from newslynx.util import gen_uuid
 from newslynx.models import Recipe, Event, ContentItem, Author
-from newslynx.models import URLCache, ThumbnailCache
+from newslynx.models import URLCache, ThumbnailCache, ExtractCache
 from newslynx.models.util import get_table_columns
 
 from newslynx.exc import RequestError
@@ -47,6 +47,7 @@ from newslynx.constants import (
 # the url cache object
 url_cache = URLCache()
 thumbnail_cache = ThumbnailCache()
+extract_cache = ExtractCache()
 
 # a pool to multithread url_cache.
 url_cache_pool = Pool(settings.URL_CACHE_POOL_SIZE)
@@ -370,7 +371,8 @@ def content(data, **kw):
 
     def _clean():
         __prepare = partial(_prepare, requires=requires, recipe=recipe,
-                            org_id=org_id, type='content_item')
+                            org_id=org_id, type='content_item',
+                            extract=kw.get('extract', True))
         for obj in p.imap_unordered(__prepare, data):
 
             # determine unique id.
@@ -384,6 +386,7 @@ def content(data, **kw):
             )
             # split out meta fields
             obj = _split_meta(obj, get_table_columns(ContentItem))
+
             cis[uniqkey] = obj
 
     # this needs to happen syncnhronously.
@@ -476,37 +479,43 @@ def content(data, **kw):
 
         # check for authors we should create.
         to_create = []
-        for id, item in meta.iteritems():
+        for uniqkey, item in meta.iteritems():
             if item.get('authors_exist', False):
                 continue
-            for a in meta[id].get('author_ids', []):
+            for a in meta[uniqkey].pop('author_ids', []):
                 if not isinstance(a, (basestring, str, unicode)):
                     continue
-                to_create.append((id, org_id, a))
+                to_create.append((uniqkey, org_id, a))
 
         # if we should create them, do so.
         if len(to_create):
 
             # create authors + keep track of id relations
-            authors_to_ids = defaultdict(list)
+            authors_to_ids = dict()
             seen = set()
             for id, oid, name in to_create:
-                a = None
                 if name not in seen:
+                    authors_to_ids[name] = {}
                     seen.add(name)
                     a = Author(org_id=oid, name=name)
                     db.session.add(a)
-                authors_to_ids[name].append((id, a))
+                    authors_to_ids[name]['obj'] = a
+                # keep track of ALL ids assoicated with this author.
+                if not 'ids' in authors_to_ids[name]:
+                    authors_to_ids[name]['ids'] = []
+                authors_to_ids[name]['ids'].append(id)
+
             db.session.commit()
 
-            # set author ids back on meta:
+            # set author ids back on content item meta
             for name, values in authors_to_ids.iteritems():
-                for id, a in values:
-                    k = 'author_ids'
-                    if k in meta[id]:
-                        meta[id].pop(k)
-                        meta[id][k] = []
-                    meta[id][k].append(a.id)
+                ids = values.get('ids', [])
+                obj = values.get('obj')
+                k = 'author_ids'
+                for uniqkey in ids:
+                    if k not in meta[uniqkey]:
+                        meta[uniqkey][k] = []
+                    meta[uniqkey][k].append(obj.id)
 
     # Step 4: Detect Duplicates.
     def _dupes():
@@ -536,6 +545,7 @@ def content(data, **kw):
         gevent.joinall(tasks)
 
     _reconcile()
+    db.session.commit()
 
     # Step 6: Create/Update content items.
     def _upsert_content():
@@ -598,7 +608,7 @@ def content(data, **kw):
     return [c.to_dict() for c in cis.values()]
 
 
-def _prepare(obj, requires=[], recipe=None, type='event', org_id=None):
+def _prepare(obj, requires=[], recipe=None, type='event', org_id=None, extract=True):
     """
     Prepare a content item or an event.
     """
@@ -642,14 +652,50 @@ def _prepare(obj, requires=[], recipe=None, type='event', org_id=None):
         obj, 'description', obj['url'])
     obj['body'] = _prepare_str(obj, 'body', obj['url'])
 
-    # get thumbnail
-    obj['thumbnail'] = _prepare_thumbnail(obj, 'img_url')
-
     # set org id
     obj['org_id'] = org_id
 
     # determine provenance.
     obj = _provenance(obj, recipe, type)
+
+    # if type is content items and we're extracting. do it.
+    if type == 'content_item' and extract and obj.get('url', None):
+        cr = extract_cache.get(obj.get('url'), type=obj.get('type', None))
+
+        if not cr.value:
+            extract_cache.invalidate(
+                obj.get('url'), type=obj.get('type', None))
+            pass
+
+        # merge extracted data with object.
+        else:
+            # merge extracted authors.
+            for k, v in cr.value.items():
+                if not obj.get(k, None):
+                    obj[k] = v
+                elif k == 'authors':
+                    if not k in obj:
+                        obj[k] = v
+                    else:
+                        for vv in v:
+                            if vv in obj[k]:
+                                continue
+                            obj[k].append(vv)
+
+            # swap bad images.
+            tn = _prepare_thumbnail(obj, 'img_url')
+            if not tn:
+                img = cr.value.get('img_url', None)
+                if img:
+                    obj['img_url'] = img
+                    obj['thumbnail'] = _prepare_thumbnail(obj, 'img_url')
+            else:
+                obj['thumbnail'] = tn
+    else:
+        obj['thumbnail'] = _prepare_thumbnail(obj, 'img_url')
+
+    # set domain
+    obj['domain'] = url.get_domain(obj['url'])
 
     # return prepped object
     return obj

@@ -19,6 +19,8 @@ import pytz
 
 class SCGoogleAnalytics(SousChef):
 
+    timeout = 1800
+
     def connect(self):
 
         tokens = self.auths.get('google-analytics', None)
@@ -155,7 +157,6 @@ class SCGoogleAnalytics(SousChef):
             data = self.fetch(prof)
             for row in self.format(data, prof):
                 yield row
-
 
 
 class ContentTimeseries(SCGoogleAnalytics):

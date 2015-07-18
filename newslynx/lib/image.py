@@ -114,6 +114,9 @@ def from_html(htmlstring, source=None):
             if not fmt:
                 continue
 
+            if img_url.startswith('//:'):
+                img_url = "http{}".format(img_url)
+
             # absolutify images if we know their source.
             if img_url.startswith('/') or not img_url.startswith('http'):
                 if source:

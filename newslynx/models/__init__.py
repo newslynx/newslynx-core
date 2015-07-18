@@ -13,7 +13,7 @@ from .user import User
 from .sous_chef import SousChef
 from .template import Template
 from .report import Report
-from .work_cache import URLCache, ExtractCache, ThumbnailCache
+from .extract_cache import URLCache, ExtractCache, ThumbnailCache
 from .compare_cache import (
     ComparisonsCache, AllContentComparisonCache,
     SubjectTagsComparisonCache, ContentTypeComparisonCache,

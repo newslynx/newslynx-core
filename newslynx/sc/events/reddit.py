@@ -1,3 +1,6 @@
+"""
+Reddit => Events
+"""
 from HTMLParser import HTMLParser
 from collections import defaultdict
 from datetime import datetime
@@ -13,6 +16,8 @@ from newslynx import settings
 
 
 class SCRedditEvent(SousChef):
+
+    timeout = 150
 
     def setup(self):
         self.reddit = Reddit(user_agent=settings.REDDIT_USER_AGENT)
@@ -100,12 +105,17 @@ class SCRedditEvent(SousChef):
         """
         Format a reddit post as a newslynx event.
         """
+        links = []
+        if s.selftext_html:
+            h = self._unescape(s.selftext_html)
+            links = url.from_html(h)
 
         raw = {
             'created': dates.parse_ts(s.created_utc),
             'title': '',
-            'body': s.title,
-            'content_item_ids': list(self.reconcile_urls([s.url])),
+            'descrption': s.title if s.selftext else None,
+            'body': s.selftext if s.selftext else s.title,
+            'content_item_ids': list(self.reconcile_urls([s.url] + links)),
             'source_id': s.id,
             'url': url.prepare(s.permalink, canonicalize=False, expand=False),
             'img_url': s.thumbnail,
@@ -130,10 +140,7 @@ class SCRedditEvent(SousChef):
         """
         Prepare resulting posts for bulk loading.
         """
-        to_post = []
-        for d in data:
-            d['recipe_id'] = self.recipe_id
-            to_post.append(d)
+        to_post = list(data)
         if len(to_post):
             status_resp = self.api.events.bulk_create(
                 data=to_post,
