@@ -112,14 +112,6 @@ All endpoints, unless ortherwise noted, return ``json``. If you'd like to follow
     export NEWSLYNX_API_KEY='djljahflsdkfhasldkfhasldfa'
 
 
-.. _compression:
-
-**Compression**
-------------------
-
-All endpoints can return responses with ``gzip`` compression so long as the ``Accept-Encoding`` header of the request is set to ``gzip``.
-
-
 .. _endpoints-user:
 
 **User**
@@ -4169,6 +4161,12 @@ Example
     
     curl -X DELETE http://localhost:5000/api/v1/content/2/tags/15\?org\=1\&apikey\=$NEWSLYNX_API_KEY
 
+.. _compression:
+
+**Compression**
+------------------
+
+All endpoints can return responses with ``gzip`` compression so long as the ``Accept-Encoding`` header of the request is set to ``gzip``.
 
 .. _Postgres Search docs: http://www.postgresql.org/docs/9.1/static/textsearch-tables.html#TEXTSEARCH-TABLES-SEARCH
 
