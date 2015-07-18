@@ -92,19 +92,23 @@ class Recipe(db.Model):
         self.options = p
         self.options_hash = str(md5(p).hexdigest())
 
-    @property 
+    @property
     def scheduled(self):
         """
         Is this recipe scheduled?
         """
         return self.schedule_by != 'unscheduled'
 
-    @property 
+    @property
     def active(self):
         """
         Is this recipe scheduled?
         """
         return self.status != 'inactive'
+
+    @property
+    def metric_names(self):
+        return [m.name for m in self.metrics]
 
     def to_dict(self):
         d = {
@@ -127,7 +131,7 @@ class Recipe(db.Model):
             'options': pickle_to_obj(self.options)
         }
         if self.sous_chef.creates == 'metrics':
-            d['metrics'] = self.metrics
+            d['metrics'] = self.metric_names
         return d
 
     def __repr__(self):

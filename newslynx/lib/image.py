@@ -19,6 +19,8 @@ def b64_thumbnail_from_url(img_url, **kw):
     """
     Download an image and create a base64 thumbnail.
     """
+    if not img_url:
+        return None
 
     size = kw.get('size', settings.THUMBNAIL_SIZE)
     default_fmt = kw.get('format', settings.THUMBNAIL_DEFAULT_FORMAT)

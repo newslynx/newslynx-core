@@ -1,8 +1,9 @@
-name: Summarize Events
-slug: events-to-content-summaries
+name: Refresh Content Summary Metrics
+slug: internal-refresh-content-summary-metrics
 description: |
-    Count impact tag levels and categories per content item.
-runs: newslynx.sc.internal.content_metrics.SummarizeEvents
+    Refresh content summary metrics including 
+    impact tag levels and categories per content item.
+runs: newslynx.sc.internal.util.RefreshContentSummaryMetrics
 creates: metrics
 option_order: []
 options: {}

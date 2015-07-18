@@ -337,10 +337,6 @@ def content_items_by_impact_tags(content_item_ids):
     return [dict(zip(['id', 'count'], c)) for c in tag_counts]
 
 
-    # explicitly shutdown session started in greenlet
-    db.session.remove()
-    return [dict(zip(['slug', 'count'], c)) for c in task_counts]
-
 def content_items(by, content_item_ids):
     """
     Simplified mapping of facet functions

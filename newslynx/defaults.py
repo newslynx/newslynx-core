@@ -87,5 +87,5 @@ PANDOC_PATH = "/usr/local/bin/pandoc"
 REDDIT_USER_AGENT = 'Newslynx'
 
 # Metrics Timeseries Rollup
-METRICS_MIN_TIMESERIES_UNIT = 'hour'
-METRICS_MIN_TIMESERIES_VALUE = 1
+MIN_TIMESERIES_UNIT = 'hour'
+MIN_TIMESERIES_VALUE = 1

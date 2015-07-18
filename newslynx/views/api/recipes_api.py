@@ -303,6 +303,9 @@ def cook_a_recipe(user, org, recipe_id):
         raise NotFoundError('Recipe with id/slug {} does not exist.'
                            .format(recipe_id))
 
+    if r.status == 'uninitialized':
+        raise RequestError('Recipes must be initialized before cooking.')
+
     # setup kwargs for merlynne
     kw = dict(
         org=org.to_dict(
@@ -321,7 +324,7 @@ def cook_a_recipe(user, org, recipe_id):
     # initialize merlynne
     merlynne = Merlynne(**kw)
     resp = merlynne.cook_recipe()
-    
+
     # except Exception as e:
     #     p
     #     raise RequestError(
@@ -337,7 +340,7 @@ def cook_a_recipe(user, org, recipe_id):
         # # return job status url
         ret = url_for_job_status(apikey=user.apikey, job_id=resp, queue='recipe')
         return jsonify(ret, status=202)
-    
+
     # format non-iterables.
     if isinstance(resp, dict):
         resp = [resp]

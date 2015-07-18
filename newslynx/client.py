@@ -10,7 +10,7 @@ import time
 
 import requests
 import webbrowser
-from requests import Session, Request, Response
+from requests import Session, Request
 from urlparse import urljoin
 
 from newslynx.lib.serialize import obj_to_json, json_to_obj
@@ -533,6 +533,7 @@ class Recipes(BaseClient):
                 yield d
         return _generate()
 
+
 class Events(BaseClient):
 
     def search(self, **kw):
@@ -913,19 +914,22 @@ class Jobs(BaseClient):
         Poll a job's status until it's successful.
         """
         interval = kw.get('interval', 10)
-        while True:
-            d = self.get(**kw)
-            if not d.get('status'):
-                yield d
 
-            if d.get('status') == 'success':
-                raise StopIteration
+        def gen():
+            while True:
+                d = self.get(**kw)
+                if not d.get('status'):
+                    yield d
 
-            elif d.get('status') == 'error':
-                raise JobError(d.get('message', ''))
+                if d.get('status') == 'success':
+                    raise StopIteration
 
-            else:
-                time.sleep(interval)
+                elif d.get('status') == 'error':
+                    raise JobError(d.get('message', ''))
+
+                else:
+                    time.sleep(interval)
+        return list(gen())
 
 
 class SousChefs(BaseClient):
@@ -1064,18 +1068,16 @@ class Auths(BaseClient):
         url = self._format_url('auths', service, 'grant')
         r = self._request('GET', url, **kw)
         r.prepare()
-        qs = "&".join(["{0}={1}".format(k,v) for k, v in r.params.items()])
+        qs = "&".join(["{0}={1}".format(k, v) for k, v in r.params.items()])
         url = "{0}?{1}".format(r.url, qs)
         webbrowser.open_new(url)
-
-
 
 
 class API(BaseClient):
 
     """
     A class for interacting with the NewsLynx API.
-    """ 
+    """
 
     def __init__(self, **kw):
         BaseClient.__init__(self, **kw)
@@ -1095,4 +1097,3 @@ class API(BaseClient):
         self.sql = SQL(**kw)
         self.jobs = Jobs(**kw)
         self.auths = Auths(**kw)
-

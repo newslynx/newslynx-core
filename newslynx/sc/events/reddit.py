@@ -21,26 +21,17 @@ class SCRedditEvent(SousChef):
 
     def setup(self):
         self.reddit = Reddit(user_agent=settings.REDDIT_USER_AGENT)
-        self._get_link_lookup()
-
-    def _get_link_lookup(self):
-        """
-        Get an org's content item id lookups.
-        """
-        self.lookup = defaultdict(list)
-        for c in self.api.orgs.simple_content():
-            self.lookup[c['url']].append(c['id'])
 
     def _fmt(self, tweet):
         new = defaultdict()
         for k, v in tweet.iteritems():
             if isinstance(v, dict):
                 new.update(self._fmt(v))
-            elif isinstance(v, list):
-                new[k] = ", ".join([str(vv) for vv in v])
-            elif isinstance(v, datetime):
-                new[k] = v.date().isoformat()
             else:
+                if isinstance(v, list):
+                    v = ", ".join([str(vv) for vv in v])
+                elif isinstance(v, datetime):
+                    v = v.date().isoformat()
                 new[k] = v
         return new
 
@@ -76,8 +67,7 @@ class SCRedditEvent(SousChef):
                         event['content_item_ids'].append(c.get('id'))
                 elif isinstance(c, int):
                     event['content_item_ids'].append(c)
-        event['content_item_ids'] = uniq(event['content_item_ids'])
-        if self.options.get('must_link', False) and not len(event['content_item_ids']):
+        if self.options.get('must_link', False) and not len(event['links']):
             return None
         return event
 
@@ -90,16 +80,6 @@ class SCRedditEvent(SousChef):
             return h.unescape(htmlentities)
         else:
             return ''
-
-    def reconcile_urls(self, urls):
-        """
-        Extract and prepare urls from html.
-        """
-        for u in urls:
-            u = url.prepare(u)
-            if u:
-                for cid in self.lookup.get(u, []):
-                    yield cid
 
     def format(self, s):
         """
@@ -115,7 +95,8 @@ class SCRedditEvent(SousChef):
             'title': '',
             'descrption': s.title if s.selftext else None,
             'body': s.selftext if s.selftext else s.title,
-            'content_item_ids': list(self.reconcile_urls([s.url] + links)),
+            'links': uniq([s.url] + links),
+            'content_item_ids': [],
             'source_id': s.id,
             'url': url.prepare(s.permalink, canonicalize=False, expand=False),
             'img_url': s.thumbnail,

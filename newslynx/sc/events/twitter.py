@@ -24,21 +24,13 @@ class SCTwitterEvent(SousChef):
         for k, v in tweet.iteritems():
             if isinstance(v, dict):
                 new.update(self._fmt(v))
-            elif isinstance(v, list):
-                new[k] = ", ".join([str(vv) for vv in v])
-            elif isinstance(v, datetime):
-                new[k] = v.date().isoformat()
             else:
+                if isinstance(v, list):
+                    v = ", ".join([str(vv) for vv in v])
+                elif isinstance(v, datetime):
+                    v = v.date().isoformat()
                 new[k] = v
         return new
-
-    def _get_link_lookup(self):
-        """
-        Get an org's content item id lookups.
-        """
-        self.lookup = defaultdict(list)
-        for c in self.api.orgs.simple_content():
-            self.lookup[c['url']].append(c['id'])
 
     def fetch(self, **kw):
         """
@@ -67,21 +59,9 @@ class SCTwitterEvent(SousChef):
             self.options.get('min_followers', 0)
         tests.append(min_followers)
         if all(tests):
-
-            # add content item ids:
-            tweet['content_item_ids'] = []
-            links = tweet.pop('links', [])
-            for link in links:
-                ids = self.lookup.get(link, [])
-                if not len(ids):
-                    continue
-                for id in ids:
-                    if id not in tweet['content_item_ids']:
-                        tweet['content_item_ids'].append(id)
-
             # optionally filter
             if self.options.get('must_link', False):
-                if len(tweet['content_item_ids']):
+                if len(tweet['links']):
                     return tweet
             return tweet
 
@@ -139,7 +119,6 @@ class SCTwitterEvent(SousChef):
         filter, and format.
         """
         self.connect()
-        self._get_link_lookup()
         for tweet in self.fetch(since_id=self.last_job.get('max_id', None)):
             tweet = self.filter(tweet)
             if tweet:

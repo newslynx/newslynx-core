@@ -10,6 +10,7 @@ from newslynx.models.util import fetch_by_id_or_field
 from newslynx.lib.serialize import jsonify
 from newslynx.views.decorators import load_user, load_org
 from newslynx.models.util import get_table_columns
+from newslynx.tasks import rollup_metric
 from newslynx.views.util import *
 from newslynx.constants import (
     IMPACT_TAG_CATEGORIES, IMPACT_TAG_LEVELS)
@@ -244,6 +245,69 @@ def delete_tag(user, org, tag_id):
     db.session.delete(tag)
     db.session.commit()
     return delete_response()
+
+
+@bp.route('/api/v1/tags/<int:from_tag_id>/merge/<int:to_tag_id>', methods=['PUT'])
+@load_user
+@load_org
+def merge_tags(user, org, from_tag_id, to_tag_id):
+    """
+    Remove an author to a content item.
+    """
+    from_t = Tag.query\
+        .filter_by(id=from_tag_id, org_id=org.id)\
+        .first()
+
+    if not from_a:
+        raise NotFoundError(
+            'Tag with ID "{}" does not exist."'
+            .format(from_tag_id))
+
+    to_t = Tag.query\
+        .filter_by(id=to_tag_id, org_id=org.id)\
+        .first()
+
+    if not to_t:
+        raise NotFoundError(
+            'Tag with ID "{}" does not exist."'
+            .format(to_tag_id))
+
+    if not from_t.type == to_t.type:
+        raise RequestError('You can only merge tags of the same type.')
+
+    if from_t.type == 'subject':
+
+        # re associate content
+        stmt = update(content_items_tags)\
+            .where(content_items_tags.c.tag_id == from_tag_id)\
+            .values(tag_id=to_tag_id)
+        db.session.execute(stmt)
+
+        # remove from tag
+        db.session.delete(from_t)
+        db.session.commit()
+
+    if from_t.type == 'impact':
+        # re associate events
+        stmt = update(events_tags)\
+            .where(events_tags.c.tag_id == from_tag_id)\
+            .values(tag_id=to_tag_id)
+        db.session.execute(stmt)
+
+        # get all associated content item IDS.
+        content_item_ids = [c.id for e in from_t.events for c in e.content_item_ids]
+        content_item_ids.append([c.id for e in to_t.events for c in e.content_item_ids])
+
+        # remove from tag
+        db.session.delete(from_t)
+        db.session.commit()
+
+        # update event metrics
+        if len(content_item_ids):
+            # update event-level metrics for this content item id
+            rollup_metric.event_tags_to_summary(org, content_item_ids)
+
+    return jsonify(to_a.to_dict(incl_content=True))
 
 
 @bp.route('/api/v1/tags/categories', methods=['GET'])

@@ -180,9 +180,8 @@ class Twitter(object):
             # timeout
             now = time.time()
             if now - t0 > timeout:
-                err_msg = "Timing out beacause of {0}".format(e)
-                log.warning(err_msg)
-                return []
+                err_msg = "Timing out beacause of {0}".format(e.message)
+                raise Exeception(err_msg)
 
         return tweets
 

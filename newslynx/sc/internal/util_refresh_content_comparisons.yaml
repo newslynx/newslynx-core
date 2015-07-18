@@ -1,0 +1,8 @@
+name: Refresh Content Comparisons
+slug: internal-refresh-content-comparisons
+description: |
+    Refresh content comparison cache on a regular basis.
+runs: newslynx.sc.internal.util.RefreshContentComparisons
+creates: metrics
+option_order: []
+options: {}

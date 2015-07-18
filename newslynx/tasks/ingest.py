@@ -28,8 +28,7 @@ from newslynx.core import db
 from newslynx.util import gen_uuid
 from newslynx.models import Recipe, Event, ContentItem, Author
 from newslynx.models import URLCache, ThumbnailCache, ExtractCache
-from newslynx.models.util import get_table_columns
-
+from newslynx.models.util import get_table_columns, fetch_by_id_or_field
 from newslynx.exc import RequestError
 from newslynx.tasks.util import ResultIter
 from newslynx.util import uniq
@@ -101,9 +100,7 @@ def events(data, **kw):
         data = [data]
 
     # fetch recipe
-    recipe = Recipe.query\
-        .filter_by(org_id=org_id, id=recipe_id)\
-        .first()
+    recipe = fetch_by_id_or_field(Recipe, 'slug', recipe_id,  org_id=org_id)
 
     # create ingest objects
     events = {}
@@ -136,7 +133,7 @@ def events(data, **kw):
         # function for cleaning urls.
         def _link(args):
             source_id, l = args
-            l = _prepare_url({'l': l}, field='l')
+            l = _prepare_url({'l': l}, field='l', expand=True, canonicalize=True)
             if l:
                 if not len(org_domains):
                     return source_id, l
@@ -361,7 +358,7 @@ def content(data, **kw):
         data = [data]
 
     # fetch recipe
-    recipe = Recipe.query.filter_by(org_id=org_id, id=recipe_id).first()
+    recipe = fetch_by_id_or_field(Recipe, recipe_id, 'slug', org_id=org_id)
 
     # create ingest objects
     cis = {}
@@ -654,6 +651,10 @@ def _prepare(obj, requires=[], recipe=None, type='event', org_id=None, extract=T
 
     # set org id
     obj['org_id'] = org_id
+
+    # check img url
+    if obj.get('img_url', "").strip() == "":
+        obj['img_url'] = None
 
     # determine provenance.
     obj = _provenance(obj, recipe, type)
@@ -1042,8 +1043,8 @@ def _prepare_metric_date(obj):
     """
     Round a metric to a configurable unit.
     """
-    u = settings.METRICS_MIN_TIMESERIES_UNIT
-    v = settings.METRICS_MIN_TIMESERIES_VALUE
+    u = settings.MIN_TIMESERIES_UNIT
+    v = settings.MIN_TIMESERIES_VALUE
 
     # parse datetime.
     if 'datetime' not in obj:
