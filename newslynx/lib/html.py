@@ -90,11 +90,12 @@ def make_abs(htmlstring, source_url):
     return soup
 
 
-def get_inner(node):
+def get_inner(n):
     """
     Get the innerhtml from a BeautifulSoup element
     """
     # check if its an entire html or has been parsed by beautiful soup
-    if node.find('body'):
-        node = node.find('body')
-    return u"".join([str(x).decode('utf-8', errors='ignore') for x in node.contents])
+    if n.find('body'):
+        n = n.find('body')
+    nodes = [str(x).decode('utf-8', errors='ignore') for x in n.contents]
+    return u"".join(nodes)

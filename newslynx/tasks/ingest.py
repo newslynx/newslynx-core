@@ -676,14 +676,16 @@ def _prepare(obj, requires=[], recipe=None, type='event', org_id=None, extract=T
             for k, v in cr.value.items():
                 if not obj.get(k, None):
                     obj[k] = v
+                # preference extracted data
+                if k in ['description', 'body']:
+                    obj[k] = v
                 elif k == 'authors':
                     if not k in obj:
                         obj[k] = v
                     else:
                         for vv in v:
-                            if vv in obj[k]:
-                                continue
-                            obj[k].append(vv)
+                            if vv not in obj[k]:
+                                obj[k].append(vv)
 
             # swap bad images.
             tn = _prepare_thumbnail(obj, 'img_url')

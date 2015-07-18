@@ -282,7 +282,7 @@ def delete_recipe(user, org, recipe_id):
         else:
             db.session.delete(r)
 
-    # set the status of associated events to 'deleted'
+    # set the status of associated pending events to 'deleted'
     cmd = """
     UPDATE events SET status='deleted' WHERE recipe_id = {} AND status='pending';
     """.format(r.id)
@@ -301,11 +301,13 @@ def cook_a_recipe(user, org, recipe_id):
     """
     r = fetch_by_id_or_field(Recipe, 'slug', recipe_id, org_id=org.id)
     if not r:
-        raise NotFoundError('Recipe with id/slug {} does not exist.'
-                           .format(recipe_id))
+        raise NotFoundError(
+            'Recipe with id/slug {} does not exist.'
+            .format(recipe_id))
 
     if r.status == 'uninitialized':
-        raise RequestError('Recipes must be initialized before cooking.')
+        raise RequestError(
+            'Recipes must be initialized before cooking.')
 
     # setup kwargs for merlynne
     kw = dict(
@@ -322,7 +324,7 @@ def cook_a_recipe(user, org, recipe_id):
         sous_chef_path=r.sous_chef.runs
     )
 
-    # check for runtme args for passthrough
+    # check for runtme args for passthrough options.
     if kw['passthrough']:
         options = {k: v for k, v in dict(request.args.items()).items()
                    if k not in ['apikey', 'org', 'localize', 'passthrough']}
@@ -331,21 +333,14 @@ def cook_a_recipe(user, org, recipe_id):
                 recipe = recipe_schema.update(r, options, r.sous_chef.to_dict())
             except Exception as e:
                 raise RequestError(
-                    'Error trying to attempt to pass {} to recipe {}  at runtime:\n{}'
+                    'Error trying to attempt to pass {} to recipe {} at runtime:\n{}'
                     .format(options, recipes.slug, e.message))
 
             kw['recipe']['options'].update(recipe.get('options', {}))
 
-
     # execute merlynne
     merlynne = Merlynne(**kw)
     resp = merlynne.cook_recipe()
-
-    # except Exception as e:
-    #     p
-    #     raise RequestError(
-    #         'There was a problem initializing the SousChef: {}'
-    #         .format(e.message))
 
     # queued job
     if not kw['passthrough']:

@@ -146,7 +146,7 @@ class SearchContentItemLinks(SCRedditEvent):
     @property
     def queries(self):
         """
-        Programmatically generate search queries based on an org's domains
+        Programmatically generate search queries based on a org's domains
         """
         domains = self.org.get('domains', [])
         domains.extend(self.settings.get('short_urls', []))
@@ -158,7 +158,7 @@ class SearchContentItemLinks(SCRedditEvent):
             _queries.append(q)
         if not len(_queries):
             raise Exception('This Org has no domains.')
-        return uniq(_queri                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       es)
+        return uniq(_queries)
 
     def fetch(self):
         """
