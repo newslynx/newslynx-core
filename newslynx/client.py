@@ -1060,8 +1060,16 @@ class Reports(BaseClient):
 
 class Auths(BaseClient):
     """
-    For now, a helpful tool for granting permissions.
+    A class for interacting with the authorizations.
     """
+
+    def list(self, **kw):
+        url = self._format_url('auths')
+        return self._request('GET', url, **kw)
+
+    def get(self, service, **kw):
+        url = self._format_url('auths', service)
+        return self._request('GET', url, **kw)
 
     def grant(self, service, **kw):
         kw.setdefault('__exec', False)
@@ -1071,6 +1079,10 @@ class Auths(BaseClient):
         qs = "&".join(["{0}={1}".format(k, v) for k, v in r.params.items()])
         url = "{0}?{1}".format(r.url, qs)
         webbrowser.open_new(url)
+
+    def revoke(self, service, **kw):
+        url = self._format_url('auths', service, 'revoke')
+        return self._request('GET', url, **kw)
 
 
 class API(BaseClient):

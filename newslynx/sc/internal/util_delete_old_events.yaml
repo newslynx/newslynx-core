@@ -4,8 +4,7 @@ description: |
    This SousChef removes events for an organization which have a status 
    of deleted and were last updated more than X days ago. 
 runs: newslynx.sc.internal.util.DeleteOldEvents
-creates: metrics
-option_order: []
+creates: internal
 options: 
     days:
         input_type: number

@@ -115,7 +115,7 @@ re_short_domains = re.compile(r"""
   (^hit\.my$)|
   (^nov\.io$)|
   (^crisco\.com$)|
-  (^x\.co$)|
+  (^tw\.gs$)|
   (^shortquik\.com$)|
   (^prettylinkpro\.com$)|
   (^viralurl\.biz$)|

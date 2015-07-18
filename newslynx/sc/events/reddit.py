@@ -17,7 +17,7 @@ from newslynx import settings
 
 class SCRedditEvent(SousChef):
 
-    timeout = 150
+    timeout = 240
 
     def setup(self):
         self.reddit = Reddit(user_agent=settings.REDDIT_USER_AGENT)
@@ -88,7 +88,7 @@ class SCRedditEvent(SousChef):
         links = []
         if s.selftext_html:
             h = self._unescape(s.selftext_html)
-            links = url.from_html(h)
+            links = [l for l in url.from_html(h, source='http://reddit.com/') if 'reddit.com' not in l]
 
         raw = {
             'created': dates.parse_ts(s.created_utc),
@@ -131,7 +131,14 @@ class SCRedditEvent(SousChef):
 
 
 class Search(SCRedditEvent):
-    pass
+
+    def fetch(self):
+
+        for result in self.reddit.search(
+                query=self.options.get('query'),
+                sort=self.options.get('sort', 'new'),
+                subreddit=self.options.get('subreddit', None)):
+            yield result
 
 
 class SearchContentItemLinks(SCRedditEvent):

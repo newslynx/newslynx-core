@@ -47,6 +47,8 @@ class SCTwitterEvent(SousChef):
         sous chefs that don't have certain options.
         """
         tests = []
+        if not tweet.get('source_id', None):
+            tweet['source_id'] = tweet.get('url')
 
         # search links or text.
         if self.options.get('search_query', None):

@@ -5,7 +5,6 @@ description: |
     impact tag levels and categories per content item.
 runs: newslynx.sc.internal.util.RefreshContentSummaryMetrics
 creates: metrics
-option_order: []
 options: {}
 metrics:
 

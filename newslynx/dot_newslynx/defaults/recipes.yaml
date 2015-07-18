@@ -1,121 +1,137 @@
 
-  ## CONTENT ITEMS
+## CONTENT ITEMS
 
-  - sous_chef: rss-feed-to-article
-    name: Ingest Articles from an RSS Feed
-    slug: rss-feed-to-article
-    status: uninitialized
-    options: {}
+- sous_chef: rss-feed-to-article
+  name: Ingest Articles from an RSS Feed
+  slug: rss-feed-to-article
+  status: uninitialized
+  options: {}
 
-  ## PROMOTIONS
+## PROMOTIONS
 
-  - sous_chef: twitter-list-to-event
-    name: Staff Twitter List to Promotion Event
-    slug: twitter-list-to-event-promotion
-    status: uninitialized
-    options:
-      must_link: true
-      event_status: approved
-      set_event_title: "Tweet from {authors} on {created}"
-      set_event_tag_ids: ['promotion-internal']
-      min_followers: 0
-      schedule_by: minutes
-      minutes: 15
+- sous_chef: twitter-list-to-event
+  name: Staff Twitter List to Promotion Event
+  slug: twitter-list-to-event-promotion
+  status: uninitialized
+  options:
+    must_link: true
+    event_status: approved
+    set_event_title: "Tweet from {authors} on {created}"
+    set_event_tag_ids: ['promotion-internal']
+    min_followers: 0
+    schedule_by: minutes
+    minutes: 15
 
-  - sous_chef: twitter-user-to-event
-    name: Staff Twitter User to Promotion Event
-    slug: twitter-user-to-event-promotion
-    status: uninitialized
-    options:
-      must_link: true
-      event_status: approved
-      set_event_title: "Tweet from {authors} on {created}"
-      set_event_tag_ids: ['promotion-internal']
-      schedule_by: minutes
-      minutes: 30
+- sous_chef: twitter-user-to-event
+  name: Staff Twitter User to Promotion Event
+  slug: twitter-user-to-event-promotion
+  status: uninitialized
+  options:
+    must_link: true
+    event_status: approved
+    set_event_title: "Tweet from {authors} on {created}"
+    set_event_tag_ids: ['promotion-internal']
+    schedule_by: minutes
+    minutes: 30
 
-  - sous_chef: facebook-page-to-event
-    name: Staff Facebook Page to Promotion Event
-    slug: facebook-page-to-event-promotion
-    status: uninitialized
-    options:
-      must_link: true
-      event_status: approved
-      set_event_title: "Facebook Page Promotion"
-      set_event_tag_ids: ['promotion-internal']
-      schedule_by: minutes
-      minutes: 30
+- sous_chef: facebook-page-to-event
+  name: Staff Facebook Page to Promotion Event
+  slug: facebook-page-to-event-promotion
+  status: uninitialized
+  options:
+    must_link: true
+    event_status: approved
+    set_event_title: "Facebook Page Promotion"
+    set_event_tag_ids: ['promotion-internal']
+    schedule_by: minutes
+    minutes: 30
 
-  ## Events
+## Events
 
-  - sous_chef: twitter-search-content-item-links-to-event
-    name: Search for tweets that link to content items and create events.
-    status: stable
-    options:
-      must_link: true
-      event_status: approved
-      set_event_title: "Tweet from {authors} on {created}"
-      schedule_by: minutes
-      minutes: 15
+- sous_chef: twitter-search-content-item-links-to-event
+  name: Search for tweets that link to content items and create events.
+  status: stable
+  options:
+    must_link: true
+    event_status: approved
+    set_event_title: "Tweet from {authors} on {created}"
+    schedule_by: minutes
+    minutes: 15
 
-  - sous_chef: reddit-search-content-item-links-to-event
-    status: uninitialized
-    options:
-      must_link: true
-      event_status: pending
-      set_event_title: "Post from {authors} to /r/{subreddit} on {created}"
-      schedule_by: minutes
-      minutes: 15
+- sous_chef: reddit-search-to-event
+  status: uninitialized
+  options:
+    must_link: false
+    event_status: pending
+    set_event_title: "Submission from {authors} to /r/{subreddit} on {created}"
+    schedule_by: minutes
+    minutes: 60
 
-  ## CONTENT METRICS
+- sous_chef: reddit-search-content-item-links-to-event
+  status: uninitialized
+  options:
+    must_link: true
+    event_status: pending
+    set_event_title: "Submission from {authors} to /r/{subreddit} on {created}"
+    schedule_by: minutes
+    minutes: 15
 
-  - sous_chef: google-analytics-to-content-timeseries
-    status: uninitialized
-    options:
-      schedule_by: time_of_day
-      time_of_day: "12:30 AM"
+## CONTENT METRICS
 
-  - sous_chef: google-analytics-to-content-device-summaries
-    status: uninitialized
-    options:
-      schedule_by: time_of_day
-      time_of_day: "1:00 AM"
+- sous_chef: google-analytics-to-content-timeseries
+  status: uninitialized
+  options:
+    schedule_by: time_of_day
+    time_of_day: "12:30 AM"
 
-  - sous_chef: google-analytics-to-content-domain-facets
-    status: uninitialized
-    options:
-      schedule_by: time_of_day
-      time_of_day: "1:30 AM"
+- sous_chef: google-analytics-to-content-device-summaries
+  status: uninitialized
+  options:
+    schedule_by: time_of_day
+    time_of_day: "1:00 AM"
 
-  - sous_chef: share-counts-to-content-timeseries
-    status: uninitialized
-    options:
-      schedule_by: minutes
-      minutes: 50
+- sous_chef: google-analytics-to-content-domain-facets
+  status: uninitialized
+  options:
+    schedule_by: time_of_day
+    time_of_day: "1:30 AM"
 
-  - sous_chef: events-to-content-summaries
-    status: uninitialized
-    options:
-      schedule_by: minutes
-      minutes: 360
+- sous_chef: share-counts-to-content-timeseries
+  status: uninitialized
+  options:
+    schedule_by: minutes
+    minutes: 50
 
-  ## ORG METRICS
+## ORG METRICS
 
-  - sous_chef: facebook-page-to-org-timeseries
-    status: uninitialized
-    options:
-      schedule_by: minutes
-      minutes: 50
+- sous_chef: facebook-page-to-org-timeseries
+  status: uninitialized
+  options:
+    schedule_by: minutes
+    minutes: 50
 
-  - sous_chef: twitter-user-to-org-timeseries
-    status: uninitialized
-    options:
-      schedule_by: minutes
-      minutes: 50
+- sous_chef: twitter-user-to-org-timeseries
+  status: uninitialized
+  options:
+    schedule_by: minutes
+    minutes: 50
 
+## Internal
 
+- sous_chef: internal-refresh-content-summary-metrics
+  status: stable
+  options:
+    schedule_by: minutes
+    minutes: 60
 
+- sous_chef: internal-refresh-content-comparisons
+  status: stable
+  options:
+    schedule_by: minutes
+    minutes: 120
 
-
-
-
+- sous_chef: internal-delete-old-events
+  status: stable 
+  options:
+    schedule_by: minutes
+    minutes: 360

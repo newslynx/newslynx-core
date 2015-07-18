@@ -143,10 +143,11 @@ def events(data, **kw):
 
         # clean urls asynchronously.
         for source_id, link in p.imap_unordered(_link, links):
-            if not 'links' in meta[source_id]:
-                meta[source_id]['links'] = []
-            if source_id and link not in meta[source_id]['links']:
-                meta[source_id]['links'].append(link)
+            if source_id:
+                if not 'links' in meta[source_id]:
+                    meta[source_id]['links'] = []
+                if source_id and link not in meta[source_id]['links']:
+                    meta[source_id]['links'].append(link)
 
     # these need to happen synchronously
     _clean()
@@ -197,7 +198,8 @@ def events(data, **kw):
 
         queries = []
         for source_id, vals in meta.iteritems():
-
+            if not source_id:
+                continue
             # separate slugs and ids.
             tags = uniq(meta[source_id].pop('tag_ids', []))
             ids = []
@@ -358,7 +360,7 @@ def content(data, **kw):
         data = [data]
 
     # fetch recipe
-    recipe = fetch_by_id_or_field(Recipe, recipe_id, 'slug', org_id=org_id)
+    recipe = fetch_by_id_or_field(Recipe, 'slug', recipe_id,  org_id=org_id)
 
     # create ingest objects
     cis = {}
@@ -653,7 +655,7 @@ def _prepare(obj, requires=[], recipe=None, type='event', org_id=None, extract=T
     obj['org_id'] = org_id
 
     # check img url
-    if obj.get('img_url', "").strip() == "":
+    if not url.validate(obj.get('img_url', None)):
         obj['img_url'] = None
 
     # determine provenance.

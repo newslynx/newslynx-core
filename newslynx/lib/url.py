@@ -704,6 +704,8 @@ def validate(url):
     """
     Check if a url is valid (for form inputs).
     """
+    if not url:
+        return False
     if re_url.search(url) is None:
         return False
     return is_valid(url)
