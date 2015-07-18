@@ -28,6 +28,8 @@ class Twitter(object):
     utilities for coercing twitter data into newsylnx formats.
     """
 
+    incl_embed = False
+
     default_kws = {
         'max_id': None,
         'throttle': 15,
@@ -82,7 +84,9 @@ class Twitter(object):
         """
         Parse a tweet into a newslynx event.
         """
-        return TwitterEvent(**tweet).to_dict()
+        t = TwitterEvent(**tweet)
+        t.incl_embed = copy.copy(self.incl_embed)
+        return t.to_dict()
 
     def _paginate(self, func, **kw):
         """
@@ -130,7 +134,7 @@ class Twitter(object):
 
             # if we've reached the max number of pages, break
             max_requests = kw.get('max_requests')
-            if max_requests and p > max_requests:
+            if max_requests and p >= max_requests:
                 break
 
             # increment page
@@ -189,6 +193,8 @@ class TwitterEvent(object):
     Parses a tweet into  Newslynx Event
     """
 
+    incl_embed = False
+
     def __init__(self, **tweet):
 
         # get nested dicts
@@ -246,12 +252,14 @@ class TwitterEvent(object):
 
     @property
     def meta(self):
-        return {
+        d = {
             'followers': self._user.get('followers_count'),
-            'embed': self.embed,
             'friends': self._user.get('friends_count'),
             'hashtags': uniq([h['text'] for h in self._entities.get('hashtags', [])])
         }
+        if self.incl_embed:
+            d['embed'] = self.embed
+        return d
 
     def to_dict(self):
         return {
@@ -264,10 +272,3 @@ class TwitterEvent(object):
             'links': self.links,
             'meta': self.meta
         }
-
-if __name__ == '__main__':
-    kw = {"oauth_token_secret": "9Kyd7Y5Vzw4mFg5UWd9KdICAi6vZnSwK4M0HxRzAnysD7", "oauth_token": "432708845-j25oCkAR37fDSO5P5K4g7rSW8gBUC3wahLp4sS24"}
-    twt = Twitter()
-    twt.connect(**kw)
-    for t in twt.list_to_event(slug='members-of-congress', owner_screen_name='cspan'):
-        print t['links']

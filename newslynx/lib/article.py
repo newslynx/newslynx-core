@@ -24,7 +24,7 @@ except ImportError:
 log = logging.getLogger(__name__)
 
 
-def extract(source_url):
+def extract(source_url, **kw):
     """
     Article extraction. Method is as follows:
     1. Get html from url.

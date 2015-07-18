@@ -8,7 +8,7 @@ from newslynx.tasks.query_metric import QueryContentMetricTimeseries
 from newslynx.models import Org
 
 
-def content_timeseries_to_summary(org, num_hours=24):
+def content_timeseries_to_summary(org, content_item_ids, num_hours=24):
     """
     Rollup content-timseries metrics into summaries.
     Optimize this query by only updating content items whose
@@ -17,7 +17,11 @@ def content_timeseries_to_summary(org, num_hours=24):
 
     # just use this to generate a giant timeseries select with computed
     # metrics.
-    ts = QueryContentMetricTimeseries(org, org.content_item_ids, unit=None)
+    content_item_ids = org.content_item_ids
+    if not len(content_item_ids):
+        raise RequestError('You must have content items to run this method.')
+
+    ts = QueryContentMetricTimeseries(org, content_item_ids, unit=None)
 
     # generate aggregation statments + list of metric names.
     summary_pattern = "{agg}({name}) AS {name}"
@@ -134,7 +138,10 @@ def event_tags_to_summary(org, content_item_ids=[]):
     qkw['final_query'] = "select * from positive_metrics"
     if not content_ids_filter:
         qkw['null_query'] = null_q
-        qkw['final_query'] = "select * from positive_metrics, null_metrics"
+        qkw['final_query'] = """
+            select * from positive_metrics
+            UNION ALL
+            select * from  null_metrics"""
 
     q = """
         WITH content_event_tags AS (
@@ -150,7 +157,8 @@ def event_tags_to_summary(org, content_item_ids=[]):
                   FULL OUTER JOIN events_tags on events.id = events_tags.event_id
                   FULL OUTER JOIN tags on events_tags.tag_id = tags.id
                   WHERE events.org_id = {org_id} AND
-                        events.status = 'approved'
+                        events.status = 'approved' AND 
+                        (tags.category IS NOT NULL OR tags.level IS NOT NULL)
                 ) t
                 WHERE content_item_id IS NOT NULL
                 {content_ids_filter}

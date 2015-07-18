@@ -4,6 +4,7 @@ from inspect import isgenerator
 import time
 
 import requests
+import webbrowser
 from requests import Session, Request, Response
 from urlparse import urljoin
 
@@ -71,9 +72,13 @@ class BaseClient(object):
         if kw.get('data'):
             kw['data'] = obj_to_json(kw['data'])
 
-        # execute
-        r = Request(method, url, **kw)
+        # pop intenal 
+        __exec = kw.pop('__exec', True)
 
+        # format
+        r = Request(method, url, **kw)
+        if not __exec:
+            return r
         try:
             resp = self._session.send(r.prepare())
             err = None
@@ -1047,6 +1052,69 @@ class Reports(BaseClient):
         return self._request('DELETE', url, params=kw)
 
 
+class Reports(BaseClient):
+
+    def list(self, **kw):
+        """
+        List reports for an organization.
+        """
+
+        url = self._format_url('reports')
+        return self._request('GET', url, params=kw)
+
+    def get(self, id, **kw):
+        """
+        Get a particular report. TODO handle rendering.
+        """
+        url = self._format_url('reports', id)
+        return self._request('GET', url, **kw)
+
+    def create(self, **kw):
+        """
+        Create a report
+        """
+        # jsonify value
+        kw, params = self._split_auth_params_from_data(kw)
+        # TODO handle report files.
+        url = self._format_url('reports')
+        return self._request('POST', url, data=kw, params=params)
+
+    def update(self, id, **kw):
+        """
+        Update a report.
+        """
+
+        kw, params = self._split_auth_params_from_data(kw)
+        # TODO handle report files.
+        url = self._format_url('reports', id)
+        return self._request('PUT', url, data=kw, params=params)
+
+    def delete(self, id, **kw):
+        """
+        Delete a report. Cascades all reports.
+        """
+
+        url = self._format_url('reports', id)
+        return self._request('DELETE', url, params=kw)
+
+
+class Auths(BaseClient):
+    """
+    A hacky class for granting permissions.
+    """
+
+    def grant(self, service, **kw):
+        kw.setdefault('__exec', False)
+        url = self._format_url('auths', service, 'grant')
+        r = self._request('GET', url, **kw)
+        r.prepare()
+        qs = "&".join(["{0}={1}".format(k,v) for k, v in r.params.items()])
+        url = "{0}?{1}".format(r.url, qs)
+        webbrowser.open_new(url)
+
+
+
+
 class API(BaseClient):
 
     """
@@ -1070,3 +1138,5 @@ class API(BaseClient):
         self.extract = Extract(**kw)
         self.sql = SQL(**kw)
         self.jobs = Jobs(**kw)
+        self.auths = Auths(**kw)
+

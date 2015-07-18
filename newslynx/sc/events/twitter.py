@@ -1,11 +1,12 @@
 from collections import defaultdict
-from datetime import datetime 
+from datetime import datetime
 
 from newslynx.lib.twitter import Twitter
-from newslynx.sc import EventSousChef
+from newslynx.sc import SousChef
+from newslynx.util import uniq
 
 
-class TwitterEventMixin(EventSousChef):
+class SCTwitterEvent(SousChef):
 
     """
     A class to inherit from for all Twitter Sous Chefs that create events.
@@ -14,6 +15,27 @@ class TwitterEventMixin(EventSousChef):
     """
 
     timeout = 1200
+
+    def _fmt(self, tweet):
+        new = defaultdict()
+        for k, v in tweet.iteritems():
+            if isinstance(v, dict):
+                new[k] = self._fmt(v)
+            elif isinstance(v, list):
+                new[k] = ", ".join([str(vv) for vv in v])
+            elif isinstance(v, datetime):
+                new[k] = v.date().isoformat()
+            else:
+                new[k] = v
+        return new
+
+    def _get_link_lookup(self):
+        """
+        Get an org's content item id lookups.
+        """
+        self.lookup = defaultdict(list)
+        for c in self.api.orgs.simple_content():
+            self.lookup[c['url']].append(c['id'])
 
     def fetch(self, **kw):
         """
@@ -27,7 +49,7 @@ class TwitterEventMixin(EventSousChef):
         events except for users.
 
         By using .get() on the options, we'll effectively ignore
-        sous chefs that don't have these.
+        sous chefs that don't have certain options.
         """
         tests = []
 
@@ -42,24 +64,23 @@ class TwitterEventMixin(EventSousChef):
             self.options.get('min_followers', 0)
         tests.append(min_followers)
         if all(tests):
+
+            # add content item ids:
+            tweet['content_item_ids'] = []
+            links = tweet.pop('links', [])
+            for link in links:
+                ids = self.lookup.get(link, [])
+                if not len(ids):
+                    continue
+                for id in ids:
+                    if id not in tweet['content_item_ids']:
+                        tweet['content_item_ids'].append(id)
+
+            # optionally filter
+            if self.options.get('must_link', False):
+                if len(tweet['content_item_ids']):
+                    return tweet
             return tweet
-
-    def _get_link_lookup(self):
-        return {c['url']: c['id'] for c in self.api.orgs.simple_content()
-                if c.get('url', None)}
-
-    def _fmt(self, tweet):
-        new = defaultdict()
-        for k, v in tweet.iteritems():
-            if isinstance(v, dict):
-                new[k] = self._fmt(v)
-            elif isinstance(v, list):
-                new[k] = ", ".join([str(vv) for vv in v])
-            elif isinstance(v, datetime):
-                new[k] = v.date().isoformat()
-            else:
-                new[k] = v
-        return new
 
     def format(self, tweet):
         """
@@ -93,10 +114,12 @@ class TwitterEventMixin(EventSousChef):
                         tweet['content_item_ids'].append(c.get('id'))
                 elif isinstance(c, int):
                     tweet['content_item_ids'].append(c)
-        tweet['content_item_ids'] = list(set(tweet['content_item_ids']))
         return tweet
 
-    def setup(self):
+    def connect(self):
+        """
+        Connect to twitter. Raise an error if user has not authenticated.
+        """
         tokens = self.auths.get('twitter', None)
         if not tokens:
             raise Exception('This Sous Chef requires a Twitter Authorization.')
@@ -108,21 +131,42 @@ class TwitterEventMixin(EventSousChef):
                 'Error Connecting to Twitter: {}'.format(e.message))
 
     def run(self):
-        self.ids = []
-        for tweet in self.fetch(max_id=self.last_job.get('max_id', None)):
-            # keep track of ids for this internal method.
-            if isinstance(self.ids, list):
-                self.ids.append(int(tweet.get('source_id', 0)))
+        """
+        Connect to twitter, fetch the lookup of content items, fetch tweets,
+        filter, and format.
+        """
+        self.connect()
+        self._get_link_lookup()
+        for tweet in self.fetch(since_id=self.last_job.get('max_id', None)):
             tweet = self.filter(tweet)
             if tweet:
                 yield self.format(tweet)
 
+    def load(self, data):
+        """
+        Prepare resulting tweets for bulk loading.
+        """
+        self.ids = []
+        to_post = []
+        for d in data:
+            self.ids.append(int(d.get('source_id', 0)))
+            d['recipe_id'] = self.recipe_id
+            to_post.append(d)
+        if len(to_post):
+            status_resp = self.api.events.bulk_create(
+                data=to_post,
+                must_link=self.options.get('must_link'))
+            return self.api.jobs.poll(**status_resp)
+
     def teardown(self):
+        """
+        Keep track of max id.
+        """
         if len(self.ids):
             self.next_job['max_id'] = max(self.ids)
 
 
-class List(TwitterEventMixin):
+class List(SCTwitterEvent):
 
     """
     List => Event
@@ -138,7 +182,7 @@ class List(TwitterEventMixin):
         return self.twitter.list_to_event(**kw)
 
 
-class User(TwitterEventMixin):
+class User(SCTwitterEvent):
 
     """
     User => Event
@@ -153,7 +197,7 @@ class User(TwitterEventMixin):
         return self.twitter.user_to_event(**kw)
 
 
-class Search(TwitterEventMixin):
+class Search(SCTwitterEvent):
 
     """
     Search => Event
@@ -169,7 +213,7 @@ class Search(TwitterEventMixin):
         return self.twitter.search_to_event(**kw)
 
 
-class SearchContentItemLinks(TwitterEventMixin):
+class SearchContentItemLinks(SCTwitterEvent):
 
     """
     Search an org's domains and short-domains for links to content items.
@@ -177,10 +221,13 @@ class SearchContentItemLinks(TwitterEventMixin):
 
     @property
     def queries(self):
+        """
+        Programmatically generate search queries based on a org's domains
+        """
         domains = self.org.get('domains', [])
         domains.extend(self.settings.get('short_urls', []))
         domains.extend(self.settings.get('short_domains', []))
-        domains = list(set(domains))
+        domains = uniq(domains)
         _queries = []
         for d in domains:
             term = d.replace(".", " ").strip().lower()
@@ -188,40 +235,36 @@ class SearchContentItemLinks(TwitterEventMixin):
             _queries.append(q)
         if not len(_queries):
             raise Exception('This Org has no domain.')
-        return list(set(_queries))
+        return uniq(_queries)
 
     def fetch(self, **kw):
-        self.ids = defaultdict(list)
-        self.lookup = self._get_link_lookup()
+        """
+        Fetch tweets for all queries, keeping track of max ID for
+        each unique query.
+        """
+        # we should include embeds on this sous chef.
+        setattr(self.twitter, 'incl_embed', True)
+
+        self.qids = defaultdict(list)
         for q in self.queries:
             # fetch tweets
             kw = {
                 'q': q,
                 'result_type': 'recent',
-                'max_id': self.last_job.get('max_ids', {}).get(q, None)
+                'since_id': self.last_job.get('max_ids', {}).get(q, None)
             }
-            self.log.info('Searching for:\n{}'.format(kw))
+            self.log.info('Searching for: {}'.format(kw))
 
             # search all tweets that link to this domain
             for tweet in self.twitter.search_to_event(**kw):
-                self.ids[q].append(int(tweet.get('source_id', 0)))
+                self.qids[q].append(int(tweet.get('source_id', 0)))
                 yield tweet
 
-    def filter(self, tweet):
-        # check for links to an org's content items.
-        tweet['content_item_ids'] = []
-        for link in tweet.get('links', []):
-            if link not in self.lookup:
-                continue
-            tweet['content_item_ids'].append(self.lookup[link])
-
-        # filter
-        if len(tweet['content_item_ids']):
-            tweet.pop('links', None)
-            return tweet
-
     def teardown(self):
-        if len(self.ids.keys()):
-            max_ids = {k: max(v) for k, v in self.ids.iteritems()}
+        """
+        Store max Ids.
+        """
+        if len(self.qids.keys()):
+            max_ids = {k: max(v) for k, v in self.qids.iteritems()}
             self.next_job['max_ids'] = max_ids
         return

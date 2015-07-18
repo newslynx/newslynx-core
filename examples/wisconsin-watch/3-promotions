@@ -1,0 +1,9 @@
+#!/bin/sh 
+
+nlynx api recipes cook id=5 | jq .
+nlynx api recipes update id=3 screen_name='WisWatch' | jq .
+nlynx api recipes cook id=3 | jq . 
+nlynx api recipes update id=2 \
+	list_owner_screen_name=WisWatch \
+	list_slug=wisconsinwatch-reporters | jq . 
+nlynx api recipes cook id=2 | jq . 

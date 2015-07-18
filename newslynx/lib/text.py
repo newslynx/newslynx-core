@@ -50,4 +50,8 @@ def prepare(s):
     """
     s = unicode_symbols(s)
     s = re_whitespace.sub(' ', s).strip()
-    return unidecode(s)
+    try:
+        s = unidecode(s)
+    except Warning:
+        pass
+    return s

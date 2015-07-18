@@ -1,6 +1,7 @@
 build/
 dist/
 docs/_build/
+examples/wisconsin-watch/
 *.egg-info/
 *.DS_Store
 *.pyc

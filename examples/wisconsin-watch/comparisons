@@ -1,0 +1,3 @@
+#!/bin/sh 
+
+nlynx api content list-comparisons | jq . 

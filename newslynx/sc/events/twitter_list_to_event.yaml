@@ -10,6 +10,7 @@ option_order:
     - list_owner_screen_name
     - list_slug
     - search_query
+    - must_link
     - min_followers
     - schedule_by
     - crontab
@@ -58,6 +59,19 @@ options:
         required: false
         help:
             placeholder: "~fracking | drilling"
+
+    must_link:
+        input_type: radio
+        input_options:
+            - true
+            - false
+        value_types:
+            - boolean
+        default: false
+        required: false
+        help:
+            placeholder: "false"
+            description: Only create an event if there is a link to an existing content item.
 
     event_status:
         input_type: select

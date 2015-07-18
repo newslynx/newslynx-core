@@ -1,0 +1,4 @@
+#!/bin/sh 
+
+nlynx api recipes update id=1 feed_url='http://wisconsinwatch.org/feed/'
+nlynx api recipes cook id=1 

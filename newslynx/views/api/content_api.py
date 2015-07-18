@@ -2,18 +2,15 @@ from gevent.pool import Pool
 
 from copy import copy
 
-from flask import Blueprint, session
-from sqlalchemy import distinct, text
-from sqlalchemy.types import Numeric
+from flask import Blueprint
 
+from sqlalchemy.types import Numeric
 from newslynx.core import db
 from newslynx.exc import NotFoundError
 from newslynx.lib.serialize import jsonify
-from newslynx.lib import dates
 from newslynx.views.decorators import load_user, load_org
+from newslynx.tasks import load as load_data
 from newslynx.tasks import facet
-from newslynx.tasks import ingest_content_item
-from newslynx.tasks import ingest_bulk
 from newslynx.models.relations import content_items_events, events_tags
 from newslynx.views.util import *
 from newslynx.models import (
@@ -498,12 +495,18 @@ def create_content(user, org):
     """
     req_data = request_data()
     extract = arg_bool('extract', default=True)
-    c = ingest_content_item.ingest(
+    recipe_id = arg_int('recipe_id', default=None)
+    
+    content = load_data.content(
         req_data,
         org_id=org.id,
+        recipe_id=recipe_id,
         extract=extract,
-        kill_session=False)
-    return jsonify(c.to_dict(incl_body=True, incl_img=True, incl_metrics=True))
+        queued=False)
+    if len(content) == 1:
+
+        content  = content[0]
+    return jsonify(content)
 
 
 @bp.route('/api/v1/content/bulk', methods=['POST'])
@@ -515,11 +518,14 @@ def bulk_create_content(user, org):
     """
     req_data = request_data()
     extract = arg_bool('extract', default=True)
-    job_id = ingest_bulk.content_items(
+    recipe_id = arg_int('recipe_id', default=None)
+    
+    job_id = load_data.content(
         req_data,
         org_id=org.id,
-        extract=extract)
-
+        recipe_id=recipe_id,
+        extract=extract,
+        queued=True)
     ret = url_for_job_status(apikey=user.apikey, job_id=job_id, queue='bulk')
     return jsonify(ret)
 

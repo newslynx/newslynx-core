@@ -60,3 +60,5 @@ pyasn1==0.1.7
 rq
 colorama
 twython
+requests_toolbelt
+cryptography>=0.7

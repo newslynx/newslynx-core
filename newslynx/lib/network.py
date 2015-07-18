@@ -7,6 +7,7 @@ import logging
 import time
 
 import requests
+from requests_toolbelt import SSLAdapter
 
 from newslynx import settings
 from newslynx.lib.serialize import json_to_obj
@@ -15,6 +16,8 @@ from newslynx.lib.serialize import json_to_obj
 log = logging.getLogger(__name__)
 
 FAIL_ENCODING = 'ISO-8859-1'
+
+ssl_adapter = SSLAdapter('SSLv3')
 
 
 def retry(*dargs, **dkwargs):
@@ -103,8 +106,18 @@ def get_request_kwargs(timeout=None, useragent=None):
     return {
         'headers': {'User-Agent': useragent or settings.BROWSER_USER_AGENT},
         'timeout': timeout or settings.BROWSER_TIMEOUT,
-        'allow_redirects': True
+        'allow_redirects': True,
+        'verify': True
     }
+
+
+def gen_session(**kw):
+    """
+    Generate a session.
+    """
+    session = requests.Session()
+    session.mount('https', ssl_adapter)
+    return session
 
 
 @retry(attempts=settings.BROWSER_MAX_RETRIES)
@@ -116,10 +129,7 @@ def get(_u, **params):
     to ISO-8859-1 if it doesn't find one. This results in incorrect character
     encoding in a lot of cases.
     """
-    session = requests.Session()
-
-    FAIL_ENCODING = 'ISO-8859-1'
-
+    session = gen_session()
     html = None
     response = session.get(
         url=_u, params=params, **get_request_kwargs())
@@ -137,7 +147,8 @@ def get_location(url):
     """
     most efficient method for unshortening a url.
     """
-    r = requests.head(url)
+    session = gen_session()
+    r = session.head(url)
     if r.status_code / 100 == 3 and 'Location' in r.headers:
         return r.headers['Location']
     return url
@@ -148,7 +159,7 @@ def get_json(_u, **params):
     """
     Fetches json from a url.
     """
-    session = requests.Session()
+    session = gen_session()
     response = session.get(url=_u, params=params, **get_request_kwargs())
     obj = None
     if response.encoding != FAIL_ENCODING:
