@@ -146,7 +146,7 @@ class SearchContentItemLinks(SCRedditEvent):
     @property
     def queries(self):
         """
-        Programmatically generate search queries based on a org's domains
+        Programmatically generate search queries based on an org's domains
         """
         domains = self.org.get('domains', [])
         domains.extend(self.settings.get('short_urls', []))
@@ -158,14 +158,13 @@ class SearchContentItemLinks(SCRedditEvent):
             _queries.append(q)
         if not len(_queries):
             raise Exception('This Org has no domains.')
-        return uniq(_queries)
+        return uniq(_queri                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       es)
 
     def fetch(self):
         """
         fetch results from reddit.
         """
         self.options['must_link'] = True
-        ids = set()
         for query in self.queries:
             time.sleep(5)
             for result in self.reddit.search(query=query, sort='new'):

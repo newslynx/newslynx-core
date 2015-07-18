@@ -2,8 +2,9 @@ from collections import defaultdict, Counter
 from inspect import isgenerator
 import copy
 
+
 from sqlalchemy import or_
-from flask import Blueprint, Response, stream_with_context
+from flask import Blueprint, Response, stream_with_context, request
 
 from newslynx.core import db
 from newslynx.exc import RequestError, ConflictError, NotFoundError
@@ -267,7 +268,7 @@ def delete_recipe(user, org, recipe_id):
     r = fetch_by_id_or_field(Recipe, 'slug', recipe_id, org_id=org.id)
     if not r:
         raise NotFoundError('Recipe with id/slug {} does not exist.'
-                           .format(recipe_id))
+                            .format(recipe_id))
     force = arg_bool('force', default=False)
 
     if force:
@@ -321,7 +322,22 @@ def cook_a_recipe(user, org, recipe_id):
         sous_chef_path=r.sous_chef.runs
     )
 
-    # initialize merlynne
+    # check for runtme args for passthrough
+    if kw['passthrough']:
+        options = {k: v for k, v in dict(request.args.items()).items()
+                   if k not in ['apikey', 'org', 'localize', 'passthrough']}
+        if len(options.keys()):
+            try:
+                recipe = recipe_schema.update(r, options, r.sous_chef.to_dict())
+            except Exception as e:
+                raise RequestError(
+                    'Error trying to attempt to pass {} to recipe {}  at runtime:\n{}'
+                    .format(options, recipes.slug, e.message))
+
+            kw['recipe']['options'].update(recipe.get('options', {}))
+
+
+    # execute merlynne
     merlynne = Merlynne(**kw)
     resp = merlynne.cook_recipe()
 

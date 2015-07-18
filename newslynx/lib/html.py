@@ -82,8 +82,8 @@ def make_abs(htmlstring, source_url):
         if not src:
             continue
         # embeds.
-        if href.startswith('//:'):
-            a['href'] = "http{}".format(href)
+        if src.startswith('//:'):
+            img['src'] = "http{}".format(src)
         if src.startswith('/') or not src.startswith('http'):
             if source_url:
                 img['src'] = urljoin(source_url, src)

@@ -464,6 +464,13 @@ class Tags(BaseClient):
         url = self._format_url('tags', id)
         return self._request('DELETE', url, params=kw)
 
+    def merge(self, id, to_tag_id, **kw):
+        """
+        Merge one tag into another.
+        """
+        url = self._format_url('tags', id, 'tags', to_tag_id)
+        return self._request('PUT', url, params=kw)
+
 
 class Recipes(BaseClient):
 
@@ -484,14 +491,14 @@ class Recipes(BaseClient):
 
     def get(self, id, **kw):
         """
-        Get a tag
+        Get a recipe
         """
         url = self._format_url('recipes', id)
         return self._request('GET', url, data=kw, params=kw)
 
     def update(self, id, **kw):
         """
-        Update a tag
+        Update a recipe
         """
         kw, params = self._split_auth_params_from_data(kw)
         url = self._format_url('recipes', id)
@@ -499,7 +506,7 @@ class Recipes(BaseClient):
 
     def delete(self, id, **kw):
         """
-        Delete a tag
+        Delete a recipe
         """
         kw, params = self._split_auth_params_from_data(kw)
         url = self._format_url('recipes', id)
@@ -523,6 +530,7 @@ class Recipes(BaseClient):
         def _generate():
             for line in r.iter_lines():
                 d = json_to_obj(line)
+
                 # catch errors
                 if d.get('error'):
                     if self.raise_errors:
@@ -750,13 +758,6 @@ class Content(BaseClient):
         """
         url = self._format_url('content', 'comparisons', type)
         return self._request('PUT', url, params=kw)
-
-    def remove_tag(self, id, tag_id, **kw):
-        """
-        Remove a tag from a content item.
-        """
-        url = self._format_url('content', id, 'tags', tag_id)
-        return self._request('DELETE', url, params=kw)
 
 
 class Extract(BaseClient):
