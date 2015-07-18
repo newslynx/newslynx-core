@@ -24,7 +24,10 @@ def list_sous_chefs(user):
     # optionally filter by type/level/category
     creates = arg_str('creates', default='all')
     is_command = arg_bool('is_command', default=None)
-
+    include_sous_chefs, exclude_sous_chefs = \
+        arg_list('sous_chefs', default=[], typ=str, exclusions=True)
+    sort_field, direction = arg_sort('sort', default='slug')
+    
     # base query
     sous_chef_query = db.session.query(SousChef)
 
@@ -36,6 +39,22 @@ def list_sous_chefs(user):
     if is_command is not None:
         sous_chef_query = sous_chef_query\
             .filter_by(is_command=is_command)
+
+    # include sous chefs
+    if len(include_sous_chefs):
+        sous_chef_query = sous_chef_query\
+            .filter(SousChef.slug.in_(include_sous_chefs))
+
+    # exclude sous chefs
+    if len(exclude_sous_chefs):
+        sous_chef_query = sous_chef_query\
+            .filter(SousChef.slug.in_(include_sous_chefs))
+
+    # sort
+    if sort_field:
+        validate_fields(SousChef, fields=[sort_field], suffix='to sort by')
+        sort_obj = eval('SousChef.{}.{}'.format(sort_field, direction))
+        sous_chef_query = sous_chef_query.order_by(sort_obj())
 
     # process query, compute facets.
     clean_sous_chefs = []

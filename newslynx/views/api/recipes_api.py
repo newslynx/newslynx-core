@@ -187,7 +187,6 @@ def create_recipe(user, org):
                     **params)
 
             else:
-                print "HEREREREERERE"
                 for k, v in params.items():
                     setattr(m, k, v)
 
