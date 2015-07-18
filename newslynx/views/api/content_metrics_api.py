@@ -72,8 +72,24 @@ def get_content_timeseries(user, org, content_item_id):
     )
 
     q = QueryContentMetricTimeseries(org, [content_item_id], **kw)
-    print q.query
-    return jsonify(list(q.execute()))
+    data = list(q.execute())
+
+    # rudimentary select for now.
+    # TODO: put this in the query.
+    clean = []
+    for row in data:
+        clean_row = {}
+        if len(exclude):
+            for k in exclude:
+                row.pop(k, None)
+        if len(select) and select != "*":
+            for k in select:
+                clean_row[k] = row.pop(k)
+            clean.append(clean_row)
+        else:
+            clean.append(row)
+
+    return jsonify(clean)
 
 
 @bp.route('/api/v1/content/<content_item_id>/timeseries', methods=['POST'])

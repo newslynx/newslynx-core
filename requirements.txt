@@ -59,6 +59,7 @@ pillow
 pyasn1==0.1.7
 rq
 praw
+facepy
 colorama
 twython
 requests_toolbelt

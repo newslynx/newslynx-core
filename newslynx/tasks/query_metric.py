@@ -336,7 +336,7 @@ class TSQuery(object):
         sel_id_col = copy.copy(agg_id_col)
         agg_order_by = ",{0}".format(self.id_col)
 
-        # if we're ignoring the date, we need to get 
+        # if we're ignoring the date, we need to get
         # change these commas
         if not self.unit:
             sel_id_col += ","
