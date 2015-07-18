@@ -72,6 +72,7 @@ def get_content_timeseries(user, org, content_item_id):
     )
 
     q = QueryContentMetricTimeseries(org, [content_item_id], **kw)
+    print q.query
     return jsonify(list(q.execute()))
 
 

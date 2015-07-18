@@ -333,7 +333,7 @@ class TSQuery(object):
         """
         # group by ID ?
         agg_id_col = "{0},".format(self.id_col)
-        sel_id_col = agg_id_col.replace(',', '')
+        sel_id_col = copy.copy(agg_id_col)
         agg_order_by = ",{0}".format(self.id_col)
 
         # if we're ignoring the date, we need to get 
