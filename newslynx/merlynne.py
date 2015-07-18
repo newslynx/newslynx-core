@@ -137,17 +137,16 @@ def run_sous_chef(sous_chef_path, recipe_id, kw_key):
         return True
 
     except Exception as e:
-        
+
         # always delete the kwargs.
         rds.delete(kw_key)
-        if kw.get('passthrough', False):
-            raise MerlynneError(format_exc())
-        db.session.rollback()
-        recipe.status = "error"
-        recipe.traceback = format_exc()
-        recipe.last_run = dates.now()
-        db.session.add(recipe)
-        db.session.commit()
+        if not kw.get('passthrough', False):
+            db.session.rollback()
+            recipe.status = "error"
+            recipe.traceback = format_exc()
+            recipe.last_run = dates.now()
+            db.session.add(recipe)
+            db.session.commit()
         return MerlynneError(format_exc())
 
 

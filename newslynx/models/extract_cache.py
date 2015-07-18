@@ -40,11 +40,8 @@ class ExtractCache(Cache):
         Standardize + cache a raw url
         returning it's standardized url + global bitly url.
         """
-        return self._extract(url, type)
-
-    # a lookup of content types to extractors
-    def _extract(self, url, type=None):
         return article.extract(url, type=type)
+
 
 class ThumbnailCache(Cache):
 

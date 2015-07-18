@@ -177,12 +177,12 @@ class Twitter(object):
                 time.sleep(wait)
                 wait *= backoff
 
-            # timeout
-            now = time.time()
-            if now - t0 > timeout:
-                err_msg = "Timing out beacause of {0}".format(e.message)
-                raise Exeception(err_msg)
-
+                # timeout
+                now = time.time()
+                if now - t0 > timeout:
+                    err_msg = "Timing out beacause of {0}"\
+                              .format(e.message)
+                    raise Exception(err_msg)
         return tweets
 
 
@@ -242,12 +242,7 @@ class TwitterEvent(object):
 
     @property
     def links(self):
-        candidates = uniq([u['expanded_url']
-                           for u in self._entities.get('urls', [])])
-        urls = []
-        for c in candidates:
-            urls.append(url.prepare(c, expand=True, canonicalize=True))
-        return uniq(urls)
+        return uniq([u['expanded_url'] for u in self._entities.get('urls', [])])
 
     @property
     def meta(self):

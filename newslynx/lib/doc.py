@@ -16,38 +16,40 @@ OUTPUT_FORMATS = list(_d.OUTPUT_FORMATS)
 
 # TODO: fill this in.
 FORMAT_TO_MIMETYPE = {
-    'native':'',
-    'html':'text/html',
+    'native': '',
+    'html': 'text/html',
     'pdf': 'application/pdf',
-    'html+lhs':'',
-    's5':'',
-    'slidy':'',
-    'docbook':'',
-    'opendocument':'application/vnd.oasis.opendocument.text',
-    'odt':'application/vnd.oasis.opendocument.text',
-    'latex':'',
-    'latex+lhs':'',
-    'context':'',
-    'texinfo':'',
-    'man':'',
-    'markdown':'text/x-markdown; charset=UTF-8',
-    'markdown+lhs':'text/x-markdown; charset=UTF-8',
-    'plain':'text/plain',
-    'rst':'',
-    'rst+lhs':'',
-    'mediawiki':'',
-    'rtf':'text/rtf',
-    'markdown_github':'text/x-markdown; charset=UTF-8'
+    'html+lhs': '',
+    's5': '',
+    'slidy': '',
+    'docbook': '',
+    'opendocument': 'application/vnd.oasis.opendocument.text',
+    'odt': 'application/vnd.oasis.opendocument.text',
+    'latex': '',
+    'latex+lhs': '',
+    'context': '',
+    'texinfo': '',
+    'man': '',
+    'markdown': 'text/x-markdown; charset=UTF-8',
+    'markdown+lhs': 'text/x-markdown; charset=UTF-8',
+    'plain': 'text/plain',
+    'rst': '',
+    'rst+lhs': '',
+    'mediawiki': '',
+    'rtf': 'text/rtf',
+    'markdown_github': 'text/x-markdown; charset=UTF-8'
 }
+
 
 def convert_response(contents, from_, to_):
     """
     Convert a document and return a properly formatted response.
-    """ 
+    """
     contents = convert(contents, from_, to_)
     resp = Response(contents)
     resp.headers['Content-Type'] = FORMAT_TO_MIMETYPE.get(to_, 'text/plain')
     return resp
+
 
 def convert(contents, from_, to_):
     """
@@ -71,10 +73,10 @@ def convert(contents, from_, to_):
     if from_ not in INPUT_FORMATS:
         raise Exception('{} is not an avaliable input format.'.format(from_))
     setattr(d, from_, contents)
-    
+
     if to_ not in OUTPUT_FORMATS and to_ not in FILE_FORMATS:
         raise Exception('{} is not an available output format.'.format(to_))
-    
+
     # convert files
     if to_ in FILE_FORMATS:
         contents = None
@@ -103,9 +105,9 @@ def convert_file(d, from_, to_):
     """
     Convert via tempfile. Robust to errors + tempfile leakage.
     """
-    tempfile = NamedTemporaryFile(mode="wb", 
-        suffix=".{}".format(to_), delete=False)
-    
+    tempfile = NamedTemporaryFile(mode="wb",
+                                  suffix=".{}".format(to_), delete=False)
+
     try:
         output_file = d.to_file(tempfile.name)
     except Exception as e:
@@ -114,18 +116,17 @@ def convert_file(d, from_, to_):
         except OSError:
             pass
         raise Exception('Conversion failed: {}'.format(e.message))
-    
+
     if not output_file:
         try:
             os.remove(tempfile.name)
         except OSError:
             pass
         raise Exception('Conversion failed: No output from pandoc')
-    
+
     contents = open(output_file).read()
     try:
         os.remove(output_file)
     except OSError:
         pass
     return contents
-
