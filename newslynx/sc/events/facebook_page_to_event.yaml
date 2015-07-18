@@ -9,6 +9,7 @@ option_order:
     - description
     - page_name
     - search_query
+    - must_link
     - schedule_by
     - crontab
     - minutes

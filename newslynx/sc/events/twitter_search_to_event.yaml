@@ -8,8 +8,10 @@ option_order:
     - slug
     - description
     - api_query
+    - search_query
     - result_type
     - min_followers
+    - must_link
     - schedule_by
     - crontab
     - minutes

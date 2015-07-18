@@ -68,6 +68,7 @@
     minutes: 60
 
 - sous_chef: reddit-search-content-item-links-to-event
+  name: Search Reddit for content links and create events.
   status: uninitialized
   options:
     must_link: true
