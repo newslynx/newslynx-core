@@ -58,9 +58,8 @@ options:
             description: The query we use for additional filtration on text and urls.
 
     must_link:
-        input_type: radio
+        input_type: checkbox-single
         input_options:
-            - true
             - false
         value_types:
             - boolean

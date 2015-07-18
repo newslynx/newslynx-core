@@ -130,6 +130,7 @@ definitions:
                     - radio
                     - select
                     - checkbox
+                    - checkbox-single
                     - number
                     - datepicker
                     - text

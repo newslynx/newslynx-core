@@ -497,7 +497,7 @@ def create_content(user, org):
     req_data = request_data()
     extract = arg_bool('extract', default=True)
     recipe_id = arg_int('recipe_id', default=None)
-    
+
     content = load_data.content(
         req_data,
         org_id=org.id,
@@ -505,8 +505,7 @@ def create_content(user, org):
         extract=extract,
         queued=False)
     if len(content) == 1:
-
-        content  = content[0]
+        content = content[0]
     return jsonify(content)
 
 
@@ -520,7 +519,7 @@ def bulk_create_content(user, org):
     req_data = request_data()
     extract = arg_bool('extract', default=True)
     recipe_id = arg_int('recipe_id', default=None)
-    
+
     job_id = load_data.content(
         req_data,
         org_id=org.id,

@@ -11,16 +11,17 @@ from newslynx.tasks.query_metric import QueryContentMetricTimeseries
 from newslynx.models import Org
 
 
-def content_timeseries_to_summary(org, content_item_ids, num_hours=24):
+def content_timeseries_to_summary(org, content_item_ids=[], num_hours=24):
     """
     Rollup content-timseries metrics into summaries.
-    Optimize this query by only updating content items 
+    Optimize this query by only updating content items
     which have had updates to their metrics in the last X hours.
     """
 
     # just use this to generate a giant timeseries select with computed
     # metrics.
-    content_item_ids = org.content_item_ids
+    if not len(content_item_ids):
+        content_item_ids = org.content_item_ids
     if not len(content_item_ids):
         raise RequestError('You must have content items to run this method.')
 
@@ -75,6 +76,9 @@ def event_tags_to_summary(org, content_item_ids=[]):
     """
     if not isinstance(content_item_ids, list):
         content_item_ids = [content_item_ids]
+
+    if not len(content_item_ids):
+        content_item_ids = org.content_item_ids
 
     # build up list of metrics to compute
     event_tag_metrics = ['total_events', 'total_event_tags']

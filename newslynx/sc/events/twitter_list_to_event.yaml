@@ -61,9 +61,8 @@ options:
             placeholder: "~fracking | drilling"
 
     must_link:
-        input_type: radio
+        input_type: checkbox-single
         input_options:
-            - true
             - false
         value_types:
             - boolean

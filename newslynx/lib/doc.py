@@ -8,6 +8,8 @@ from tempfile import NamedTemporaryFile
 from flask import Response
 
 from newslynx.lib.pkg.pandoc import Document
+from newslynx.exc import RequestError
+from newslynx.settings import PANDOC_PATH
 
 _d = Document()
 FILE_FORMATS = ['pdf', 'odt']
@@ -55,6 +57,10 @@ def convert(contents, from_, to_):
     """
     Full interface to pandoc.
     """
+    if not os.path.exists(PANDOC_PATH):
+        raise RequestError(
+            'Pandoc is not installed or `pandoc_path` is improperly configured.')
+
     # accept long/shorthand
     if from_ == "md":
         from_ = "markdown"
