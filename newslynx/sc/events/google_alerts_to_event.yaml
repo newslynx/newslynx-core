@@ -1,0 +1,93 @@
+name: Google Alerts to Event
+slug: google-alert-to-event
+description: Extracts events from a google alerts RSS feed.
+runs: newslynx.sc.events.google_alerts.Feed
+creates: events
+option_order:
+    - name
+    - slug
+    - description
+    - feed_url
+    - must_link
+    - schedule_by
+    - crontab
+    - minutes
+    - time_of_day
+
+options:
+
+    # custom options
+    feed_url:
+        input_type: text
+        value_types:
+            - url
+        required: true
+        help:
+            placeholder: https://www.google.com/alerts/feeds/00367260968078900046/16254861555705381303
+            description: An RSS Feed URL for a Google Alert
+            link: https://www.google.com/alerts
+
+    must_link:
+        input_type: radio
+        input_options:
+            - true
+            - false
+        value_types:
+            - boolean
+        default: false
+        required: false
+        help:
+            placeholder: "false"
+            description: Only create an event if there is a link to an existing content item.
+
+    event_status:
+        input_type: select
+        input_options:
+            - pending
+            - approved
+        value_types: 
+            - string
+        default: pending
+        help:
+            placeholder: "pending"
+
+    set_event_title:
+        input_type: text
+        value_types: 
+            - string
+        default: null
+        help:
+            placeholder: "Promotion Event"
+
+    set_event_description:
+        input_type: paragraph
+        value_types: 
+            - string
+        default: null
+
+    set_event_tag_ids:
+        input_type: checkbox
+        input_options: []
+        accepts_list: true 
+        value_types:
+            - string 
+            - numeric 
+        default: []
+        help:
+            description: |
+                A list of Tag IDs or slugs to automatically
+                apply to events created by this recipe.
+            placeholder: "pending"
+
+    set_event_content_items:
+        input_type: search
+        input_options: []
+        accepts_list: true 
+        value_types:
+            - json
+        default: []
+        help:
+            description: |
+                A list of Content Item IDs and Titles to automatically
+                apply to events created by this Recipe.
+            placeholder: "Search by article title..."

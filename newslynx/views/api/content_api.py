@@ -4,6 +4,7 @@ from copy import copy
 
 from flask import Blueprint
 
+from sqlalchemy import distinct
 from sqlalchemy.types import Numeric
 from newslynx.core import db
 from newslynx.exc import NotFoundError

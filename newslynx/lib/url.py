@@ -80,12 +80,12 @@ def prepare(url, source=None, canonicalize=True, expand=True, keep_params=('id',
     # reconcile embeds:
     url = reconcile_embed(url)
 
-    # check for redirects / non absolute urls
+    # reconcile redirects
+    url = redirect_back(url, source)
+
+    # check for non absolute urls.
     if source:
         source_domain = get_domain(source)
-
-        # reconcile redirects
-        url = redirect_back(url, source_domain)
 
         # if the domain is in the source, attempt to absolutify it
         if source_domain in url:
@@ -628,7 +628,7 @@ def remove_args(url, keep_params, frags=False):
     return urlunsplit(parsed[:3] + (filtered_query,) + frag)
 
 
-def redirect_back(url, source_domain=None):
+def redirect_back(url, source=None):
     """
     Some sites like Pinterest have api's that cause news
     args to direct to their site with the real news url as a
@@ -637,12 +637,15 @@ def redirect_back(url, source_domain=None):
     domain = get_domain(url)
     query = get_query_string(url)
 
-    # If our url is even from a remotely similar domain or
-    # sub domain, we don't need to redirect.
-    if source_domain in domain or domain in source_domain:
-        return url
+    if source:
+        source_domain = get_domain(source)
+        # If our url is even from a remotely similar domain or
+        # sub domain, we don't need to redirect.
+        if source_domain in domain or domain in source_domain:
+            return url
 
     query_item = parse_qs(query)
+
     for k in REDIRECT_QUERY_PARAMS:
         if query_item.get(k):
             return query_item[k][0]

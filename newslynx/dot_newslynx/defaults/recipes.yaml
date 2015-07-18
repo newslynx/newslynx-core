@@ -76,6 +76,12 @@
     schedule_by: minutes
     minutes: 15
 
+- sous_chef: google-alert-to-event
+  status: uninitialized
+  options:
+    schedule_by: minutes
+    minutes: 30
+
 ## CONTENT METRICS
 
 - sous_chef: google-analytics-to-content-timeseries

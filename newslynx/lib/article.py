@@ -102,14 +102,14 @@ def extract(source_url, **kw):
                     for a in data['authors']
                 ]
 
-        # # get links from raw_html + content
-        # links = [u for u in url.from_any(data['body']) if source_url not in u]
-        # for u in url.from_any(raw_html, source=source_url):
-        #     if u not in links and (u != source_url or not u.startswith(source_url)):
-        #         links.append(u)
+        # get links from raw_html + content
+        links = [u for u in url.from_any(data['body']) if source_url not in u]
+        for u in url.from_any(raw_html, source=source_url):
+            if u not in links and (u != source_url or not u.startswith(source_url)):
+                links.append(u)
 
-        # # split out internal / external links / article links
-        # data['links'] = url.categorize_links(links, domain)
+        # split out internal / external links / article links
+        data['links'] = links
 
     return data
 
