@@ -129,6 +129,8 @@ def get(_u, **params):
     to ISO-8859-1 if it doesn't find one. This results in incorrect character
     encoding in a lot of cases.
     """
+    if not _u:
+        return None
     session = gen_session()
     html = None
     response = session.get(

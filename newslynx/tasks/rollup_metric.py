@@ -1,3 +1,6 @@
+"""
+Query logic for rollingup timeseries metrics => summary metrics.
+"""
 from datetime import timedelta
 
 from newslynx.lib.serialize import obj_to_json
@@ -11,8 +14,8 @@ from newslynx.models import Org
 def content_timeseries_to_summary(org, content_item_ids, num_hours=24):
     """
     Rollup content-timseries metrics into summaries.
-    Optimize this query by only updating content items whose
-    timeseries have been updated in last X hours.
+    Optimize this query by only updating content items 
+    which have had updates to their metrics in the last X hours.
     """
 
     # just use this to generate a giant timeseries select with computed

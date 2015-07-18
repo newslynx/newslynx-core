@@ -4,7 +4,6 @@ from datetime import datetime
 import time
 
 from praw import Reddit
-from praw.handlers import MultiprocessHandler
 
 from newslynx.lib import dates
 from newslynx.lib import url
@@ -25,13 +24,13 @@ class SCRedditEvent(SousChef):
         """
         self.lookup = defaultdict(list)
         for c in self.api.orgs.simple_content():
-            self.lookup[c['url']].append([c['id']])
+            self.lookup[c['url']].append(c['id'])
 
     def _fmt(self, tweet):
         new = defaultdict()
         for k, v in tweet.iteritems():
             if isinstance(v, dict):
-                new[k] = self._fmt(v)
+                new.update(self._fmt(v))
             elif isinstance(v, list):
                 new[k] = ", ".join([str(vv) for vv in v])
             elif isinstance(v, datetime):
@@ -73,8 +72,8 @@ class SCRedditEvent(SousChef):
                 elif isinstance(c, int):
                     event['content_item_ids'].append(c)
         event['content_item_ids'] = uniq(event['content_item_ids'])
-        # if self.options.get('must_link', False) and not len(event['content_item_ids']):
-        #     return None
+        if self.options.get('must_link', False) and not len(event['content_item_ids']):
+            return None
         return event
 
     def _unescape(self, htmlentities):
@@ -87,19 +86,15 @@ class SCRedditEvent(SousChef):
         else:
             return ''
 
-    def reconcile_urls_from_html(self, html):
+    def reconcile_urls(self, urls):
         """
         Extract and prepare urls from html.
         """
-        urls = list()
-        for u in url.from_html(self._unescape(html)):
+        for u in urls:
             u = url.prepare(u)
             if u:
-                urls.append(u)
-        urls = uniq(urls)
-        for u in urls:
-            for cid in self.lookup.get(url, []):
-                yield cid
+                for cid in self.lookup.get(u, []):
+                    yield cid
 
     def format(self, s):
         """
@@ -108,19 +103,26 @@ class SCRedditEvent(SousChef):
 
         raw = {
             'created': dates.parse_ts(s.created_utc),
-            'title': s.title,
-            'body': s.selftext,
-            'content_item_ids': list(self.reconcile_urls_from_html(s.selftext_html)),
+            'title': '',
+            'body': s.title,
+            'content_item_ids': list(self.reconcile_urls([s.url])),
             'source_id': s.id,
-            'url': s.permalink,
-            'authors': [s.author.name]
+            'url': url.prepare(s.permalink, canonicalize=False, expand=False),
+            'img_url': s.thumbnail,
+            'authors': [s.author.name],
+            'meta': {
+                'ups': s.ups,
+                'comments': len(s.comments),
+                'subreddit': s.subreddit.display_name,
+                'downs': s.downs,
+                'score': s.score
+            }
         }
         return self._format(raw)
 
     def run(self):
         for result in self.fetch():
             e = self.format(result)
-            print "EEE", e
             if e:
                 yield e
 
@@ -135,7 +137,8 @@ class SCRedditEvent(SousChef):
         if len(to_post):
             status_resp = self.api.events.bulk_create(
                 data=to_post,
-                must_link=self.options.get('must_link', False))
+                must_link=self.options.get('must_link', False),
+                recipe_id=self.recipe_id)
             return self.api.jobs.poll(**status_resp)
 
 

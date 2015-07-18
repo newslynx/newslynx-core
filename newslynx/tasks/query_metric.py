@@ -1,3 +1,7 @@
+"""
+Query Logic for timeseries datastores.
+"""
+
 from datetime import datetime, date
 import copy
 

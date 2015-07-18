@@ -1,3 +1,20 @@
+"""
+The messy work of making unstructured data structured.
+Upserting all the things since 2013.
+
+We want ingestion to decrease the amount of labor involved in 
+writing Sous Chefs. As a result we adhere to the following principles:
+
+1. Everything should work as an upsert.
+2. Fields should be exhaustively stanadardized.
+3. Relations between entities should be automatically established.
+4. This all works as quickly and reliably as possible.
+
+As a result we've written a mess of spaghetti code to enforce these principles.
+This file is the dark side of Merlynne.
+
+"""
+
 import gevent
 import gevent.monkey
 gevent.monkey.patch_all()
@@ -63,8 +80,8 @@ def events(data, **kw):
     4. Lookup Tags
     5. Check for duplicates
     6. Perform last three tasks in parallel.
-    7. Upsert all events.
-    8. Upsert all associations.
+    7. Upsert all events. Ignore events without links when the must_link flag is added.
+    8. Upsert all associations. Ignore events without ids because of step above.
     """
 
     # parse kwargs.
@@ -83,7 +100,9 @@ def events(data, **kw):
         data = [data]
 
     # fetch recipe
-    recipe = Recipe.query.filter_by(org_id=org_id, id=recipe_id).first()
+    recipe = Recipe.query\
+        .filter_by(org_id=org_id, id=recipe_id)\
+        .first()
 
     # create ingest objects
     events = {}
@@ -126,7 +145,8 @@ def events(data, **kw):
 
         # clean urls asynchronously.
         for source_id, link in p.imap_unordered(_link, links):
-            meta[source_id]['links'] = []
+            if not 'links' in meta[source_id]:
+                meta[source_id]['links'] = []
             if source_id and link not in meta[source_id]['links']:
                 meta[source_id]['links'].append(link)
 
@@ -147,8 +167,11 @@ def events(data, **kw):
         for source_id, vals in meta.iteritems():
             links = ",".join(
                 ["'%s'" % l for l in uniq(meta[source_id].pop('links', []))])
-            ids = ",".join([str(i) for i in uniq(meta[source_id].pop('content_item_ids', []))])
+            ids = ",".join(
+                [str(i) for i in uniq(meta[source_id].pop('content_item_ids', []))])
             if len(links) or len(ids):
+
+                # THIS IS KIND OF A HACK FOR NOW.
                 if not links:
                     links = "'__null___'"
                 if not ids:
@@ -261,16 +284,15 @@ def events(data, **kw):
             .all()
 
         for e in existing:
-            print "EXISTING ID", id
             for k, v in to_update[e.source_id].items():
                 if k not in ['source_id', 'id', 'org_id', 'recipe_id']:
                     setattr(e, k, v)
             events[e.source_id] = e
 
         # commit
-        for e in events.values():
+        for id, e in events.iteritems():
             # filter out events that don't link.
-            if must_link and len(meta[e.source_id].get('content_item_ids', [])):
+            if must_link and len(meta[id].get('content_item_ids', [])):
                 db.session.add(e)
             if not must_link:
                 db.session.add(e)
@@ -278,7 +300,7 @@ def events(data, **kw):
 
     # upsert the events
     _upsert_events()
-    
+
     # Step 8: Upsert Associations.
 
     def _assc():
@@ -302,7 +324,7 @@ def events(data, **kw):
     # just return true for the queue.
     if queued:
         return True
-    return [e.to_dict() for c in events.values()]
+    return [e.to_dict() for e in events.values()]
 
 
 ########################################
@@ -368,6 +390,10 @@ def content(data, **kw):
     _clean()
 
     # Step 2: Lookup Tags
+    # TODO: These queries should be more intelligently structured
+    # They should be capable of looking up a tag only once and then
+    # reassociate this tag with all associated source ids.
+    # Currently, it replicates this query for every source id.
     def _tags():
         tag_query = """
         SELECT '{0}' AS uniqkey, id FROM tags
@@ -561,9 +587,9 @@ def content(data, **kw):
                 author_args.append((ci.id, aid))
         _upsert_associations('upsert_content_items_tags', tag_args)
         _upsert_associations('upsert_content_items_authors', author_args)
+        db.session.commit()
 
     _assc()
-    db.session.commit()
     db.session.remove()
     # just return true for the queue.
     if queued:
@@ -583,7 +609,8 @@ def _prepare(obj, requires=[], recipe=None, type='event', org_id=None):
     if type == 'event':
         if 'status' in obj:
             if not obj.get('status', None) in EVENT_STATUSES:
-                raise RequestError('Invalid event status: {status}'.format(**obj))
+                raise RequestError(
+                    'Invalid event status: {status}'.format(**obj))
             if obj['status'] == 'deleted':
                 raise RequestError(
                     'You cannot create an Event with status of "deleted."')
@@ -591,7 +618,8 @@ def _prepare(obj, requires=[], recipe=None, type='event', org_id=None):
     # validate type
     if type == 'content_item':
         if not obj.get('type', None) in CONTENT_ITEM_TYPES:
-            raise RequestError('Invalid content item type: {type}'.format(**obj))
+            raise RequestError(
+                'Invalid content item type: {type}'.format(**obj))
 
     # get rid of ``id`` if it somehow got in here.
     obj.pop('id', None)
@@ -637,7 +665,8 @@ def _provenance(obj, recipe, type='event'):
         obj['recipe_id'] = None
 
         if type == 'event':
-            obj['source_id'] = "manual:{}".format(obj.get('source_id', gen_uuid()))
+            obj['source_id'] = "manual:{}".format(
+                obj.get('source_id', gen_uuid()))
 
     else:
         if type == 'event':
@@ -731,6 +760,7 @@ def _prepare_thumbnail(o, field):
     cache_response = thumbnail_cache.get(u)
     return cache_response.value
 
+
 def _check_requires(o, requires, type='Event'):
     """
     Check for presence of required fields.
@@ -741,6 +771,7 @@ def _check_requires(o, requires, type='Event'):
             raise RequestError(
                 "Missing '{}'. An {} Requires {}"
                 .format(k, type, requires))
+
 
 def _split_meta(obj, cols):
     """
@@ -976,7 +1007,7 @@ def _prepare_metric_date(obj):
         ds = obj.pop('datetime')
         dt = dates.parse_iso(ds, enforce_tz=True)
         return dates.floor(dt, unit=u, value=v).isoformat()
- 
+
 
 def _prepare_metrics(obj, metrics_lookup):
     """

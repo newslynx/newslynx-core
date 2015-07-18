@@ -1,5 +1,5 @@
 """
-Logging Configurations
+Logging Configurations and some custom logging classes.
 """
 import logging
 import sys
@@ -50,7 +50,7 @@ class ColorLog(object):
     A colored logger.
     """
     def __init__(self, **kw):
-        self.date_format  = kw.get('date_format', '%H:%M:%S')
+        self.date_format = kw.get('date_format', '%H:%M:%S')
         self._now = kw.get('now', datetime.now)
 
     @property
@@ -93,6 +93,7 @@ class ColorLog(object):
         if kw['tb']:
             tb = format_exc()
             self.warning(tb, **kw)
+
 
 class StdLog(ColorLog):
     """

@@ -74,6 +74,9 @@ def prepare(url, source=None, canonicalize=True, expand=True, keep_params=('id',
 
     All urls that enter `merlynne` are first treated with this function.
     """
+    if not url or url == "":
+        return None
+
     # reconcile embeds:
     url = reconcile_embed(url)
 

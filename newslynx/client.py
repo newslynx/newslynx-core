@@ -1,3 +1,8 @@
+"""
+A comprehensize python client for the NewsLynx API. 
+This exists inside the repository because SousChefs utilize it.
+"""
+
 import os
 import copy
 from inspect import isgenerator
@@ -539,7 +544,7 @@ class Events(BaseClient):
 
     def create(self, **kw):
         kw, params = self._split_auth_params_from_data(
-            kw, kw_incl=['must_link'])
+            kw, kw_incl=['must_link', 'recipe_id'])
         url = self._format_url('events')
         return self._request('POST', url, params=params, data=kw)
 
@@ -548,7 +553,7 @@ class Events(BaseClient):
         Bulk create events.
         """
         kw, params = self._split_auth_params_from_data(
-            kw, kw_incl=['must_link'])
+            kw, kw_incl=['must_link', 'recipe_id'])
         url = self._format_url('events', 'bulk')
         return self._request('POST', url, params=params, data=data)
 
@@ -623,7 +628,7 @@ class Content(BaseClient):
         """
         Create a content item.
         """
-        kw, params = self._split_auth_params_from_data(kw, kw_incl=['extract'])
+        kw, params = self._split_auth_params_from_data(kw, kw_incl=['extract', 'recipe_id'])
         url = self._format_url('content')
         return self._request('POST', url, params=params, data=kw)
 
@@ -631,9 +636,8 @@ class Content(BaseClient):
         """
         Bulk create content items.
         """
-        kw, params = self._split_auth_params_from_data(kw, kw_incl=['extract'])
         url = self._format_url('content', 'bulk')
-        return self._request('POST', url, params=params, data=data)
+        return self._request('POST', url, params=kw, data=data)
 
     def update(self, id=None, **kw):
         """
@@ -1004,54 +1008,6 @@ class Templates(BaseClient):
         return self._request('DELETE', url, params=kw)
 
 
-# TODO:
-
-class Reports(BaseClient):
-
-    def list(self, **kw):
-        """
-        List reports for an organization.
-        """
-
-        url = self._format_url('reports')
-        return self._request('GET', url, params=kw)
-
-    def get(self, id, **kw):
-        """
-        Get a particular report. TODO handle rendering.
-        """
-        url = self._format_url('reports', id)
-        return self._request('GET', url, **kw)
-
-    def create(self, **kw):
-        """
-        Create a report
-        """
-        # jsonify value
-        kw, params = self._split_auth_params_from_data(kw)
-        # TODO handle report files.
-        url = self._format_url('reports')
-        return self._request('POST', url, data=kw, params=params)
-
-    def update(self, id, **kw):
-        """
-        Update a report.
-        """
-
-        kw, params = self._split_auth_params_from_data(kw)
-        # TODO handle report files.
-        url = self._format_url('reports', id)
-        return self._request('PUT', url, data=kw, params=params)
-
-    def delete(self, id, **kw):
-        """
-        Delete a report. Cascades all reports.
-        """
-
-        url = self._format_url('reports', id)
-        return self._request('DELETE', url, params=kw)
-
-
 class Reports(BaseClient):
 
     def list(self, **kw):
@@ -1100,7 +1056,7 @@ class Reports(BaseClient):
 
 class Auths(BaseClient):
     """
-    A hacky class for granting permissions.
+    For now, a helpful tool for granting permissions.
     """
 
     def grant(self, service, **kw):

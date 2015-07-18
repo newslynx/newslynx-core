@@ -27,7 +27,7 @@ class Article(SousChef):
         domains = self.org.get('domains', [''])
         if feed_domain:
             domains.append(feed_domain)
-      
+
         # iterate through RSS entries.
         for article in rss.get_entries(feed_url, domains):
             article['type'] = 'article'  # set this type as article.
@@ -48,11 +48,8 @@ class Article(SousChef):
                 yield article
 
     def load(self, data):
-        to_post = []
-        for d in data:
-            d['recipe_id'] = self.recipe_id
-            to_post.append(d)
-        status_resp = self.api.content.bulk_create(to_post)
+        status_resp = self.api.content.bulk_create(
+            data=list(data), recipe_id=self.recipe_id)
         return self.api.jobs.poll(**status_resp)
 
     def teardown(self):

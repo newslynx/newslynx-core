@@ -1,7 +1,6 @@
-# gevent patching
-# import sys
-# if 'threading' in sys.modules:
-#     sys.modules.pop('threading')
+"""
+Objects that we need access to throughout the project.
+"""
 
 import gevent
 from gevent.monkey import patch_all
@@ -69,10 +68,10 @@ try:
     db = SQLAlchemy(app, session_options={'query_cls': SearchQuery})
     db.engine.pool._use_threadlocal = True
     engine = create_engine(settings.SQLALCHEMY_DATABASE_URI,
-        strategy='threadlocal',
-        max_overflow=settings.SQLALCHEMY_POOL_MAX_OVERFLOW,
-        pool_size=settings.SQLALCHEMY_POOL_SIZE
-    )
+                           strategy='threadlocal',
+                           max_overflow=settings.SQLALCHEMY_POOL_MAX_OVERFLOW,
+                           pool_size=settings.SQLALCHEMY_POOL_SIZE
+                           )
 
     # session for interactions outside of app context.
     def gen_session():

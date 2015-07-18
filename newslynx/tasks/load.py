@@ -1,3 +1,10 @@
+"""
+Abstract wrappers around ingest modules.
+
+Allows for submitting ingest jobs to a queue and
+chunking execution.
+"""
+
 import gevent
 import gevent.monkey
 gevent.monkey.patch_all()
@@ -29,7 +36,7 @@ def content(data, **kw):
     """
     kw.setdefault('q_timeout', 300)
     kw.setdefault('q_max_workers', )
-    kw.setdefault('q_chunk_size', 100)
+    kw.setdefault('q_chunk_size', 50)
     kw.setdefault('q_src', 'content')
     return bulkload(data, **kw)
 
@@ -40,7 +47,7 @@ def events(data, **kw):
     """
     kw.setdefault('q_timeout', 500)
     kw.setdefault('q_max_workers', )
-    kw.setdefault('q_chunk_size', 50)
+    kw.setdefault('q_chunk_size', 100)
     kw.setdefault('q_src', 'events')
     return bulkload(data, **kw)
 
@@ -181,7 +188,7 @@ def bulkworker(job_id, **qkw):
 
     except Exception:
         tb = format_exc()
-        raise RequestError('An Error Ocurred while running: {}'.format(tb))
+        raise RequestError('An Error Ocurred while running {}:\n{}'.format(job_id, tb))
 
     except JobTimeoutException:
         end = time.time()
@@ -192,7 +199,7 @@ def bulkworker(job_id, **qkw):
 
 def chunk_list(l, n=MAX_CHUNK_SIZE):
     """
-        Yield successive n-sized chunks from l.
+    Yield successive n-sized chunks from l.
     """
     for i in xrange(0, len(l), n):
         yield l[i:i+n]

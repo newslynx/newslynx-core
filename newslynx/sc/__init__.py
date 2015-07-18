@@ -58,7 +58,7 @@ class SousChef(object):
         return True
 
     def run(self):
-        raise NotImplemented
+        raise NotImplemented('A SousChef requires a `run` method.')
 
     def load(self, data):
         return data

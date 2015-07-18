@@ -16,7 +16,7 @@
     options:
       must_link: true
       event_status: approved
-      set_event_title: "Tweet from {authors} at {created}"
+      set_event_title: "Tweet from {authors} on {created}"
       set_event_tag_ids: ['promotion-internal']
       min_followers: 0
       schedule_by: minutes
@@ -29,7 +29,7 @@
     options:
       must_link: true
       event_status: approved
-      set_event_title: "Tweet from {authors} at {created}"
+      set_event_title: "Tweet from {authors} on {created}"
       set_event_tag_ids: ['promotion-internal']
       schedule_by: minutes
       minutes: 30
@@ -54,7 +54,7 @@
     options:
       must_link: true
       event_status: approved
-      set_event_title: "Tweet from {authors} at {created}"
+      set_event_title: "Tweet from {authors} on {created}"
       schedule_by: minutes
       minutes: 15
 
@@ -63,12 +63,9 @@
     options:
       must_link: true
       event_status: pending
-      set_event_title: "Post from {authors} at {created}"
+      set_event_title: "Post from {authors} to /r/{subreddit} on {created}"
       schedule_by: minutes
       minutes: 15
-
-
-
 
   ## CONTENT METRICS
 

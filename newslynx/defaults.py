@@ -2,6 +2,7 @@
 Default configurations that can be overriden by
 ~/.newslynx/config.yaml or ENV variables.
 """
+
 import os
 from newslynx.util import here
 
@@ -17,8 +18,8 @@ _DEFAULT_DEFAULTS = here(__file__, "dot_newslynx/defaults/")
 
 DEFAULT_TAGS = os.path.expanduser('~/.newslynx/defaults/tags.yaml')
 DEFAULT_RECIPES = os.path.expanduser('~/.newslynx/defaults/recipes.yaml')
-CONFIG_FILE = os.getenv('NEWSLYNX_CONFIG_FILE', 
-	                    os.path.expanduser('~/.newslynx/config.yaml'))
+CONFIG_FILE = os.getenv('NEWSLYNX_CONFIG_FILE',
+                        os.path.expanduser('~/.newslynx/config.yaml'))
 
 # app configurations #
 API_URL = "http://localhost:5000"
@@ -88,5 +89,3 @@ REDDIT_USER_AGENT = 'Newslynx'
 # Metrics Timeseries Rollup
 METRICS_MIN_TIMESERIES_UNIT = 'hour'
 METRICS_MIN_TIMESERIES_VALUE = 1
-
-

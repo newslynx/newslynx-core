@@ -1,4 +1,10 @@
-from gevent.pool import Pool 
+"""
+This module exists for generating comparison queries.
+"""
+import gevent
+import gevent.monkey
+gevent.monkey.patch_all()
+from gevent.pool import Pool
 
 from newslynx.util import gen_uuid
 from newslynx.core import db
@@ -109,7 +115,7 @@ class ContentComparison(object):
     
     def execute(self):
         """
-        pooled execution.
+        TODO: pooled execution.
         """
         for query in self.queries:
             results = ResultIter(db.session.execute(query))

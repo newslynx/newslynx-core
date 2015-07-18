@@ -39,6 +39,8 @@ def is_html(htmlstring):
     """
     Detect whether a string is html or not.
     """
+    if not htmlstring:
+        return False
     return lxml.html.fromstring(htmlstring).find('.//*') is not None
 
 

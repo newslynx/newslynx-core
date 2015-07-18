@@ -1,3 +1,6 @@
+"""
+Merlynne is the boss. She runs sous chefs in a task queue. What.
+"""
 import importlib
 from traceback import format_exc
 from inspect import isgenerator
@@ -20,7 +23,7 @@ log = logging.getLogger(__name__)
 class Merlynne(object):
 
     """
-    Merlynne is the boss.
+    Dont f* with Merylnne.
     """
     __module__ = 'newslynx.merlynne'
 

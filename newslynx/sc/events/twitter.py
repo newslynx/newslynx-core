@@ -1,3 +1,6 @@
+"""
+Twitter => Events.
+"""
 from collections import defaultdict
 from datetime import datetime
 
@@ -20,7 +23,7 @@ class SCTwitterEvent(SousChef):
         new = defaultdict()
         for k, v in tweet.iteritems():
             if isinstance(v, dict):
-                new[k] = self._fmt(v)
+                new.update(self._fmt(v))
             elif isinstance(v, list):
                 new[k] = ", ".join([str(vv) for vv in v])
             elif isinstance(v, datetime):
@@ -41,7 +44,7 @@ class SCTwitterEvent(SousChef):
         """
         Perform the API Query.
         """
-        raise NotImplemented
+        raise NotImplemented('You must implement a fetch method.')
 
     def filter(self, tweet):
         """
@@ -150,12 +153,12 @@ class SCTwitterEvent(SousChef):
         to_post = []
         for d in data:
             self.ids.append(int(d.get('source_id', 0)))
-            d['recipe_id'] = self.recipe_id
             to_post.append(d)
         if len(to_post):
             status_resp = self.api.events.bulk_create(
                 data=to_post,
-                must_link=self.options.get('must_link'))
+                must_link=self.options.get('must_link'),
+                recipe_id=self.recipe_id)
             return self.api.jobs.poll(**status_resp)
 
     def teardown(self):

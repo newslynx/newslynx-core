@@ -13,7 +13,6 @@ from newslynx.lib import url
 from newslynx.lib import html
 from newslynx.lib import meta
 from newslynx.lib import author
-from newslynx.lib import image
 from newslynx.lib import embed
 
 try:

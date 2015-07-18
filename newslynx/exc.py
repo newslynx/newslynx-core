@@ -1,3 +1,7 @@
+"""
+Everything errors.
+"""
+
 
 # API Errors #
 class JobError(Exception):

@@ -1,3 +1,11 @@
+"""
+How many of this by that.
+
+These functions all service the event and content search endpoints and are
+designed to be executed concurrently in greenlets 
+(Hence the repetitive db.session.remove())
+"""
+
 from collections import defaultdict, Counter
 
 from sqlalchemy import func, desc
