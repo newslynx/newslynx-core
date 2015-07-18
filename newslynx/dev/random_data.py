@@ -212,20 +212,14 @@ def gen_authors(org):
 def gen_events(org, recipes, impact_tags, content_items, n_events):
     events = []
     for i in xrange(n_events):
-        status = choice(EVENT_STATUSES)
-        provenance = choice(EVENT_PROVENANCES)
         r = choice([r for r in recipes if r.sous_chef.creates == 'events'])
         authors = random_authors(4)
 
-        if provenance == 'manual':
-            prefix = 'manual'
-        else:
-            prefix = r.slug
-
         e = Event(
             org_id=org.id,
+            status=r.to_dict().get('options', {}).get('event_status', 'pending'),
             recipe_id=r.id,
-            source_id="{}:{}".format(prefix, str(uuid.uuid1())),
+            source_id="{}:{}".format(r.slug, str(uuid.uuid1())),
             title=random_text(20),
             description=random_text(100),
             url=random_url(),
@@ -235,8 +229,7 @@ def gen_events(org, recipes, impact_tags, content_items, n_events):
             created=random_date(10, 100),
             updated=random_date(1, 9),
             authors=authors,
-            status=status,
-            provenance=provenance)
+            provenance='recipe')
 
         if 'twitter' in r.slug:
             e.meta = {'followers': random_int(1, 10000)}
@@ -245,9 +238,6 @@ def gen_events(org, recipes, impact_tags, content_items, n_events):
         e.tags.append(t)
         c = choice(content_items)
         e.content_items.append(c)
-        if provenance == 'manual':
-            e.recipe_id = None
-
         db_session.add(e)
         events.append(e)
     db_session.commit()
