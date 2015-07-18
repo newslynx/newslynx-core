@@ -5,6 +5,7 @@ from sqlalchemy_utils.types import TSVectorType
 
 from newslynx.core import db, SearchQuery
 from newslynx.lib import dates
+from newslynx.lib import url
 from newslynx.models import relations
 from newslynx.constants import (
     EVENT_STATUSES, EVENT_PROVENANCES)
@@ -32,6 +33,7 @@ class Event(db.Model):
     provenance = db.Column(
         ENUM(*EVENT_PROVENANCES, name='event_provenance_enum'), index=True)
     url = db.Column(db.Text, index=True)
+    domain = db.Column(db.Text, index=True)
     img_url = db.Column(db.Text)
     thumbnail = db.Column(db.Text)
     created = db.Column(db.DateTime(timezone=True), default=dates.now)
@@ -79,6 +81,7 @@ class Event(db.Model):
         self.status = kw.get('status', 'pending')
         self.provenance = kw.get('provenance', 'recipe')
         self.url = kw.get('url')
+        self.domain = kw.get('domain', url.get_domain(kw.get('url', None)))
         self.img_url = kw.get('img_url')
         self.thumbnail = kw.get('thumbnail')
         self.created = kw.get('created', dates.now())

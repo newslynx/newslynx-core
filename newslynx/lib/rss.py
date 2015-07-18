@@ -268,7 +268,9 @@ class FeedExtractor(object):
             description = None
 
         return {
+            'id': entry.id,
             'url': entry_url,
+            'domain': url.get_domain(entry_url),
             'body':  html.prepare(body, entry_url),
             'title': self.get_title(entry),
             'description': html.prepare(description, entry_url),

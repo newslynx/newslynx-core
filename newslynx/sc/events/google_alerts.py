@@ -1,3 +1,10 @@
+"""
+Google Alerts => Events
+"""
+import gevent.monkey
+gevent.monkey.patch_all()
+from gevent.pool import Pool
+
 import re
 from datetime import datetime
 from collections import defaultdict
@@ -6,6 +13,7 @@ from newslynx.lib import rss
 from newslynx.lib import article
 from newslynx.lib import url
 from newslynx.sc import SousChef
+from newslynx.util import gen_uuid
 
 
 # check google alerts links.
@@ -51,6 +59,28 @@ class Feed(SousChef):
         # set the status.
         obj['status'] = self.options.get('event_status', 'pending')
 
+        # prepare url (these are formatted as redirects).
+        obj['url'] = url.prepare(obj['url'], expand=False, canonicalize=False)
+
+        # ignore bad domains / org's own domains.
+        if self._is_bad_domain(obj['url']):
+            return
+
+        # extract and merge article data.
+        if url.is_article(obj['url']):
+            data = article.extract(obj['url'], type=None)
+            if data:
+                obj.update(data)
+                obj.pop('type', None)
+                obj.pop('site_name', None)
+                obj.pop('favicon', None)
+
+        # set source id:
+        _id = obj.pop('id', obj.get('url', gen_uuid()))
+        if ":" in _id:
+            _id = _id.split(':')[-1]
+        obj['source_id'] = _id
+
         # TODO: Make formatting more elegant.
         if self.options.get('set_event_title', None):
             obj['title'] = self.options.get(
@@ -75,6 +105,10 @@ class Feed(SousChef):
                         obj['content_item_ids'].append(c.get('id'))
                 elif isinstance(c, int):
                     obj['content_item_ids'].append(c)
+        # filter links.
+        if self.options.get('must_link', False) \
+           and not len(obj.get('links', [])):
+            return None
         return obj
 
     def run(self):
@@ -83,28 +117,11 @@ class Feed(SousChef):
         feed_domain = url.get_simple_domain(feed_url)
 
         # iterate through RSS entries.
-        for entry in rss.get_entries(feed_url, [feed_domain]):
-
-            # prepare url (these are formatted as redirects).
-            entry['url'] = url.prepare(entry['url'],
-                                       expand=False, canonicalize=False)
-
-            # ignore bad domains / org's own domains.
-            if self._is_bad_domain(entry['url']):
-                continue
-
-            # extract and merge article data.
-            if url.is_article(entry['url']):
-                data = article.extract(entry['url'], type=None)
-                if data:
-                    entry.update(data)
-                    entry.pop('type', None)
-                    entry.pop('site_name', None)
-                    entry.pop('favicon', None)
-
-            # format and yield.
-            entry = self.format(entry)
-            yield entry
+        entries = rss.get_entries(feed_url, [feed_domain])
+        p = Pool(self.options.get('max_workers', 5))
+        for event in p.imap_unordered(self.format, entries):
+            if event:
+                yield event
 
     def load(self, data):
         """
@@ -114,6 +131,6 @@ class Feed(SousChef):
         if len(to_post):
             status_resp = self.api.events.bulk_create(
                 data=to_post,
-                must_link=self.options.get('must_link'),
+                must_link=self.options.get('must_link', False),
                 recipe_id=self.recipe_id)
             return self.api.jobs.poll(**status_resp)

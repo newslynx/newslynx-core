@@ -27,7 +27,7 @@ def list_sous_chefs(user):
     include_sous_chefs, exclude_sous_chefs = \
         arg_list('sous_chefs', default=[], typ=str, exclusions=True)
     sort_field, direction = arg_sort('sort', default='slug')
-    
+
     # base query
     sous_chef_query = db.session.query(SousChef)
 
