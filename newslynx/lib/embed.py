@@ -7,7 +7,8 @@ already.
 from newslynx.lib import url
 from newslynx.lib.network import get_json
 
-VIDEO_EMBED_FORMAT = '<iframe src="{src}" width="{width}" height="{height}" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen> </iframe>'
+VIDEO_EMBED_FORMAT = \
+'<iframe src="{src}" width="{width}" height="{height}" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen> </iframe>'
 
 def video(u, **kw):
     """

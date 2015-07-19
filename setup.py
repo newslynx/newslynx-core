@@ -24,7 +24,7 @@ setup(
     author='Brian Abelson',
     author_email='brian@newslynx.org',
     url='http://newslynx.org',
-    license='MIT',
+    license='CCSA-4.0',
     packages=find_packages(exclude=['ez_setup', 'examples', 'tests']),
     namespace_packages=['newslynx'],
     package_data={'newslynx': ['sql/*.sql', 'models/*.yaml', 'sc/*/*.yaml', 'views/auth/templates/*.html']},

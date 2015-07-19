@@ -115,9 +115,9 @@ def create_content_item_timeseries(user, org, content_item_id):
         req_data = [req_data]
     data = []
     for row in req_data:
-        row.update( {'content_item_id':c.id})
+        row.update({'content_item_id': c.id})
         data.append(row)
-   
+
    # load.
     ret = load.content_timeseries(
         data,
@@ -176,7 +176,7 @@ def content_metrics_summary(user, org, content_item_id):
     # insert content item id
     req_data['content_item_id'] = content_item_id
 
-    ret = ingest_metric.content_summary(
+    ret = load.content_summary(
         req_data,
         org_id=org.id,
         metrics_lookup=org.content_summary_metrics,
@@ -206,7 +206,7 @@ def bulk_create_content_summary(user, org):
         raise RequestError(
             'You must pass in a content_item_id with each record.')
 
-    job_id = ingest_bulk.content_summary(
+    job_id = load.content_summary(
         req_data,
         org_id=org.id,
         metrics_lookup=org.content_summary_metrics,

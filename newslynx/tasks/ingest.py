@@ -8,7 +8,7 @@ writing Sous Chefs. As a result we adhere to the following principles:
 1. Everything should work as an upsert.
 2. Fields should be exhaustively stanadardized.
 3. Relations between entities should be automatically established.
-4. This all works as quickly and reliably as possible.
+4. This all works quickly, reliably, and concurrently when possible.
 
 As a result we've written a mess of spaghetti code to enforce these principles.
 This file is the dark side of Merlynne.
@@ -54,7 +54,7 @@ url_cache_pool = Pool(settings.URL_CACHE_POOL_SIZE)
 
 def source(data, **kw):
     """
-    Single interface for bulkloaders. 
+    Single interface for bulkloaders.
     Structured this way to aid pickling.
     """
     src = kw.pop('src', None)
@@ -68,6 +68,8 @@ def source(data, **kw):
         'org_timeseries': org_timeseries,
         'org_summary': org_summary
     }
+    if not fx.get(src):
+        raise Exception('No ingest source named "{}" exists'.format(src))
     return fx.get(src)(data, **kw)
 
 
@@ -228,7 +230,7 @@ def events(data, **kw):
                     meta[src_id][k] = []
                 meta[src_id][k].append(row['id'])
 
-     # STEP 5 Check for duplicate events.
+    # STEP 5 Check for duplicate events.
 
     def _dupes():
         # list of source ids.
@@ -385,7 +387,6 @@ def content(data, **kw):
             )
             # split out meta fields
             obj = _split_meta(obj, get_table_columns(ContentItem))
-
             cis[uniqkey] = obj
 
     # this needs to happen syncnhronously.
@@ -489,10 +490,10 @@ def content(data, **kw):
         # if we should create them, do so.
         if len(to_create):
 
-            # create authors + keep track of id relations
+            # create authors + keep track of content relations
             authors_to_ids = dict()
             seen = set()
-            for id, oid, name in to_create:
+            for uniqkey, oid, name in to_create:
                 if name not in seen:
                     authors_to_ids[name] = {}
                     seen.add(name)
@@ -502,8 +503,10 @@ def content(data, **kw):
                 # keep track of ALL ids assoicated with this author.
                 if not 'ids' in authors_to_ids[name]:
                     authors_to_ids[name]['ids'] = []
-                authors_to_ids[name]['ids'].append(id)
-
+                authors_to_ids[name]['ids'].append(uniqkey)
+            
+            # create new authors so we
+            # can access their IDs.
             db.session.commit()
 
             # set author ids back on content item meta
@@ -721,7 +724,6 @@ def _provenance(obj, recipe, type='event'):
 
     else:
         if type == 'event':
-
             # recipe-generated events must pass in a source id
             if 'source_id' not in obj:
                 raise RequestError(
@@ -1050,10 +1052,11 @@ def _prepare_metric_date(obj):
     u = settings.MIN_TIMESERIES_UNIT
     v = settings.MIN_TIMESERIES_VALUE
 
-    # parse datetime.
+    # set current time if no time exists.
     if 'datetime' not in obj:
         return dates.floor_now(unit=u, value=v).isoformat()
 
+    # 
     else:
         ds = obj.pop('datetime')
         dt = dates.parse_iso(ds, enforce_tz=True)

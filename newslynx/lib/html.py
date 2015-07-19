@@ -95,7 +95,8 @@ def get_inner(n):
     Get the innerhtml from a BeautifulSoup element
     """
     # check if its an entire html or has been parsed by beautiful soup
-    if n.find('body'):
-        n = n.find('body')
+    _n = n.find('body')
+    if _n:
+        n = _n
     nodes = [str(x).decode('utf-8', errors='ignore') for x in n.contents]
     return u"".join(nodes)

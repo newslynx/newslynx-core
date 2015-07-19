@@ -17,7 +17,6 @@ from newslynx.lib import author
 from newslynx.lib import html
 from newslynx.lib import url
 from newslynx.lib import article
-from newslynx.lib import network
 from newslynx.lib import image
 from newslynx.util import uniq
 from newslynx.exc import RequestError
@@ -278,12 +277,12 @@ class FeedExtractor(object):
             'authors': self.get_authors(entry),
             'created': self.get_created(entry),
             'img_url': self.get_img_url(entry, body),
-            'links': self.get_links(body, entry_url),
+            'links': self.get_links(body, entry_url)
         }
 
     def run(self):
         """
-        Parse an Rss Feed.
+        Parse an RSS Feed.
         """
         f = feedparser.parse(self.feed_url)
         for entry in f.entries:

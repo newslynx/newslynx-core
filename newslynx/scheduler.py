@@ -281,11 +281,11 @@ class RecipeScheduler:
             if 'reset' in str(id):
                 continue
 
-            if id not in scheduled_recipes or\
-                not scheduled_recipes[id].scheduled or\
+            if id not in scheduled_recipes or \
+                not scheduled_recipes[id].scheduled or \
                 not scheduled_recipes[id].active:
 
-                    self.rm(recipe)
+                self.rm(recipe)
 
             # check for any sign of a change to a recipe.
             elif self.is_updated(recipe, scheduled_recipes[id]):

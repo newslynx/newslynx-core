@@ -22,7 +22,7 @@ class SCGoogleAnalytics(SousChef):
     timeout = 1800
 
     def connect(self):
-
+        self.profiles = []
         tokens = self.auths.get('google-analytics', None)
         properties = tokens.pop('properties', [])
 
@@ -31,7 +31,8 @@ class SCGoogleAnalytics(SousChef):
                 'You must authenticate with google analytics to use this sous chef.')
         if not len(properties):
             raise Exception(
-                'You must specify a list of google analytics properties to track. Try re-authenticating.')
+                'You must specify a list of google analytics properties to track. '
+                'Try re-authenticating.')
 
         # authenticate with accounts
         conn_kw = {
@@ -45,8 +46,6 @@ class SCGoogleAnalytics(SousChef):
             raise Exception('Error connecting to google analytics: {}'
                             .format(e.message))
 
-        profiles = []
-
         # search for configured profiles.
         for account in accounts:
             for prop in account.webproperties:
@@ -57,14 +56,12 @@ class SCGoogleAnalytics(SousChef):
                         if not prof.name == p['profile']:
                             continue
                         if prof not in profiles:
-                            profiles.append(prof)
+                            self.profiles.append(prof)
                             break
 
-        if not len(profiles):
+        if not len(self.profiles):
             raise Exception(
                 'Could not find active profiles for {}'.format(properties))
-
-        return profiles
 
     def setup(self):
         """
@@ -220,7 +217,7 @@ class ContentTimeseries(SCGoogleAnalytics):
         """
 
         # create lookups.
-        self.col_lookup = {k.lower(): v for k, v in self.METRICS.items()}
+        self.col_lookup = {k.lower(): v for  k, v in self.METRICS.items()}
         self.col_lookup.update({k.lower(): v for k, v in self.DIMENSIONS.items()})
 
         # get timezone from profile
@@ -307,6 +304,7 @@ class ContentDomainFacets(SCGoogleAnalytics):
             row['referrer'] = referrer
             row['ref_domain'] = referrer
 
+        # special handling.
         elif 't.co' in referrer:
             row['referrer'] = url.prepare(referrer, expand=False, canonicalize=False)
             row['ref_domain'] = 'twitter'
@@ -378,8 +376,10 @@ class ContentDomainFacets(SCGoogleAnalytics):
                     row[metric].append({'facet': k, 'value': v})
             yield row
 
-
     def load(self, data):
+        """
+        Load 
+        """
         d = list(data)
         status_resp = self.api.content.bulk_create_summary(data=d)
         return self.api.jobs.poll(**status_resp)
@@ -446,8 +446,8 @@ class ContentDeviceSummaries(SCGoogleAnalytics):
                     facets[k] = 0
 
             # populate metrics.
-            for k, v in facets.items():
-                row['ga_pageviews_'+k] = stats.parse_number(v)
+            for k in ['mobile', 'desktop', 'tablet']:
+                row['ga_pageviews_'+k] = stats.parse_number(facets[k])
 
             yield row
 

@@ -21,13 +21,16 @@ option_order:
     - set_event_tag_ids
 options:
     
-    page_name:
+    page_id:
         input_type: text
         value_types:
             - string
         required: true
         help:
             placeholder: propalpatine
+            description: |
+                This is what comes after the "facebook.com/" in the url for your facebook page.
+                Do not include the full URL.
 
     must_link:
         input_type: checkbox-single

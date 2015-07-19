@@ -1,3 +1,9 @@
+"""
+All things related to creating embeds. Just videos for now.
+In all cases we're assuming that the url has been canonicalized
+already.
+"""
+
 import cStringIO
 import base64
 import mimetypes
@@ -56,16 +62,14 @@ def b64_thumbnail_from_url(img_url, **kw):
 
         # fit to a thumbnail
         thumb = ImageOps.fit(image, size, Image.ANTIALIAS)
+        img_buffer = cStringIO.StringIO()
+        thumb.save(img_buffer, format=fmt)
+        img_str = base64.b64encode(img_buffer.getvalue())
+
+        # format + return
+        return "data:image/{};base64,{}".format(fmt, img_str)
     except:
         return None
-
-    # convert to base64
-    img_buffer = cStringIO.StringIO()
-    thumb.save(img_buffer, format=fmt)
-    img_str = base64.b64encode(img_buffer.getvalue())
-
-    # format + return
-    return "data:image/{};base64,{}".format(fmt, img_str)
 
 
 @network.retry(attempts=2)
@@ -74,7 +78,8 @@ def get_url(img_url):
     Fetch an image and detect its filetype
     """
     fmt = None
-    r = requests.get(img_url, **network.get_request_kwargs())
+    session = network.gen_session()
+    r = session.get(img_url, **network.get_request_kwargs())
     mimetype = r.headers.get('content-type', None)
     if mimetype:
         fmt = extension_from_mimetype(mimetype)
@@ -111,13 +116,14 @@ def from_html(htmlstring, source=None):
             if not img_url:
                 continue
 
+            # embeds.
+            if img_url.startswith('//:'):
+                img_url = "http{}".format(img_url)
+
             # only take images with known formats
             fmt = url.is_image(img_url)
             if not fmt:
                 continue
-
-            if img_url.startswith('//:'):
-                img_url = "http{}".format(img_url)
 
             # absolutify images if we know their source.
             if img_url.startswith('/') or not img_url.startswith('http'):

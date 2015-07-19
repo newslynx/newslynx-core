@@ -58,7 +58,8 @@ class Org(db.Model):
     content_items = db.relationship(
         'ContentItem', lazy='dynamic', cascade='all')
     metrics = db.relationship('Metric', lazy='dynamic', cascade='all')
-    recipes = db.relationship('Recipe', lazy='dynamic', cascade='all', 
+    recipes = db.relationship(
+        'Recipe', lazy='dynamic', cascade='all',
         backref=db.backref('org', lazy='joined', uselist=False))
     authors = db.relationship('Author', lazy='dynamic')
     tags = db.relationship('Tag', lazy='dynamic', cascade='all')

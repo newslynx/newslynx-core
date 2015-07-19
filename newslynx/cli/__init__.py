@@ -7,6 +7,7 @@ patch_all()
 
 import sys
 import argparse
+from argparse import RawTextHelpFormatter
 
 from newslynx.cli.common import parse_runtime_args, LOGO
 from newslynx.logs import ColorLog, StdLog
@@ -45,7 +46,7 @@ def run():
     kwargs = {}
     try:
         # create an argparse instance
-        parser = argparse.ArgumentParser(prog='newslynx/nlynx')
+        parser = argparse.ArgumentParser(prog='newslynx/nlynx', formatter_class=RawTextHelpFormatter)
         parser.add_argument('--no-color', dest='no_color', action="store_true",
                             default=False, help='Disable colored logging.')
         parser.add_argument('--no-interactive', dest='no_interactive', action="store_true",

@@ -14,8 +14,8 @@ from twython import Twython
 
 from newslynx import settings
 from newslynx.util import uniq
-from newslynx.lib import url
 from newslynx.lib import embed
+
 
 TWITTER_DATE_FORMAT = '%a %b %d %H:%M:%S +0000 %Y'
 
@@ -31,7 +31,7 @@ class Twitter(object):
     incl_embed = False
 
     default_kws = {
-        'max_id': None,
+        'since_id': None,
         'throttle': 15,
         'count': 200,
         'max_requests': 2,
@@ -100,10 +100,10 @@ class Twitter(object):
 
         # if we passed in a `max_id`,
         # decrement it by 1
-        if kw['max_id']:
-            kw['max_id'] = kw['max_id'] - 1
+        if kw['since_id']:
+            kw['since_id'] = kw['since_id'] - 1
         else:
-            kw.pop('max_id', None)
+            kw.pop('since_id', None)
 
         # set control variables
         p = 1
@@ -119,14 +119,14 @@ class Twitter(object):
                 tweets = tweets.get('statuses')
 
             # get the max id
-            max_id = self._get_max_id(tweets)
+            since_id = self._get_since_id(tweets)
 
-            # if we got a max_id, proceed
-            if not max_id:
+            # if we got a since_id, proceed
+            if not since_id:
                 break
 
-            # update max_id kwarg
-            kw['max_id'] = max_id - 1
+            # update since_id kwarg
+            kw['since_id'] = since_id - 1
 
             # iterate through tweets
             for t in tweets:
@@ -143,7 +143,7 @@ class Twitter(object):
             # throttle requests
             time.sleep(kw.get('throttle'))
 
-    def _get_max_id(self, tweets):
+    def _get_since_id(self, tweets):
         """
         Get the max id for a response
         """

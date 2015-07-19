@@ -64,8 +64,10 @@ IMG_FILETYPES = frozenset([
 
 REDIRECT_QUERY_PARAMS = ['url', 'u']
 
+KEEP_PARAMS = ('id', 'p', 'v', 'story_fbid')
 
-def prepare(url, source=None, canonicalize=True, expand=True, keep_params=('id', 'p', 'v')):
+
+def prepare(url, source=None, canonicalize=True, expand=True, keep_params=KEEP_PARAMS):
     """
     Operations that unshorten a url, reconcile embeds,
     resolves redirects, strip parameters (with optional
@@ -529,7 +531,7 @@ def from_string(string, **kw):
         return []
 
     raw_urls = re_url.findall(string)
-    short_urls = [g[0].strip() for g in re_short_url_text.findall(string)]
+    short_urls = [g[0].strip() for g in re_short_url_text.findall(string) if g]
 
     urls = []
     if source:
@@ -542,7 +544,7 @@ def from_string(string, **kw):
 
     # make sure short url regex doesn't create partial dupes.
     for u in short_urls:
-        if any([u in r for r in urls]):
+        if any([r.startswith(u) or u ==r for r in urls]):
             short_urls.remove(u)
 
     # combine

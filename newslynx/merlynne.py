@@ -79,26 +79,26 @@ class Merlynne(object):
             return job_id
 
         # directly stream the results out.
-        return run_sous_chef(self.sous_chef_path, self.recipe.id, kw_key)
+        return run_sous_chef(self.sous_chef_path, self.recipe.id, kw_key=None, **self.kw)
 
 
-def run_sous_chef(sous_chef_path, recipe_id, kw_key):
+def run_sous_chef(sous_chef_path, recipe_id, kw_key, **kw):
     """
     Do the work. This exists outside the class
-    in order to enable pickling.
+    in order to enable pickling for the task queue.
     """
     recipe = db.session.query(Recipe).get(recipe_id)
     try:
-        # load in kwargs
-        kw = rds.get(kw_key)
-        if not kw:
-            raise InternalServerError(
-                'An unexpected error occurred while attempting to run a Sous Chef.'
-            )
-        kw = pickle_to_obj(kw)
-
-        # delete them.
-        rds.delete(kw_key)
+        if kw_key:
+            # load in kwargs
+            kw = rds.get(kw_key)
+            if not kw:
+                raise InternalServerError(
+                    'An unexpected error occurred while attempting to run a Sous Chef.'
+                )
+            kw = pickle_to_obj(kw)
+            # delete them.
+            rds.delete(kw_key)
 
         # import sous chef
         SousChef = import_sous_chef(sous_chef_path)
@@ -114,7 +114,7 @@ def run_sous_chef(sous_chef_path, recipe_id, kw_key):
 
         # cook it.
         data = sc.cook()
-        
+
         # passthrough the data.
         if kw.get('passthrough', False):
             return data
@@ -136,10 +136,12 @@ def run_sous_chef(sous_chef_path, recipe_id, kw_key):
         db.session.commit()
         return True
 
-    except Exception as e:
+    except:
 
         # always delete the kwargs.
-        rds.delete(kw_key)
+        if kw_key:
+            rds.delete(kw_key)
+
         if not kw.get('passthrough', False):
             db.session.rollback()
             recipe.status = "error"

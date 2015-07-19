@@ -178,7 +178,7 @@ class TestEventsAPI(unittest.TestCase):
         resp = self.api.events.delete(event['id'], force=True)
         assert(resp)
         try:
-            self.api.events.update(event['id'], **event)
+            self.api.events.get(event['id'])
         except Exception as e:
             assert(e.status_code == 404)
         else:
