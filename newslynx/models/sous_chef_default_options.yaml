@@ -12,6 +12,7 @@ slug:
         - string
     required: false
     help:
+        placeholder: (optional)
         description: The recipe slug. Lowercase and separated with '-'.
 
 description: 
@@ -21,6 +22,7 @@ description:
         - nulltype
     required: false
     help: 
+        placeholder: (optional)
         description: A description of what this recipe does.
 
 schedule_by:
@@ -118,3 +120,13 @@ time_of_day:
     help:
         placeholder: '4:30 PM'
         description: The time of day at which this recipe should run daily.
+
+timeout:
+    input_type: number
+    value_types:
+        - numeric
+    default: 240
+    help:
+        placeholder: 240
+        description: |
+            The number of seconds after which this sous chef will time out.

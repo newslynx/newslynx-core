@@ -1,24 +1,25 @@
 import os
 import re
 import importlib
+import os.path
 
 from jsonschema import Draft4Validator
 
 from newslynx.sc import SousChef as SC
 from newslynx.exc import SousChefSchemaError
 from newslynx.models import SousChef
-from newslynx.lib.serialize import yaml_to_obj
+from newslynx.lib.serialize import yaml_stream_to_obj
 from newslynx.lib.serialize import obj_to_json, json_to_obj
 from newslynx.constants import SOUS_CHEF_RESERVED_FIELDS
-from newslynx.util import here, update_nested_dict
+from newslynx.util import here, update_nested_dict, gen_short_uuid
 
 # load souschef schema + validator.
-SOUS_CHEF_JSON_SCHEMA = yaml_to_obj(
-    open(here(__file__, 'sous_chef.yaml')).read())
+SOUS_CHEF_JSON_SCHEMA = yaml_stream_to_obj(
+    open(here(__file__, 'sous_chef.yaml')))
 
 # these are default options that all sous chefs have.
-SOUS_CHEF_DEFAULT_OPTIONS = yaml_to_obj(
-    open(here(__file__, 'sous_chef_default_options.yaml')).read())
+SOUS_CHEF_DEFAULT_OPTIONS = yaml_stream_to_obj(
+    open(here(__file__, 'sous_chef_default_options.yaml')))
 
 # a json-schema validator for a sous chef.
 SOUS_CHEF_VALIDATOR = Draft4Validator(SOUS_CHEF_JSON_SCHEMA)
@@ -27,7 +28,24 @@ SOUS_CHEF_VALIDATOR = Draft4Validator(SOUS_CHEF_JSON_SCHEMA)
 re_opt_name = re.compile(r'^[a-z][a-z_]+[a-z]$')
 
 
-def validate(sc):
+def load(fp):
+    """
+    Load a sous chef allowing for include statements.
+    """
+    sc = yaml_stream_to_obj(open(fp))
+    incl = {}
+    incl_fp = sc.get('includes')
+    if len(sc.get('includes', [])):
+        for incl_fp in sc.get('includes'):
+            if not incl_fp.endswith('.yaml'):
+                incl_fp += ".yaml"
+            incl_fp = os.path.join(os.path.dirname(fp), incl_fp)
+            incl = yaml_stream_to_obj(open(incl_fp))
+            sc = update_nested_dict(sc, incl, overwrite=True)
+    return validate(sc, fp)
+
+
+def validate(sc, fp):
     """
     Validate a sous chef schema:
     First chef against the canoncial json schema.
@@ -37,7 +55,6 @@ def validate(sc):
     options and merge the default sous-chef options
     with the provied ones.
     """
-
     # check the json schema
     _validate_sous_chef_json_schema(sc)
 
@@ -56,8 +73,11 @@ def validate(sc):
         _validate_command_sous_chef(sc)
 
     # special cases for sous chefs that create metrics
-    if sc['creates'] == 'metrics':
+    if 'metric' in sc['creates']:
         _validate_metrics_sous_chef(sc)
+
+    if 'report' in sc['creates']:
+        sc = _validate_report_sous_chef(sc, fp)
 
     # if everything is kosher, merge the sous-chef options
     # with the defaults
@@ -175,6 +195,36 @@ def _validate_metrics_sous_chef(sc):
         # TODO MORE checking logic.
 
 
+def _validate_report_sous_chef(sc, fp):
+    """
+    Special cases for sous chefs that create reports.
+    """
+    report = sc.get('report', {})
+    if not len(report.keys()):
+        msg = 'SousChefs that create a report must explicitly declare it\'s schema.'
+        _raise_sous_chef_schema_error(sc, msg)
+
+    # reconcile path.
+    tmpl_file = report.get('template', {}).get('file')
+
+    # check for the local template file.
+    if tmpl_file and not fp.startswith('/'):
+        tmpl_file = os.path.join(os.path.dirname(fp), tmpl_file.split('/')[-1])
+
+        if not os.path.exists(tmpl_file):
+            raise SousChefSchemaError(
+                'Tempalte file "{}" does not exist'.format(tmpl_file))
+        if 'template' not in report:
+            report['template'] = {
+                'slug': "{}-{}".format(sc.get('slug'), gen_short_uuid()),
+                'mame': sc.get('name'),
+                'description': sc.get('descrptions')
+            }
+        report['template']['file'] = tmpl_file
+        sc['report'] = report
+    return sc
+
+
 def _validate_sous_chef_json_schema(sc):
     """
     Check if a sous chef follows the core JSON schema.
@@ -199,7 +249,6 @@ def _validate_python_sous_chef(sc):
     Check if a python SousChef is valid.
     """
     try:
-
         import_parts = sc['runs'].split('.')
         module = '.'.join(import_parts[:-1])
         c = import_parts[-1]

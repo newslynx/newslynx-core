@@ -97,6 +97,12 @@ def get_report(user, org, id, format):
     if format == "json":
         return jsonify(r)
 
+    if format == "csv":
+        return 
+
+    elif format == 'csv.zip':
+        pass
+
     # html
     if format == 'html' and r.template.format == "html":
         return Response(r.render())
@@ -138,6 +144,7 @@ def update_report(user, org, id):
     if data and not isinstance(data, (list, dict)):
         try:
             data = json_to_obj(data)
+        
         except Exception as e:
             raise RequestError(
                 'Report data could not be parsed: {}'

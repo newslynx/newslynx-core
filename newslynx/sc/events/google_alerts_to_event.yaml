@@ -13,7 +13,8 @@ option_order:
     - crontab
     - minutes
     - time_of_day
-
+includes: 
+    - _event_options.yaml
 options:
 
     # custom options
@@ -38,55 +39,3 @@ options:
         help:
             placeholder: "false"
             description: Only create an event if there is a link to an existing content item.
-
-    event_status:
-        input_type: select
-        input_options:
-            - pending
-            - approved
-        value_types: 
-            - string
-        default: pending
-        help:
-            placeholder: "pending"
-
-    set_event_title:
-        input_type: text
-        value_types: 
-            - string
-        default: null
-        help:
-            placeholder: "Promotion Event"
-
-    set_event_description:
-        input_type: paragraph
-        value_types: 
-            - string
-        default: null
-
-    set_event_tag_ids:
-        input_type: checkbox
-        input_options: []
-        accepts_list: true 
-        value_types:
-            - string 
-            - numeric 
-        default: []
-        help:
-            description: |
-                A list of Tag IDs or slugs to automatically
-                apply to events created by this recipe.
-            placeholder: "pending"
-
-    set_event_content_items:
-        input_type: search
-        input_options: []
-        accepts_list: true 
-        value_types:
-            - json
-        default: []
-        help:
-            description: |
-                A list of Content Item IDs and Titles to automatically
-                apply to events created by this Recipe.
-            placeholder: "Search by article title..."

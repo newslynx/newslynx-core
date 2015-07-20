@@ -16,10 +16,13 @@ _CONFIG_REQUIRES = [
 ]
 _DEFAULT_DEFAULTS = here(__file__, "dot_newslynx/defaults/")
 
-DEFAULT_TAGS = os.path.expanduser('~/.newslynx/defaults/tags.yaml')
-DEFAULT_RECIPES = os.path.expanduser('~/.newslynx/defaults/recipes.yaml')
 CONFIG_FILE = os.getenv('NEWSLYNX_CONFIG_FILE',
                         os.path.expanduser('~/.newslynx/config.yaml'))
+
+DEFAULT_TAGS = os.path.expanduser('~/.newslynx/defaults/tags.yaml')
+DEFAULT_RECIPES = os.path.expanduser('~/.newslynx/defaults/recipes.yaml')
+DEFAULT_REPORTS = os.path.expanduser('~/.newslynx/defaults/recipes.yaml')
+DEFAULT_SOUS_CHEFS = os.path.expanduser('~/.newslynx/sous-chefs/')
 
 # app configurations #
 API_URL = "http://localhost:5000"
@@ -31,6 +34,9 @@ LOG_TIMING = False
 LOG_LEVEL = "DEBUG"
 
 # security
+SUPER_USER_ORG = 'admin'
+SUPER_USER_ORG_TIMEZONE = 'UTC'
+
 
 # DATABASE CONFIG
 SQLALCHEMY_POOL_SIZE = 1000
@@ -86,6 +92,25 @@ PANDOC_PATH = "/usr/local/bin/pandoc"
 # reddit
 REDDIT_USER_AGENT = 'Newslynx'
 
-# Metrics Timeseries Rollup
-MIN_TIMESERIES_UNIT = 'hour'
-MIN_TIMESERIES_VALUE = 1
+# Metrics timeseries granularity
+METRICS_MIN_DATE_UNIT = 'hour'
+METRICS_MIN_DATE_VALUE = 1
+
+# Reports granularity
+REPORTS_MIN_DATE_UNIT = 'day'
+REPORTS_MIN_DATE_VALUE = 1
+REPORTS_DIR = '~/.newslynx/archive/reports/'
+REPORTS_TEMPLATE_FILE_FORMAT = '{org}/{slug}/templates/{{template_slug}}.{{template_format}}'
+REPORTS_CURRENT_FILE_FORMAT = '{org}/{slug}/current.{format}'
+REPORTS_VERSION_FILE_FORMAT = '{org/{slug}/versions/{year}/{month}/{day}/{options_hash}.{format}'
+REPORTS_DATA_SERIALIZATION_FORMAT = 'json.gz'
+REPORTS_DATA_FILE_FORMAT = '{org}/{slug}/data.' + REPORTS_DATA_SERIALIZATION_FORMAT
+REPORTS_TEMPLATE_FORMATS = {
+    'md': ['pdf', 'odt', 'html', 'md'],
+    'html': ['pdf', 'odt', 'html', 'md']
+}
+
+REPORTS_DATA_FORMATS = {
+    'json.gz': ['json', 'json.gz', 'csv.zip'],
+    'html': ['pdf', 'odt', 'html', 'md']
+}

@@ -2,7 +2,6 @@ from collections import defaultdict, Counter
 from inspect import isgenerator
 import copy
 
-
 from sqlalchemy import or_
 from flask import Blueprint, Response, stream_with_context, request
 
@@ -15,6 +14,7 @@ from newslynx.lib.serialize import jsonify, obj_to_json
 from newslynx.views.decorators import load_user, load_org
 from newslynx.views.util import *
 from newslynx.tasks import facet
+from newslynx.tasks import default
 from newslynx.merlynne import Merlynne
 
 
@@ -156,12 +156,12 @@ def create_recipe(user, org):
 
     sous_chef = req_data.pop('sous_chef', arg_str('sous_chef', None))
     if not sous_chef:
-        raise  NotFoundError(
+        raise NotFoundError(
             'You must pass in a SousChef ID or slug to create a recipe.')
 
     sc = fetch_by_id_or_field(SousChef, 'slug', sous_chef)
     if not sc:
-        raise  NotFoundError(
+        raise NotFoundError(
             'A SousChef does not exist with ID/slug {}'
             .format(sous_chef))
 
@@ -185,12 +185,29 @@ def create_recipe(user, org):
                     recipe_id=r.id,
                     org_id=org.id,
                     **params)
-
             else:
                 for k, v in params.items():
                     setattr(m, k, v)
 
             db.session.add(m)
+
+        # if the recipe creates a report, create it here.
+        if 'report' in sc.creates and r.status == 'stable':
+            rep = Report.query\
+                .filter_by(org_id=org.id, recipe_id=r.id, slug=report['slug'])\
+                .first()
+
+            if not rep:
+                rep = Report(
+                    recipe_id=r.id,
+                    org_id=org.id,
+                    sous_chef_id=sous_chef_id,
+                    user_id=user_id,
+                    **report)
+            else:
+                for k, v in report.items():
+                    setattr(rep, k, v)
+            db.session.add(rep)
     try:
         db.session.commit()
 
@@ -225,7 +242,7 @@ def update_recipe(user, org, recipe_id):
     r = fetch_by_id_or_field(Recipe, 'slug', recipe_id, org_id=org.id)
     if not r:
         raise NotFoundError('Recipe with id/slug {} does not exist.'
-                           .format(recipe_id))
+                            .format(recipe_id))
 
     # keep track of current coptions hash.
     current_option_hash = copy.copy(r.options_hash)
@@ -239,7 +256,7 @@ def update_recipe(user, org, recipe_id):
     status = new_recipe.get('status', 'uninitialized')
     if r.status == 'uninitialized' and status == 'uninitialized':
         new_recipe['status'] = 'stable'
-
+        
     # update pickled options
     new_opts = new_recipe.pop('options')
     r.set_options(new_opts)
@@ -254,8 +271,47 @@ def update_recipe(user, org, recipe_id):
         r.last_job = {}
 
     db.session.add(r)
-    db.session.commit()
 
+    # now install metrics + reports
+    if new_recipe.get('status', 'uninitialized') and r.status == 'stable':
+
+        for name, params in sc.metrics.items():
+
+            m = Metric.query\
+                .filter_by(org_id=org.id, recipe_id=r.id, name=name, type=params['type'])\
+                .first()
+
+            if not m:
+                m = Metric(
+                    name=name,
+                    recipe_id=r.id,
+                    org_id=org.id,
+                    **params)
+            else:
+                for k, v in params.items():
+                    setattr(m, k, v)
+
+            db.session.add(m)
+
+        # if the recipe creates a report, create it here.
+        if 'report' in sc.creates and r.status == 'stable':
+            rep = Report.query\
+                .filter_by(org_id=org.id, recipe_id=r.id, slug=report['slug'])\
+                .first()
+
+            if not rep:
+                rep = Report(
+                    recipe_id=r.id,
+                    org_id=org.id,
+                    sous_chef_id=sous_chef_id,
+                    user_id=user_id,
+                    **report)
+            else:
+                for k, v in report.items():
+                    setattr(rep, k, v)
+            db.session.add(rep)
+
+    db.session.commit()
     return jsonify(r)
 
 
@@ -308,6 +364,11 @@ def cook_a_recipe(user, org, recipe_id):
         raise RequestError(
             'Recipes must be initialized before cooking.')
 
+    # determine passthrough from req method
+    passthrough = False
+    if request.method == 'POST':
+        passthrough = True
+
     # setup kwargs for merlynne
     kw = dict(
         org=org.to_dict(
@@ -319,22 +380,30 @@ def cook_a_recipe(user, org, recipe_id):
         apikey=user.apikey,
         recipe=r.to_dict(),
         recipe_obj=r,
-        passthrough=arg_bool('passthrough', default=False),
+        passthrough=arg_bool('passthrough'),
         sous_chef_path=r.sous_chef.runs
     )
 
     # check for runtme args for passthrough options.
     if kw['passthrough']:
-        options = {k: v for k, v in dict(request.args.items()).items()
-                   if k not in ['apikey', 'org', 'localize', 'passthrough']}
+
+        # parse runtime options from params + body.
+        options = {
+            k: v for k, v in dict(request.args.items()).items()
+            if k not in ['apikey', 'org', 'localize', 'passthrough']}
+
+        # parse the runtime options.
+        options.update(request_data())
+
+        # update the recipe
         if len(options.keys()):
             try:
-                recipe = recipe_schema.update(r, options, r.sous_chef.to_dict())
+                recipe = recipe_schema.update(
+                    r, options, r.sous_chef.to_dict())
             except Exception as e:
                 raise RequestError(
                     'Error trying to attempt to pass {} to recipe {} at runtime:\n{}'
                     .format(options, recipes.slug, e.message))
-
             kw['recipe']['options'].update(recipe.get('options', {}))
 
     # execute merlynne
@@ -343,12 +412,17 @@ def cook_a_recipe(user, org, recipe_id):
 
     # queued job
     if not kw['passthrough']:
+
         # set its status as 'queued'
         r.status = 'queued'
         db.session.add(r)
         db.session.commit()
+
         # # return job status url
-        ret = url_for_job_status(apikey=user.apikey, job_id=resp, queue='recipe')
+        q = 'recipe'
+        if 'format' in sc.creates:
+            q = 'report'
+        ret = url_for_job_status(apikey=user.apikey, job_id=resp, queue=q)
         return jsonify(ret, status=202)
 
     # format non-iterables.
@@ -361,4 +435,3 @@ def cook_a_recipe(user, org, recipe_id):
             yield obj_to_json(item) + "\n"
 
     return Response(stream_with_context(generate()))
-
