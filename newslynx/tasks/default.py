@@ -47,14 +47,15 @@ def tags(org):
     for tag in init.load_default_tags():
         tag['org_id'] = org.id
         t = Tag.query\
-            .filter_by(**tag)\
+            .filter_by(org_id=tag['org_id'], slug=tag['slug'], type=slug['type'])\
             .first()
         if not t:
             t = Tag(**tag)
         else:
             for k, v in tag.items():
-                setattr(tag, k, v)
+                setattr(t, k, v)
         db.session.add(t)
+    db.session.commit()
     return True
 
 

@@ -42,13 +42,8 @@ def run(opts, log, **kwargs):
             for sql in load_sql():
                 db.session.execute(sql)
 
-            # commit
-            db.session.commit()
-
             log.info('Initializing Super User Org {}\n'.format(settings.SUPER_USER_ORG), line=False)
             default.org()
-            db.session.commit()
-            db.session.close()
 
         log.info('\nSuccess!\n', line=False)
         log.warning(
