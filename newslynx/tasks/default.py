@@ -5,6 +5,7 @@ from slugify import slugify
 
 from newslynx import init
 from newslynx.core import db
+from newslynx.exc import RecipeSchemaError
 from newslynx.models import (
     Org, User, Tag, Report, SousChef,
     Metric, Recipe, Event,
@@ -45,7 +46,14 @@ def tags(org):
     # add default tags
     for tag in init.load_default_tags():
         tag['org_id'] = org.id
-        t = Tag(**tag)
+        t = Tag.query\
+            .filter_by(**tag)\
+            .first()
+        if not t:
+            t = Tag(**tag)
+        else:
+            for k, v in tag.items():
+                setattr(tag, k, v)
         db.session.add(t)
     return True
 
