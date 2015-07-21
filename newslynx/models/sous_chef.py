@@ -70,7 +70,7 @@ class SousChef(db.Model):
         if 'metrics' in self.creates:
             d['metrics'] = self.metrics
         if 'report' in self.creates:
-            d['reports'] = self.reports
+            d['report'] = self.report
         return d
 
     @property

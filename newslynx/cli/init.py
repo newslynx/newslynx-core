@@ -29,8 +29,8 @@ def setup(parser):
 def run(opts, log, **kwargs):
     # create the database
     log.info(LOGO + "\n", line=False, color='lightwhite_ex')
-    try:
-        with app.app_context():
+    with app.app_context():
+        try:
             log.info('Creating database "{}"\n'.format(
                 settings.SQLALCHEMY_DATABASE_URI), line=False)
             db.configure_mappers()
@@ -44,14 +44,14 @@ def run(opts, log, **kwargs):
 
             log.info('Initializing Super User Org {}\n'.format(settings.SUPER_USER_ORG), line=False)
             default.org()
+        except Exception as e:
+            db.session.rollback()
+            db.session.close()
+            log.exception(e, tb=True)
+            sys.exit(1)
+        else:
+            log.info('\nSuccess!\n', line=False)
+            log.warning(
+                '\nYou can now start the API by running ', color="blue", line=False)
+            log.info('newslynx debug\n\n', color="green", line=False)
 
-        log.info('\nSuccess!\n', line=False)
-        log.warning(
-            '\nYou can now start the API by running ', color="blue", line=False)
-        log.info('newslynx debug\n\n', color="green", line=False)
-
-    except Exception as e:
-        db.session.rollback()
-        db.session.close()
-        log.exception(e, tb=True)
-        sys.exit(1)

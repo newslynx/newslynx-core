@@ -10,6 +10,7 @@ _DEFAULT_CONFIG = here(__file__, "dot_newslynx/config.yaml")
 _CONFIG_REQUIRES = [
     'super_user',
     'super_user_email',
+    'super_user_apikey',
     'super_user_password',
     'sqlalchemy_database_uri',
     'secret_key'
@@ -36,7 +37,6 @@ LOG_LEVEL = "DEBUG"
 # security
 SUPER_USER_ORG = 'admin'
 SUPER_USER_ORG_TIMEZONE = 'UTC'
-
 
 # DATABASE CONFIG
 SQLALCHEMY_POOL_SIZE = 1000
@@ -76,7 +76,7 @@ MERLYNNE_KWARGS_TTL = 60
 MERLYNNE_RESULTS_TTL = 60
 
 # Scheduler
-SCHEDULER_REFRESH_INTERVAL = 30
+SCHEDULER_REFRESH_INTERVAL = 45
 SCHEDULER_RESET_PAUSE_RANGE = [20, 200]
 
 # browser

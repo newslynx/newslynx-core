@@ -1,23 +1,17 @@
 from flask import Blueprint
-from slugify import slugify 
+from slugify import slugify
 
 from newslynx.core import db
-from newslynx.models import User, Org, SousChef, Recipe, Tag, Metric
+from newslynx.models import User, Org
 from newslynx.models.util import fetch_by_id_or_field
-from newslynx.models import recipe_schema
 from newslynx.lib import mail
+from newslynx.tasks import default
 from newslynx.lib.serialize import jsonify
 from newslynx.exc import (
-    AuthError, RequestError, ForbiddenError, NotFoundError,
-    ConfigError, ConflictError)
+    AuthError, RequestError, ForbiddenError, NotFoundError)
 from newslynx.views.decorators import load_user
 from newslynx.views.util import (
     request_data, delete_response, arg_bool, localize)
-from newslynx.init import load_default_tags, load_default_recipes
-from newslynx.exc import RecipeSchemaError
-from newslynx import settings
-
-
 # bp
 bp = Blueprint('orgs', __name__)
 
@@ -42,76 +36,7 @@ def org_create(user):
        or 'timezone' not in req_data:
         raise RequestError(
             "An Org requires a 'name' and 'timezone")
-
-    org = Org.query\
-        .filter_by(name=req_data['name'])\
-        .first()
-
-    # if the org doesnt exist, create it.
-    if org:
-        raise RequestError(
-            "Org '{}' already exists"
-            .format(req_data['name']))
-
-    # add the requesting user to the org
-    org = Org(
-        name=req_data['name'],
-        timezone=req_data['timezone']
-    )
-    org.users.append(user)
-    db.session.add(org)
-    try:
-        db.session.commit()
-    except Exception as e:
-        raise ConflictError(e.message)
-
-    # add default tags
-    for tag in load_default_tags():
-        tag['org_id'] = org.id
-        t = Tag(**tag)
-        db.session.add(t)
-
-    # add default recipes
-    for recipe in load_default_recipes():
-
-        # fetch it's sous chef.
-        sous_chef_slug = recipe.pop('sous_chef')
-        if not sous_chef_slug:
-            raise RecipeSchemaError(
-                "Default recipe '{}' is missing a 'sous_chef' slug."
-                .format(recipe.get('slug', '')))
-
-        sc = SousChef.query\
-            .filter_by(slug=sous_chef_slug)\
-            .first()
-
-        if not sc:
-            raise RecipeSchemaError(
-                '"{}" is not a valid SousChef slug or the '
-                'SousChef does not yet exist.'
-                .format(sous_chef_slug))
-
-        # validate the recipe
-        recipe = recipe_schema.validate(recipe, sc.to_dict())
-
-        # fill in relations
-        recipe['user_id'] = user.id
-        recipe['org_id'] = org.id
-
-        # add to database
-        r = Recipe(sc, **recipe)
-        db.session.add(r)
-        db.session.commit()
-
-        # if the recipe creates metrics create them here.
-        if 'metrics' in sc.creates:
-            for name, params in sc.metrics.items():
-                m = Metric(
-                    name=name,
-                    recipe_id=r.id,
-                    org_id=org.id,
-                    **params)
-                db.session.add(m)
+    org = default.org(**req_data)
     db.session.commit()
     return jsonify(org)
 
@@ -357,7 +282,7 @@ def org_user(user, org_id_slug, user_email):
     return jsonify(org_user)
 
 
-@bp.route('/api/v1/orgs/<org_id_slug>/users/<user_email>', methods=['PUT','PATCH'])
+@bp.route('/api/v1/orgs/<org_id_slug>/users/<user_email>', methods=['PUT', 'PATCH'])
 @load_user
 def org_add_user(user, org_id_slug, user_email):
 
@@ -400,7 +325,7 @@ def org_add_user(user, org_id_slug, user_email):
         if not all([email, password, name]):
             raise RequestError(
                 'An email, password, and name are required to create a User.')
-        
+
         new_org_user = User(
             email=email,
             password=password,
@@ -413,14 +338,14 @@ def org_add_user(user, org_id_slug, user_email):
     elif new_org_user.id not in org.user_ids:
         raise ForbiddenError(
             "You are not allowed to access this Org.")
-    
+
     # update
     if name:
         new_org_user.name = name
     if email:
-        new_org_user.email = email 
+        new_org_user.email = email
     if admin:
-        new_org_user.admin = admin 
+        new_org_user.admin = admin
     if password:
         new_org_user.set_password(password)
 

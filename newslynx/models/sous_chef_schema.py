@@ -86,7 +86,7 @@ def validate(sc, fp):
     return sc
 
 
-def update(old_sous_chef, new_sous_chef):
+def update(old_sous_chef, new_sous_chef, fp=None):
     """
     Given a partial or completely new sous-chef, update the souf-chef
     and re-validate it.
@@ -103,7 +103,7 @@ def update(old_sous_chef, new_sous_chef):
     new_sous_chef = update_nested_dict(
         old_sous_chef, new_sous_chef, overwrite=True)
 
-    return validate(new_sous_chef)
+    return validate(new_sous_chef, fp)
 
 
 def _validate_input_and_value_types(sc):
