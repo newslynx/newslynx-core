@@ -154,6 +154,7 @@ def _super_user(org):
         u = User(name=settings.SUPER_USER,
                  email=settings.SUPER_USER_EMAIL,
                  password=settings.SUPER_USER_PASSWORD,
+                 apikey=settings.SUPER_USER_APIKEY,
                  admin=True,
                  super_user=True)
     org.users.append(u)

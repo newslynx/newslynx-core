@@ -25,7 +25,7 @@ class SousChef(object):
         # parse required kwargs
         self.org = kw.pop('org', settings.SUPER_USER_ORG)
         self.apikey = kw.pop('apikey', settings.SUPER_USER_APIKEY)
-        self.recipe = kw.get('recipe', {})
+        self.recipe = kw.pop('recipe', {})
         if not self.org or not self.recipe or not self.apikey or not self.config:
             raise SousChefInitError(
                 'A SousChef requires a "org", "recipe", "config", and "apikey" to run.')
@@ -42,8 +42,9 @@ class SousChef(object):
         self.users = self.org.pop('users')
 
         # options for this recipe
-        self.options = self.recipe['options']
-        self.recipe_id = self.recipe['id']
+        self.options = self.recipe.get('options', **kw) # allow arbitrary runtime arguments.
+        self.recipe_id = self.recipe.get('id', None)
+
 
         # handle cache-clears between jobs.
         self.next_job = defaultdict(dict)
