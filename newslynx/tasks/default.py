@@ -33,9 +33,9 @@ def org(
         u = User(name=settings.SUPER_USER,
                  email=settings.SUPER_USER_EMAIL,
                  password=settings.SUPER_USER_PASSWORD,
-                 apikey=settings.SUPER_USER_APIKEY,
                  admin=True,
                  super_user=True)
+        u.apikey = settings.SUPER_USER_APIKEY
     org.users.append(u)
     db.session.add(org)
     db.session.commit()
