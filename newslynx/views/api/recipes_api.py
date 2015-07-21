@@ -274,6 +274,7 @@ def update_recipe(user, org, recipe_id):
 
     # now install metrics + reports
     if new_recipe.get('status', 'uninitialized') and r.status == 'stable':
+        sc.ensure_metrics
 
         for name, params in sc.metrics.items():
 
@@ -390,7 +391,8 @@ def cook_a_recipe(user, org, recipe_id):
         # parse runtime options from params + body.
         options = {
             k: v for k, v in dict(request.args.items()).items()
-            if k not in ['apikey', 'org', 'localize', 'passthrough']}
+            if k not in ['apikey', 'org', 'localize', 'passthrough']
+        } 
 
         # parse the runtime options.
         options.update(request_data())

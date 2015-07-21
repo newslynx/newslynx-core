@@ -37,14 +37,11 @@ def create_report(user, org):
 
     name = req_data.get('name')
     slug = req_data.get('slug')
-    data = req_data.get('data')
-    template_id = req_data.get('template_id', arg_int('template_id', default=None))
+    template = req_data.get('template', {})
 
-    if not name or not data or not template_id:
-        raise RequestError(
-            "You must pass in 'name', 'data', and  a 'template_id' to create a report. "
-            "You only passed in: {}"
-            .format(", ".join(req_data.keys())))
+    if not len(template.keys()):
+
+        
     
     if not isinstance(data, (list, dict)):
         try:
@@ -61,7 +58,7 @@ def create_report(user, org):
         template_id=template_id)
     
     if slug:
-        r.slug = slug
+        r.slug = slug  
 
     db.session.add(r)
 

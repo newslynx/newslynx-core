@@ -73,17 +73,17 @@ class SousChef(object):
         """
 
         if isinstance(data, (types.ListType, types.GeneratorType)):
-            for item in data:  
+            for item in data:
                 # allow for to-dict protocol
                 if hasattr(item, 'to_dict'):
                     item = item.to_dict()
-                
+
                 elif isinstance(item, (types.DictType)):
                     yield item
         elif isinstance(data, (types.DictType)):
-            yield item 
+            yield item
 
-        elif hasattr(data 'to_dict'):
+        elif hasattr(data, 'to_dict'):
             yield data.to_dict()
 
         raise SousChefExecError(
@@ -91,7 +91,7 @@ class SousChef(object):
             "run should return either a dictionary or "
             "a list or generator or single dictionaries or "
             "object with a .to_dict() method".format(type(data))
-            )
+        )
 
     def load(self, data):
         return data
@@ -115,6 +115,6 @@ class SousChef(object):
             if not self.passthrough:
                 data = self.load(data)  # load the data.
 
-            # 
+            #
 
             self.teardown()
