@@ -58,11 +58,11 @@ class Merlynne(object):
         # in the queue
         sc = import_sous_chef(self.sous_chef_path)
 
-        # stash kwargs
-        kw_key = self.stash_kw(job_id)
-
         # send it to the queue
         if not self.passthrough:
+            
+            # stash kwargs
+            kw_key = self.stash_kw(job_id)
 
             # indicate that the recipe is running.
             self.recipe.status = "queued"
@@ -79,7 +79,8 @@ class Merlynne(object):
             return job_id
 
         # directly stream the results out.
-        return run_sous_chef(self.sous_chef_path, self.recipe.id, kw_key=None, **self.kw)
+        return run_sous_chef(self.sous_chef_path, 
+            self.recipe.id, kw_key=None, **self.sous_chef_kwargs)
 
 
 def run_sous_chef(sous_chef_path, recipe_id, kw_key, **kw):

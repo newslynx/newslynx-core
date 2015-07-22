@@ -1,12 +1,9 @@
 from sqlalchemy.dialects.postgresql import JSON
-import os 
 
-from jinja2 import Template
 from slugify import slugify
 
 from newslynx.core import db
 from newslynx.lib import dates
-from newslynx.lib.pkg import pandoc
 
 
 class Report(db.Model):
