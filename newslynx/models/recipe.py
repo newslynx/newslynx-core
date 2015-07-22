@@ -52,7 +52,6 @@ class Recipe(db.Model):
     events = db.relationship('Event', lazy='dynamic')
     content_items = db.relationship('ContentItem', lazy='dynamic')
     metrics = db.relationship('Metric', backref=db.backref('recipe', lazy='joined'), lazy='joined')
-    reports = db.relationship('Report', backref=db.backref('recipe', lazy='joined'), lazy='joined')
     sous_chef = db.relationship(
         'SousChef', backref=db.backref('recipes', lazy='joined', cascade="all, delete-orphan"), lazy='joined')
     user = db.relationship(
