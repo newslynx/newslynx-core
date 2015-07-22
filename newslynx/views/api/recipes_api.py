@@ -303,7 +303,7 @@ def cook_a_recipe(user, org, recipe_id):
         raise NotFoundError(
             'Recipe with id/slug {} does not exist.'
             .format(recipe_id))
-
+    print r.to_dict()
     if r.status == 'uninitialized':
         raise RequestError(
             'Recipes must be initialized before cooking.')

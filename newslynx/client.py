@@ -530,7 +530,7 @@ class Recipes(BaseClient):
         def _generate():
             for line in r.iter_lines():
                 d = json_to_obj(line)
-
+                print "D", d
                 # catch errors
                 if d.get('error'):
                     if self.raise_errors:
