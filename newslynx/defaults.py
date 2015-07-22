@@ -10,16 +10,20 @@ _DEFAULT_CONFIG = here(__file__, "dot_newslynx/config.yaml")
 _CONFIG_REQUIRES = [
     'super_user',
     'super_user_email',
+    'super_user_apikey',
     'super_user_password',
     'sqlalchemy_database_uri',
     'secret_key'
 ]
 _DEFAULT_DEFAULTS = here(__file__, "dot_newslynx/defaults/")
 
-DEFAULT_TAGS = os.path.expanduser('~/.newslynx/defaults/tags.yaml')
-DEFAULT_RECIPES = os.path.expanduser('~/.newslynx/defaults/recipes.yaml')
 CONFIG_FILE = os.getenv('NEWSLYNX_CONFIG_FILE',
                         os.path.expanduser('~/.newslynx/config.yaml'))
+
+DEFAULT_TAGS = os.path.expanduser('~/.newslynx/defaults/tags.yaml')
+DEFAULT_RECIPES = os.path.expanduser('~/.newslynx/defaults/recipes.yaml')
+DEFAULT_REPORTS = os.path.expanduser('~/.newslynx/defaults/recipes.yaml')
+DEFAULT_SOUS_CHEFS = os.path.expanduser('~/.newslynx/sous-chefs/')
 
 # app configurations #
 API_URL = "http://localhost:5000"
@@ -31,6 +35,8 @@ LOG_TIMING = False
 LOG_LEVEL = "DEBUG"
 
 # security
+SUPER_USER_ORG = 'admin'
+SUPER_USER_ORG_TIMEZONE = 'UTC'
 
 # DATABASE CONFIG
 SQLALCHEMY_POOL_SIZE = 1000
@@ -70,7 +76,7 @@ MERLYNNE_KWARGS_TTL = 60
 MERLYNNE_RESULTS_TTL = 60
 
 # Scheduler
-SCHEDULER_REFRESH_INTERVAL = 30
+SCHEDULER_REFRESH_INTERVAL = 45
 SCHEDULER_RESET_PAUSE_RANGE = [20, 200]
 
 # browser
@@ -80,12 +86,9 @@ BROWSER_WAIT = 0.8
 BROWSER_BACKOFF = 2
 BROWSER_MAX_RETRIES = 2
 
-# pandoc
-PANDOC_PATH = "/usr/local/bin/pandoc"
-
 # reddit
 REDDIT_USER_AGENT = 'Newslynx'
 
-# Metrics Timeseries Rollup
-MIN_TIMESERIES_UNIT = 'hour'
-MIN_TIMESERIES_VALUE = 1
+# Metrics timeseries granularity
+METRICS_MIN_DATE_UNIT = 'hour'
+METRICS_MIN_DATE_VALUE = 1

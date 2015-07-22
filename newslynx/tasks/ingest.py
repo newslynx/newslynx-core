@@ -1,6 +1,6 @@
 """
 The messy work of making unstructured data structured.
-Upserting all the things since 2013.
+Upserting all the things since 2015.
 
 We want ingestion to decrease the amount of labor involved in 
 writing Sous Chefs. As a result we adhere to the following principles:
@@ -41,7 +41,8 @@ from newslynx.lib.serialize import obj_to_json
 from newslynx import settings
 from newslynx.constants import (
     METRIC_FACET_KEYS, EVENT_STATUSES,
-    CONTENT_ITEM_TYPES)
+    CONTENT_ITEM_TYPES, METRICS_MIN_DATE_UNIT,
+    METRICS_MIN_DATE_VALUE)
 
 # the url cache object
 url_cache = URLCache()
@@ -1049,18 +1050,16 @@ def _prepare_metric_date(obj):
     """
     Round a metric to a configurable unit.
     """
-    u = settings.MIN_TIMESERIES_UNIT
-    v = settings.MIN_TIMESERIES_VALUE
+    u = settings.METRICS_MIN_DATE_UNIT
+    v = settings.METRICS_MIN_DATE_VALUE
 
     # set current time if no time exists.
     if 'datetime' not in obj:
         return dates.floor_now(unit=u, value=v).isoformat()
 
-    # 
-    else:
-        ds = obj.pop('datetime')
-        dt = dates.parse_iso(ds, enforce_tz=True)
-        return dates.floor(dt, unit=u, value=v).isoformat()
+    ds = obj.pop('datetime')
+    dt = dates.parse_iso(ds, enforce_tz=True)
+    return dates.floor(dt, unit=u, value=v).isoformat()
 
 
 def _prepare_metrics(obj, metrics_lookup):

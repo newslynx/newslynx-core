@@ -12,29 +12,42 @@ class SousChef(db.Model):
     __module__ = 'newslynx.models.sous_chef'
 
     id = db.Column(db.Integer, unique=True, index=True, primary_key=True)
+    org_id = db.Column(
+        db.Integer, db.ForeignKey('orgs.id'), index=True)
     name = db.Column(db.Text, index=True, unique=True)
     slug = db.Column(db.Text, index=True, unique=True)
     description = db.Column(db.Text)
     runs = db.Column(db.Text)
+    filepath = db.Column(db.Text)
     is_command = db.Column(db.Boolean)
     creates = db.Column(
         ENUM(*SOUS_CHEF_CREATES, name='sous_chef_creates_enum'), index=True)
     option_order = db.Column(ARRAY(db.Text))
+    requires_auths = db.Column(ARRAY(db.Text))
+    requires_settings = db.Column(ARRAY(db.Text))
     options = db.Column(JSON)
     metrics = db.Column(JSON)
+    report = db.Column(JSON)
 
     def __init__(self, **kw):
 
         # set columns
+        self.org_id = kw.get('org_id')
         self.name = kw.get('name')
         self.slug = slugify(kw.get('slug', kw['name']))
         self.description = kw.get('description')
         self.runs = kw.get('runs')
+        self.filepath = kw.get('filepath')
         self.is_command = kw.get('is_command')
+        if self.is_command:
+            self.filepath = kw.get('runs')
         self.creates = kw.get('creates')
+        self.required_auths = kw.get('requires_auths', [])
+        self.required_settings = kw.get('requires_settings', [])
         self.option_order = kw.get('option_order', [])
         self.options = kw.get('options', {})
         self.metrics = kw.get('metrics', {})
+        self.report = kw.get('report', {})
 
     def to_dict(self, **kw):
         incl_options = kw.get('incl_options', True)
@@ -43,16 +56,21 @@ class SousChef(db.Model):
             'id': self.id,
             'name': self.name,
             'slug': self.slug,
+            'filepath': self.filepath,
             'description': self.description,
             'runs': self.runs,
             'is_command': self.is_command,
-            'option_order': self.option_order,
-            'creates': self.creates
+            'creates': self.creates,
+            'requires_auths': self.requires_auths,
+            'requires_settings': self.requires_settings
         }
         if incl_options:
             d['options'] = self.ordered_options
+            d['option_order'] = self.option_order
         if 'metrics' in self.creates:
             d['metrics'] = self.metrics
+        if 'report' in self.creates:
+            d['report'] = self.report
         return d
 
     @property
@@ -61,7 +79,9 @@ class SousChef(db.Model):
         Optionally order by specific keys.
         """
         if len(self.option_order):
-            sort_order = {k: i for i, k in enumerate(self.option_order)}
+            sort_order = {
+                k: i for i, k in enumerate(self.option_order)
+            }
             return OrderedDict(sorted(self.options.items(), key=lambda k: sort_order.get(k[0], None)))
         return self.options
 

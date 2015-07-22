@@ -1,13 +1,6 @@
 """
 Objects that we need access to throughout the project.
 """
-
-import gevent
-from gevent.monkey import patch_all
-patch_all()
-from psycogreen.gevent import patch_psycopg
-patch_psycopg()
-
 from sqlalchemy import func, cast
 from sqlalchemy_searchable import vectorizer
 from sqlalchemy.dialects.postgresql import ARRAY, JSON, TEXT, ENUM

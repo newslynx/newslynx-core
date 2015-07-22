@@ -41,114 +41,80 @@ def _is_config_file(fp):
     )
 
 
-def load_sous_chef(fp):
-    """
-    Load and validate a sous chef config file.
-    """
-    sc = _load_config_file(fp)
-    return sous_chef_schema.validate(sc)
-
-
 def load_sous_chefs():
     """
     Get all internal and user-specified sous chef configurations.
     """
+    found = False
 
-    # internal sous chefs
-    for fp in recursive_listdir(SOUS_CHEF_DIR):
-        if _is_config_file(fp):
-            yield load_sous_chef(fp)
+    def findsc():
+        # internal sous chefs
+        for fp in recursive_listdir(SOUS_CHEF_DIR):
+            if _is_config_file(fp) and not fp.split('/')[-1].startswith('_'):
+                yield sous_chef_schema.load(fp), fp
 
-    # # user-generated sous-chefs.
-    # if hasattr(settings, 'SOUS_CHEFS_DIR'):
-    #     sous_chef_dir = settings.SOUS_CHEFS_DIR
+        # user-generated sous-chefs.
+        if hasattr(settings, 'SOUS_CHEFS_DIR'):
+            sous_chef_dir = settings.SOUS_CHEFS_DIR
 
-    #     if sous_chef_dir.startswith('~'):
-    #         sous_chef_dir = \
-    #             os.path.expanduser(sous_chef_dir)
+            if sous_chef_dir.startswith('~'):
+                sous_chef_dir = \
+                    os.path.expanduser(sous_chef_dir)
 
-    #     if not os.path.exists(sous_chef_dir):
-    #         raise ConfigError(
-    #             "'{}' was explicitly declared as "
-    #             "the sous_chef_dir but could "
-    #             "not be found."
-    #             .format(sous_chef_dir)
-    #         )
+            if not os.path.exists(sous_chef_dir):
+                raise ConfigError(
+                    "'{}' was explicitly declared as "
+                    "the sous_chef_dir but could "
+                    "not be found."
+                    .format(sous_chef_dir)
+                )
+        else:
+            sous_chef_dir = os.path.expanduser(
+                '~/.newslynx/sous-chefs/')
 
-    # else:
-    #     sous_chef_dir = os.path.expanduser(
-    #         '~/.newslynx/sous-chefs/')
+        if os.path.exists(sous_chef_dir):
+            for fp in recursive_listdir(sous_chef_dir):
+                if _is_config_file(fp) and not fp.split('/')[:-1].startswith('_'):
+                    yield sous_chef_schema.load(fp), fp
 
-    # if os.path.exists(sous_chef_dir):
-    #     for fp in recursive_listdir(sous_chef_dir):
-    #         if _is_config_file(fp):
-    #             yield load_sous_chef(fp)
+    for sc, fp in findsc():
+        found = True
+        yield sc, fp
+
+    if not found:
+        raise ConfigError(
+            "'{}' was explicitly declared as "
+            "the sous_chef_dir but no sous chefs could "
+            "not be found inside."
+            .format(sous_chef_dir))
 
 
-def load_default_tags():
+def load_default_tags(t='tags'):
     """
     Get all default tags for specified in the conf
     """
-    # user-generated sous-chefs.
-    if hasattr(settings, 'DEFAULT_TAGS'):
-        default_tags = settings.DEFAULT_TAGS
-        if default_tags.startswith('~'):
-            default_tags = \
-                os.path.expanduser(default_tags)
-        if not os.path.exists(default_tags):
-            path = "/".join(default_tags.split("/")[-1])
-            try:
-                os.makedirs(path)
-            except OSError:
-                pass
-            with open(default_tags, 'wb') as f:
-                f.write('-')
-    else:
-        default_tags = os.path.expanduser(
-            '~/.newslynx/defaults/tags.yaml')
-
-    if os.path.exists(default_tags):
-        tags = _load_config_file(default_tags)
-        if not isinstance(tags, list):
-            raise ConfigError(
-                'Default tags config must be a list of objects.'
-            )
-        for t in tags:
-            yield t
+    return load_defaults(t)
 
 
-def load_default_recipes():
+def load_default_recipes(t='recipes'):
     """
-    Get all default tags for organizations specified in the conf.
+    Get all recipes specified in the conf.
     """
-    # user-generated sous-chefs.
-    if hasattr(settings, 'DEFAULT_RECIPES'):
-        default_recipes = settings.DEFAULT_RECIPES
+    return load_defaults(t)
 
-        if default_recipes.startswith('~'):
-            default_recipes = \
-                os.path.expanduser(default_recipes)
 
-        if not os.path.exists(default_recipes):
-            raise ConfigError(
-                "'{}' was explicitly declared as "
-                "the default_recipes config but could "
-                "not be found."
-                .format(default_recipes)
-            )
+def load_default_templates(t='templates'):
+    """
+    Load default templates.
+    """
+    return load_defaults(t)
 
-    else:
-        default_recipes = os.path.expanduser(
-            '~/.newslynx/defaults/recipes.yaml')
 
-    if os.path.exists(default_recipes):
-        recipes = _load_config_file(default_recipes)
-        if not isinstance(recipes, list):
-            raise ConfigError(
-                'Default recipe config files must contain a list of objects.'
-            )
-        for r in recipes:
-            yield r
+def load_default_reports(t='reports'):
+    """
+    Load default templates.
+    """
+    return load_defaults(t)
 
 
 def load_sql():
@@ -158,3 +124,40 @@ def load_sql():
     for fp in sorted(list(recursive_listdir(SQL_DIR))):
         if fp.endswith('sql'):
             yield open(fp).read()
+
+
+def load_defaults(t):
+    """
+    Lookup a defaults config file
+    """
+    # user-generated sous-chefs.
+    a = "DEFAULT_{0}".format(t.upper())
+    defs = None
+    if hasattr(settings, a):
+        defs = getattr(settings, a)
+        if defs.startswith('~'):
+            defs = os.path.expanduser(defs)
+        if not os.path.exists(defs):
+            path = "/".join(defs.split("/")[-1])
+            try:
+                os.makedirs(path)
+            except OSError:
+                pass
+            with open(defs, 'wb') as f:
+                f.write('-')
+    else:
+        defs = os.path.expanduser(
+            '~/.newslynx/defaults/{0}.yaml'
+            .format(t))
+
+    if os.path.exists(defs):
+        items = _load_config_file(defs)
+        if not isinstance(items, (list)):
+            raise ConfigError(
+                'Default {0} config must be a list of objects.'.format(t)
+            )
+        return items
+    else:
+        raise ConfigError(
+            'No default {0} could be found in {1}'.format(t, defs)
+        )

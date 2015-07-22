@@ -1,67 +1,5 @@
-name: Twitter List To Event
-slug: twitter-list-to-event
-description: Extracts events from a twitter list.
-runs: newslynx.sc.events.twitter.List
-creates: events
-option_order:
-    - name
-    - slug
-    - description
-    - list_owner_screen_name
-    - list_slug
-    - search_query
-    - must_link
-    - min_followers
-    - schedule_by
-    - crontab
-    - minutes
-    - time_of_day
-    - event_status
-    - set_event_content_items
-    - set_event_title
-    - set_event_description
-    - set_event_tag_ids
-includes: 
-    - _event_options.yaml
+
 options:
-    
-    list_owner_screen_name:
-        input_type: text
-        value_types:
-            - string
-        required: true
-        help:
-            placeholder: cspan
-    
-    list_slug:
-        input_type: text
-        value_types:
-            - string
-        required: true
-        help:
-            placeholder: members-of-congress
-    
-    min_followers:
-        input_type: number
-        value_types:
-            - numeric
-            - nulltype
-        default: 0
-        required: false
-        help:
-            placeholder: "5000"
-            description: Filter out tweets from users with less than X followers. 
-
-    search_query:
-        input_type: text
-        value_types:
-            - searchstring
-            - nulltype
-        default: null
-        required: false
-        help:
-            placeholder: "~fracking | drilling"
-
     must_link:
         input_type: checkbox-single
         input_options:
@@ -91,7 +29,7 @@ options:
             - string
         default: null
         help:
-            placeholder: "Promotion Event"
+            placeholder: "Something amazing happened."
 
     set_event_description:
         input_type: paragraph
@@ -111,7 +49,7 @@ options:
             description: |
                 A list of Tag IDs or slugs to automatically
                 apply to events created by this recipe.
-            placeholder: "pending"
+            placeholder: "promotion-internal"
 
     set_event_content_items:
         input_type: search

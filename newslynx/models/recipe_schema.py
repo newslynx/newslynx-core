@@ -278,10 +278,9 @@ class RecipeSchema(object):
         for type in types:
             ret = self.validate_type(key, opt, type)
             if isinstance(ret, RecipeSchemaError):
-                error_messages.append(ret.message)
+                error_messages.append(ret.args[0])
             else:
                 return ret
-
         msg = "The following options are invalid: {}"\
               .format("\n\t- ".join(error_messages))
         self._raise_recipe_schema_error(msg)

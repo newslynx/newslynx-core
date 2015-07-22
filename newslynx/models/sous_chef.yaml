@@ -44,6 +44,30 @@ properties:
     option_order:
         description: A list of option names in the the order they should be returned by the API.
         type: array
+        items:
+            type: string
+
+    includes:
+        description: |
+            A list of paths to other schemas to inherit from. If these are partial schema objects 
+            they must be prefaced by `_`.
+        type: array
+        items:
+            type: string
+
+    required_auths:
+        description: |
+            A list of authorization names this SousChef requires.
+        type: array
+        items:
+            type: string
+
+    required_settings:
+        description: |
+            A list of settings names this SousChef requires.
+        type: array
+        items:
+            type: string
 
     options:
         description: Options this sous-chef accepts.
@@ -55,7 +79,7 @@ properties:
         description: Metrics this sous-chef creates.
         patternProperties: 
             '^[a-z][a-z_]+[a-z]$':
-                $ref: "#/definitions/metric_item"            
+                $ref: "#/definitions/metric_item"
 
 definitions:
     metric_item:

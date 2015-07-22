@@ -88,7 +88,7 @@ CONTENT_ITEM_SEARCH_VECTORS = [
 # SOUS CHEFS
 SOUS_CHEF_CREATES = [
     'events', 'content', 'tags',
-    'metrics', 'series', 'reports',
+    'metrics', 'series', 'report',
     'external', 'internal'
 ]
 

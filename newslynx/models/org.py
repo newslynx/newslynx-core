@@ -40,11 +40,6 @@ class Org(db.Model):
         cascade="all, delete-orphan")
 
     # dynamic relations
-    templates = db.relationship(
-        'Template',
-        backref=db.backref('org'),
-        lazy='dynamic',
-        cascade="all, delete-orphan")
     reports = db.relationship(
         'Report',
         backref=db.backref('org'),

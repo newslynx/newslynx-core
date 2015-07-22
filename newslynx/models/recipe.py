@@ -52,6 +52,7 @@ class Recipe(db.Model):
     events = db.relationship('Event', lazy='dynamic')
     content_items = db.relationship('ContentItem', lazy='dynamic')
     metrics = db.relationship('Metric', backref=db.backref('recipe', lazy='joined'), lazy='joined')
+    reports = db.relationship('Report', backref=db.backref('recipe', lazy='joined'), lazy='joined')
     sous_chef = db.relationship(
         'SousChef', backref=db.backref('recipes', lazy='joined', cascade="all, delete-orphan"), lazy='joined')
     user = db.relationship(
@@ -110,7 +111,13 @@ class Recipe(db.Model):
     def metric_names(self):
         return [m.name for m in self.metrics]
 
-    def to_dict(self):
+    @property
+    def report_names(self):
+        return [r.slug for r in self.reports]
+
+
+    def to_dict(self, **kw):
+        incl_reports = kw.get("incl_reports", True)
         d = {
             'id': self.id,
             'org_id': self.org_id,
@@ -130,8 +137,14 @@ class Recipe(db.Model):
             'last_job': self.last_job,
             'options': pickle_to_obj(self.options)
         }
-        if self.sous_chef.creates == 'metrics':
+
+        if 'metrics' in self.sous_chef.creates:
             d['metrics'] = self.metric_names
+
+        if incl_reports:
+            if 'report' in self.sous_chef.creates:
+                d['reports'] = self.report_names
+
         return d
 
     def __repr__(self):
