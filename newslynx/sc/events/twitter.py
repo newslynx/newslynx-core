@@ -110,7 +110,7 @@ class SCTwitterEvent(SousChef):
             raise Exception('This Sous Chef requires a Twitter Authorization.')
         self.twitter = Twitter()
         try:
-            self.twitter.connect(**tokens.get('value', {}))
+            self.twitter.connect(**tokens)
         except Exception as e:
             raise Exception(
                 'Error Connecting to Twitter: {}'.format(e.message))

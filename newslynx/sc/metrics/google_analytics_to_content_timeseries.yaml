@@ -7,7 +7,7 @@ creates: metrics
 option_order: []
 options:
     
-    max_age:
+    days:
         input_type: number
         value_types:
             - numeric
@@ -15,8 +15,7 @@ options:
         help:
             placeholder: 30
             description: |
-                The number of days past a content item's creation date
-                after which we will stop computing these counts.
+                How many days back should we search each day
 
     content_item_types:
         input_type: text

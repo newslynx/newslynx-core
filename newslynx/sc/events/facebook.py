@@ -8,9 +8,9 @@ class SCFacebookEvent(SousChef):
 
     timeout = 300
 
-    def _fmt(self, tweet):
+    def _fmt(self, event):
         new = defaultdict()
-        for k, v in tweet.iteritems():
+        for k, v in event.iteritems():
             if isinstance(v, dict):
                 new.update(self._fmt(v))
             else:
@@ -30,7 +30,7 @@ class SCFacebookEvent(SousChef):
             raise Exception('This Sous Chef requires a Facebook Authorization.')
         self.facebook = Facebook()
         try:
-            self.facebook.connect(**tokens.get('value', {}))
+            self.facebook.connect(**tokens)
         except Exception as e:
             raise Exception(
                 'Error Connecting to Facebook: {}'.format(e.message))

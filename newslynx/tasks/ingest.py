@@ -1071,6 +1071,8 @@ def _prepare_metrics(obj, metrics_lookup):
     # check if metrics exist and are properly formatted.
     obj.update(obj.pop('metrics', {}))
     for k in obj.keys():
+        if k == 'datetime':
+            continue
         m = metrics_lookup.get(k)
         if not m:
             raise RequestError(
