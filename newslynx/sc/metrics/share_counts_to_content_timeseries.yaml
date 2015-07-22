@@ -8,7 +8,7 @@ creates: metrics
 option_order: []
 options:
     
-    max_age:
+    days:
         input_type: number
         value_types:
             - numeric

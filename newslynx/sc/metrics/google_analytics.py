@@ -53,6 +53,7 @@ class SCGoogleAnalytics(SousChef):
                     if not p['property'] == prop.url:
                         continue
                     for prof in prop.profiles:
+                        print prof.name, p['profile']
                         if not prof.name == p['profile']:
                             continue
                         if prof not in self.profiles:
@@ -330,8 +331,9 @@ class ContentDomainFacets(SCGoogleAnalytics):
         return row
 
     def fetch(self, prof):
-        days = self.options.get('days', 90)
+        days = self.options.get('days', 30)
         start = (dates.now() - timedelta(days=days)).date().isoformat()
+        print "START", start
         i = 1
         while 1:
             q = prof.core.query(self.METRICS.keys(), self.DIMENSIONS.keys())\
@@ -418,11 +420,12 @@ class ContentDeviceSummaries(SCGoogleAnalytics):
     }
 
     def fetch(self, prof):
-        days = self.options.get('days', 90)
+        days = self.options.get('days', 30)
         start = (dates.now() - timedelta(days=days)).date().isoformat()
         i = 1
         while 1:
             q = prof.core.query(self.METRICS.keys(), self.DIMENSIONS.keys())\
+                         .range(start, days=days)\
                          .limit(i, i+1000)
             self.log.info('Running query:\n\t{}\n\tat limit {}'.format(q.raw, i))
             i += 1000

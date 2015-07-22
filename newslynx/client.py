@@ -58,6 +58,7 @@ class BaseClient(object):
         """
         A wrapper for all request executions.
         """
+
         if not url.endswith('login') and not self.apikey:
             raise ClientError('You haven\'t set your apikey or logged in yet!')
 

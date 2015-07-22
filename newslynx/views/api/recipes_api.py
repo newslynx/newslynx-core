@@ -274,9 +274,8 @@ def update_recipe(user, org, recipe_id):
 
     # now install metrics + reports
     if new_recipe.get('status', 'uninitialized') and r.status == 'stable':
-        sc.ensure_metrics
 
-        for name, params in sc.metrics.items():
+        for name, params in r.sous_chef.metrics.items():
 
             m = Metric.query\
                 .filter_by(org_id=org.id, recipe_id=r.id, name=name, type=params['type'])\
@@ -293,24 +292,6 @@ def update_recipe(user, org, recipe_id):
                     setattr(m, k, v)
 
             db.session.add(m)
-
-        # if the recipe creates a report, create it here.
-        if 'report' in sc.creates and r.status == 'stable':
-            rep = Report.query\
-                .filter_by(org_id=org.id, recipe_id=r.id, slug=report['slug'])\
-                .first()
-
-            if not rep:
-                rep = Report(
-                    recipe_id=r.id,
-                    org_id=org.id,
-                    sous_chef_id=sous_chef_id,
-                    user_id=user_id,
-                    **report)
-            else:
-                for k, v in report.items():
-                    setattr(rep, k, v)
-            db.session.add(rep)
 
     db.session.commit()
     return jsonify(r)
@@ -421,10 +402,7 @@ def cook_a_recipe(user, org, recipe_id):
         db.session.commit()
 
         # # return job status url
-        q = 'recipe'
-        if 'format' in sc.creates:
-            q = 'report'
-        ret = url_for_job_status(apikey=user.apikey, job_id=resp, queue=q)
+        ret = url_for_job_status(apikey=user.apikey, job_id=resp, queue='recipe')
         return jsonify(ret, status=202)
 
     # format non-iterables.

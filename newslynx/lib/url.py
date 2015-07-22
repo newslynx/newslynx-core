@@ -79,6 +79,9 @@ def prepare(url, source=None, canonicalize=True, expand=True, keep_params=KEEP_P
     if not url or url == "":
         return None
 
+    # encode.
+    url = url.encode('utf-8', errors='ignore')
+
     # reconcile embeds:
     url = reconcile_embed(url)
 

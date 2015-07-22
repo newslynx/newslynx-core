@@ -41,8 +41,8 @@ from newslynx.lib.serialize import obj_to_json
 from newslynx import settings
 from newslynx.constants import (
     METRIC_FACET_KEYS, EVENT_STATUSES,
-    CONTENT_ITEM_TYPES, METRICS_MIN_DATE_UNIT,
-    METRICS_MIN_DATE_VALUE)
+    CONTENT_ITEM_TYPES)
+
 
 # the url cache object
 url_cache = URLCache()

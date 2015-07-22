@@ -632,6 +632,7 @@ def localize(org):
     else:
         db.session.execute("SET TIMEZONE TO UTC")
 
+
 # Blueprints
 
 def register_blueprints(app, *mods):
@@ -648,11 +649,11 @@ def register_blueprints(app, *mods):
                     'templates' not in fp):
 
                 name = fp.replace('.py', '')
-                try:
-                    m = importlib.import_module(
-                        '%s.%s' % (package_name, name))
-                except:
-                    continue
+                # try:
+                m = importlib.import_module(
+                    '%s.%s' % (package_name, name))
+                # except:
+                #     continue
                 for item in dir(m):
                     item = getattr(m, item)
                     if isinstance(item, Blueprint):

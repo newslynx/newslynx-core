@@ -339,7 +339,6 @@ class TSQuery(object):
         # if we're ignoring the date, we need to get
         # change these commas
         if not self.unit:
-            sel_id_col += ","
             agg_id_col = agg_id_col.replace(',', '')
             agg_order_by = agg_order_by.replace(',', '')
 

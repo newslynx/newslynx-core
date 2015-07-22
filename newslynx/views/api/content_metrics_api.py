@@ -225,7 +225,7 @@ def refresh_content_summary(user, org):
     Refresh content summary metrics
     """
     since = arg_int('since', 24)
-    rollup_metric.content_timeseries_to_summary(org, since)
+    rollup_metric.content_timeseries_to_summary(org, [], since)
     rollup_metric.event_tags_to_summary(org)
     return jsonify({'success': True})
 

@@ -117,25 +117,6 @@ def org(
 
                 db.session.add(m)
 
-        # if the recipe creates a report, create it here.
-        if 'report' in sc.creates and r.status == 'stable':
-            rep = Report.query\
-                .filter_by(org_id=org.id, recipe_id=r.id, slug=sc.report['slug'])\
-                .first()
-
-            if not rep:
-                rep = Report(
-                    recipe_id=r.id,
-                    org_id=org.id,
-                    sous_chef_id=sc.id,
-                    user_id=org.super_user.id,
-                    **sc.report)
-            else:
-                for k, v in sc.report.items():
-                    setattr(rep, k, v)
-
-            db.session.add(rep)
-
     # add default tags
     for tag in init.load_default_tags():
         tag['org_id'] = org.id

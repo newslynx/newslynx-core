@@ -20,6 +20,7 @@ def content_timeseries_to_summary(org, content_item_ids=[], num_hours=24):
 
     # just use this to generate a giant timeseries select with computed
     # metrics.
+    print content_item_ids
     if not len(content_item_ids):
         content_item_ids = org.content_item_ids
     if not len(content_item_ids):
