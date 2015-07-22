@@ -86,7 +86,7 @@ def validate(sc, fp):
     return sc
 
 
-def update(old_sous_chef, new_sous_chef, fp=None):
+def update(old_sous_chef, new_sous_chef):
     """
     Given a partial or completely new sous-chef, update the souf-chef
     and re-validate it.
@@ -103,7 +103,7 @@ def update(old_sous_chef, new_sous_chef, fp=None):
     new_sous_chef = update_nested_dict(
         old_sous_chef, new_sous_chef, overwrite=True)
 
-    return validate(new_sous_chef, fp)
+    return validate(new_sous_chef, None)
 
 
 def _validate_input_and_value_types(sc):
@@ -193,36 +193,6 @@ def _validate_metrics_sous_chef(sc):
             _raise_sous_chef_schema_error(sc, msg)
 
         # TODO MORE checking logic.
-
-
-def _validate_report_sous_chef(sc, fp):
-    """
-    Special cases for sous chefs that create reports.
-    """
-    report = sc.get('report', {})
-    if not len(report.keys()):
-        msg = 'SousChefs that create a report must explicitly declare it\'s schema.'
-        _raise_sous_chef_schema_error(sc, msg)
-
-    # reconcile path.
-    tmpl_file = report.get('template', {}).get('file')
-
-    # check for the local template file.
-    if tmpl_file and not fp.startswith('/'):
-        tmpl_file = os.path.join(os.path.dirname(fp), tmpl_file.split('/')[-1])
-
-        if not os.path.exists(tmpl_file):
-            raise SousChefSchemaError(
-                'Tempalte file "{}" does not exist'.format(tmpl_file))
-        if 'template' not in report:
-            report['template'] = {
-                'slug': "{}-{}".format(sc.get('slug'), gen_short_uuid()),
-                'mame': sc.get('name'),
-                'description': sc.get('descrptions')
-            }
-        report['template']['file'] = tmpl_file
-        sc['report'] = report
-    return sc
 
 
 def _validate_sous_chef_json_schema(sc):

@@ -4,16 +4,12 @@ Initialize Database, Super User, and Sous Chefs
 
 import sys
 
-from newslynx.init import load_sous_chefs
 from newslynx.cli.common import LOGO
-from newslynx.models import sous_chef_schema
 from newslynx.init import load_sql
-from newslynx.models import User, SousChef
 from newslynx.views import app
 from newslynx.core import db
 from newslynx import settings
 from newslynx.tasks import default
-
 
 
 def setup(parser):
@@ -54,4 +50,3 @@ def run(opts, log, **kwargs):
             log.warning(
                 '\nYou can now start the API by running ', color="blue", line=False)
             log.info('newslynx debug\n\n', color="green", line=False)
-
