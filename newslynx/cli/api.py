@@ -104,14 +104,6 @@ def run(opts, log, **kwargs):
     if d:
         kwargs.update(d)
 
-    # special handling for templates.
-    # allows you to load files.
-    if opts.collection == 'templates':
-        tmpl = kwargs.get('template', '').lower()
-        if tmpl.endswith('html') or tmpl.endswith('md') or \
-           tmpl.endswith('markdown'):
-            kwargs['template'] = open(tmpl).read()
-
     # execute method
     try:
         res = mobj(**kwargs)

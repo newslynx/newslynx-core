@@ -81,11 +81,6 @@ properties:
             '^[a-z][a-z_]+[a-z]$':
                 $ref: "#/definitions/metric_item"
 
-    report: 
-        description: The Report. this sous-chef creates.
-        $ref: "#/definitions/report_item"
-
-
 definitions:
     metric_item:
         description: A metric the sous-chef creates.
@@ -231,60 +226,3 @@ definitions:
                     description:
                         description: A description of this option to display on form hover.
                         type: string
-
-
-    report_item:
-        description: Special options for SousChefs that create reports
-        type: object
-        required: 
-            - name
-        properties:
-            name:
-               description: The display name of the report.
-               type: string
-
-            slug:
-               description: A slug to display this report in a url.
-               type: string
-               pattern: '^[a-z][a-z\-]+[a-z]$'
-
-            description:
-                description: A description of what the report does
-                type: string
-
-            template:
-                description: Special options for SousChefs that create templated reports.
-                $ref: "#/definitions/template_item"
-
-    template_item:
-        description: Special options for SousChefs that create reports
-        type: object
-        required: ['file', 'format', 'name']
-        properties:
-            
-            file: 
-                description: The path the template file.
-                type: string 
-                pattern: '.*\.md$|.*\.html'
-                type: string 
-
-            format:
-                description: The format of this template. 
-                type: string 
-                enum:
-                    - md
-                    - html
-                default: null 
-
-            name:
-                description: The display name of this template.
-                type: string
-            
-            slug: 
-               description: A slug to display this template in a url.
-               type: string
-               pattern: '^[a-z][a-z\-]+[a-z]$'
-
-            description:
-                description: A description of this Template.
-                type: string 

@@ -13,7 +13,7 @@ class SousChef(object):
     and modifies NewsLynx via it's API.
     """
 
-    timeout = 120  # how long until this sous chef timesout?
+    timeout = 240  # how long until this sous chef timesout?
 
     def __init__(self, **kw):
         # parse kwargs

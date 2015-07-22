@@ -530,7 +530,7 @@ class Recipes(BaseClient):
         def _generate():
             for line in r.iter_lines():
                 d = json_to_obj(line)
-
+                print "D", d
                 # catch errors
                 if d.get('error'):
                     if self.raise_errors:
@@ -964,53 +964,6 @@ class SousChefs(BaseClient):
         kw, params = self._split_auth_params_from_data(kw)
         url = self._format_url('sous-chefs', sous_chef_id)
         return self._request('PUT', url, data=kw, params=params)
-
-
-class Templates(BaseClient):
-
-    def list(self, **kw):
-        """
-        List templates for an organization.
-        """
-
-        url = self._format_url('templates')
-        return self._request('GET', url, params=kw)
-
-    def get(self, id, **kw):
-        """
-        Get a particular template
-        """
-
-        url = self._format_url('templates', id)
-        return self._request('GET', url, **kw)
-
-    def create(self, **kw):
-        """
-        Create a template
-        """
-        # jsonify value
-        kw, params = self._split_auth_params_from_data(kw)
-        # TODO handle template files.
-        url = self._format_url('templates')
-        return self._request('POST', url, data=kw, params=params)
-
-    def update(self, id, **kw):
-        """
-        Update a template.
-        """
-
-        kw, params = self._split_auth_params_from_data(kw)
-        # TODO handle template files.
-        url = self._format_url('templates', id)
-        return self._request('PUT', url, data=kw, params=params)
-
-    def delete(self, id, **kw):
-        """
-        Delete a template. Cascades all reports.
-        """
-
-        url = self._format_url('templates', id)
-        return self._request('DELETE', url, params=kw)
 
 
 class Reports(BaseClient):

@@ -55,7 +55,7 @@ class SCGoogleAnalytics(SousChef):
                     for prof in prop.profiles:
                         if not prof.name == p['profile']:
                             continue
-                        if prof not in profiles:
+                        if prof not in self.profiles:
                             self.profiles.append(prof)
                             break
 
@@ -67,7 +67,7 @@ class SCGoogleAnalytics(SousChef):
         """
         Connect to googla analytcs, select properties, get content items.
         """
-        self.profiles = self.connect()
+        self.connect()
         self._gen_lookups()
 
     def _gen_lookups(self):
@@ -177,11 +177,21 @@ class ContentTimeseries(SCGoogleAnalytics):
     ]
 
     def fetch(self, prof):
-        q = prof.core.query(self.METRICS.keys(), self.DIMENSIONS.keys())\
-                     .range('2015-05-01', days=180)\
-                     .sort(*self.SORT_KEYS)
-        r = q.execute()
-        return r.rows
+        days = self.options.get('days', 5)
+        start = (dates.now() - timedelta(days=days)).date().isoformat()
+        i = 1
+        while 1:
+            q = prof.core.query(self.METRICS.keys(), self.DIMENSIONS.keys())\
+                         .range(start, days=days)\
+                         .sort(*self.SORT_KEYS)\
+                         .limit(i, i+1000)
+            self.log.info('Running query:\n\t{}\n\tat limit {}'.format(q.raw, i))
+            i += 1000
+            r = q.execute()
+            if not len(r.rows):
+                break
+            for row in r.rows:
+                yield row
 
     def format_row_names(self, row):
         """
@@ -320,10 +330,20 @@ class ContentDomainFacets(SCGoogleAnalytics):
         return row
 
     def fetch(self, prof):
-        q = prof.core.query(self.METRICS.keys(), self.DIMENSIONS.keys())\
-                     .range('2015-05-01', days=180)
-        r = q.execute()
-        return r.rows
+        days = self.options.get('days', 90)
+        start = (dates.now() - timedelta(days=days)).date().isoformat()
+        i = 1
+        while 1:
+            q = prof.core.query(self.METRICS.keys(), self.DIMENSIONS.keys())\
+                         .range(start, days=days)\
+                         .limit(i, i+1000)
+            self.log.info('Running query:\n\t{}\n\tat limit {}'.format(q.raw, i))
+            i += 1000
+            r = q.execute()
+            if not len(r.rows):
+                break
+            for row in r.rows:
+                yield row
 
     def format_row_names(self, row):
         """
@@ -398,10 +418,19 @@ class ContentDeviceSummaries(SCGoogleAnalytics):
     }
 
     def fetch(self, prof):
-        q = prof.core.query(self.METRICS.keys(), self.DIMENSIONS.keys())\
-                     .range('2015-06-01', days=90)
-        r = q.execute()
-        return r.rows
+        days = self.options.get('days', 90)
+        start = (dates.now() - timedelta(days=days)).date().isoformat()
+        i = 1
+        while 1:
+            q = prof.core.query(self.METRICS.keys(), self.DIMENSIONS.keys())\
+                         .limit(i, i+1000)
+            self.log.info('Running query:\n\t{}\n\tat limit {}'.format(q.raw, i))
+            i += 1000
+            r = q.execute()
+            if not len(r.rows):
+                break
+            for row in r.rows:
+                yield row
 
     def format_row_names(self, row):
         """

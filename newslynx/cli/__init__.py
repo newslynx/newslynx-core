@@ -79,10 +79,11 @@ def run():
             sys.exit(1)
 
     except ConfigError as e:
-        if opts and not opts.no_interactive:
+        if not opts or not opts.no_interactive:
             log.info(LOGO + "\n", line=False, color='lightwhite_ex')
             log.info("\n\n", line=False)
             log.exception(e, tb=False, line=False)
+            log.info("\n\n", line=False)
             from newslynx.cli import config
             kwargs['re'] = False
             config.run(opts, log, **kwargs)

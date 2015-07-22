@@ -35,7 +35,7 @@ def org(
                  password=settings.SUPER_USER_PASSWORD,
                  admin=True,
                  super_user=True)
-        u.apikey = settings.SUPER_USER_APIKEY
+    u.apikey = settings.SUPER_USER_APIKEY
     org.users.append(u)
     db.session.add(org)
     db.session.commit()
@@ -81,7 +81,7 @@ def org(
         recipe['org_id'] = org.id
 
         r = Recipe.query\
-            .filter_by(org_id=org.id, slug=recipe['slug'])\
+            .filter_by(org_id=org.id, name=recipe['name'])\
             .first()
 
         if not r:
@@ -94,8 +94,8 @@ def org(
                 else:
                     r.set_options(value)
 
-            db.session.add(r)
-            db.session.commit()
+        db.session.add(r)
+        db.session.commit()
 
         # if the recipe creates metrics create them here.
         if 'metrics' in sc.creates and r.status == 'stable':
@@ -133,6 +133,7 @@ def org(
             else:
                 for k, v in sc.report.items():
                     setattr(rep, k, v)
+
             db.session.add(rep)
 
     # add default tags
