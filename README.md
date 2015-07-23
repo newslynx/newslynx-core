@@ -17,17 +17,17 @@ For most applications, refer to our [installation guide](http://newslynx.readthe
 ##### Install `newslynx`, prefrerably in a virtual environment.
 
 ```
-git clone https://github.com/newslynx/newslynx.git
-cd newslynx
-python setup.py install
+$ git clone https://github.com/newslynx/newslynx.git
+$ cd newslynx
+$ python setup.py install
 ```
 
 If you want to actively work on the codebase, install in `editable` mode:
 
 ```
-git clone https://github.com/newslynx/newslynx.git
-cd newslynx
-pip install --editable . 
+$ git clone https://github.com/newslynx/newslynx.git
+$ cd newslynx
+$ pip install --editable . 
 ```
 
 ##### Install the dependencies:
@@ -35,20 +35,20 @@ pip install --editable .
 Install `redis`:
 
 ```
-brew install redis
+$ brew install redis
 ```
 
 **NOTE** We recommend using [Postgres APP](http://postgresapp.com/). However, if you prefer the `brew` distribution, make sure to install it with plpythonu.
 
 ```
-brew install postgresql --build-from-source --with-python
+$ brew install postgresql --build-from-source --with-python
 ```
 
 (Re)create a `postgresql` database
 
 ```
-dropdb newslynx 
-createdb newslynx
+$ dropdb newslynx 
+$ createdb newslynx
 ```
 
 ##### Set your configurations
@@ -60,19 +60,19 @@ Please refer to the [configuration docs](http://newslynx.readthedocs.org/en/late
 Open another shell and run:
 
 ```
-redis-server
+$ redis-server
 ```
 
 ##### Initialize the database, super user, and install built-in sous chefs.
 
 ```
-newslynx init
+$ newslynx init
 ```
 
 Include app defaults:
 
 ```
-newslynx init --app-defaults
+$ newslynx init --app-defaults
 ```
 
 ##### Start the server
@@ -86,14 +86,14 @@ newslynx init --app-defaults
 ```
 bin/start_workers
 ```
-stop the tasks workers
+$ stop the tasks workers
 ```
-bin/stop_workers
+$ bin/stop_workers
 ```
 
 ##### Start the cron daemon
 ```
-newslynx cron
+$ newslynx cron
 ```
 
 ## Getting Started.
