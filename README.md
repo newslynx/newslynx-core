@@ -9,7 +9,6 @@ NewsLynx Core was built to power [`newslynx-app`](http://github.com/newslynx/new
 * A framework for configuring, scheduling, and monitoring arbitrary ``python`` jobs via API.
 * A content-extraction API. 
 
-
 ## Installation
 
 For most applications, refer to our [installation guide](http://newslynx.readthedocs.org/en/latest/install.html). If you'd like to setup a development environment, following the instructions below for MacOS X.  If you'd like to spin up a Virtual Machine, check out our [automation guide](https://github.com/newslynx/automation).
@@ -87,7 +86,7 @@ $ newslynx init --app-defaults
 $ bin/start_workers
 ```
 
-##### Ttop the task workers
+##### Stop the task workers
 
 ```
 $ bin/stop_workers
@@ -100,6 +99,17 @@ $ newslynx cron
 
 ## Getting Started.
 
+* [Configuration](http://newslynx.readthedocs.org/en/latest/config.html)
+* [First steps](http://newslynx.readthedocs.org/en/latest/getting-started.html)
+* [Understanding Sous Chefs](http://newslynx.readthedocs.org/en/latest/sous-chefs.html)
+* [Understanding Recipes](http://newslynx.readthedocs.org/en/latest/recipes.html)
+* [Understanding Metrics](http://newslynx.readthedocs.org/en/latest/metrics.html)
+* [Understanding Tags](http://newslynx.readthedocs.org/en/latest/taxonomy.html)
+* [Understanding Content](http://newslynx.readthedocs.org/en/latest/content-items.html)
+* [Understanding Events](http://newslynx.readthedocs.org/en/latest/events.html)
+* [Full API Reference](http://newslynx.readthedocs.org/en/latest/api.html)
+* [Command Line Interface](http://newslynx.readthedocs.org/en/latest/cli.html)
+* [Write your own Sous Chef](http://newslynx.readthedocs.org/en/latest/writing-sous-chefs.html)
 
 ## Application Structure
 

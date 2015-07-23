@@ -19,14 +19,13 @@ def setup(subparser):
     Install all subcommands.
     """
 
-    from newslynx.cli import api, version, dev, init, debug, cron, config, echo
+    from newslynx.cli import api, version, dev, init, debug, cron, echo
     MODULES = [
         api,
         dev,
         init,
         echo,
         cron,
-        config,
         version,
         debug
     ]
@@ -79,17 +78,8 @@ def run():
             sys.exit(1)
 
     except ConfigError as e:
-        if not opts or not opts.no_interactive:
-            log.info(LOGO + "\n", line=False, color='lightwhite_ex')
-            log.info("\n\n", line=False)
-            log.exception(e, tb=False, line=False)
-            log.info("\n\n", line=False)
-            from newslynx.cli import config
-            kwargs['re'] = False
-            config.run(opts, log, **kwargs)
-        else:
-            log.exception(e, tb=False, line=False)
-            sys.exit(1)
+        log.exception(e, tb=False, line=False)
+        sys.exit(1)
 
     except KeyboardInterrupt as e:
         log.warning('\nInterrupted by user.\n', line=False)
