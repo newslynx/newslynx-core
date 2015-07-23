@@ -84,9 +84,11 @@ $ newslynx init --app-defaults
 ##### Start the task workers
 
 ```
-bin/start_workers
+$ bin/start_workers
 ```
-$ stop the tasks workers
+
+##### Ttop the task workers
+
 ```
 $ bin/stop_workers
 ```
