@@ -1,9 +1,18 @@
-# newslynx
+# newslynx-core
 
-**This is still a WIP and we should be officially open-sourcing the codebase in late June/July 2015. For now, please read [the report](http://towcenter.org/research/the-newslynx-impact-tracker-produced-these-key-ideas/) we published for the [TowCenter](http://towcenter.org) on our prototype.**
- 
+NewsLynx Core is an expandable open-source toolkit for building modular content analytics workflows. It provides a fully RESTful API as well as a comprehensive `python` client and command line interface.
 
-## (Re)Setting up the dev environment
+NewsLynx Core was built to power [`newslynx-app`](http://github.com/newslynx/newslynx-app) but is capable of powering a diverse range of potential applications, as well, including:
+
+* A Mention.net-like pipeline for your personal or company blog.
+* A Flexible timeseries store for content metrics which will automatically summarize and compare your data, as well as enable the additional of custom, computed metrics.
+* A framework for configuring, scheduling, and monitoring arbitrary ``python`` jobs via API.
+* A content-extraction API. 
+
+
+## Installation
+
+For most applications, refer to our [installation guide](http://newslynx.readthedocs.org/en/latest/install.html). If you'd like to setup a development environment, following the instructions below for MacOS X.  If you'd like to spin up a Virtual Machine, check out our [automation guide](https://github.com/newslynx/automation).
 
 #### Install `newslynx`, prefrerably in a virtual environment.
 
@@ -21,7 +30,7 @@ cd newslynx
 pip install --editable . 
 ```
 
-#### Install the dependencies (instructions for Mac OS X, for now):
+#### Install the dependencies:
 
 Install `redis`:
 
@@ -44,9 +53,7 @@ createdb newslynx
 
 #### Set your configurations
 
-- fill out [`example_config/config.yaml`](example_config/config.yaml) and move it to `~/.newslynx/config.yaml`
-- follow the [SQLAlchemy Docs](http://docs.sqlalchemy.org/en/rel_1_0/core/engines.html#database-urls) for details on how to configure your `sqlalchemy_database_uri`.
-- Modify default recipes and tags in [`example_config/defaults/recipes.yaml`](example_config/defaults/recipes.yaml) and [`example_config/defaults/tags.yaml`](example_config/defaults/tags.yaml). These tags and recipes will be created everytime a new organization is added. If you'd simply like to use our defaults, type `make defaults`. This will move these files to `~/.newslynx/defaults`.
+Please refer to the [configuration docs](http://newslynx.readthedocs.org/en/latest/config.html)
 
 #### Start the redis server
 
@@ -66,16 +73,16 @@ newslynx init
 
 - In debug mode: `newslynx debug`
 - Debug mode with errors: `newslynx debug --raise-errors`
-- Production `guniorn` server: `./run`
+- Production `guniorn` server: `bin/run`
 
 #### Start the task workers
 
 ```
-./start_workers
+bin/start_workers
 ```
 stop the tasks workers
 ```
-./stop_workers
+bin/stop_workers
 ```
 
 #### Start the cron daemon
@@ -83,74 +90,8 @@ stop the tasks workers
 newslynx cron
 ```
 
-#### IGNORE THIS ERROR:
+## Application Structure
 
-This is a result of our extensive use of `gevent`. We haven't yet figured out how to properly suppress this error. See more details [here](http://stackoverflow.com/questions/8774958/keyerror-in-module-threading-after-a-successful-py-test-run).
-
-```
-Exception KeyError: KeyError(4332017936,) in <module 'threading' from '/System/Library/Frameworks/Python.framework/Versions/2.7/lib/python2.7/threading.pyc'> ignored
-```
-
-## TODO 
-- [ ] Fix Bulk Loading process.
-- [ ] Re-implement SousChefs
-    - [x] RSS Feeds => Thing
-    - [x] Google Analytics => Metric
-    - [ ] Google Alerts => Event
-    - [x] Social Shares => Metric
-    - [ ] Homepage Promotions => Metric
-    - [x] Twitter Promotions => Metric
-    - [ ] Facebook Promotions => Metric
-    - [x] Twitter List => Event 
-    - [x] Twitter User => Event 
-    - [ ] Facebook Page => Event 
-    - [x] Reddit => Event
-    - [ ] HackerNews => Event
-- [ ] Implement New SousChefs 
-    - [ ] IFTTT integrations
-        - [ ] Wordpress Publish => Thing
-        - TK
-    - [ ] Regex Thing URL => Tag 
-    - [ ] Search Things => Tag 
-    - [ ] Meltwater Emails => Event
-    - [ ] Newsletter Email Promotions => Metric
-    - [ ] Calculated Metric? SQL API.
-- [x] Implement Recipe scheduler
-- [ ] Implement Admin Panel
-- [ ] Migrate Core Prototype Users.
-- [ ] Automate Deployment
-- [ ] App Integration
-- [ ] Document, Document, Document
-
-## References
-
-#### API Design
-
-* [http://www.vinaysahni.com/best-practices-for-a-pragmatic-restful-api](http://www.vinaysahni.com/best-practices-for-a-pragmatic-restful-api)
-
-#### Crosstab in Postgres
-* [http://www.postgresonline.com/journal/archives/14-CrossTab-Queries-in-PostgreSQL-using-tablefunc-contrib.html](http://www.postgresonline.com/journal/archives/14-CrossTab-Queries-in-PostgreSQL-using-tablefunc-contrib.html)
-
-#### filling in zeros for a timezeries
-* [http://stackoverflow.com/questions/346132/postgres-how-to-return-rows-with-0-count-for-missing-data]
-
-#### fetching column names from table
-* [http://www.postgresql.org/message-id/AANLkTilsjTAXyN5DghR3M2U4c8w48UVxhov4-8igMpd1@mail.gmail.com](http://www.postgresql.org/message-id/AANLkTilsjTAXyN5DghR3M2U4c8w48UVxhov4-8igMpd1@mail.gmail.com)
-
-#### timeseries tips
-* [http://no0p.github.io/postgresql/2014/05/08/timeseries-tips-pg.html](http://no0p.github.io/postgresql/2014/05/08/timeseries-tips-pg.html)
-
-#### Getting bigger with flask (+ dynamic subdomains):
-* [http://maximebf.com/blog/2012/11/getting-bigger-with-flask/#.VVYvUZNVhBc](http://maximebf.com/blog/2012/11/getting-bigger-with-flask/#.VVYvUZNVhBc)
-
-#### Nonblocking with flask, gevent, + psycopg2
-* [https://github.com/kljensen/async-flask-sqlalchemy-example](https://github.com/kljensen/async-flask-sqlalchemy-example)
-
-#### Rate Limiting in Flask.
-* [http://flask.pocoo.org/snippets/70/](http://flask.pocoo.org/snippets/70/)
-
-#### Postgres Search Configuration
-* [http://sqlalchemy-searchable.readthedocs.org/en/latest/configuration.html](http://sqlalchemy-searchable.readthedocs.org/en/latest/configuration.html)
 
 ## License
 
