@@ -14,7 +14,7 @@ NewsLynx Core was built to power [`newslynx-app`](http://github.com/newslynx/new
 
 For most applications, refer to our [installation guide](http://newslynx.readthedocs.org/en/latest/install.html). If you'd like to setup a development environment, following the instructions below for MacOS X.  If you'd like to spin up a Virtual Machine, check out our [automation guide](https://github.com/newslynx/automation).
 
-#### Install `newslynx`, prefrerably in a virtual environment.
+##### Install `newslynx`, prefrerably in a virtual environment.
 
 ```
 git clone https://github.com/newslynx/newslynx.git
@@ -30,7 +30,7 @@ cd newslynx
 pip install --editable . 
 ```
 
-#### Install the dependencies:
+##### Install the dependencies:
 
 Install `redis`:
 
@@ -51,11 +51,11 @@ dropdb newslynx
 createdb newslynx
 ```
 
-#### Set your configurations
+##### Set your configurations
 
 Please refer to the [configuration docs](http://newslynx.readthedocs.org/en/latest/config.html)
 
-#### Start the redis server
+##### Start the redis server
 
 Open another shell and run:
 
@@ -63,19 +63,25 @@ Open another shell and run:
 redis-server
 ```
 
-#### Initialize the database, super user, and instlall built-in sous chefs.
+##### Initialize the database, super user, and install built-in sous chefs.
 
 ```
 newslynx init
 ```
 
-#### Start the server
+Include app defaults:
+
+```
+newslynx init --app-defaults
+```
+
+##### Start the server
 
 - In debug mode: `newslynx debug`
 - Debug mode with errors: `newslynx debug --raise-errors`
 - Production `guniorn` server: `bin/run`
 
-#### Start the task workers
+##### Start the task workers
 
 ```
 bin/start_workers
@@ -85,10 +91,13 @@ stop the tasks workers
 bin/stop_workers
 ```
 
-#### Start the cron daemon
+##### Start the cron daemon
 ```
 newslynx cron
 ```
+
+## Getting Started.
+
 
 ## Application Structure
 
