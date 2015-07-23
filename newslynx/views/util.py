@@ -121,7 +121,7 @@ def arg_list(name, default=None, typ=str, exclusions=False):
             raise RequestError(
                 '"{}", element  {} of "{}" is invalid. '
                 'It should be a {} type.'
-                .format(value), i, name, type_string)
+                .format(value, i, name, type_string))
 
         if exclusions:
             if exclude:

@@ -203,7 +203,7 @@ def search_events(user, org):
         arg_list('recipe_ids', default=[], typ=int, exclusions=True)
 
     include_sous_chefs, exclude_sous_chefs = \
-        arg_list('sous_chef_ids', default=[], typ=int, exclusions=True)
+        arg_list('sous_chefs', default=[], typ=str, exclusions=True)
 
     include_levels, exclude_levels = \
         arg_list('levels', default=[], typ=str, exclusions=True)
