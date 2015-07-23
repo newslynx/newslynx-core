@@ -157,29 +157,6 @@ def apply_event_filters(q, **kw):
 @load_org
 def search_events(user, org):
     """
-    args:
-        q                | search query
-        search           | a search vector to search on, choose from title, description, body, meta, or all, default=all
-        fields           | a comma-separated list of fields to include in response
-        page             | page number
-        per_page         | number of items per page.
-        sort             | variable to order by, preface with '-' to sort desc.
-        created_after    | isodate to filter results after
-        created_before   | isodate to filter results before
-        updated_after    | isodate to filter results after
-        updated_before   | isodate to filter results before
-        status           | ['pending', 'approved', 'deleted']
-        provenance       | ['recipe', 'manual']
-        facets           | a comma-separated list of facets to include, default=all
-        tag              | a comma-separated list of tags to filter by
-        categories       | a comma-separated list of tag_categories to filter by
-        levels           | a comma-separated list of tag_levels to filter by
-        tag_ids          | a comma-separated list of tag_ids to filter by
-        content_item_ids | a comma-separated list of content_item_ids to filter by
-        event_ids        | a comma-separated list of events ids to filter by.
-        recipe_ids       | a comma-separated list of recipes to filter by
-        sous_chefs       | a comma-separated list of sous_chefs to filter by
-        incl_thumbnail   | whether or not to include the thumbnail
     """
 
     # parse arguments
@@ -280,12 +257,12 @@ def search_events(user, org):
         event_query = event_query.with_entities(*columns)
 
     # apply sort if we havent already sorted by query relevance.
-        
+
     if not kw['sort_ids']:
         if kw['sort_field'] != 'relevance':
             sort_obj = eval('Event.{sort_field}.{direction}'.format(**kw))
             event_query = event_query.order_by(sort_obj())
-    
+
     elif len(include_events):
         ids = [str(i) for i in include_events]
         sort_str = "idx(ARRAY[{}], events.id)".format(",".join(ids))

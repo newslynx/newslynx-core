@@ -849,7 +849,7 @@ class Authors(BaseClient):
 
     def merge(self, from_id, to_id, **kw):
         """
-        Remove an author from a content item.
+        Merge two authors.
         """
         url = self._format_url(
             'authors', from_id, 'merge', to_id)

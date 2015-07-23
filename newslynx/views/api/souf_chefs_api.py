@@ -79,7 +79,7 @@ def list_sous_chefs(user):
 def create_sous_chef(user):
 
     req_data = request_data()
-    print "DATA", req_data
+
     # validate the sous chef
     sc = sous_chef_schema.validate(req_data, None)
 
