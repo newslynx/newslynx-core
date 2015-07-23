@@ -68,6 +68,7 @@ class User(db.Model):
             'name': self.name,
             'email': self.email,
             'admin': self.admin,
+            'super_user': self.super_user,
             'created': self.created,
             'updated': self.updated
         }

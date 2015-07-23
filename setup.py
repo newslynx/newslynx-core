@@ -35,7 +35,7 @@ setup(
     entry_points={
         'console_scripts': [
             'newslynx = newslynx.cli:run',
-            'nlynx = newslynx.cli:run'
+            'nlx = newslynx.cli:run'
         ]
     },
 )

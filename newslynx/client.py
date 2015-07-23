@@ -31,7 +31,8 @@ class BaseClient(object):
     def __init__(self, **kw):
 
         # defaults / helpers
-        self._url = kw.pop('url',  os.getenv('NEWSLYNX_API_URL', 'http://localhost:5000'))
+        self._url = kw.pop(
+            'url',  os.getenv('NEWSLYNX_API_URL', 'http://localhost:5000'))
 
         # standardize url
         if not self._url.endswith('/'):
@@ -78,7 +79,7 @@ class BaseClient(object):
         if kw.get('data'):
             kw['data'] = obj_to_json(kw['data'])
 
-        # pop intenal 
+        # pop intenal
         __exec = kw.pop('__exec', True)
 
         # format
@@ -142,7 +143,7 @@ class BaseClient(object):
                 if not err:
                     raise ClientError(resp.content)
                 raise err(d['message'])
-            
+
             elif resp.status_code == 204:
                 return True
             else:
@@ -151,9 +152,9 @@ class BaseClient(object):
         else:
             if resp is None:
                 return {
-                    'error':'InternalServerError',
+                    'error': 'InternalServerError',
                     'status_code': 500,
-                    'message':'Are you sure the API is running?'
+                    'message': 'Are you sure the API is running?'
                 }
             if resp.status_code == 204:
                 return True
@@ -161,18 +162,10 @@ class BaseClient(object):
                 return resp.json()
             except:
                 return {
-                    'error':'InternalServerError',
+                    'error': 'InternalServerError',
                     'status_code': 500,
-                    'message':getattr(resp, 'content', 'Are you sure the API is running?')
+                    'message': getattr(resp, 'content', 'Are you sure the API is running?')
                 }
-
-    def login(self, **kw):
-        """
-        Login via email + password.
-        """
-        url = self._format_url('login')
-        resp = self._request('POST', url, data=kw)
-        return resp
 
 
 class Me(BaseClient):
@@ -203,6 +196,14 @@ class Me(BaseClient):
         """
         url = self._format_url('orgs')
         return self._request('GET', url, params=kw)
+
+    def login(self, **kw):
+        """
+        Login via email + password.
+        """
+        url = self._format_url('login')
+        resp = self._request('POST', url, data=kw)
+        return resp
 
 
 class Orgs(BaseClient):
@@ -638,7 +639,8 @@ class Content(BaseClient):
         """
         Create a content item.
         """
-        kw, params = self._split_auth_params_from_data(kw, kw_incl=['extract', 'recipe_id'])
+        kw, params = self._split_auth_params_from_data(
+            kw, kw_incl=['extract', 'recipe_id'])
         url = self._format_url('content')
         return self._request('POST', url, params=params, data=kw)
 
@@ -1061,6 +1063,7 @@ class Reports(BaseClient):
 
 
 class Auths(BaseClient):
+
     """
     A class for interacting with the authorizations.
     """
