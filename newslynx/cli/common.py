@@ -66,20 +66,25 @@ def load_data(path_or_string):
     """
     Load data in from a filepath or a string
     """
-    kwargs = {}
     if not path_or_string:
-        return kwargs
-    try:
-        d = serialize.json_to_obj(path_or_string)
-        kwargs.update(d)
-        return kwargs
+        return {}
 
-    except ValueError as e:
-        # only deal with these formats.
-        if not acceptable_file(path_or_string):
-            raise ValueError(
-                'You can only pass in .yaml, .yml, or .json files.')
-
+    # treat it as a file first
+    if acceptable_file(path_or_string):
         fp = os.path.expanduser(path_or_string)
-        kwargs.update(serialize.yaml_to_obj(open(fp).read()))
-        return kwargs
+        try:
+            return serialize.yaml_to_obj(open(fp).read())
+        except Exception as e:
+            raise IOError(
+                "Could not read file '{}' \n{}"
+                .format(fp, e.message))
+
+    # otherwise assume it's a JSON blob
+    else:
+        try:
+            return serialize.json_to_obj(path_or_string)
+
+        except ValueError as e:
+            raise ValueError(
+                "Could not parse JSON string '{}' \n{}"
+                .format(path_or_string, e.message))

@@ -1,6 +1,6 @@
 from collections import defaultdict, Counter
 
-from sqlalchemy import func
+from sqlalchemy import func, update
 from flask import Blueprint
 
 from newslynx.core import db
@@ -252,13 +252,14 @@ def delete_tag(user, org, tag_id):
 @load_org
 def merge_tags(user, org, from_tag_id, to_tag_id):
     """
-    Remove an author to a content item.
+    Merge two tags of the same type and all their associations.
+    from_tag_id is deleted and it's associations are merged into to_tag_id
     """
     from_t = Tag.query\
         .filter_by(id=from_tag_id, org_id=org.id)\
         .first()
 
-    if not from_a:
+    if not from_t:
         raise NotFoundError(
             'Tag with ID "{}" does not exist."'
             .format(from_tag_id))
@@ -295,8 +296,10 @@ def merge_tags(user, org, from_tag_id, to_tag_id):
         db.session.execute(stmt)
 
         # get all associated content item IDS.
-        content_item_ids = [c.id for e in from_t.events for c in e.content_item_ids]
-        content_item_ids.append([c.id for e in to_t.events for c in e.content_item_ids])
+        content_item_ids = [
+            c.id for e in from_t.events for c in e.content_item_ids]
+        content_item_ids.append(
+            [c.id for e in to_t.events for c in e.content_item_ids])
 
         # remove from tag
         db.session.delete(from_t)
@@ -307,7 +310,7 @@ def merge_tags(user, org, from_tag_id, to_tag_id):
             # update event-level metrics for this content item id
             rollup_metric.event_tags_to_summary(org, content_item_ids)
 
-    return jsonify(to_a.to_dict(incl_content=True))
+    return jsonify(to_t)
 
 
 @bp.route('/api/v1/tags/categories', methods=['GET'])

@@ -1,5 +1,5 @@
 """
-A comprehensize python client for the NewsLynx API. 
+A comprehensize python client for the NewsLynx API.
 This exists inside the repository because SousChefs utilize it.
 """
 
@@ -15,7 +15,6 @@ from urlparse import urljoin
 
 from newslynx.lib.serialize import obj_to_json, json_to_obj
 from newslynx.exc import ERRORS, ClientError, JobError
-from newslynx.logs import log
 
 
 RET_CODES = [200, 201, 202]
@@ -466,12 +465,26 @@ class Tags(BaseClient):
         url = self._format_url('tags', id)
         return self._request('DELETE', url, params=kw)
 
-    def merge(self, id, to_tag_id, **kw):
+    def merge(self, from_id, to_id, **kw):
         """
         Merge one tag into another.
         """
-        url = self._format_url('tags', id, 'tags', to_tag_id)
+        url = self._format_url('tags', from_id, 'tags', to_id)
         return self._request('PUT', url, params=kw)
+
+    def categories(self, **kw):
+        """
+        List all impact tag categorires.
+        """
+        url = self._format_url('tags', 'categories')
+        return self._request('GET', url, params=kw)
+
+    def levels(self, **kw):
+        """
+        List all impact tag categorires.
+        """
+        url = self._format_url('tags', 'levels')
+        return self._request('GET', url, params=kw)
 
 
 class Recipes(BaseClient):
@@ -953,19 +966,19 @@ class SousChefs(BaseClient):
         url = self._format_url('sous-chefs')
         return self._request('POST', url, data=kw, params=params)
 
-    def get(self, sous_chef_id, **kw):
+    def get(self, id, **kw):
         """
         Get a sous chef.
         """
-        url = self._format_url('sous-chefs', sous_chef_id)
+        url = self._format_url('sous-chefs', id)
         return self._request('GET', url, data=kw, params=kw)
 
-    def update(self, sous_chef_id, **kw):
+    def update(self, id, **kw):
         """
         Update a sous chef.
         """
         kw, params = self._split_auth_params_from_data(kw)
-        url = self._format_url('sous-chefs', sous_chef_id)
+        url = self._format_url('sous-chefs', id)
         return self._request('PUT', url, data=kw, params=params)
 
 

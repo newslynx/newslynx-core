@@ -4,7 +4,7 @@ from newslynx.core import db
 from newslynx.models import Setting
 from newslynx.models.util import fetch_by_id_or_field
 from newslynx.lib.serialize import jsonify, json_to_obj
-from newslynx.exc import RequestError, NotFoundError
+from newslynx.exc import RequestError, NotFoundError, ConflictError
 from newslynx.views.decorators import load_user, load_org
 from newslynx.views.util import (
     request_data, delete_response)
@@ -63,9 +63,9 @@ def create_setting(user, org):
     try:
         db.session.commit()
     except Exception as e:
-        raise RequestError(e.message)
+        raise ConflictError(e.message)
 
-    # temporary hack for 'timezone' setting
+    # temporary hack for 'timezone' setting in the APP.
     if 'name' == 'timezone':
         org.timezone = value
 

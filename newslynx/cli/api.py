@@ -19,14 +19,14 @@ def setup(parser):
     # dynamically list collections
     from newslynx.client import API
     api = API()
-    collections = [c for c in dir(api) if _keep(c)]
+    collections = [c.replace('_', "-") for c in dir(api) if _keep(c)]
 
     api_parser = parser.add_parser("api", help="Access API methods.")
     api_parser.add_argument('collection', type=str, help='The API collection to access.',
                             choices=collections)
     api_parser.add_argument('method', type=str, default=None,
                             help='The method for the collection. Use "ls" to list all methods for a given collection.')
-    api_parser.add_argument("-d", dest="data",
+    api_parser.add_argument("-d", "--data", dest="data",
                             help="a .json / .yaml file, or a json string of the request's body")
     api_parser.add_argument("-e", "--raise-errors", action='store_true',
                             default=False,
@@ -61,11 +61,12 @@ def run(opts, log, **kwargs):
         raise_errors=opts.raise_errors)
 
     # get the collection
-    cobj = getattr(api, opts.collection, None)
+    cobj = None
+    if opts.collection:
+        cobj = getattr(api, opts.collection.replace('-', '_'), None)
     if not cobj:
-
         # report options
-        collections = [c for c in dir(api) if _keep(c)]
+        collections = [c.replace('_', "-") for c in dir(api) if _keep(c)]
         e = RuntimeError("Collection '{}' does not exist."
                          .format(opts.collection))
         log.exception(e, tb=False)
@@ -73,12 +74,10 @@ def run(opts, log, **kwargs):
                     .format(opts.collection, "\n\t- {}".join(collections)), line=False)
         sys.exit(1)
 
-    # allow for `-` instead of `_`:
-    if opts.method:
-        opts.method = opts.method.replace('-', "_")
-
     # get the method
-    mobj = getattr(cobj, opts.method, None)
+    mobj = None
+    if opts.method:
+        mobj = getattr(cobj, opts.method.replace('-', '_'), None)
     if not mobj:
 
         # report options

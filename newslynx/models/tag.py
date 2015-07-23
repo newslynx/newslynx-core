@@ -42,9 +42,11 @@ class Tag(db.Model):
         self.category = kw.get('category')
         self.level = kw.get('level')
 
-    def to_dict(self):
+    def to_dict(self, **kw):
+        incl_counts = kw.get('incl_counts', True)
+
         if self.type == 'impact':
-            return {
+            d = {
                 'id': self.id,
                 'org_id': self.org_id,
                 'name': self.name,
@@ -56,8 +58,10 @@ class Tag(db.Model):
                 'created': self.created,
                 'updated': self.updated
             }
+            if incl_counts:
+                d['event_count'] = self.events.count()
         else:
-            return {
+            d = {
                 'id': self.id,
                 'org_id': self.org_id,
                 'name': self.name,
@@ -67,6 +71,9 @@ class Tag(db.Model):
                 'created': self.created,
                 'updated': self.updated
             }
+            if incl_counts:
+                d['content_item_count'] = self.content_items.count()
+        return d
 
     def __repr__(self):
 

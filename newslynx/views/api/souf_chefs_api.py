@@ -62,9 +62,9 @@ def list_sous_chefs(user):
     for sc in sous_chef_query.all():
         facets['creates'][sc.creates] += 1
         if not sc.is_command:
-            facets['runners']['python'] += 1
+            facets['exceutes']['python'] += 1
         else:
-            facets['runners']['command'] += 1
+            facets['exceutes']['command'] += 1
         clean_sous_chefs.append(sc)
 
     resp = {
@@ -79,9 +79,9 @@ def list_sous_chefs(user):
 def create_sous_chef(user):
 
     req_data = request_data()
-
+    print "DATA", req_data
     # validate the sous chef
-    sc = sous_chef_schema.validate(req_data)
+    sc = sous_chef_schema.validate(req_data, None)
 
     # add it to the database
     sc = SousChef(**sc)
