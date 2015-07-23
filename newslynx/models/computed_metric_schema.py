@@ -1,6 +1,8 @@
 """
-TODO: validate formula strings for computed metrics.
+TODO: validate formula strings for computed metrics by testing a SQL command within 
+a read-only session and validating the results.
 """
+
 import re
 from newslynx.util import uniq
 

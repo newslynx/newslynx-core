@@ -41,6 +41,10 @@ class Author(db.Model):
             .order_by("content.created desc")\
             .all()
 
+    @property
+    def content_item_ids(self):
+        return [c.id for c in self.content_items]
+
     def simple_content(self, **kw):
         incl_metrics = kw.get('incl_metrics', False)
         output = []

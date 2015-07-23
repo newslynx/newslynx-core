@@ -39,7 +39,7 @@ class BaseClient(object):
 
         self.apikey = kw.get('apikey', os.getenv('NEWSLYNX_APIKEY'))
         self.org = kw.pop('org', os.getenv('NEWSLYNX_ORG'))
-        self.raise_errors = kw.pop('raise_errors', True)
+        self._raise_errors = kw.pop('raise_errors', True)
         self._version = kw.pop('version', 'v1')
         self._endpoint = self._url + 'api/' + self._version + "/"
 
@@ -96,6 +96,28 @@ class BaseClient(object):
         # handle errors
         return self._format_response(resp, err)
 
+    # stream results from a requests.Response object.
+    def _stream(self, r):
+        for line in r.iter_lines():
+            d = json_to_obj(line)
+
+            # catch bad responses:
+            if not isinstance(d, dict):
+                e = 'InternalServerError'
+                err_msg = 'Invalid Response: {}'.format(d)
+                if self._raise_errors:
+                    raise ERRORS[e](err_msg)
+                yield {'status_code': 500, "error": e, "message": err_msg}
+
+            # catch errors
+            if d.get('error'):
+                if self._raise_errors:
+                    err = ERRORS.get(d['error'])
+                    if not err:
+                        raise ClientError(d)
+                    raise err(d['message'])
+            yield d
+
     def _split_auth_params_from_data(self, kw, kw_incl=[]):
         params = {}
         if 'apikey' in kw:
@@ -128,7 +150,7 @@ class BaseClient(object):
         """
         Handle all errors + format response.
         """
-        if self.raise_errors:
+        if self._raise_errors:
             if err:
                 raise err
 
@@ -163,7 +185,7 @@ class BaseClient(object):
                 return {
                     'error': 'InternalServerError',
                     'status_code': 500,
-                    'message': getattr(resp, 'content', 'Are you sure the API is running?')
+                    'message': getattr(resp, 'text', 'Are you sure the API is running?')
                 }
 
 
@@ -540,21 +562,7 @@ class Recipes(BaseClient):
         if 'org' not in kw:
             kw['org'] = self.org
         r = requests.get(url, params=kw, stream=True)
-
-        # stream results.
-        def _generate():
-            for line in r.iter_lines():
-                d = json_to_obj(line)
-                print "D", d
-                # catch errors
-                if d.get('error'):
-                    if self.raise_errors:
-                        err = ERRORS.get(d['error'])
-                        if not err:
-                            raise ClientError(d)
-                        raise err(d['message'])
-                yield d
-        return _generate()
+        return self._stream(r)
 
 
 class Events(BaseClient):
@@ -839,12 +847,12 @@ class Authors(BaseClient):
         url = self._format_url('authors', id, 'content', content_item_id)
         return self._request('DELETE', url, params=kw)
 
-    def merge(self, id, to_id, **kw):
+    def merge(self, from_id, to_id, **kw):
         """
         Remove an author from a content item.
         """
         url = self._format_url(
-            'authors', id, 'merge', to_id)
+            'authors', from_id, 'merge', to_id)
         return self._request('PUT', url, params=kw)
 
 

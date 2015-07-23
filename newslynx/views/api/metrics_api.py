@@ -35,6 +35,7 @@ def list_metrics(user, org):
         arg_list('org_levels', default=[], typ=str, exclusions=True)
     sort_field, direction = arg_sort('sort', default='display_name')
     faceted = arg_bool('faceted', default=None)
+    computed = arg_bool('computed', default=None)
 
     # base query
     metric_query = Metric.query.join(Recipe).join(SousChef)
@@ -127,6 +128,10 @@ def list_metrics(user, org):
         metric_query = metric_query\
             .filter(Metric.faceted == faceted)
 
+    if computed is not None:
+        metric_query = metric_query\
+            .filter(Metric.computed == computed)
+
     if sort_field:
         sort_obj = eval('Metric.{}.{}'.format(sort_field, direction))
         metric_query = metric_query.order_by(sort_obj())
@@ -143,6 +148,11 @@ def list_metrics(user, org):
                 facets['faceted'] += 1
         else:
             facets['faceted'] = 0
+        if 'computed' in facets:
+            if m.computed:
+                facets['computed'] += 1
+        else:
+            facets['computed'] = 0
         for cl in m.content_levels:
             facets['content_levels'][cl] += 1
         for cl in m.org_levels:
@@ -155,6 +165,17 @@ def list_metrics(user, org):
         'facets': facets
     }
     return jsonify(resp)
+
+
+@bp.route('/api/v1/metrics', methods=['POST'])
+@load_user
+@load_org
+def create_computed_metric(user, org):
+    """
+    TODO: allow for creation of arbitrary computed metrics here.
+    """
+    raise NotImplementedError(
+        "Creation of new metrics is limited to Sous Chefs / Recipes.")
 
 
 @bp.route('/api/v1/metrics/<name_id>', methods=['GET'])

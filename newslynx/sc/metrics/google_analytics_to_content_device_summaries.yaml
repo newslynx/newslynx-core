@@ -39,7 +39,7 @@ options:
 metrics:
 
     ga_pageviews_mobile:
-        display_name: Pageviews
+        display_name: Mobile Pagviews
         type: count
         content_levels:
             - summary
@@ -48,7 +48,7 @@ metrics:
             - summary
 
     ga_pageviews_tablet:
-        display_name: Pageviews
+        display_name: Tablet Pageviews
         type: count
         content_levels:
             - summary
@@ -57,7 +57,7 @@ metrics:
             - summary
 
     ga_pageviews_desktop:
-        display_name: Pageviews
+        display_name: Desktop Pageviews
         type: count
         content_levels:
             - summary

@@ -5,7 +5,7 @@ def get_table_columns(obj, incl=[]):
     return cols + incl
 
 
-def fetch_by_id_or_field(model, field, value, org_id=None):
+def fetch_by_id_or_field(model, field, value, org_id=None, transform=None):
     """
     Fetch a model by it's id or a string fields
     """
@@ -25,12 +25,13 @@ def fetch_by_id_or_field(model, field, value, org_id=None):
     else:
         f = getattr(model, field)
         if not org_id:
+            if transform == 'upper':
+                value = value.upper()
+            elif transform == 'lower':
+                value = value.lower()
             return model.query.filter(f == value).first()
 
         else:
             return model.query.filter(f == value)\
                         .filter_by(org_id=org_id)\
                         .first()
-
-
-
