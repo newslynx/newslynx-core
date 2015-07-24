@@ -46,7 +46,7 @@ def run():
     kwargs = {}
     try:
         # create an argparse instance
-        parser = argparse.ArgumentParser(prog='newslynx/nlynx', formatter_class=RawTextHelpFormatter)
+        parser = argparse.ArgumentParser(prog='newslynx/nlx', formatter_class=RawTextHelpFormatter)
         parser.add_argument('--no-color', dest='no_color', action="store_true",
                             default=False, help='Disable colored logging.')
         parser.add_argument('--no-interactive', dest='no_interactive', action="store_true",
