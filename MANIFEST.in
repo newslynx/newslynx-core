@@ -4,4 +4,7 @@ recursive-include newslynx *.sql
 recursive-include newslynx *.html
 recursive-include newslynx *.txt
 recursive-include newslynx *.json
+recursive-include migrations *.ini
+recursive-include migrations *.py
+recursive-include migrations *.mako
 global-exclude *.pyc .DS_Store
