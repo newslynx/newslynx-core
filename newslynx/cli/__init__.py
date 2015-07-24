@@ -19,9 +19,10 @@ def setup(subparser):
     Install all subcommands.
     """
 
-    from newslynx.cli import api, version, dev, init, debug, cron, echo
+    from newslynx.cli import api, db, version, dev, init, debug, cron, echo
     MODULES = [
         api,
+        db,
         dev,
         init,
         echo,

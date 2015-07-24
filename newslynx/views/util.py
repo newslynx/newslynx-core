@@ -18,6 +18,33 @@ from newslynx.constants import *
 
 RE_HEX_CODE = re.compile(r'^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$')
 
+
+# Blueprints
+
+def register_blueprints(app, *mods):
+    """
+    List all Blueprint instances underneath
+    specified modules and register them.
+    """
+    for mod in mods:
+        package_name = mod.__name__
+        package_path = mod.__path__[0]
+        for fp in os.listdir(package_path):
+            if (not fp.endswith('.pyc') and
+                    '__init__' not in fp and
+                    'templates' not in fp):
+
+                name = fp.replace('.py', '')
+                # try:
+                m = importlib.import_module(
+                    '%s.%s' % (package_name, name))
+                # except:
+                #     continue
+                for item in dir(m):
+                    item = getattr(m, item)
+                    if isinstance(item, Blueprint):
+                        app.register_blueprint(item)
+
 # Arguments
 
 
@@ -631,30 +658,3 @@ def localize(org):
         db.session.execute("SET TIMEZONE TO '{}'".format(org.timezone))
     else:
         db.session.execute("SET TIMEZONE TO UTC")
-
-
-# Blueprints
-
-def register_blueprints(app, *mods):
-    """
-    List all Blueprint instances underneath
-    specified modules and register them.
-    """
-    for mod in mods:
-        package_name = mod.__name__
-        package_path = mod.__path__[0]
-        for fp in os.listdir(package_path):
-            if (not fp.endswith('.pyc') and
-                    '__init__' not in fp and
-                    'templates' not in fp):
-
-                name = fp.replace('.py', '')
-                # try:
-                m = importlib.import_module(
-                    '%s.%s' % (package_name, name))
-                # except:
-                #     continue
-                for item in dir(m):
-                    item = getattr(m, item)
-                    if isinstance(item, Blueprint):
-                        app.register_blueprint(item)
