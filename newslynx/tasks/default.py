@@ -103,7 +103,7 @@ def org(
                 m = Metric.query\
                     .filter_by(org_id=org.id, recipe_id=r.id, name=name, type=params['type'])\
                     .first()
-
+                # print "METRICS PARAMS", params
                 if not m:
                     m = Metric(
                         name=name,

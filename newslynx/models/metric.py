@@ -4,7 +4,7 @@ from newslynx.core import db
 from newslynx.lib import dates
 from newslynx.models import computed_metric_schema
 from newslynx.constants import (
-    METRIC_TYPES
+    METRIC_TYPES, METRIC_AGGS
 )
 
 # a lookup of metric type to postgresql aggregation function
@@ -50,8 +50,9 @@ class Metric(db.Model):
     recipe_id = db.Column(db.Integer, db.ForeignKey('recipes.id'), index=True)
     name = db.Column(db.Text, index=True)
     display_name = db.Column(db.Text)
+    description = db.Column(db.Text)
     type = db.Column(ENUM(*METRIC_TYPES, name='metric_types_enum'), index=True)
-    agg = db.Column(db.Text, index=True)
+    agg = db.Column(ENUM(*METRIC_AGGS, name='metric_aggs_enum'), index=True)
     content_levels = db.Column(ARRAY(db.Text), index=True)
     org_levels = db.Column(ARRAY(db.Text), index=True)
     faceted = db.Column(db.Boolean, index=True, default=False)
@@ -69,6 +70,7 @@ class Metric(db.Model):
         self.org_id = kw.get('org_id')
         self.recipe_id = kw.get('recipe_id')
         self.name = kw.get('name')
+        self.description = kw.get('description')
         self.display_name = kw.get('display_name')
         self.type = kw.get('type')
         self.agg = kw.get('agg', TYPE_TO_AGG_FX.get(kw.get('type')))
@@ -92,6 +94,7 @@ class Metric(db.Model):
             'recipe_id': self.recipe_id,
             'name': self.name,
             'display_name': self.display_name,
+            'description': self.description,
             'type': self.type,
             'agg': self.agg,
             'content_levels': self.content_levels,

@@ -9,6 +9,10 @@ METRIC_TYPES = [
     'max_rank', 'computed'
 ]
 
+METRIC_AGGS = [
+    'min', 'max', 'avg', 'sum', 'median'
+]
+
 
 METRIC_CONTENT_LEVELS = [
     'timeseries', 'summary', 'comparison'

@@ -95,6 +95,10 @@ definitions:
             display_name:
                 description: How should this metric be displated?
                 type: string
+
+            description:
+                description: An informative explanation of what this metric means.
+                type: string
             
             type:
                 description: What type of metric is this?
