@@ -51,29 +51,20 @@ def run(opts, log, **kwargs):
             recipes_file = None
 
         try:
-            log.info('Creating database "{}"\n'.format(
+            log.info('\nCreating database "{}"\n'.format(
                 settings.SQLALCHEMY_DATABASE_URI), line=False)
             db.configure_mappers()
             db.create_all()
 
-            log.info('(Re)Loading SQL Extensions\n', line=False)
+            log.info('\n(Re)Loading SQL Extensions\n', line=False)
 
             # load sql extensions + functions
             for sql in load_sql():
                 db.session.execute(sql)
 
-            log.info('Initializing Super User Org {}\n'.format(
-                settings.SUPER_USER_ORG), line=False)
-            default.org()
-        except Exception as e:
-            db.session.rollback()
-            db.session.close()
-            log.exception(e, tb=True)
-            sys.exit(1)
-        else:
-
             # install app defaults.
             if opts.app_defaults:
+                log.info('\nInitializing App Defaults\n', line=False)
                 modules = [
                     ('default_tags', tags_file),
                     ('default_recipes', recipes_file)
@@ -112,6 +103,16 @@ def run(opts, log, **kwargs):
                 with open(config_file, 'wb') as f:
                     f.write(conf_str)
 
+            log.info('\nInitializing Super User Org {}\n'.format(
+                settings.SUPER_USER_ORG), line=False)
+            default.org()
+
+        except Exception as e:
+            db.session.rollback()
+            db.session.close()
+            log.exception(e, tb=True)
+            sys.exit(1)
+        else:
             log.info('\nSuccess!\n', line=False)
             log.warning(
                 '\nYou can now start the API by running ', color="blue", line=False)

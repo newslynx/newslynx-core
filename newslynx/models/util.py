@@ -5,7 +5,10 @@ def get_table_columns(obj, incl=[]):
     return cols + incl
 
 
-def fetch_by_id_or_field(model, field, value, org_id=None, transform=None):
+def fetch_by_id_or_field(model, field, value, transform=None,
+                         org_id=None,
+                         user_id=None,
+                         level=None):
     """
     Fetch a model by it's id or a string fields
     """
@@ -18,20 +21,33 @@ def fetch_by_id_or_field(model, field, value, org_id=None, transform=None):
         is_int = False
 
     if is_int:
-        if not org_id:
-            return model.query.filter_by(id=value).first()
-        else:
-            return model.query.filter_by(id=value, org_id=org_id).first()
+
+        if user_id and org_id and level:
+            return model.query\
+                .filter_by(id=value, org_id=org_id, user_id=user_id, level=level)\
+                .first()
+
+        elif org_id:
+            return model.query\
+                .filter_by(id=value, org_id=org_id)\
+                .first()
+        return model.query\
+            .filter_by(id=value)\
+            .first()
+
     else:
         f = getattr(model, field)
-        if not org_id:
-            if transform == 'upper':
-                value = value.upper()
-            elif transform == 'lower':
-                value = value.lower()
-            return model.query.filter(f == value).first()
-
-        else:
-            return model.query.filter(f == value)\
-                        .filter_by(org_id=org_id)\
-                        .first()
+        if transform == 'upper':
+            value = value.upper()
+        elif transform == 'lower':
+            value = value.lower()
+        q = model.query.filter(f == value)
+        if user_id and org_id and level:
+            return q\
+                .filter_by(org_id=org_id, user_id=user_id, level=level)\
+                .first()
+        elif org_id:
+            return q\
+                .filter_by(field=value, org_id=org_id)\
+                .first()
+        return q.first()

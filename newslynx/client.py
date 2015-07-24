@@ -70,10 +70,6 @@ class BaseClient(object):
         if 'org' not in kw['params']:
             kw['params']['org'] = self.org
 
-        # orgs endpoint doesn't require org
-        if url.startswith(self._format_url('orgs')):
-            kw['params'].pop('org')
-
         # dump json
         if kw.get('data'):
             kw['data'] = obj_to_json(kw['data'])
@@ -394,23 +390,23 @@ class Orgs(BaseClient):
 
 class Settings(BaseClient):
 
-    def list(self, **kw):
+    def list(self, level='orgs', **kw):
         """
         Add/update a setting for an organization.
         """
 
-        url = self._format_url('settings')
+        url = self._format_url(level, 'settings')
         return self._request('GET', url, params=kw)
 
-    def get(self, id, **kw):
+    def get(self, id, level='orgs', **kw):
         """
         Get a particular setting.
         """
 
-        url = self._format_url('settings', id)
+        url = self._format_url(level, 'settings', id)
         return self._request('GET', url, **kw)
 
-    def create(self, **kw):
+    def create(self, level='orgs', **kw):
         """
         Create a setting
         """
@@ -421,10 +417,10 @@ class Settings(BaseClient):
 
         kw, params = self._split_auth_params_from_data(kw)
 
-        url = self._format_url('settings')
+        url = self._format_url(level, 'settings')
         return self._request('POST', url, data=kw, params=params)
 
-    def update(self, id, **kw):
+    def update(self, id, level='orgs', **kw):
         """
         Update a setting
         """
@@ -435,15 +431,15 @@ class Settings(BaseClient):
 
         kw, params = self._split_auth_params_from_data(kw)
 
-        url = self._format_url('settings', id)
+        url = self._format_url(level, 'settings', id)
         return self._request('PUT', url, data=kw, params=params)
 
-    def delete(self, id, **kw):
+    def delete(self, id, level='orgs', **kw):
         """
         Delete a setting.
         """
 
-        url = self._format_url('settings', id)
+        url = self._format_url(level, 'settings', id)
         return self._request('DELETE', url, params=kw)
 
 

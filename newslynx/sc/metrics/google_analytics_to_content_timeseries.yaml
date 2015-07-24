@@ -6,7 +6,7 @@ runs: newslynx.sc.metrics.google_analytics.ContentTimeseries
 creates: metrics
 option_order: []
 options:
-    
+
     days:
         input_type: number
         value_types:

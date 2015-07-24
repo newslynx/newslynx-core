@@ -25,12 +25,18 @@ class User(db.Model):
     created = db.Column(db.DateTime(timezone=True), default=dates.now)
     updated = db.Column(db.DateTime(timezone=True), onupdate=dates.now, default=dates.now)
 
+    _settings = db.relationship(
+        'Setting',
+        backref=db.backref('user'),
+        lazy='dynamic',
+        cascade="all, delete-orphan")
+
     def __init__(self, **kw):
         self.name = kw.get('name')
         self.email = kw.get('email')
         self.set_password(kw.get('password'))
         self.created = kw.get('created', dates.now())
-        self.admin = kw.get('admin', kw.get('super_user', False)) # super users are also admins.
+        self.admin = kw.get('admin', kw.get('super_user', False))  # super users are also admins.
         self.super_user = kw.get('super_user', False)
         self.set_apikey(**kw)
 
@@ -47,6 +53,13 @@ class User(db.Model):
         s = str(uuid4()) + settings.SECRET_KEY
         self.apikey = str(md5(s).hexdigest())
 
+    def get_settings(self, org_id):
+        return self._settings.filter_by(level='me', user_id=self.id, org_id=org_id).all()
+
+    @property
+    def settings_dict(self):
+        return {s['name']: s['value'] for s in self._settings.filter_by(level='me')}
+
     @property
     def display_orgs(self):
         return [o.to_dict(incl_users=False, incl_settings=False, incl_auths=False, incl_domains=False)
@@ -62,6 +75,7 @@ class User(db.Model):
     def to_dict(self, **kw):
         incl_org = kw.get('incl_org', True)
         incl_apikey = kw.get('incl_apikey', False)
+        incl_settings = kw.get('incl_settings', False)
 
         d = {
             'id': self.id,
@@ -78,6 +92,9 @@ class User(db.Model):
 
         if incl_apikey:
             d['apikey'] = self.apikey
+
+        if incl_settings:
+            d['settings'] = self.settings_dict
 
         return d
 

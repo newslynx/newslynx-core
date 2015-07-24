@@ -7,32 +7,41 @@ from newslynx.lib.serialize import jsonify, json_to_obj
 from newslynx.exc import RequestError, NotFoundError, ConflictError
 from newslynx.views.decorators import load_user, load_org
 from newslynx.views.util import (
-    request_data, delete_response)
+    request_data, delete_response, arg_str)
 from newslynx.constants import TRUE_VALUES
 
 # bp
 bp = Blueprint('settings', __name__)
 
 
-@bp.route('/api/v1/settings', methods=['GET'])
+@bp.route('/api/v1/<level>/settings', methods=['GET'])
 @load_user
 @load_org
-def org_settings(user, org):
+def list_settings(user, org, level):
+    if level not in ['me', 'orgs']:
+        raise NotFoundError(
+            'You cannot store settings for \'{}\''
+            .format(level))
+    if level == 'orgs':
+        return jsonify(org.settings)
+    return jsonify(user.get_settings(org_id=org.id))
 
-    return jsonify(org.settings)
 
-
-@bp.route('/api/v1/settings', methods=['POST'])
+@bp.route('/api/v1/<level>/settings', methods=['POST'])
 @load_user
 @load_org
-def create_setting(user, org):
+def create_setting(user, org, level):
+    if level not in ['me', 'orgs']:
+        raise NotFoundError(
+            'You cannot store settings for \'{}\''
+            .format(level))
 
     # get the request data
     req_data = request_data()
 
     name = req_data.get('name')
     value = req_data.get('value')
-    json_value = req_data.get('json_value')
+    json_value = req_data.get('json_value', False)
 
     if not name or not value:
         raise RequestError(
@@ -53,6 +62,8 @@ def create_setting(user, org):
 
     s = Setting(
         org_id=org.id,
+        user_id=user.id,
+        level=level,
         name=name,
         value=value,
         json_value=json_value or False)
@@ -66,7 +77,7 @@ def create_setting(user, org):
         raise ConflictError(e.message)
 
     # temporary hack for 'timezone' setting in the APP.
-    if 'name' == 'timezone':
+    if 'name' == 'timezone' and level == 'orgs':
         org.timezone = value
 
         try:
@@ -77,16 +88,20 @@ def create_setting(user, org):
                 "An error occurred while updating the timezone. "
                 "Here's the error message: {}"
                 .format(org.name, e.message))
-
     return jsonify(s)
 
 
-@bp.route('/api/v1/settings/<name_id>', methods=['GET'])
+@bp.route('/api/v1/<level>/settings/<name_id>', methods=['GET'])
 @load_user
 @load_org
-def get_setting(user, org, name_id):
+def get_setting(user, org, level, name_id):
 
-    s = fetch_by_id_or_field(Setting, 'name', name_id, org_id=org.id)
+    if level not in ['me', 'orgs']:
+        raise NotFoundError(
+            'You cannot store settings for \'{}\''
+            .format(level))
+    s = fetch_by_id_or_field(
+        Setting, 'name', name_id, org_id=org.id, user_id=user.id, level=level)
     if not s:
         raise NotFoundError(
             'Setting "{}" does not yet exist for Org "{}"'
@@ -95,16 +110,22 @@ def get_setting(user, org, name_id):
     return jsonify(s)
 
 
-@bp.route('/api/v1/settings/<name_id>', methods=['PUT', 'PATCH'])
+@bp.route('/api/v1/<level>/settings/<name_id>', methods=['PUT', 'PATCH'])
 @load_user
 @load_org
-def update_setting(user, org, name_id):
+def update_setting(user, org, level, name_id):
 
-    s = fetch_by_id_or_field(Setting, 'name', name_id, org_id=org.id)
+    if level not in ['me', 'orgs']:
+        raise NotFoundError(
+            'You cannot store settings for \'{}\''
+            .format(level))
+
+    s = fetch_by_id_or_field(
+        Setting, 'name', name_id, org_id=org.id, user_id=user.id, level=level)
 
     if not s:
         raise NotFoundError(
-            'Setting "{}" does not yet exist for Org "{}"'
+            'Setting "{}" does not yet exist.'
             .format(name_id, org.name))
 
     # get the request data
@@ -146,16 +167,22 @@ def update_setting(user, org, name_id):
     return jsonify(s)
 
 
-@bp.route('/api/v1/settings/<name_id>', methods=['DELETE'])
+@bp.route('/api/v1/<level>/settings/<name_id>', methods=['DELETE'])
 @load_user
 @load_org
-def delete_setting(user, org, name_id):
+def delete_setting(user, org, level, name_id):
 
-    s = fetch_by_id_or_field(Setting, 'name', name_id, org_id=org.id)
+    if level not in ['me', 'orgs']:
+        raise NotFoundError(
+            'You cannot store settings for \'{}\''
+            .format(level))
+
+    s = fetch_by_id_or_field(
+        Setting, 'name', name_id, org_id=org.id, user_id=user.id, level=level)
 
     if not s:
         raise NotFoundError(
-            'Setting "{}" does not yet exist for Org "{}"'
+            'Setting "{}" does not yet exist.'
             .format(name_id, org.name))
 
     db.session.delete(s)
