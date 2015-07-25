@@ -12,10 +12,10 @@ from newslynx import settings
 from .util import ResultIter
 
 
-class ContentComparison(object):
-    table = "content_metric_summary"
-    id_col = "content_item_id"
-    metrics_attr = "content_metric_comparisons"
+class Comparison(object):
+    table = None
+    id_col = None
+    metrics_attr = None
 
     def __init__(self, org, ids, **kw):
         self.org = org
@@ -99,7 +99,7 @@ class ContentComparison(object):
         queries = []
         for metric in self.metrics.values():
             queries.append(self.metric_query(metric))
-            if len(queries)  % self.bulk_size == 0:
+            if len(queries) % self.bulk_size == 0:
                 yield "\nUNION ALL\n".join(queries)
         yield "\nUNION ALL\n".join(queries)
 
@@ -112,7 +112,7 @@ class ContentComparison(object):
             for r in ResultIter(res):
                 if r:
                     yield r
-    
+
     def execute(self):
         """
         TODO: pooled execution.
@@ -121,3 +121,10 @@ class ContentComparison(object):
             results = ResultIter(db.session.execute(query))
             for r in results:
                 yield r
+
+
+class ContentComparison(Comparison):
+    table = "content_metrics_summary"
+    id_col = "content_item_id"
+    metrics_attr = "content_metric_comparisons"
+
