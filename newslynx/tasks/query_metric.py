@@ -32,8 +32,8 @@ class TSQuery(object):
         if not isinstance(ids, list):
             ids = [ids]
         self.ids = ids
-        # self.select = kw.get('select', '*') # TODO
-        # self.exclude = kw.get('exclude', []) # TODO
+        self.select = kw.get('select', '*') # TODO
+        self.exclude = kw.get('exclude', []) # TODO
         self.unit = kw.get('unit', self.min_unit)
         self.sparse = kw.get('sparse', True)
         self.sig_digits = kw.get('sig_digits', 2)
@@ -578,11 +578,27 @@ class TSQuery(object):
 
         # return self.cumulative_query
 
+    def select(self, results):
+        """
+        Filter out only the metrics that matter.
+        """
+        # rudimentary select for now.
+        for row in results:
+            clean_row = {}
+            if len(self.exclude):
+                for k in self.exclude:
+                    row.pop(k, None)
+            if len(self.select) and self.select != "*":
+                for k in self.select:
+                    clean_row[k] = row.pop(k)
+            yield clean_row
+
     def execute(self):
         """
         Execute the query and stream the results.
         """
-        return ResultIter(db.session.execute(self.query))
+        res = ResultIter(db.session.execute(self.query))
+        return self.select(res)
 
 
 class QueryContentMetricTimeseries(TSQuery):

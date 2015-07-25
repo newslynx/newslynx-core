@@ -34,6 +34,48 @@ comparison_types = {
     'types': ContentTypeComparisonCache()
 }
 
+def request_ts():
+
+    # select / exclude
+    select, exclude = arg_list(
+        'select', typ=str, exclusions=True, default=['*'])
+    if '*' in select:
+        exclude = []
+        select = "*"
+
+    # parse query kwargs.
+    kw = dict(
+        unit=arg_str('unit', default='hour'),
+        sparse=arg_bool('sparse', default=True),
+        sig_digits=arg_int('sig_digits', default=2),
+        group_by_id=arg_bool('group_by_id', default=True),
+        select=select,
+        exclude=exclude,
+        rm_nulls=arg_bool('rm_nulls', default=False),
+        time_since_start=arg_bool('time_since_start', default=False),
+        transform=arg_str('transform', default=None),
+        before=arg_date('before', default=None),
+        after=arg_date('after', default=None)
+    )
+    return kw
+
+
+@bp.route('/api/v1/content/timeseries', methods=['GET'])
+@load_user
+@load_org
+def list_content_timeseries(user, org):
+    """
+    Query the content timeseries for an entire org.
+    """
+
+    # default to all content items.
+    content_item_ids = org.content_item_ids
+
+    # TODO add in Event, Impact Tag, Subject Tag, Authors, etc.
+    q = QueryContentMetricTimeseries(org, content_item_ids, **request_ts())
+    data = list(q.execute())
+    return jsonify(data)
+
 
 @bp.route('/api/v1/content/<content_item_id>/timeseries', methods=['GET'])
 @load_user
@@ -53,7 +95,8 @@ def get_content_timeseries(user, org, content_item_id):
             .format(content_item_id))
 
     # select / exclude
-    select, exclude = arg_list('select', typ=str, exclusions=True, default=['*'])
+    select, exclude = arg_list(
+        'select', typ=str, exclusions=True, default=['*'])
     if '*' in select:
         exclude = []
         select = "*"
@@ -72,24 +115,7 @@ def get_content_timeseries(user, org, content_item_id):
     )
 
     q = QueryContentMetricTimeseries(org, [content_item_id], **kw)
-    data = list(q.execute())
-
-    # rudimentary select for now.
-    # TODO: put this in the query.
-    clean = []
-    for row in data:
-        clean_row = {}
-        if len(exclude):
-            for k in exclude:
-                row.pop(k, None)
-        if len(select) and select != "*":
-            for k in select:
-                clean_row[k] = row.pop(k)
-            clean.append(clean_row)
-        else:
-            clean.append(row)
-
-    return jsonify(clean)
+    return jsonify(q.execute())
 
 
 @bp.route('/api/v1/content/<content_item_id>/timeseries', methods=['POST'])
