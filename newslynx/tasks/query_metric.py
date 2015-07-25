@@ -10,6 +10,7 @@ from newslynx.tasks.util import ResultIter
 from newslynx.util import uniq
 
 
+
 class TSQuery(object):
 
     """
@@ -355,6 +356,16 @@ class TSQuery(object):
             date_select = ""
             date_col = ""
 
+        # add order by + group by
+        order_by = "ORDER BY {} {} ASC".format(date_col, agg_order_by)
+        if not date_col and not agg_order_by:
+            order_by = ""
+
+        group_by = "GROUP BY {} {}".format(agg_id_col, date_col)
+        if not date_col and not agg_id_col:
+            group_by = ""
+
+        # format kwargs
         return self.add_kw(
             select=self.agg_selects,
             date_select=date_select,
@@ -362,7 +373,9 @@ class TSQuery(object):
             agg_id_col=agg_id_col,
             sel_id_col=sel_id_col,
             agg_order_by=agg_order_by,
-            date_col=date_col
+            date_col=date_col,
+            group_by=group_by,
+            order_by=order_by
         )
 
     @property
@@ -375,8 +388,8 @@ class TSQuery(object):
                     {date_select}
                     {select}
                 FROM ({init_query}) t1
-                GROUP BY {agg_id_col} {date_col}
-                ORDER BY {date_col} {agg_order_by} ASC
+                {group_by}
+                {order_by}
             """.format(**self.agg_kw)
 
     @property
