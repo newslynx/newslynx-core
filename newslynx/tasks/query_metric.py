@@ -578,7 +578,7 @@ class TSQuery(object):
 
         # return self.cumulative_query
 
-    def select(self, results):
+    def select_metrics(self, results):
         """
         Filter out only the metrics that matter.
         """
@@ -597,8 +597,8 @@ class TSQuery(object):
         """
         Execute the query and stream the results.
         """
-        res = ResultIter(db.session.execute(self.query))
-        return self.select(res)
+        return ResultIter(db.session.execute(self.query))
+        # return self.select_metrics(res)
 
 
 class QueryContentMetricTimeseries(TSQuery):

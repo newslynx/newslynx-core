@@ -16,6 +16,7 @@ from newslynx.models import (
     SubjectTagsComparisonCache,
     ContentTypeComparisonCache,
     ImpactTagsComparisonCache)
+
 from newslynx.views.util import (
     arg_bool, arg_str, validate_ts_unit, arg_list,
     arg_date, arg_int, delete_response
@@ -33,6 +34,7 @@ comparison_types = {
     'subject_tags': SubjectTagsComparisonCache(),
     'types': ContentTypeComparisonCache()
 }
+
 
 def request_ts():
     """
@@ -70,11 +72,8 @@ def list_content_timeseries(user, org):
     Query the content timeseries for an entire org.
     """
 
-    # default to all content items.
-    content_item_ids = org.content_item_ids
-
     # TODO add in Event, Impact Tag, Subject Tag, Authors, etc.
-    q = QueryContentMetricTimeseries(org, content_item_ids, **request_ts())
+    q = QueryContentMetricTimeseries(org,  org.content_item_ids, **request_ts())
     data = list(q.execute())
     return jsonify(data)
 
