@@ -23,6 +23,13 @@ class OrgMetricTimeseries(db.Model):
         self.datetime = kw.get('datetime')
         self.metrics = kw.get('metrics', {})
 
+    def to_dict(self):
+        return {
+            'org_id': self.org_id,
+            'datetime': self.datetime,
+            'metrics': self.metrics
+        }
+
     def __repr__(self):
         return '<OrgMetricTimeseries %r /  %r >' % (self.org_id, self.datetime)
 
@@ -43,6 +50,12 @@ class OrgMetricSummary(db.Model):
     def __init__(self, **kw):
         self.org_id = kw.get('org_id')
         self.metrics = kw.get('metrics', {})
+
+    def to_dict(self):
+        return {
+            'org_id': self.org_id,
+            'metrics': self.metrics
+        }
 
     def __repr__(self):
         return '<OrgMetricSummary  %r >' % (self.org_id)
