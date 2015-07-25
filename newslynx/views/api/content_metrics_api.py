@@ -35,7 +35,9 @@ comparison_types = {
 }
 
 def request_ts():
-
+    """
+    A helper for parsing timeseries Queries.
+    """
     # select / exclude
     select, exclude = arg_list(
         'select', typ=str, exclusions=True, default=['*'])
