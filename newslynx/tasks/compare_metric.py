@@ -6,16 +6,19 @@ import gevent.monkey
 gevent.monkey.patch_all()
 from gevent.pool import Pool
 
+from collections import defaultdict
+
 from newslynx.util import gen_uuid
 from newslynx.core import db
+# from newslynx.models import Metric
 from newslynx import settings
 from .util import ResultIter
 
 
-class ContentComparison(object):
-    table = "content_metric_summary"
-    id_col = "content_item_id"
-    metrics_attr = "content_metric_comparisons"
+class Comparison(object):
+    table = None
+    id_col = None
+    metrics_attr = None
 
     def __init__(self, org, ids, **kw):
         self.org = org
@@ -27,7 +30,8 @@ class ContentComparison(object):
         self.rm_null = kw.get('rm_null', False)
         self.percentiles = kw.get(
             'percentiles', settings.COMPARISON_PERCENTILES)
-        self.metrics = getattr(org, self.metrics_attr)
+        if self.metrics_attr:
+            self.metrics = getattr(org, self.metrics_attr)
 
     @property
     def ids_array(self):
@@ -36,23 +40,23 @@ class ContentComparison(object):
     def select_metric(self, metric):
         return "(metrics ->> '{name}')::text::numeric as metric".format(**metric)
 
-    def null_metric(self, metric):
+    def null_filter(self, metric):
         return "AND (metrics ->> '{name}')::text::numeric IS NOT NULL".format(**metric)
 
     def init_query(self, metric):
         select = self.select_metric(metric)
-        null_metric = self.null_metric(metric)
+        null_filter = self.null_filter(metric)
         if not self.rm_null:
-            null_metric = ""
+            null_filter = ""
         return \
             """SELECT {select}
                FROM {table}
                WHERE {id_col} in (select unnest({ids_array}))
-               {null_metric}
+               {null_filter}
                """\
             .format(select=select, table=self.table,
                     id_col=self.id_col, ids_array=self.ids_array,
-                    null_metric=null_metric)
+                    null_filter=null_filter)
 
     def metric_summary_query(self, metric):
         return \
@@ -61,7 +65,7 @@ class ContentComparison(object):
                        ROUND(min(metric), 2) as min,
                        ROUND(median(metric), 2) as median,
                        ROUND(max(metric), 2) as max
-                       FROM ({}) AS "{}"
+                       FROM ({0}) AS "{1}"
             """.format(self.init_query(metric), gen_uuid())
 
     def select_percentile(self, per):
@@ -82,8 +86,9 @@ class ContentComparison(object):
             'name': metric.get('name'),
             'percentiles': self.select_percentiles,
             'summary_query': self.metric_summary_query(metric),
-            'alias': gen_uuid()
+            'alias': gen_uuid(),
         }
+
         return \
             """SELECT '{name}' as metric,
                       mean, median, min, max,
@@ -99,7 +104,7 @@ class ContentComparison(object):
         queries = []
         for metric in self.metrics.values():
             queries.append(self.metric_query(metric))
-            if len(queries)  % self.bulk_size == 0:
+            if len(queries) % self.bulk_size == 0:
                 yield "\nUNION ALL\n".join(queries)
         yield "\nUNION ALL\n".join(queries)
 
@@ -112,12 +117,31 @@ class ContentComparison(object):
             for r in ResultIter(res):
                 if r:
                     yield r
-    
+
     def execute(self):
         """
-        TODO: pooled execution.
+        Pooled execution.
         """
-        for query in self.queries:
-            results = ResultIter(db.session.execute(query))
+        for results in self.pool.imap_unordered(self._execute_one, self.queries):
             for r in results:
                 yield r
+
+
+## Comparison Query Objects
+
+class ContentComparison(Comparison):
+    table = "content_metric_summary"
+    id_col = "content_item_id"
+    metrics_attr = "content_metric_comparisons"
+
+
+# class OrgComparison(Comparison):
+#     table = "org_metric_summary"
+#     id_col = "org_id"
+#     metrics_attr = "org_metric_comparisons"
+
+#     @property
+#     def metrics(self):
+#         db.session.query(Metrics)\
+#             .filter()
+#         return

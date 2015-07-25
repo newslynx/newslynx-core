@@ -65,7 +65,7 @@ class ContentItem(db.Model):
         'Author', secondary=relations.content_items_authors,
         backref=db.backref('content_items', lazy='dynamic'), lazy='joined')
 
-    summary_metrics = db.relationship(
+    summary = db.relationship(
         'ContentMetricSummary', lazy='joined', uselist=False, cascade="all, delete-orphan")
 
     timeseries_metrics = db.relationship(
@@ -175,6 +175,14 @@ class ContentItem(db.Model):
     def event_ids(self):
         return [e.id for e in self.events]
 
+    @property
+    def summary_metrics(self):
+        """
+        Summary metrics for an organization.
+        """
+        return self.summary.metrics
+
+
     def to_dict(self, **kw):
         # incl_links = kw.get('incl_links', False)
         incl_body = kw.get('incl_body', False)
@@ -208,8 +216,8 @@ class ContentItem(db.Model):
             d['body'] = self.body
 
         if incl_metrics:
-            if self.summary_metrics:
-                d['metrics'] = self.summary_metrics.metrics
+            if self.summary:
+                d['metrics'] = self.summary_metrics
             else:
                 d['metrics'] = {}
 

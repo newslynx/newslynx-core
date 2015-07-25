@@ -683,6 +683,13 @@ class Content(BaseClient):
         url = self._format_url('content', id)
         return self._request('DELETE', url, params=kw)
 
+    def list_timeseries(self, **kw):
+        """
+        Query all content item timeseries.
+        """
+        url = self._format_url('content', 'timeseries')
+        return self._request('GET', url, params=kw)
+
     def get_timeseries(self, id=None, **kw):
         """
         Get a content item timeseries.
@@ -733,9 +740,15 @@ class Content(BaseClient):
         """
         Bulk create summary metric(s) for content items.
         """
-        kw, params = self._split_auth_params_from_data(kw)
         url = self._format_url('content', 'summary')
-        return self._request('PUT', url, params=params)
+        return self._request('PUT', url, params=kw)
+
+    def refresh_summary(self, id, **kw):
+        """
+        Bulk create summary metric(s) for content items.
+        """
+        url = self._format_url('content', id, 'summary')
+        return self._request('PUT', url, params=kw)
 
     def add_tag(self, id=None, tag_id=None, **kw):
         """
@@ -772,12 +785,26 @@ class Content(BaseClient):
         url = self._format_url('content', 'comparisons', type)
         return self._request('GET', url, params=kw)
 
-    def refresh_comparison(self, type, **kw):
+    def refresh_comparison(self, type=None, **kw):
         """
         Return all comparisons.
         """
         url = self._format_url('content', 'comparisons', type)
         return self._request('PUT', url, params=kw)
+
+    def make_comparisons(self, id, **kw):
+        """
+        Compare a content item by all comparisons.
+        """
+        url = self._format_url('content', id, 'comparisons')
+        return self._request('GET', url, params=kw)
+
+    def make_comparison(self, id, type, **kw):
+        """
+        Compare a content item by a single comparison.
+        """
+        url = self._format_url('content', id, 'comparisons', type)
+        return self._request('GET', url, params=kw)
 
 
 class Extract(BaseClient):

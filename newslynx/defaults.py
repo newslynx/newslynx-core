@@ -65,7 +65,11 @@ THUMBNAIL_DEFAULT_FORMAT = "PNG"
 # COMPARISON CACHE
 COMPARISON_CACHE_PREFIX = "newslynx-comparison-cache"
 COMPARISON_CACHE_TTL = 86400  # 1 day
-COMPARISON_PERCENTILES = [2.5, 5.0, 10.0, 25.0, 75.0, 90.0, 95.0, 97.5]
+COMPARISON_PERCENTILES = [
+    2.5, 5.0, 10.0, 20.0, 30.0,
+    40.0, 60.0, 70.0, 80.0, 90.0,
+    95.0, 97.5
+]
 
 # TODO, make this actually modify data.
 COMPARISON_FUNCTIONS = ['min', 'max', 'avg', 'median']
@@ -92,3 +96,6 @@ REDDIT_USER_AGENT = 'Newslynx'
 # Metrics timeseries granularity
 METRICS_MIN_DATE_UNIT = 'hour'
 METRICS_MIN_DATE_VALUE = 1
+METRICS_CONTENT_LIST_TIMESERIES_DAYS = 5
+METRICS_CONTENT_GET_TIMESERIES_DAYS = 30
+

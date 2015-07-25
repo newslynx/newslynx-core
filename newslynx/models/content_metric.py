@@ -27,6 +27,14 @@ class ContentMetricTimeseries(db.Model):
         self.datetime = kw.get('datetime')
         self.metrics = kw.get('metrics', {})
 
+    def to_dict(self):
+        return {
+            'org_id': self.org_id,
+            'content_item_id': self.content_item_id,
+            'datetime': self.datetime,
+            'metrics': self.metrics
+        }
+
     def __repr__(self):
         return '<ContentTimeseriesMetric %r /  %r >' % (self.content_item_id, self.datetime)
 
@@ -50,6 +58,13 @@ class ContentMetricSummary(db.Model):
         self.org_id = kw.get('org_id')
         self.content_item_id = kw.get('content_item_id')
         self.metrics = kw.get('metrics', {})
+
+    def to_dict(self):
+        return {
+            'org_id': self.org_id,
+            'content_item_id': self.content_item_id,
+            'metrics': self.metrics
+        }
 
     def __repr__(self):
         return '<ContentMetricSummary %r >' % (self.content_item_id)

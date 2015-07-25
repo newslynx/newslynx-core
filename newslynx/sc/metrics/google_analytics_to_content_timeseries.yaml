@@ -90,7 +90,7 @@ metrics:
         org_levels:
             - timeseries
             - summary 
-        formula: '{ga_total_time_on_page} / NULLIF({ga_pageviews}, 0)'
+        formula: 'ROUND({ga_total_time_on_page} / NULLIF({ga_pageviews}, 0), 2)'
         agg: avg
 
     ga_per_external:
@@ -103,7 +103,7 @@ metrics:
         org_levels:
             - timeseries
             - summary 
-        formula: '{ga_entrances} / NULLIF({ga_pageviews}, 0)'
+        formula: 'ROUND({ga_entrances} / NULLIF({ga_pageviews}, 0), 2)'
         agg: avg
 
     ga_per_internal:
@@ -116,7 +116,7 @@ metrics:
         org_levels:
             - timeseries
             - summary 
-        formula: '1 - ({ga_entrances} / NULLIF({ga_pageviews}, 0))'
+        formula: 'ROUND(1 - ({ga_entrances} / NULLIF({ga_pageviews}, 0)), 2)'
         agg: avg
 
 
