@@ -4,6 +4,7 @@ Query logic for rollingup timeseries metrics => summary metrics.
 from datetime import timedelta
 
 from newslynx.lib.serialize import obj_to_json
+from newslynx.exc import NotFoundError, RequestError
 from newslynx.core import db
 from newslynx.lib import dates
 from newslynx.constants import IMPACT_TAG_CATEGORIES, IMPACT_TAG_LEVELS
@@ -20,7 +21,6 @@ def content_timeseries_to_summary(org, content_item_ids=[], num_hours=24):
 
     # just use this to generate a giant timeseries select with computed
     # metrics.
-    print content_item_ids
     if not len(content_item_ids):
         content_item_ids = org.content_item_ids
     if not len(content_item_ids):

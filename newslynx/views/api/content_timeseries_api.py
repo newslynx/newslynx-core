@@ -22,7 +22,8 @@ from newslynx.models.relations import (
 )
 
 from newslynx.settings import (
-    METRICS_CONTENT_LIST_TIMESERIES_DAYS
+    METRICS_CONTENT_LIST_TIMESERIES_DAYS,
+    METRICS_CONTENT_GET_TIMESERIES_DAYS
 )
 
 from newslynx.views.util import (
@@ -100,7 +101,7 @@ def list_content_timeseries(user, org):
     incl_event_ids, excl_event_ids = \
         arg_list('event_ids', typ=int, exclusions=True, default=[])
     has_filter = False  # we use this to keep track of whether
-                        # a filter has been applied.
+    # a filter has been applied.
 
     # get all cids
     all_cids = copy.copy(org.content_item_ids)
@@ -243,28 +244,12 @@ def get_content_timeseries(user, org, content_item_id):
             'A ContentItem with ID {} does not exist'
             .format(content_item_id))
 
-    # select / exclude
-    select, exclude = arg_list(
-        'select', typ=str, exclusions=True, default=['*'])
-    if '*' in select:
-        exclude = []
-        select = "*"
-
-    kw = dict(
-        unit=arg_str('unit', default='hour'),
-        sparse=arg_bool('sparse', default=True),
-        sig_digits=arg_int('sig_digits', default=2),
-        select=select,
-        exclude=exclude,
-        rm_nulls=arg_bool('rm_nulls', default=False),
-        time_since_start=arg_bool('time_since_start', default=False),
-        transform=arg_str('transform', default=None),
-        before=arg_date('before', default=None),
-        after=arg_date('after', default=None)
+    kw = request_ts(
+        after=dates.now() - timedelta(METRICS_CONTENT_GET_TIMESERIES_DAYS)
     )
 
     q = QueryContentMetricTimeseries(org, [content_item_id], **kw)
-    return jsonify(q.execute())
+    return jsonify(list(q.execute()))
 
 
 @bp.route('/api/v1/content/<content_item_id>/timeseries', methods=['POST'])

@@ -96,3 +96,16 @@ def refresh_content_summary(user, org):
     rollup_metric.content_timeseries_to_summary(org, [], since)
     rollup_metric.event_tags_to_summary(org)
     return jsonify({'success': True})
+
+
+@bp.route('/api/v1/content/<content_item_id>/summary', methods=['PUT'])
+@load_user
+@load_org
+def refresh_one_content_summary(user, org, content_item_id):
+    """
+    Refresh content summary metrics
+    """
+    since = arg_int('since', 24)
+    rollup_metric.content_timeseries_to_summary(org, [content_item_id], since)
+    rollup_metric.event_tags_to_summary(org, [content_item_id])
+    return jsonify({'success': True})

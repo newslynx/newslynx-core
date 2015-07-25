@@ -95,8 +95,8 @@ def refresh_comparison(*args, **kwargs):
     # parse kwargs
     level = kwargs.pop('level')
     type = kwargs.pop('type')
-    type = parse_comparison_type(type)
     level = parse_comparison_level(level)
+    type = parse_comparison_type(type, level)
 
     fx = comparison_types[level][type]
     fx.invalidate(*args, **kwargs)
@@ -228,7 +228,7 @@ def find_nearest(array, value):
     return min(enumerate(array), key=lambda x: abs(x[1]-value))
 
 
-@bp.route('/api/v1/<level>/<level_id>/compare', methods=['GET'])
+@bp.route('/api/v1/<level>/<level_id>/comparisons', methods=['GET'])
 @load_user
 @load_org
 def make_item_comparisons(user, org, level, level_id):
@@ -240,39 +240,16 @@ def make_item_comparisons(user, org, level, level_id):
     return jsonify(list(resp))
 
 
-@bp.route('/api/v1/<level>/<level_id>/compare/<type>', methods=['GET'])
+@bp.route('/api/v1/<level>/<level_id>/comparisons/<type>', methods=['GET'])
 @load_user
 @load_org
-def make_item_comparison(user, org, level):
-    """
-    Get all comparisons by level.
-    """
-    return get_item_comparison(org.id, org_id=org.id, level=level,
-                               level_id=level_id, type='all')
-
-
-@bp.route('/api/v1/<level>/<level_id>/compare', methods=['PUT'])
-@load_user
-@load_org
-def refresh_item_comparisons(user, org, level, level_id):
+def make_item_comparison(user, org, level, level_id, type):
     """
     Get all comparisons by level.
     """
     resp = get_item_comparison(org.id, org_id=org.id, level=level,
-                               level_id=level_id, type='all')
-    return jsonify({'success': True})
-
-
-@bp.route('/api/v1/<level>/<level_id>/compare/<type>', methods=['PUT'])
-@load_user
-@load_org
-def refresh_one_item_comparison(user, org, level):
-    """
-    Get all comparisons by level.
-    """
-    refresh_item_comparison(org.id, org_id=org.id, level=level,
-                            level_id=level_id, type='all')
-    return jsonify({'success': True})
+                               level_id=level_id, type=type, key='metrics')
+    return jsonify(list(resp))
 
 
 @bp.route('/api/v1/<level>/comparisons', methods=['GET'])
@@ -282,7 +259,7 @@ def get_comparisons(user, org, level):
     """
     Get all comparisons by level.
     """
-    cr = get_comparison(org.id, org_id=org.id, level=level, type='all')
+    cr = get_comparison(org.id, level=level, type='all')
     return response_from_cache(cr)
 
 
@@ -293,7 +270,7 @@ def refresh_comparisons(user, org, level):
     """
     Refresh content comparisons
     """
-    refresh_comparison(org.id, org_id=org.id, level=level, type='all')
+    refresh_comparison(org.id, level=level, type='all')
     return jsonify({'success': True})
 
 
@@ -304,7 +281,7 @@ def get_one_comparison(user, org, type, level):
     """
     Get one content comparison.
     """
-    cr = get_comparison(org.id, org_id=org.id, level=level, type=type)
+    cr = get_comparison(org.id, level=level, type=type)
     return response_from_cache(cr)
 
 
@@ -315,6 +292,5 @@ def refresh_one_comparison(user, org, type, level):
     """
     Refresh one content comparison.
     """
-    refresh_comparison(org.id, org_id=org.id, level=level, type=type)
+    refresh_comparison(org.id, level=level, type=type)
     return jsonify({'success': True})
-
