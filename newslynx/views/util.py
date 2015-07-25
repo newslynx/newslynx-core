@@ -471,10 +471,14 @@ def validate_ts_unit(value):
     """
     check a list of values against ContentItem types.
     """
+    # check for null here.
+    if value in NULL_VALUES:
+        value = None
     if value not in METRIC_TS_UNITS:
         raise RequestError(
             "'{}' is not a valid timeseries unit. Choose from {}."
             .format(value, METRIC_TS_UNITS))
+    return value
 
 
 def validate_recipe_statuses(values):

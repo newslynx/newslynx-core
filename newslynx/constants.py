@@ -28,7 +28,7 @@ METRIC_FACET_KEYS = [
 ]
 
 METRIC_TS_UNITS = [
-    'hour', 'day', 'month'
+    'hour', 'day', 'month', None
 ]
 
 CONTENT_METRIC_COMPARISONS = [

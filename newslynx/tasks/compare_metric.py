@@ -6,8 +6,11 @@ import gevent.monkey
 gevent.monkey.patch_all()
 from gevent.pool import Pool
 
+from collections import defaultdict
+
 from newslynx.util import gen_uuid
 from newslynx.core import db
+# from newslynx.models import Metric
 from newslynx import settings
 from .util import ResultIter
 
@@ -27,7 +30,8 @@ class Comparison(object):
         self.rm_null = kw.get('rm_null', False)
         self.percentiles = kw.get(
             'percentiles', settings.COMPARISON_PERCENTILES)
-        self.metrics = getattr(org, self.metrics_attr)
+        if self.metrics_attr:
+            self.metrics = getattr(org, self.metrics_attr)
 
     @property
     def ids_array(self):
@@ -36,23 +40,23 @@ class Comparison(object):
     def select_metric(self, metric):
         return "(metrics ->> '{name}')::text::numeric as metric".format(**metric)
 
-    def null_metric(self, metric):
+    def null_filter(self, metric):
         return "AND (metrics ->> '{name}')::text::numeric IS NOT NULL".format(**metric)
 
     def init_query(self, metric):
         select = self.select_metric(metric)
-        null_metric = self.null_metric(metric)
+        null_filter = self.null_filter(metric)
         if not self.rm_null:
-            null_metric = ""
+            null_filter = ""
         return \
             """SELECT {select}
                FROM {table}
                WHERE {id_col} in (select unnest({ids_array}))
-               {null_metric}
+               {null_filter}
                """\
             .format(select=select, table=self.table,
                     id_col=self.id_col, ids_array=self.ids_array,
-                    null_metric=null_metric)
+                    null_filter=null_filter)
 
     def metric_summary_query(self, metric):
         return \
@@ -61,7 +65,7 @@ class Comparison(object):
                        ROUND(min(metric), 2) as min,
                        ROUND(median(metric), 2) as median,
                        ROUND(max(metric), 2) as max
-                       FROM ({}) AS "{}"
+                       FROM ({0}) AS "{1}"
             """.format(self.init_query(metric), gen_uuid())
 
     def select_percentile(self, per):
@@ -82,8 +86,9 @@ class Comparison(object):
             'name': metric.get('name'),
             'percentiles': self.select_percentiles,
             'summary_query': self.metric_summary_query(metric),
-            'alias': gen_uuid()
+            'alias': gen_uuid(),
         }
+
         return \
             """SELECT '{name}' as metric,
                       mean, median, min, max,
@@ -115,16 +120,86 @@ class Comparison(object):
 
     def execute(self):
         """
-        TODO: pooled execution.
+        Pooled execution.
         """
-        for query in self.queries:
-            results = ResultIter(db.session.execute(query))
+        for results in self.pool.imap_unordered(self._execute_one, self.queries):
             for r in results:
                 yield r
 
 
+## Comparison Query Objects
+
 class ContentComparison(Comparison):
-    table = "content_metrics_summary"
+    table = "content_metric_summary"
     id_col = "content_item_id"
     metrics_attr = "content_metric_comparisons"
 
+
+# class OrgComparison(Comparison):
+#     table = "org_metric_summary"
+#     id_col = "org_id"
+#     metrics_attr = "org_metric_comparisons"
+
+#     @property
+#     def metrics(self):
+#         db.session.query(Metrics)\
+#             .filter()
+#         return
+
+
+## Functions for creating percentile comparisons.
+
+
+def compare_many(items, comparisons, key='metrics'):
+    """
+    Add a comparisons object to
+    """
+    for item in items:
+        item['comparisons'] = compare(item[key], comparisons)
+        yield item
+
+
+def compare(metrics, comparisons):
+    """
+    Return percentile rankings given a a dictionary of metrics and comparisons.
+    """
+    output = defaultdict(lambda: defaultdict(dict))
+    for metric, comparison in gen_comparisons_lookup(comparisons):
+        value = metrics.get(metric, None)
+        if not value:
+            continue
+        percentile = compare_one(value, comparison)
+        d = {metric: percentile}
+        if not comparison['facet_value']:
+            output[comparison['facet']].update(d)
+        else:
+            output[comparison['facet']][comparison['facet_value']].update(d)
+    return output
+
+
+def compare_one(value, comparison):
+    """
+    Given a value and comparison object, return comparison stats.
+    """
+    # lookup all percentiles.
+    percentiles = [
+        (v, k if k != 'median' else 'per_50')
+        for k, v in comparison if k.startswith('per_') or k.startswith('median')
+    ]
+    print "HMMM:", percentiles, value
+    return 2.5
+
+
+def gen_comparisons_lookup(comparisons):
+    """
+    Generate a lookup metrics => comparison facets.
+    """
+    for facet, values in comparisons.items():
+        if isinstance(values, list):
+            for value in values:
+                value['facet'] = facet
+        elif isinstance(values, dict):
+            for facet_value, value in values.items():
+                value['facet'] = facet
+                value['facet_value'] = facet_value
+        yield value['metric'], value
