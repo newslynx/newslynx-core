@@ -2,6 +2,7 @@ import logging
 import copy
 from datetime import timedelta
 
+from sqlalchemy import distinct
 from flask import Blueprint
 
 from newslynx.core import db
@@ -24,7 +25,8 @@ from newslynx.models import (
 from newslynx.models.relations import (
     content_items_events,
     content_items_tags,
-    content_items_authors
+    content_items_authors,
+    events_tags
 )
 from newslynx.constants import (
     NULL_VALUES,
@@ -182,25 +184,29 @@ def list_content_timeseries(user, org):
             if r[0] in all_cids:
                 all_cids.remove(r[0])
 
-    # # include impact tags
-    # if len(incl_im_ids):
-    #     has_filter = True
-    #     res = db.session.query(content_items_tags.c.content_item_id)\
-    #         .filter(content_items_tags.c.tag_id.in_(incl_im_ids))\
-    #         .all()
-    #     for r in res:
-    #         if r[0] not in cids:
-    #             cids.append(r[0])
+    # include impact tags
+    if len(incl_im_ids):
+        has_filter = True
+        res = db.session\
+            .query(distinct(content_items_events.c.content_item_id))\
+            .outerjoin(events_tags, events_tags.c.event_id == content_items_events.c.event_id)\
+            .filter(events_tags.c.tag_id.in_(incl_im_ids))\
+            .all()
+        for r in res:
+            if r[0] not in cids:
+                cids.append(r[0])
 
-    # # exclude impact tags
-    # if len(excl_im_ids):
-    #     has_filter = True
-    #     res = db.session.query(content_items_tags.c.content_item_id)\
-    #         .filter(~content_items_tags.c.tag_id.in_(excl_im_ids))\
-    #         .all()
-    #     for r in res:
-    #         if r[0] in all_cids:
-    #             all_cids.remove(r[0])
+    # exclude impact tags
+    if len(excl_im_ids):
+        has_filter = True
+        res = db.session\
+            .query(distinct(content_items_events.c.content_item_id))\
+            .outerjoin(events_tags, events_tags.c.event_id == content_items_events.c.event_id)\
+            .filter(~events_tags.c.tag_id.in_(incl_im_ids))\
+            .all()
+        for r in res:
+            if r[0] in all_cids:
+                all_cids.remove(r[0])
 
     # remove exlucde cids:
     for c in cids:
@@ -231,6 +237,7 @@ def list_content_timeseries(user, org):
         after=dates.now() - timedelta(METRICS_CONTENT_LIST_TIMESERIES_DAYS)
     )
     q = QueryContentMetricTimeseries(org,  cids, **kw)
+    # print q.query
     return jsonify(list(q.execute()))
 
 
