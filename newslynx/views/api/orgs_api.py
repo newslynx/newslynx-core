@@ -41,7 +41,7 @@ def org_create(user):
     return jsonify(org)
 
 
-@bp.route('/api/v1/orgs/<org_id_slug>', methods=['GET'])
+@bp.route('/api/v1/orgs/<int:org_id>', methods=['GET'])
 @load_user
 def org(user, org_id_slug):
 
@@ -51,7 +51,7 @@ def org(user, org_id_slug):
     # if it still doesn't exist, raise an error.
     if not org:
         raise NotFoundError(
-            'This Org does not exist.')
+            'Org {} does not exist.'.format(org_id_slug))
 
     # ensure the active user can edit this Org
     if user.id not in org.user_ids:
@@ -64,7 +64,7 @@ def org(user, org_id_slug):
     return jsonify(org)
 
 
-@bp.route('/api/v1/orgs/<org_id_slug>/simple-content', methods=['GET'])
+@bp.route('/api/v1/orgs/<int:org_id>/simple-content', methods=['GET'])
 @load_user
 def org_content(user, org_id_slug):
     """
@@ -76,7 +76,7 @@ def org_content(user, org_id_slug):
     # if it still doesn't exist, raise an error.
     if not org:
         raise NotFoundError(
-            'This Org does not exist.')
+            'Org {} does not exist.'.format(org_id_slug))
 
     # ensure the active user can edit this Org
     if user.id not in org.user_ids:
@@ -89,7 +89,7 @@ def org_content(user, org_id_slug):
     return jsonify(org.simple_content_items)
 
 
-@bp.route('/api/v1/orgs/<org_id_slug>', methods=['PUT', 'PATCH'])
+@bp.route('/api/v1/orgs/<int:org_id>', methods=['PUT', 'PATCH'])
 @load_user
 def org_update(user, org_id_slug):
 
@@ -101,7 +101,8 @@ def org_update(user, org_id_slug):
     # if the org doesnt exist, create it.
     if not org:
         raise NotFoundError(
-            'This Org does not exist.')
+            'Org {} does not exist.'.format(org_id_slug))
+
 
     if user.id not in org.user_ids:
         raise ForbiddenError(
@@ -136,7 +137,7 @@ def org_update(user, org_id_slug):
     return jsonify(org)
 
 
-@bp.route('/api/v1/orgs/<org_id_slug>', methods=['DELETE'])
+@bp.route('/api/v1/orgs/<int:org_id>', methods=['DELETE'])
 @load_user
 def org_delete(user, org_id_slug):
 
@@ -150,7 +151,8 @@ def org_delete(user, org_id_slug):
     # if it still doesn't exist, raise an error.
     if not org:
         raise NotFoundError(
-            'This Org does not exist.')
+            'Org {} does not exist.'.format(org_id_slug))
+
 
     # localize
     localize(org)
@@ -167,7 +169,7 @@ def org_delete(user, org_id_slug):
     return delete_response()
 
 
-@bp.route('/api/v1/orgs/<org_id_slug>/users',  methods=['GET'])
+@bp.route('/api/v1/orgs/<int:org_id>/users',  methods=['GET'])
 @load_user
 def org_users(user, org_id_slug):
 
@@ -177,7 +179,8 @@ def org_users(user, org_id_slug):
     # if it still doesn't exist, raise an error.
     if not org:
         raise NotFoundError(
-            'This Org does not exist.')
+            'Org {} does not exist.'.format(org_id_slug))
+
 
     # localize
     localize(org)
@@ -191,7 +194,7 @@ def org_users(user, org_id_slug):
     return jsonify(org.users)
 
 
-@bp.route('/api/v1/orgs/<org_id_slug>/users',  methods=['POST'])
+@bp.route('/api/v1/orgs/<int:org_id>/users',  methods=['POST'])
 @load_user
 def org_create_user(user, org_id_slug):
 
@@ -247,7 +250,7 @@ def org_create_user(user, org_id_slug):
     return jsonify(new_org_user)
 
 
-@bp.route('/api/v1/orgs/<org_id_slug>/users/<user_email>',  methods=['GET'])
+@bp.route('/api/v1/orgs/<int:org_id>/users/<user_email>',  methods=['GET'])
 @load_user
 def org_user(user, org_id_slug, user_email):
 
@@ -256,7 +259,8 @@ def org_user(user, org_id_slug, user_email):
 
     if not org:
         raise NotFoundError(
-            'This Org does not exist.')
+            'Org {} does not exist.'.format(org_id_slug))
+
 
     # ensure the active user can edit this Org
     if user.id not in org.user_ids:
@@ -282,7 +286,7 @@ def org_user(user, org_id_slug, user_email):
     return jsonify(org_user)
 
 
-@bp.route('/api/v1/orgs/<org_id_slug>/users/<user_email>', methods=['PUT', 'PATCH'])
+@bp.route('/api/v1/orgs/<int:org_id>/users/<user_email>', methods=['PUT', 'PATCH'])
 @load_user
 def org_add_user(user, org_id_slug, user_email):
 
@@ -295,7 +299,8 @@ def org_add_user(user, org_id_slug, user_email):
 
     if not org:
         raise NotFoundError(
-            'This Org does not exist.')
+            'Org {} does not exist.'.format(org_id_slug))
+
 
     # ensure the active user can edit this Org
     if user.id not in org.user_ids:
@@ -355,7 +360,7 @@ def org_add_user(user, org_id_slug, user_email):
     return jsonify(new_org_user)
 
 
-@bp.route('/api/v1/orgs/<org_id_slug>/users/<user_email>', methods=['DELETE'])
+@bp.route('/api/v1/orgs/<int:org_id>/users/<user_email>', methods=['DELETE'])
 @load_user
 def org_remove_user(user, org_id_slug, user_email):
 
