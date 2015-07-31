@@ -43,15 +43,15 @@ def org_create(user):
 
 @bp.route('/api/v1/orgs/<int:org_id>', methods=['GET'])
 @load_user
-def org(user, org_id_slug):
+def org(user, org_id):
 
     # fetch org
-    org = fetch_by_id_or_field(Org, 'slug', org_id_slug)
+    org = fetch_by_id_or_field(Org, 'slug', org_id)
 
     # if it still doesn't exist, raise an error.
     if not org:
         raise NotFoundError(
-            'Org {} does not exist.'.format(org_id_slug))
+            'Org {} does not exist.'.format(org_id))
 
     # ensure the active user can edit this Org
     if user.id not in org.user_ids:
@@ -66,17 +66,17 @@ def org(user, org_id_slug):
 
 @bp.route('/api/v1/orgs/<int:org_id>/simple-content', methods=['GET'])
 @load_user
-def org_content(user, org_id_slug):
+def org_content(user, org_id):
     """
     Return a simple list of all content items an organization owns.
     """
     # fetch org
-    org = fetch_by_id_or_field(Org, 'slug', org_id_slug)
+    org = fetch_by_id_or_field(Org, 'slug', org_id)
 
     # if it still doesn't exist, raise an error.
     if not org:
         raise NotFoundError(
-            'Org {} does not exist.'.format(org_id_slug))
+            'Org {} does not exist.'.format(org_id))
 
     # ensure the active user can edit this Org
     if user.id not in org.user_ids:
@@ -91,17 +91,17 @@ def org_content(user, org_id_slug):
 
 @bp.route('/api/v1/orgs/<int:org_id>', methods=['PUT', 'PATCH'])
 @load_user
-def org_update(user, org_id_slug):
+def org_update(user, org_id):
 
     req_data = request_data()
 
     # fetch org
-    org = fetch_by_id_or_field(Org, 'slug', org_id_slug)
+    org = fetch_by_id_or_field(Org, 'slug', org_id)
 
     # if the org doesnt exist, create it.
     if not org:
         raise NotFoundError(
-            'Org {} does not exist.'.format(org_id_slug))
+            'Org {} does not exist.'.format(org_id))
 
 
     if user.id not in org.user_ids:
@@ -139,19 +139,19 @@ def org_update(user, org_id_slug):
 
 @bp.route('/api/v1/orgs/<int:org_id>', methods=['DELETE'])
 @load_user
-def org_delete(user, org_id_slug):
+def org_delete(user, org_id):
 
     if not user.admin:
         raise AuthError(
             'You must be an admin to delete an Org')
 
     # fetch org
-    org = fetch_by_id_or_field(Org, 'slug', org_id_slug)
+    org = fetch_by_id_or_field(Org, 'slug', org_id)
 
     # if it still doesn't exist, raise an error.
     if not org:
         raise NotFoundError(
-            'Org {} does not exist.'.format(org_id_slug))
+            'Org {} does not exist.'.format(org_id))
 
 
     # localize
@@ -171,15 +171,15 @@ def org_delete(user, org_id_slug):
 
 @bp.route('/api/v1/orgs/<int:org_id>/users',  methods=['GET'])
 @load_user
-def org_users(user, org_id_slug):
+def org_users(user, org_id):
 
     # fetch org
-    org = fetch_by_id_or_field(Org, 'slug', org_id_slug)
+    org = fetch_by_id_or_field(Org, 'slug', org_id)
 
     # if it still doesn't exist, raise an error.
     if not org:
         raise NotFoundError(
-            'Org {} does not exist.'.format(org_id_slug))
+            'Org {} does not exist.'.format(org_id))
 
 
     # localize
@@ -196,7 +196,7 @@ def org_users(user, org_id_slug):
 
 @bp.route('/api/v1/orgs/<int:org_id>/users',  methods=['POST'])
 @load_user
-def org_create_user(user, org_id_slug):
+def org_create_user(user, org_id):
 
     if not user.admin:
         raise AuthError(
@@ -214,7 +214,7 @@ def org_create_user(user, org_id_slug):
             'An email, password, and name are required to create a User.')
 
     # fetch org
-    org = fetch_by_id_or_field(Org, 'slug', org_id_slug)
+    org = fetch_by_id_or_field(Org, 'slug', org_id)
 
     # if it still doesn't exist, raise an error.
     if not org:
@@ -252,14 +252,14 @@ def org_create_user(user, org_id_slug):
 
 @bp.route('/api/v1/orgs/<int:org_id>/users/<user_email>',  methods=['GET'])
 @load_user
-def org_user(user, org_id_slug, user_email):
+def org_user(user, org_id, user_email):
 
     # fetch org
-    org = fetch_by_id_or_field(Org, 'slug', org_id_slug)
+    org = fetch_by_id_or_field(Org, 'slug', org_id)
 
     if not org:
         raise NotFoundError(
-            'Org {} does not exist.'.format(org_id_slug))
+            'Org {} does not exist.'.format(org_id))
 
 
     # ensure the active user can edit this Org
@@ -288,18 +288,18 @@ def org_user(user, org_id_slug, user_email):
 
 @bp.route('/api/v1/orgs/<int:org_id>/users/<user_email>', methods=['PUT', 'PATCH'])
 @load_user
-def org_add_user(user, org_id_slug, user_email):
+def org_add_user(user, org_id, user_email):
 
     if not user.admin:
         raise AuthError(
             'You must be an admin to add a user to an Org.')
 
     # fetch org
-    org = fetch_by_id_or_field(Org, 'slug', org_id_slug)
+    org = fetch_by_id_or_field(Org, 'slug', org_id)
 
     if not org:
         raise NotFoundError(
-            'Org {} does not exist.'.format(org_id_slug))
+            'Org {} does not exist.'.format(org_id))
 
 
     # ensure the active user can edit this Org
@@ -362,14 +362,14 @@ def org_add_user(user, org_id_slug, user_email):
 
 @bp.route('/api/v1/orgs/<int:org_id>/users/<user_email>', methods=['DELETE'])
 @load_user
-def org_remove_user(user, org_id_slug, user_email):
+def org_remove_user(user, org_id, user_email):
 
     if not user.admin:
         raise AuthError(
             'You must be an admin to remove a user from an Org.')
 
     # fetch org
-    org = fetch_by_id_or_field(Org, 'slug', org_id_slug)
+    org = fetch_by_id_or_field(Org, 'slug', org_id)
 
     # if it still doesn't exist, raise an error.
     if not org:
