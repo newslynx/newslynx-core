@@ -86,24 +86,28 @@
 ## CONTENT METRICS
 
 - sous_chef: google-analytics-to-content-timeseries
+  slug: default-google-analytics-to-content-timeseries
   status: uninitialized
   options:
     schedule_by: time_of_day
     time_of_day: "12:30 AM"
 
 - sous_chef: google-analytics-to-content-device-summaries
+  slug: default-google-analytics-to-content-device-summaries
   status: uninitialized
   options:
     schedule_by: time_of_day
     time_of_day: "1:00 AM"
 
 - sous_chef: google-analytics-to-content-domain-facets
+  slug: default-google-analytics-to-content-domain-facets
   status: uninitialized
   options:
     schedule_by: time_of_day
     time_of_day: "1:30 AM"
 
 - sous_chef: share-counts-to-content-timeseries
+  slug: default-share-counts-to-content-timeseries
   status: uninitialized
   options:
     schedule_by: minutes
@@ -112,12 +116,14 @@
 ## ORG METRICS
 
 - sous_chef: facebook-page-to-org-timeseries
+  slug: default-facebook-page-to-org-timeseries
   status: uninitialized
   options:
     schedule_by: minutes
     minutes: 50
 
 - sous_chef: twitter-user-to-org-timeseries
+  slug: default-twitter-user-to-org-timeseries
   status: uninitialized
   options:
     schedule_by: minutes
