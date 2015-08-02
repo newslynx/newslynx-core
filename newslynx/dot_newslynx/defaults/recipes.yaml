@@ -116,12 +116,14 @@
 ## ORG METRICS
 
 - sous_chef: facebook-page-to-org-timeseries
+  slug: default-facebook-page-to-org-timeseries
   status: uninitialized
   options:
     schedule_by: minutes
     minutes: 50
 
 - sous_chef: twitter-user-to-org-timeseries
+  slug: default-twitter-user-to-org-timeseries
   status: uninitialized
   options:
     schedule_by: minutes
