@@ -6,6 +6,7 @@ from random import choice
 from string import letters
 import copy
 
+from slugify import slugify
 from faker import Faker
 
 from newslynx import settings
@@ -14,7 +15,7 @@ from newslynx.init import (
     load_sous_chefs)
 from newslynx.models import *
 from newslynx.models import recipe_schema
-from newslynx.core import db_session
+from newslynx.core import db
 from newslynx.lib import dates
 from newslynx.lib.serialize import obj_to_json
 from newslynx.constants import *
@@ -104,18 +105,28 @@ def gen_user():
         admin=True,
         password=random_text(10),
         created=random_date(1, 10))
-    db_session.add(u)
-    db_session.commit()
+    db.session.add(u)
+    db.session.commit()
     return u
 
 
 # Org
 def gen_org(users):
-    o = Org(name=fake.company(), timezone='America/New_York', domains=['example.com', 'blog.example.com'])
-    o.users.extend(users)
-    db_session.add(o)
-    db_session.commit()
-    return o
+
+    # create the org and super user
+    org = Org.query.filter_by(name=settings.SUPER_USER_ORG).first()
+    if not org:
+        org = Org(name=settings.SUPER_USER_ORG, timezone=settings.SUPER_USER_ORG_TIMEZONE)
+    else:
+        org.timezone = settings.SUPER_USER_ORG_TIMEZONE
+        org.name = settings.SUPER_USER_ORG
+        org.slug = slugify(settings.SUPER_USER_ORG)
+    for u in users:
+        if u.id not in org.user_ids:
+            org.users.append(u)
+    db.session.add(org)
+    db.session.commit()
+    return org
 
 
 # Recipe
@@ -140,22 +151,45 @@ def gen_built_in_recipes(org):
         recipe = recipe_schema.validate(recipe, sc.to_dict())
         recipe['user_id'] = u.id
         recipe['org_id'] = org.id
-        r = Recipe(sc, **recipe)
-        db_session.add(r)
-        db_session.commit()
+
+        r = Recipe.query\
+            .filter_by(org_id=org.id, name=recipe['name'])\
+            .first()
+
+        if not r:
+            # add to database here.
+            r = Recipe(sc, **recipe)
+        else:
+            for name, value in recipe.items():
+                if name != 'options':
+                    setattr(r, name, value)
+                else:
+                    r.set_options(value)
+        db.session.add(r)
+        db.session.commit()
         recipes.append(r)
 
         # if the recipe creates metrics add them in here.
         if 'metrics' in sc.creates:
             for name, params in sc.metrics.items():
-                m = Metric(
-                    name=name,
-                    recipe_id=r.id,
-                    org_id=org.id,
-                    **params)
+                m = Metric.query\
+                    .filter_by(org_id=org.id, recipe_id=r.id, name=name, type=params['type'])\
+                    .first()
+                # print "METRICS PARAMS", params
+                if not m:
+                    m = Metric(
+                        name=name,
+                        recipe_id=r.id,
+                        org_id=org.id,
+                        **params)
+
+                else:
+                    for k, v in params.items():
+                        setattr(m, k, v)
+
                 metrics.append(m)
-                db_session.add(m)
-                db_session.commit()
+                db.session.add(m)
+                db.session.commit()
     return recipes, metrics
 
 
@@ -166,14 +200,14 @@ def gen_impact_tags(org, n_impact_tags):
     for tag in load_default_tags():
         if tag['type'] == 'impact':
             tag['org_id'] = org.id
-            t = db_session.query(Tag)\
+            t = db.session.query(Tag)\
                 .filter_by(org_id=org.id, name=tag['name'])\
                 .first()
             if not t:
                 t = Tag(**tag)
-                db_session.add(t)
-                db_session.commit()
-                impact_tags.append(t)
+                db.session.add(t)
+                db.session.commit()
+            impact_tags.append(t)
     return impact_tags
 
 
@@ -183,13 +217,13 @@ def gen_subject_tags(org, n_subject_tags):
     for tag in load_default_tags():
         if tag['type'] == 'subject':
             tag['org_id'] = org.id
-            t = db_session.query(Tag)\
+            t = db.session.query(Tag)\
                 .filter_by(org_id=org.id, name=tag['name'])\
                 .first()
             if not t:
                 t = Tag(**tag)
-                db_session.add(t)
-                db_session.commit()
+                db.session.add(t)
+                db.session.commit()
             subject_tags.append(t)
     return subject_tags
 
@@ -202,8 +236,8 @@ def gen_authors(org):
             org_id=org.id,
             name=name,
             created=random_date(100, 200))
-        db_session.add(c)
-        db_session.commit()
+        db.session.add(c)
+        db.session.commit()
         authors.append(c)
     return authors
 
@@ -238,9 +272,9 @@ def gen_events(org, recipes, impact_tags, content_items, n_events):
         e.tags.append(t)
         c = choice(content_items)
         e.content_items.append(c)
-        db_session.add(e)
+        db.session.add(e)
         events.append(e)
-    db_session.commit()
+    db.session.commit()
     return e
 
 
@@ -274,8 +308,8 @@ def gen_content_item(org, recipes, subject_tags, authors):
 
     t.tags.append(st)
     t.authors.append(c)
-    db_session.add(t)
-    db_session.commit()
+    db.session.add(t)
+    db.session.commit()
     return t
 
 
@@ -313,8 +347,8 @@ def gen_content_metric_timeseries(org, content_items, metrics, n_content_item_ti
                         '{datetime}',
                         '{metrics}');
                    """.format(**cmd_kwargs)
-            db_session.execute(cmd)
-    db_session.commit()
+            db.session.execute(cmd)
+    db.session.commit()
 
 
 
@@ -339,8 +373,8 @@ def gen_org_metric_timeseries(org, metrics, n_org_timeseries_metrics=1000):
                     '{datetime}',
                     '{metrics}');
                """.format(**cmd_kwargs)
-        db_session.execute(cmd)
-    db_session.commit()
+        db.session.execute(cmd)
+    db.session.commit()
 
 
 def gen_content_metric_summaries(org, content_items, metrics):
@@ -377,8 +411,8 @@ def gen_content_metric_summaries(org, content_items, metrics):
                     {content_item_id},
                     '{metrics}');
                """.format(**cmd_kwargs)
-        db_session.execute(cmd)
-    db_session.commit()
+        db.session.execute(cmd)
+    db.session.commit()
 
 
 def main(
@@ -394,7 +428,7 @@ def main(
         verbose=True):
 
     # top level content_items
-    admin = db_session.query(User).filter_by(email=settings.SUPER_USER_EMAIL).first()
+    admin = db.session.query(User).filter_by(email=settings.SUPER_USER_EMAIL).first()
     users = [gen_user() for _ in xrange(n_users)] + [admin]
     org = gen_org(users)
     impact_tags = gen_impact_tags(org, n_subject_tags)
@@ -438,7 +472,7 @@ def main(
 
     # generate events
     gen_events(org, recipes, impact_tags, content_items, n_events)
-    db_session.commit()
+    db.session.commit()
 
     # generate content summaries
     gen_content_metric_summaries(org, content_items, metrics)
@@ -457,5 +491,5 @@ def run(**kw):
     # try:
     main(**kw)
     # except Exception as e:
-    #     db_session.rollback()
+    #     db.session.rollback()
     #     raise e
