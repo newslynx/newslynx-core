@@ -48,6 +48,6 @@ def fetch_by_id_or_field(model, field, value, transform=None,
                 .first()
         elif org_id:
             return q\
-                .filter_by(field=value, org_id=org_id)\
+                .filter_by(org_id=org_id)\
                 .first()
         return q.first()
