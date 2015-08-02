@@ -122,7 +122,7 @@ time_of_day:
         description: The time of day at which this recipe should run daily.
 
 timeout:
-    input_type: number
+    input_type: hidden
     value_types:
         - numeric
     default: 240

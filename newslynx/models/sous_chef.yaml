@@ -163,6 +163,7 @@ definitions:
                     - datepicker
                     - text
                     - paragraph
+                    - hidden
 
             input_options:
                 description: |
