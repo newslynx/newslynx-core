@@ -16,7 +16,7 @@ For most applications, refer to our [installation guide](http://newslynx.readthe
 ##### Install `newslynx`, prefrerably in a virtual environment.
 
 ```
-$ git clone https://github.com/newslynx/newslynx.git
+$ git clone https://github.com/newslynx/newslynx-core.git
 $ cd newslynx-core
 $ python setup.py install
 ```
