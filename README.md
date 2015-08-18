@@ -24,7 +24,7 @@ $ python setup.py install
 If you want to actively work on the codebase, install in `editable` mode:
 
 ```
-$ git clone https://github.com/newslynx/newslynx.git
+$ git clone https://github.com/newslynx/newslynx-core.git
 $ cd newslynx
 $ pip install --editable . 
 ```
