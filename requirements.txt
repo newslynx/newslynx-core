@@ -56,7 +56,6 @@ pyopenssl
 ndg-httpsclient
 jsonpath-rw>=1.4.0
 pillow
-pyasn1==0.1.8
 rq
 praw
 facepy
