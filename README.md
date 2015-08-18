@@ -17,7 +17,7 @@ For most applications, refer to our [installation guide](http://newslynx.readthe
 
 ```
 $ git clone https://github.com/newslynx/newslynx.git
-$ cd newslynx
+$ cd newslynx-core
 $ python setup.py install
 ```
 
@@ -25,7 +25,7 @@ If you want to actively work on the codebase, install in `editable` mode:
 
 ```
 $ git clone https://github.com/newslynx/newslynx-core.git
-$ cd newslynx
+$ cd newslynx-core
 $ pip install --editable . 
 ```
 
@@ -64,14 +64,16 @@ $ redis-server
 
 ##### Initialize the database, super user, and install built-in sous chefs.
 
-```
-$ newslynx init
-```
-
-Include app defaults:
+If you're using our default setup, use the app defaults flag:
 
 ```
 $ newslynx init --app-defaults
+```
+
+Expert mode: to install the barebones system:
+
+```
+$ newslynx init
 ```
 
 ##### Start the server
