@@ -1,8 +1,8 @@
-from slugify import slugify
 from collections import OrderedDict
 from sqlalchemy.dialects.postgresql import JSON, ENUM, ARRAY
 
 from newslynx.core import db
+from newslynx.lib.text import slug
 from newslynx.constants import SOUS_CHEF_CREATES
 
 
@@ -34,7 +34,7 @@ class SousChef(db.Model):
         # set columns
         self.org_id = kw.get('org_id')
         self.name = kw.get('name')
-        self.slug = slugify(kw.get('slug', kw['name']))
+        self.slug = slug(kw.get('slug', kw['name']))
         self.description = kw.get('description')
         self.runs = kw.get('runs')
         self.filepath = kw.get('filepath')

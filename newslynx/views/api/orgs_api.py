@@ -1,5 +1,4 @@
 from flask import Blueprint
-from slugify import slugify
 
 from newslynx.core import db
 from newslynx.models import User, Org
@@ -7,6 +6,7 @@ from newslynx.models.util import fetch_by_id_or_field
 from newslynx.lib import mail
 from newslynx.tasks import default
 from newslynx.lib.serialize import jsonify
+from newslynx.lib.text import slug
 from newslynx.exc import (
     AuthError, RequestError, ForbiddenError, NotFoundError)
 from newslynx.views.decorators import load_user
@@ -119,7 +119,7 @@ def org_update(user, org_id):
         org.slug = req_data['slug']
 
     elif 'name' in req_data:
-        org.slug = slugify(req_data['name'])
+        org.slug = slug(req_data['name'])
 
     if 'timezone' in req_data:
         org.timezone = req_data['timezone']

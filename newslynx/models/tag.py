@@ -1,8 +1,8 @@
 from sqlalchemy.dialects.postgresql import ENUM
-from slugify import slugify
 
 from newslynx.core import db
 from newslynx.lib import dates
+from newslynx.lib.text import slug
 from newslynx.constants import (
     IMPACT_TAG_CATEGORIES, IMPACT_TAG_LEVELS, TAG_TYPES)
 
@@ -36,7 +36,7 @@ class Tag(db.Model):
     def __init__(self, **kw):
         self.org_id = kw.get('org_id')
         self.name = kw.get('name')
-        self.slug = slugify(kw.get('slug', kw['name']))
+        self.slug = slug(kw.get('slug', kw['name']))
         self.type = kw.get('type')
         self.color = kw.get('color')
         self.category = kw.get('category')

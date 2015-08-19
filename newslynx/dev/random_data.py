@@ -6,7 +6,6 @@ from random import choice
 from string import letters
 import copy
 
-from slugify import slugify
 from faker import Faker
 
 from newslynx import settings
@@ -22,6 +21,7 @@ from newslynx.constants import *
 from newslynx.exc import RecipeSchemaError
 from newslynx.util import here
 from newslynx.tasks import rollup_metric
+from newslynx.lib.text import slug
 
 # fake factory
 fake = Faker()
@@ -39,6 +39,7 @@ AUTHORS = ['Michael Keller', 'Brian Abelson', 'Merlynne Jones']
 
 # a lookup of letters to their number
 letters_to_int = dict(zip(list(set(letters.lower())), range(1,27)))
+
 
 def random_date(n1, n2):
     dt = datetime.utcnow() - timedelta(days=choice(range(n1, n2)))
@@ -120,7 +121,7 @@ def gen_org(users):
     else:
         org.timezone = settings.SUPER_USER_ORG_TIMEZONE
         org.name = settings.SUPER_USER_ORG
-        org.slug = slugify(settings.SUPER_USER_ORG)
+        org.slug = slug(settings.SUPER_USER_ORG)
     for u in users:
         if u.id not in org.user_ids:
             org.users.append(u)

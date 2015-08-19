@@ -1,10 +1,10 @@
 from hashlib import md5
 
 from sqlalchemy.dialects.postgresql import JSON, ENUM
-from slugify import slugify
 
 from newslynx.core import db
 from newslynx.lib import dates
+from newslynx.lib.text import slug
 from newslynx.lib.serialize import obj_to_pickle, pickle_to_obj
 from newslynx.constants import (
     RECIPE_STATUSES, RECIPE_SCHEDULE_TYPES)
@@ -67,7 +67,7 @@ class Recipe(db.Model):
         """
         # core fields
         self.name = kw.get('name')
-        self.slug = slugify(kw.get('slug', kw['name']))
+        self.slug = slug(kw.get('slug', kw['name']))
         self.description = kw.get('description')
         self.schedule_by = kw.get('schedule_by', 'unscheduled')
         self.crontab = kw.get('crontab')

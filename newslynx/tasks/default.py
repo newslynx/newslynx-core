@@ -1,9 +1,8 @@
 """
 Load defaults for an Organization from configurations.
 """
-from slugify import slugify
-
 from newslynx import init
+from newslynx.lib.text import slug
 from newslynx.core import db
 from newslynx.exc import RecipeSchemaError
 from newslynx.models import (
@@ -25,7 +24,7 @@ def org(
     else:
         org.timezone = timezone
         org.name = name
-        org.slug = slugify(name)
+        org.slug = slug(unicode(name))
 
     # create the super user and add to the org.
     u = User.query.filter_by(email=settings.SUPER_USER_EMAIL).first()

@@ -1,9 +1,9 @@
 from sqlalchemy.dialects.postgresql import ENUM
 from jinja2 import Template as Tmpl
-from slugify import slugify
 
 from newslynx.core import db
 from newslynx.lib import dates
+from newslynx.lib.text import slug
 from newslynx.constants import TEMPLATE_FORMATS
 
 
@@ -35,7 +35,7 @@ class Template(db.Model):
     def __init__(self, **kw):
         self.org_id = kw.get('org_id')
         self.name = kw.get('name')
-        self.slug = kw.get('slug', slugify(kw.get('name')))
+        self.slug = kw.get('slug', slug(kw.get('name')))
         self.template = kw.get('template')
         self.format = kw.get('format')
         self.data = kw.get('data')

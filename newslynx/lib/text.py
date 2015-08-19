@@ -3,6 +3,7 @@ All things related to text formatting.
 """
 
 from unidecode import unidecode
+from slugify import slugify as _slugify
 
 from newslynx.lib.regex import re_whitespace
 
@@ -55,3 +56,13 @@ def prepare(s):
     except Warning:
         pass
     return s
+
+
+def slug(s, **kwargs):
+    """
+    Slugify a string.
+    """
+    s = s.strip()
+    if not isinstance(s, unicode):
+        s = unicode(s, errors='ignore')
+    return _slugify(s)

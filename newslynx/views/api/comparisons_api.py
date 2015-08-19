@@ -113,10 +113,10 @@ def get_comparison_items(level, level_id, org_id):
     this as our needs grow.
     """
     fx = {
-        'content': ContentMetricSummary.query\
+        'content': ContentMetricSummary.query
                         .filter_by(org_id=org_id)\
                         .filter(ContentMetricSummary.content_item_id.in_(level_id)),
-        'orgs': OrgMetricSummary.query\
+        'orgs': OrgMetricSummary.query
                     .filter(OrgMetricSummary.org_id.in_(level_id)),
     }
 

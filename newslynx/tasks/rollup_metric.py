@@ -28,21 +28,14 @@ def content_timeseries_to_summary(org, content_item_ids=[], num_hours=24):
 
     ts = QueryContentMetricTimeseries(org, content_item_ids, unit=None)
 
-    # generate aggregation statments + list of metric names.
-    summary_pattern = "{agg}({name}) AS {name}"
-    select_statements = []
-    metrics = []
-    for n, m in org.content_timeseries_metric_rollups.items():
-        ss = summary_pattern.format(**m)
-        select_statements.append(ss)
-        metrics.append(n)
+    metrics, ss = summary_select(org.content_timeseries_metric_rollups)
 
     qkw = {
-        'select_statements': ",\n".join(select_statements),
-        'metrics': ", ".join(metrics),
+        'select_statements': ss,
+        'metrics': metrics,
         'org_id': org.id,
         'last_updated': (dates.now() - timedelta(hours=num_hours)).isoformat(),
-        'ts_query': ts.query
+        'ts_query': computed_query(ts.query, org.computed_content_summary_metrics)
     }
 
     q = """SELECT upsert_content_metric_summary({org_id}, content_item_id, metrics::text)
@@ -55,7 +48,7 @@ def content_timeseries_to_summary(org, content_item_ids=[], num_hours=24):
                     content_item_id,
                     {select_statements}
                 FROM ({ts_query}) zzzz
-                WHERE content_item_id in (
+                WHERE zzzz.content_item_id in (
                     SELECT
                         distinct(content_item_id)
                     FROM content_metric_timeseries
@@ -68,6 +61,73 @@ def content_timeseries_to_summary(org, content_item_ids=[], num_hours=24):
     db.session.execute(q)
     db.session.commit()
     return True
+
+
+def org_timeseries(org):
+
+    # summarize the content timeseries table
+    content_ts = QueryContentMetricTimeseries(org, org.content_item_ids,
+                                              unit=None, group_by_id=False)
+
+    # summarize the org timeseries table
+    org_ts = QueryOrgMetricTimeseries(org, [org.id], unit=None)
+
+    # select statements.
+    metrics, ss = summary_select(org.timeseries_metric_rollups)
+
+    # computed metrics
+    org.content_summary_metrics
+
+    # generate the base query
+    base_query = \
+    """SELECT upsert_org_metric_timeseries({org_id}, metrics::text)
+           FROM  (
+              SELECT
+                (SELECT row_to_json(_) from (SELECT {metrics}) as _) as metrics
+              FROM (
+                 SELECT
+                    {select_statements}
+                FROM ({ts_query}) zzzz
+                ) t1
+            ) t2
+    """
+
+
+def summary_select(metrics_to_select):
+    """
+    generate aggregation statments + list of metric names.
+    """
+    summary_pattern = "{agg}({name}) AS {name}"
+    select_statements = []
+    metrics = []
+    for n, m in metrics_to_select.items():
+        ss = summary_pattern.format(**m)
+        select_statements.append(ss)
+        metrics.append(n)
+    return ", ".join(metrics), ",\n".join(select_statements)
+
+
+def computed_query(query, computed_metrics):
+    """
+    Add computed metrics to a query.
+    """
+    selects = []
+    for n, m in computed_metrics.items():
+        formula = m.get('formula')
+        formula = formula.replace('{', '"').replace('}', '"')
+        selects.append("{f} as {name}".format(f=formula, **m))
+    if len(selects):
+        selects = "," + "\n\t,".join(selects)
+    else:
+        selects = ""
+    return \
+        """SELECT base_query.*
+              {0}
+        FROM (
+            {1}
+        )
+        AS base_query
+    """.format(selects, query)
 
 
 def event_tags_to_summary(org, content_item_ids=[]):
@@ -165,7 +225,7 @@ def event_tags_to_summary(org, content_item_ids=[]):
                   FULL OUTER JOIN events_tags on events.id = events_tags.event_id
                   FULL OUTER JOIN tags on events_tags.tag_id = tags.id
                   WHERE events.org_id = {org_id} AND
-                        events.status = 'approved' AND 
+                        events.status = 'approved' AND
                         (tags.category IS NOT NULL OR tags.level IS NOT NULL)
                 ) t
                 WHERE content_item_id IS NOT NULL

@@ -3,11 +3,10 @@ import copy
 from sqlalchemy import and_, or_, func
 from sqlalchemy.dialects.postgresql import ENUM, ARRAY
 
-from slugify import slugify
-
 from newslynx.core import db
 from newslynx.lib import dates
 from newslynx.lib.serialize import json_to_obj
+from newslynx.lib.text import slug
 from .relations import orgs_users
 from .metric import Metric
 from .content_item import ContentItem
@@ -65,7 +64,7 @@ class Org(db.Model):
     def __init__(self, **kw):
         self.name = kw.get('name')
         self.timezone = kw.get('timezone', 'UTC')
-        self.slug = kw.get('slug', slugify(kw['name']))
+        self.slug = kw.get('slug', slug(kw['name']))
 
     @property
     def now(self):
@@ -232,6 +231,7 @@ class Org(db.Model):
         """
         metrics = self.metrics\
             .filter(Metric.content_levels.contains(['summary']))\
+            .filter(~Metric.content_levels.contains(['timeseries']))\
             .filter(Metric.type == 'computed')\
             .filter(~Metric.faceted)\
             .all()
@@ -244,6 +244,7 @@ class Org(db.Model):
         """
         metrics = self.metrics\
             .filter(Metric.content_levels.contains(['summary']))\
+            .filter(~Metric.content_levels.contains(['timeseries']))\
             .filter(Metric.type == 'computed')\
             .filter(~Metric.faceted)\
             .with_entities(Metric.name)\
@@ -349,6 +350,19 @@ class Org(db.Model):
                     and_(Metric.content_levels.contains(['timeseries']),
                          Metric.org_levels.contains(['timeseries']))
                     ))\
+            .filter(~Metric.faceted)\
+            .all()
+        return {m.name: m.to_dict() for m in metrics}
+
+    @property
+    def timeseries_metric_rollups(self):
+        """
+        Content metrics that should be rolled-up from timeseries => summary.
+        Computed timeseries metrics can and should be summarized for ease of
+        generating comparisons on these metrics.
+        """
+        metrics = self.metrics\
+            .filter(Metric.org_levels.contains(['timeseries', 'summary']))\
             .filter(~Metric.faceted)\
             .all()
         return {m.name: m.to_dict() for m in metrics}

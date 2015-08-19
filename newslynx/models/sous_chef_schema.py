@@ -229,8 +229,9 @@ def _validate_python_sous_chef(sc):
             msg = '{} does not exist in module {}.'.format(c, module)
             _raise_sous_chef_schema_error(sc, msg)
 
-    except ImportError:
-        msg = "{} is not importable.".format(module)
+    except ImportError as e:
+        msg = "{} is not importable. Here's the error: {}"\
+            .format(module, e.message)
         _raise_sous_chef_schema_error(sc, msg)
 
     if not issubclass(sous_chef, SC):

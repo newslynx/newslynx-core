@@ -1,9 +1,8 @@
 from sqlalchemy.dialects.postgresql import JSON
 
-from slugify import slugify
-
 from newslynx.core import db
 from newslynx.lib import dates
+from newslynx.lib.text import slug
 
 
 class Report(db.Model):
@@ -25,7 +24,7 @@ class Report(db.Model):
         self.org_id = kw.get('org_id')
         self.template_id = kw.get('template_id')
         self.name = kw.get('name')
-        self.slug = kw.get('slug', slugify(kw.get('name')))
+        self.slug = kw.get('slug', slug(kw.get('name')))
         self.data = kw.get('data', {})
 
     def to_dict(self):

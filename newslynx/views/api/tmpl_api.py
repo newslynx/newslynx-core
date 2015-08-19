@@ -1,6 +1,5 @@
 from flask import Blueprint
 from jinja2 import Template as Tmpl 
-from slugify import slugify
 
 from newslynx.core import db
 from newslynx.models import Template
@@ -11,6 +10,7 @@ from newslynx.views.decorators import load_user, load_org
 from newslynx.views.util import (
     request_data, delete_response)
 from newslynx.constants import TRUE_VALUES
+from newslynx.lib.text import slug
 
 # bp
 bp = Blueprint('templates', __name__)
@@ -97,11 +97,11 @@ def update_template(user, org,slug_id):
     template = req_data.get('template')
     format = req_data.get('format')
     if name:
-        t.name = name 
+        t.name = name
     if slug:
-        t.slug = slug 
+        t.slug = slug
     elif name:
-        t.slug = slugify(name)
+        t.slug = slug(name)
     if template:
         try:
             tmpl = Tmpl(template)
