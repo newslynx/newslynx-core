@@ -15,7 +15,7 @@ For most applications, refer to our [installation guide](http://newslynx.readthe
 
 ##### Install `newslynx`, prefrerably in a virtual environment.
 
-```
+```shell
 $ git clone https://github.com/newslynx/newslynx-core.git
 $ cd newslynx-core
 $ python setup.py install
@@ -23,7 +23,7 @@ $ python setup.py install
 
 If you want to actively work on the codebase, install in `editable` mode:
 
-```
+```shell
 $ git clone https://github.com/newslynx/newslynx-core.git
 $ cd newslynx-core
 $ pip install --editable . 
@@ -33,7 +33,7 @@ $ pip install --editable .
 
 Install `redis`:
 
-```
+```shell
 $ brew install redis
 ```
 
@@ -45,10 +45,11 @@ $ brew install postgresql --build-from-source --with-python
 
 (Re)create a `postgresql` database
 
-```
+```shell
+# If you already have a database called `newslynx`, delete it first
 $ dropdb newslynx 
 $ createdb newslynx
-```
+````
 
 ##### Set your configurations
 
@@ -64,13 +65,13 @@ $ redis-server
 
 ##### Initialize the database, super user, and install built-in sous chefs.
 
-If you're using our default setup, use the app defaults flag:
+If you're using our default setup, use the app defaults flag, which will create the necessary recipes and tags as specified in [newslynx/dot_newslynx/defaults](newslynx/dot_newslynx/defaults). Edit those files to make changes to default values.
 
 ```
 $ newslynx init --app-defaults
 ```
 
-Expert mode: to install the barebones system:
+**[Expert mode]** To install the barebones system:
 
 ```
 $ newslynx init
