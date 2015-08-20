@@ -10,7 +10,7 @@
 secret_key: changeme
 app_secret_key: changemetoo
 super_user: admin
-super_user_email: changme@example.com
+super_user_email: changeme@example.com
 super_user_password: admin
 super_user_apikey: mj
 super_user_org: 'admin'
