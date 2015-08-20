@@ -13,7 +13,7 @@ NewsLynx Core was built to power [`newslynx-app`](http://github.com/newslynx/new
 
 For most applications, refer to our [installation guide](http://newslynx.readthedocs.org/en/latest/install.html). If you'd like to setup a development environment, following the instructions below for MacOS X.  If you'd like to spin up a Virtual Machine, check out our [automation guide](https://github.com/newslynx/automation).
 
-##### Install `newslynx`, prefrerably in a virtual environment.
+##### Install `newslynx`, prefrerably in a [virtual environment](http://docs.python-guide.org/en/latest/dev/virtualenvs/).
 
 ```shell
 $ git clone https://github.com/newslynx/newslynx-core.git
