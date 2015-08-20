@@ -19,8 +19,9 @@ super_user_timezone: UTC
 # The Database URI (This is mandatory!)
 sqlalchemy_database_uri: postgres://localhost:5432/newslynx
 
-# Where does the API live?
+# API information for the app to know
 api_url: http://localhost:5000
+api_version: v1
 
 # Filepaths to default recipes + tags to add for each
 # new organization.
