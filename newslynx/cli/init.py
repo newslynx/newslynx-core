@@ -9,7 +9,7 @@ from newslynx.cli.common import LOGO
 from newslynx.init import load_sql
 from newslynx.views import app
 from newslynx.core import db
-from newslynx import settings
+from newslynx.core import settings
 from newslynx.tasks import default
 
 re_conf = '{}:[^\n]+'

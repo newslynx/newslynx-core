@@ -6,10 +6,9 @@ from traceback import format_exc
 from collections import defaultdict
 
 from newslynx.client import API
-from newslynx.exc import SousChefInitError, SousChefExecError
-from collections import defaultdict
-from newslynx.logs import StdLog
-from newslynx import settings
+from newslynx.exc import (
+    SousChefInitError, SousChefExecError)
+from newslynx.logs import StdLog, ColorLog
 
 
 class SousChef(object):
@@ -24,8 +23,8 @@ class SousChef(object):
     def __init__(self, **kw):
 
         # parse required kwargs
-        self.org = kw.pop('org', settings.SUPER_USER_ORG)
-        self.apikey = kw.pop('apikey', settings.SUPER_USER_APIKEY)
+        self.org = kw.pop('org')
+        self.apikey = kw.pop('apikey')
         self.recipe = kw.pop('recipe', {})
         self.config = kw.pop('config', {})
         if not self.org or not self.recipe or not self.apikey or not self.config:
@@ -33,15 +32,15 @@ class SousChef(object):
                 'A SousChef requires a "org", "recipe", and "apikey" to run.')
 
         self.passthrough = kw.pop('passthrough', False)
-        self.log = StdLog(**kw)  # TODO: logging configuration.
+        self.log = ColorLog(**kw)  # TODO: logging configuration.
 
         # api connection
         self.api = API(apikey=self.apikey, org=self.org['id'])
 
         # full org object
-        self.auths = self.org.pop('auths')
-        self.settings = self.org.pop('settings')
-        self.users = self.org.pop('users')
+        self.auths = self.org.pop('auths', {})
+        self.settings = self.org.pop('settings', {})
+        self.users = self.org.pop('users', [])
 
         # options for this recipe
         # allow arbitrary runtime arguments.
@@ -75,7 +74,6 @@ class SousChef(object):
         """
         Validate and serialize run output.
         """
-
         if isinstance(data, (types.ListType, types.GeneratorType)):
             for item in data:
                 # allow for to-dict protocol
@@ -112,6 +110,8 @@ class SousChef(object):
         try:
             self.setup()
             data = self.run()
+            if not data:
+                return
             data = self.serialize(data)
 
             # passthrough jobs should not 'load'

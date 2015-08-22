@@ -9,7 +9,7 @@ import facepy
 from newslynx.lib import dates
 from newslynx.lib import url
 from newslynx.util import uniq
-from newslynx import settings
+from newslynx.core import settings
 
 
 class Facebook(object):

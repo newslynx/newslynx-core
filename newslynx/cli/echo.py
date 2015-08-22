@@ -1,7 +1,6 @@
 """
 access configurations
 """
-from newslynx import settings
 import sys
 
 
@@ -15,6 +14,7 @@ def setup(parser):
 
 
 def run(opts, log, **kwargs):
+    from newslynx.core import settings
     v = getattr(settings, opts.name.replace('-', "_").upper().strip(), None)
     if not v:
         log.error('Config parameter "{}" does not exist.\n'.format(opts.name), line=False)

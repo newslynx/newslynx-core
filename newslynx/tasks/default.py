@@ -10,7 +10,7 @@ from newslynx.models import (
     Metric, Recipe, Event,
     recipe_schema, sous_chef_schema
 )
-from newslynx import settings
+from newslynx.core import settings
 
 
 def org(
@@ -39,7 +39,7 @@ def org(
     db.session.add(org)
     db.session.commit()
 
-    # load built-in sous-chefs
+    # load all sous-chefs
     for sc, fp in init.load_sous_chefs():
         sc = sous_chef_schema.validate(sc, fp)
         sc['org_id'] = org.id

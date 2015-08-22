@@ -38,7 +38,7 @@ from newslynx.lib import url
 from newslynx.lib import text
 from newslynx.lib import html
 from newslynx.lib.serialize import obj_to_json
-from newslynx import settings
+from newslynx.core import settings
 from newslynx.constants import (
     METRIC_FACET_KEYS, EVENT_STATUSES,
     CONTENT_ITEM_TYPES)

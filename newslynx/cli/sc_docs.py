@@ -3,7 +3,7 @@ Create, Manage, and Install Sous Chef modules
 """
 
 from newslynx.init import load_sous_chefs
-from newslynx.sc import docs
+from newslynx.sc import sc_docs
 
 
 def setup(parser):
@@ -18,4 +18,4 @@ def setup(parser):
 def run(opts, log, **kw):
 
     for sc, fp in load_sous_chefs(sous_chef_dir=opts.module_path, incl_internal=False):
-        print docs.create(sc, fp, opts.format)
+        print sc_docs.create(sc, fp, opts.format)

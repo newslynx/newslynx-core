@@ -1,7 +1,6 @@
 """
 Merlynne is the boss. She runs sous chefs in a task queue. What.
 """
-import importlib
 from traceback import format_exc
 from inspect import isgenerator
 import logging
@@ -11,10 +10,11 @@ from newslynx.core import db, rds, queues
 from newslynx.models import Recipe
 from newslynx.lib import dates
 from newslynx.util import gen_uuid
-from newslynx import settings
+from newslynx.core import settings
 from newslynx.exc import InternalServerError, MerlynneError
 from newslynx.lib.serialize import (
     obj_to_pickle, pickle_to_obj)
+from newslynx import sc
 
 
 log = logging.getLogger(__name__)
@@ -56,11 +56,11 @@ class Merlynne(object):
         # import the sous chef here to get the timeout
         # and raise import errors before it attempts to run
         # in the queue
-        sc = import_sous_chef(self.sous_chef_path)
+        _sc = sc.import_sous_chef(self.sous_chef_path)
 
         # send it to the queue
         if not self.passthrough:
-            
+
             # stash kwargs
             kw_key = self.stash_kw(job_id)
 
@@ -70,20 +70,21 @@ class Merlynne(object):
             db.session.commit()
 
             self.q.enqueue(
-                run_sous_chef, self.sous_chef_path,
+                run, self.sous_chef_path,
                 self.recipe.id, kw_key,
-                job_id=job_id, timeout=sc.timeout,
+                job_id=job_id, timeout=_sc.timeout,
                 result_ttl=self.kw_ttl)
 
             # return the job id
             return job_id
 
         # directly stream the results out.
-        return run_sous_chef(self.sous_chef_path, 
-            self.recipe.id, kw_key=None, **self.sous_chef_kwargs)
+        return run(self.sous_chef_path,
+                   self.recipe.id, kw_key=None,
+                   **self.sous_chef_kwargs)
 
 
-def run_sous_chef(sous_chef_path, recipe_id, kw_key, **kw):
+def run(sous_chef_path, recipe_id, kw_key, **kw):
     """
     Do the work. This exists outside the class
     in order to enable pickling for the task queue.
@@ -102,10 +103,10 @@ def run_sous_chef(sous_chef_path, recipe_id, kw_key, **kw):
             rds.delete(kw_key)
 
         # import sous chef
-        SousChef = import_sous_chef(sous_chef_path)
+        SousChef = sc.import_sous_chef(sous_chef_path)
 
         # initialize it with kwargs
-        sc = SousChef(**kw)
+        sous_chef = SousChef(**kw)
 
         # indicate that the job is running
         if not kw.get('passthrough', False):
@@ -114,7 +115,7 @@ def run_sous_chef(sous_chef_path, recipe_id, kw_key, **kw):
             db.session.commit()
 
         # cook it.
-        data = sc.cook()
+        data = sous_chef.cook()
 
         # passthrough the data.
         if kw.get('passthrough', False):
@@ -125,7 +126,7 @@ def run_sous_chef(sous_chef_path, recipe_id, kw_key, **kw):
             data = list(data)
 
         # teardown this recipe
-        sc.teardown()
+        sous_chef.teardown()
 
         # update status and next job from sous chef.
         recipe.status = "stable"
@@ -151,26 +152,3 @@ def run_sous_chef(sous_chef_path, recipe_id, kw_key, **kw):
             db.session.add(recipe)
             db.session.commit()
         return MerlynneError(format_exc())
-
-
-def import_sous_chef(sous_chef_path):
-    """
-    Import a sous chef.
-    """
-    try:
-        import_parts = sous_chef_path.split('.')
-        module = '.'.join(import_parts[:-1])
-        c = import_parts[-1]
-        m = importlib.import_module(module)
-        sous_chef = getattr(m, c, None)
-
-        if not sous_chef:
-            raise MerlynneError(
-                '{} does not exist in module {}.'
-                .format(c, module))
-
-    except ImportError:
-        raise MerlynneError(
-            "{} is not importable."
-            .format(module))
-    return sous_chef

@@ -2,7 +2,7 @@
 Create, Manage, and Install Sous Chef modules
 """
 
-from newslynx.sc import module
+from newslynx.sc import sc_module
 from newslynx.util import here
 from newslynx.lib.text import slug
 
@@ -24,8 +24,16 @@ def setup(parser):
 
 
 def run(opts, log, **kw):
-    _slug = slug(opts.module_name)
-    root_dir = here('.')
+
+    # parse paths
+    if not '/' in opts.module_name:
+        root_dir = here('.')
+        _slug = slug(opts.module_name)
+    else:
+        parts = opts.module_name.split('/')
+        root_dir = "/".join(parts[:1])
+        _slug = slug(parts[-1])
+
     kw.update({
         'root_dir': root_dir,
         'name': _slug.replace('-', '_'),
@@ -38,4 +46,4 @@ def run(opts, log, **kw):
         kw['tmpl_dir'] = opts.template
     log.info(
         'Creating Sous Chef Module: {}'.format(opts.module_name))
-    module.create(**kw)
+    sc_module.create(**kw)

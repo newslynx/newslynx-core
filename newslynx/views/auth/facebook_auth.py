@@ -5,7 +5,7 @@ from rauth.utils import parse_utf8_qsl
 from rauth.service import OAuth2Service
 import requests
 
-from newslynx import settings
+from newslynx.core import settings
 from newslynx.core import db
 from newslynx.models import Auth
 from newslynx.exc import AuthError, RequestError

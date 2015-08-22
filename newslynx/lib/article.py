@@ -7,7 +7,7 @@ import logging
 from readability.readability import Document
 from bs4 import BeautifulSoup
 
-from newslynx import settings
+from newslynx.core import settings
 from newslynx.lib import network
 from newslynx.lib import url
 from newslynx.lib import html

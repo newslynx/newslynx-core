@@ -11,7 +11,7 @@ from newslynx.core import db
 from newslynx.exc import NotFoundError, RequestError
 from newslynx.lib import dates
 from newslynx.lib.serialize import json_to_obj, jsonify
-from newslynx import settings
+from newslynx.core import settings
 from newslynx.models.util import get_table_columns
 from newslynx.constants import *
 

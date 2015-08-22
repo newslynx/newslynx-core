@@ -11,7 +11,7 @@ from newslynx.models import SousChef
 from newslynx.lib.serialize import yaml_stream_to_obj
 from newslynx.lib.serialize import obj_to_json, json_to_obj
 from newslynx.constants import SOUS_CHEF_RESERVED_FIELDS
-from newslynx.util import here, update_nested_dict, gen_short_uuid
+from newslynx.util import here, update_nested_dict
 
 # load souschef schema + validator.
 SOUS_CHEF_JSON_SCHEMA = yaml_stream_to_obj(
@@ -76,8 +76,8 @@ def validate(sc, fp):
     if 'metric' in sc['creates']:
         _validate_metrics_sous_chef(sc)
 
-    if 'report' in sc['creates']:
-        sc = _validate_report_sous_chef(sc, fp)
+    # if 'report' in sc['creates']:
+    #     sc = _validate_report_sous_chef(sc, fp)
 
     # if everything is kosher, merge the sous-chef options
     # with the defaults

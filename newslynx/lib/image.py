@@ -15,7 +15,7 @@ from PIL import Image, ImageOps
 
 from newslynx.lib import network
 from newslynx.lib import url
-from newslynx import settings
+from newslynx.core import settings
 from newslynx.util import uniq
 
 IMG_TAGS = [('img', 'src'), ('a', 'href')]

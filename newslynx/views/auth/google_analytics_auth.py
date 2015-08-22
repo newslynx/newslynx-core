@@ -10,7 +10,7 @@ from flask import (
     render_template
 )
 
-from newslynx import settings
+from newslynx.core import settings
 from newslynx.core import db
 from newslynx.models import Auth
 from newslynx.exc import AuthError, RequestError

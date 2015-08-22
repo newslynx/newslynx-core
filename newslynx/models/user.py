@@ -4,7 +4,7 @@ from werkzeug.security import (
 )
 
 from newslynx.core import db
-from newslynx import settings
+from newslynx.core import settings
 from newslynx.client import API
 from newslynx.lib import dates
 from uuid import uuid4

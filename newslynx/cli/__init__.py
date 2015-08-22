@@ -9,7 +9,7 @@ import sys
 import argparse
 from argparse import RawTextHelpFormatter
 
-from newslynx.cli.common import parse_runtime_args, LOGO
+from newslynx.cli.common import parse_runtime_args
 from newslynx.logs import ColorLog, StdLog
 from newslynx.exc import ConfigError
 
@@ -24,10 +24,11 @@ def setup(parser):
     from newslynx.cli import (
         api, db, version, dev, init,
         debug, cron, echo, sc_create,
-        sc_docs
+        sc_docs, sc
     )
     MODULES = [
         api,
+        sc,
         db,
         dev,
         init,

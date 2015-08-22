@@ -12,7 +12,7 @@ import pytz
 import twython
 from twython import Twython
 
-from newslynx import settings
+from newslynx.core import settings
 from newslynx.util import uniq
 from newslynx.lib import embed
 

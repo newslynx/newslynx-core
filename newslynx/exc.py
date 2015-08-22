@@ -51,11 +51,13 @@ class SousChefInitError(Exception):
     """
     status_code = 400
 
+
 class SousChefDocError(Exception):
     """
     An error that's thrown when generating Sous Chef documentation.
     """
     status_code = 400
+
 
 class SousChefExecError(Exception):
     """
@@ -67,6 +69,13 @@ class SousChefExecError(Exception):
 class SousChefModuleInitError(Exception):
     """
     An error that's thrown when a SousChef module is not properly initialized.
+    """
+    status_code = 400
+
+
+class SousChefImportError(Exception):
+    """
+    An error that's thrown when a SousChef cannot be imported.
     """
     status_code = 400
 

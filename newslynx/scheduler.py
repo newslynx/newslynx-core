@@ -13,7 +13,7 @@ from newslynx.client import API
 from newslynx.models import Recipe
 from newslynx.lib import dates
 from newslynx.core import gen_session
-from newslynx import settings
+from newslynx.core import settings
 from newslynx.logs import ColorLog
 
 

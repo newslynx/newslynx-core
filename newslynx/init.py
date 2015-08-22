@@ -5,7 +5,7 @@ import os
 
 from newslynx.lib.serialize import yaml_to_obj
 from newslynx.exc import ConfigError
-from newslynx import settings
+from newslynx.core import settings
 from newslynx.models import sous_chef_schema
 from newslynx.util import recursive_listdir, here
 

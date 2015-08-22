@@ -6,7 +6,7 @@ from jinja2 import Template
 
 from newslynx.lib import doc
 from newslynx.exc import SousChefDocError
-from newslynx.models.sous_chef_schema import SOUS_CHEF_DEFAULT_OPTIONS
+from newslynx.models import sous_chef_schema
 
 # template for Sous Chef documentation.
 SC_OPTS_TMPL = Template("""
@@ -99,7 +99,7 @@ def create(sc, fp, format='md'):
     Create documentation for a SousChef from it's configurations.
     """
     try:
-        sc['default_options'] = SOUS_CHEF_DEFAULT_OPTIONS.keys()
+        sc['default_options'] = sous_chef_schema.SOUS_CHEF_DEFAULT_OPTIONS.keys()
         opts = SC_OPTS_TMPL.render(**sc).strip().replace('\n\n', '\n')
         metrics = SC_METRICS_TMPL.render(**sc).strip().replace('\n\n', '\n')
         content = "\n{}\n\n{}\n".format(opts, metrics)
