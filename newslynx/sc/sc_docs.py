@@ -1,7 +1,7 @@
 """
 Generate Markdown documentation from a SousChef configurations.
 """
-
+from traceback import format_exc
 from jinja2 import Template
 
 from newslynx.lib import doc
@@ -163,5 +163,5 @@ def create(sc, fp, format='md'):
         Documentation for Sous Chef {slug} located at {0}
         failed to generate for the following reason:
         {1}
-        """.format(fp, e.message, **sc)
+        """.format(fp, format_exc(), **sc)
         raise SousChefDocError(msg)
