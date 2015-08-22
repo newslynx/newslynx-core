@@ -12,7 +12,7 @@ def setup(parser):
     sc_parser = parser.add_parser('sc')
     sc_parser.add_argument('sous_chef',
                            type=str, help='The relative path to the sous chef configuration file.')
-    sc_parser.add_argument('-r' "--recipe", dest='data',
+    sc_parser.add_argument('-r', "--recipe", dest='recipe',
                            help="a .json / .yaml file, or a json string of recipe options",
                            type=str, default=None)
     sc_parser.add_argument('-u', '--apiurl', dest='apiurl', type=str,
@@ -53,7 +53,7 @@ def run(opts, log, **kw):
         kw['org'] = {'id': opts.org}
 
     # parse body file / json string.
-    recipe = load_data(opts.data)
+    recipe = load_data(opts.recipe)
     if recipe:
         kw.update(recipe)
 
