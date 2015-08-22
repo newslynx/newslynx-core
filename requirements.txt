@@ -24,7 +24,6 @@ colorama==0.3.3
 cssselect==0.9.1
 decorator==4.0.2
 docopt==0.6.2
-facepy==1.0.6
 functools32==3.2.3-2
 gevent==1.0.2
 google-api-python-client==1.4.0

@@ -1,4 +1,5 @@
-![travis-img](https://travis-ci.org/{{ github_user }}/{{ slug }}.svg)
+[![Build status](https://travis-ci.org/{{ github_user }}/{{ slug }}.svg)](https://travis-ci.org/{{ github_user }}/{{ slug }}) [![Documentation Status](https://readthedocs.org/projects/{{ slug }}/badge/?version=latest)](https://readthedocs.org/projects/{{ slug }}/?badge=latest)
+
 {{ slug }}
 ==========================================================================================
 
