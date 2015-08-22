@@ -84,17 +84,18 @@ class SousChef(object):
                     yield item
 
         elif isinstance(data, (types.DictType)):
-            yield item
+            yield data
 
         elif hasattr(data, 'to_dict'):
             yield data.to_dict()
 
-        raise SousChefExecError(
-            "Invalid output type: {}\n"
-            "run should return either a dictionary or "
-            "a list or generator or single dictionaries or "
-            "object with a .to_dict() method".format(type(data))
-        )
+        else:
+            raise SousChefExecError(
+                "Invalid output type: {}\n"
+                "run should return either a dictionary or "
+                "a list or generator or single dictionaries or "
+                "object with a .to_dict() method".format(type(data))
+            )
 
     def load(self, data):
         return data
