@@ -1,4 +1,6 @@
-recursive-include LICENSE requirements.txt VERSION README.md MANIFEST.in Makefile .travis.yml .gitignore .gitkeep 
-recursive-include *.yaml *.sql *.html *.txt *.json *.rst *.py
+include LICENSE requirements.txt VERSION README.md MANIFEST.in Makefile .travis.yml .gitignore .gitkeep setup.py
+recursive-include newslynx LICENSE requirements.txt VERSION README.md MANIFEST.in Makefile .travis.yml .gitignore .gitkeep setup.py
+recursive-include newslynx *.yaml *.sql *.html *.txt
+recursive-include newslynx/sc/template *.py
 recursive-include migrations *.ini *.py *.mako
 global-exclude *.pyc .DS_Store

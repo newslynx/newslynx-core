@@ -15,10 +15,19 @@ PACKAGE_DATA = [
     'sc/*/*.yaml',
     'views/auth/templates/*.html',
     'views/api/templates/*.html',
-    'sc/template/*',
-    'sc/template/tests/*',
-    'sc/template/docs/*',
-    'sc/template/docs/fixtures/*'
+    'sc/template/*.md',
+    'sc/template/*.in',
+    'sc/template/*.py',
+    'sc/template/*.txt',
+    'sc/template/VERSION',
+    'sc/template/*.yml',
+    'sc/template/.gitignore',
+    'sc/template/tests/*.py',
+    'sc/template/tests/fixtures/.gitkeep',
+    'sc/template/docs/*.rst',
+    'sc/template/docs/*.py',
+    'sc/template/docs/Makefile',
+    'sc/template/docs/_static/.gitkeep'
 ]
 
 try:
