@@ -6,7 +6,6 @@ required:
     - slug
     - description
     - runs
-    - creates
     - options
 
 properties:
@@ -40,6 +39,8 @@ properties:
             - report
             - external
             - internal
+            - 'null'
+        default: 'null'
 
     option_order:
         description: A list of option names in the the order they should be returned by the API.

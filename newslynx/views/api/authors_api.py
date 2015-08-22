@@ -176,7 +176,7 @@ def author_add_content(user, org, author_id, content_item_id):
 @load_org
 def author_remove_content(user, org, author_id, content_item_id):
     """
-    Remove an author to a content item.
+    Remove an author from a content item.
     """
     a = fetch_by_id_or_field(Author, 'name', author_id,
                              org_id=org.id, transform='upper')

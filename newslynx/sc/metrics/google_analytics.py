@@ -333,7 +333,6 @@ class ContentDomainFacets(SCGoogleAnalytics):
     def fetch(self, prof):
         days = self.options.get('days', 30)
         start = (dates.now() - timedelta(days=days)).date().isoformat()
-        print "START", start
         i = 1
         while 1:
             q = prof.core.query(self.METRICS.keys(), self.DIMENSIONS.keys())\
@@ -342,6 +341,9 @@ class ContentDomainFacets(SCGoogleAnalytics):
             self.log.info('Running query:\n\t{}\n\tat limit {}'.format(q.raw, i))
             i += 1000
             r = q.execute()
+            # pause in between queries.
+            time.sleep(5)
+
             if not len(r.rows):
                 break
             for row in r.rows:
@@ -466,8 +468,7 @@ class ContentDeviceSummaries(SCGoogleAnalytics):
         # group counts.
         counts = defaultdict(Counter)
         for row in self.pre_format(data, prof):
-            counts[row['content_item_id']][
-                row['device']] += row.get('pageviews', 0)
+            counts[row['content_item_id']][row['device']] += row.get('pageviews', 0)
 
         for cid, facets in counts.iteritems():
             row = {'content_item_id': cid}

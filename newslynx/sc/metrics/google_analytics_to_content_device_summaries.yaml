@@ -39,7 +39,7 @@ options:
 metrics:
 
     ga_pageviews_mobile:
-        display_name: Mobile Pagviews
+        display_name: Mobile Pageviews
         type: count
         content_levels:
             - summary

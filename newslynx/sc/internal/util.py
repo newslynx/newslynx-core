@@ -30,25 +30,3 @@ class DeleteOldEvents(SousChef):
 
         for event in results.get('events', []):
             self.api.events.delete(event['id'], force=True)
-
-
-class ContentItemExport(SousChef):
-
-    timeout = 120
-
-    def run(self):
-
-        # fetch data related to a list of content items.
-        content_item_ids = self.options.get('content_item_ids', 'ids')
-
-        # each item will cool like this.
-        item = {
-            'authors': [],
-            'timeseries': [],
-            'summary': [],
-            'facets': [],
-            'comparison': [],
-            'events': [],
-            'subject_tags': [],
-            'impact_tags': [],
-        }

@@ -34,26 +34,24 @@ def _is_config_file(fp):
     """
     Check if a file can be parsed as yaml.
     """
-    return (
+    t1 = (
         fp.endswith('json') or
         fp.endswith('yaml') or
         fp.endswith('yml')
     )
+    fp_name = fp.split('/')[-1]
+    t2 = not (fp_name.startswith('_') or fp_name.startswith('.'))
+    return t1 and t2
 
 
-def load_sous_chefs():
+def load_sous_chefs(sous_chef_dir=None, incl_internal=True):
     """
     Get all internal and user-specified sous chef configurations.
     """
     found = False
 
-    def findsc():
-        # internal sous chefs
-        for fp in recursive_listdir(SOUS_CHEF_DIR):
-            if _is_config_file(fp) and not fp.split('/')[-1].startswith('_'):
-                yield sous_chef_schema.load(fp), fp
-
-        # user-generated sous-chefs.
+    # user-generated sous-chefs.
+    if not sous_chef_dir:
         if hasattr(settings, 'SOUS_CHEFS_DIR'):
             sous_chef_dir = settings.SOUS_CHEFS_DIR
 
@@ -72,12 +70,25 @@ def load_sous_chefs():
             sous_chef_dir = os.path.expanduser(
                 '~/.newslynx/sous-chefs/')
 
+    def findsc(sous_chef_dir):
+
+        # internal sous chefs
+        if incl_internal:
+            for fp in recursive_listdir(SOUS_CHEF_DIR):
+                if _is_config_file(fp):
+                    sc = sous_chef_schema.load(fp)
+                    if 'sous_chef' in sc:
+                        yield sc, fp
+
+        # sous chef modules.
         if os.path.exists(sous_chef_dir):
             for fp in recursive_listdir(sous_chef_dir):
-                if _is_config_file(fp) and not fp.split('/')[:-1].startswith('_'):
-                    yield sous_chef_schema.load(fp), fp
+                if _is_config_file(fp):
+                    sc = sous_chef_schema.load(fp)
+                    if 'slug' in sc:
+                        yield sc, fp
 
-    for sc, fp in findsc():
+    for sc, fp in findsc(sous_chef_dir):
         found = True
         yield sc, fp
 

@@ -23,7 +23,7 @@ log = logging.getLogger(__name__)
 class Merlynne(object):
 
     """
-    Dont f* with Merylnne.
+    Dont mess with Merylnne.
     """
     __module__ = 'newslynx.merlynne'
 

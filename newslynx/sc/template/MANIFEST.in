@@ -1,0 +1,3 @@
+include LICENSE requirements.txt VERSION README.md .travis.yml
+recursive-include {{ name }} *.yaml 
+global-exclude *.pyc .DS_Store

@@ -641,6 +641,7 @@ def _prepare(obj, requires=[], recipe=None, type='event', org_id=None, extract=T
     # normalize the url
     if type == 'event':
         obj['url'] = _prepare_url(obj, 'url', expand=True, canonicalize=False)
+    
     elif type == 'content_item':
         obj['url'] = _prepare_url(obj, 'url', expand=True, canonicalize=True)
 

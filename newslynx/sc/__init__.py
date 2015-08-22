@@ -1,9 +1,15 @@
-from inspect import isgenerator
+"""
+Interface for sous chefs.
+"""
+import types
+from traceback import format_exc
+from collections import defaultdict
 
 from newslynx.client import API
-from newslynx.exc import SousChefInitError
+from newslynx.exc import SousChefInitError, SousChefExecError
 from collections import defaultdict
 from newslynx.logs import StdLog
+from newslynx import settings
 
 
 class SousChef(object):
@@ -13,19 +19,21 @@ class SousChef(object):
     and modifies NewsLynx via it's API.
     """
 
-    timeout = 240  # how long until this sous chef timesout?
+    timeout = 120  # how long until this sous chef timesout?
 
     def __init__(self, **kw):
-        # parse kwargs
-        self.log = StdLog()  # TODO: logging configuration.
-        self.org = kw.get('org')
-        self.recipe = kw.get('recipe')
-        self.apikey = kw.get('apikey')
-        self.passthrough = kw.get('passthrough', False)
 
-        if not self.org or not self.recipe or not self.apikey:
+        # parse required kwargs
+        self.org = kw.pop('org', settings.SUPER_USER_ORG)
+        self.apikey = kw.pop('apikey', settings.SUPER_USER_APIKEY)
+        self.recipe = kw.pop('recipe', {})
+        self.config = kw.pop('config', {})
+        if not self.org or not self.recipe or not self.apikey or not self.config:
             raise SousChefInitError(
                 'A SousChef requires a "org", "recipe", and "apikey" to run.')
+
+        self.passthrough = kw.pop('passthrough', False)
+        self.log = StdLog(**kw)  # TODO: logging configuration.
 
         # api connection
         self.api = API(apikey=self.apikey, org=self.org['id'])
@@ -36,11 +44,13 @@ class SousChef(object):
         self.users = self.org.pop('users')
 
         # options for this recipe
-        self.options = self.recipe['options']
-        self.recipe_id = self.recipe['id']
+        # allow arbitrary runtime arguments.
+        self.options = self.recipe.get('options', **kw)
+        self.recipe_id = self.recipe.get('id', None)
 
         # handle cache-clears between jobs.
         self.next_job = defaultdict(dict)
+
         if not self.passthrough:
             lj = self.recipe.get('last_job', None)
             if lj is None:
@@ -49,6 +59,7 @@ class SousChef(object):
                 self.last_job = defaultdict(dict)
             else:
                 self.last_job = lj
+
         # passthrough jobs should not use contextual
         # variables.
         else:
@@ -60,6 +71,33 @@ class SousChef(object):
     def run(self):
         raise NotImplemented('A SousChef requires a `run` method.')
 
+    def serialize(self, data):
+        """
+        Validate and serialize run output.
+        """
+
+        if isinstance(data, (types.ListType, types.GeneratorType)):
+            for item in data:
+                # allow for to-dict protocol
+                if hasattr(item, 'to_dict'):
+                    item = item.to_dict()
+
+                elif isinstance(item, (types.DictType)):
+                    yield item
+
+        elif isinstance(data, (types.DictType)):
+            yield item
+
+        elif hasattr(data, 'to_dict'):
+            yield data.to_dict()
+
+        raise SousChefExecError(
+            "Invalid output type: {}\n"
+            "run should return either a dictionary or "
+            "a list or generator or single dictionaries or "
+            "object with a .to_dict() method".format(type(data))
+        )
+
     def load(self, data):
         return data
 
@@ -70,9 +108,16 @@ class SousChef(object):
         """
         The SousChef's workflow.
         """
-        self.setup()
-        data = self.run()
-        # passthrough jobs should not 'load'
-        if not self.passthrough:
-            data = self.load(data)  # load the data.
-        return data
+        # always setup run and serialize.
+        try:
+            self.setup()
+            data = self.run()
+            data = self.serialize(data)
+
+            # passthrough jobs should not 'load'
+            if not self.passthrough:
+                data = self.load(data)  # load the data.
+            return data
+
+        except Exception:
+            raise SousChefExecError(format_exc())

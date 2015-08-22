@@ -9,11 +9,30 @@ REQUIREMENTS = open(REQUIREMENTS, 'r').read().splitlines()
 VERSION = os.path.join(os.path.dirname(__file__), 'VERSION')
 VERSION = open(VERSION, 'r').read().strip()
 
+PACKAGE_DATA = [
+    'sql/*.sql',
+    'models/*.yaml',
+    'sc/*/*.yaml',
+    'views/auth/templates/*.html',
+    'views/api/templates/*.html',
+    'sc/template/*',
+    'sc/template/tests/*',
+    'sc/template/docs/*',
+    'sc/template/docs/fixtures/*'
+]
+
+try:
+    from newslynx.lib import doc
+    long_description = doc.convert(open(README).read(), 'md', 'rst')
+except:
+    long_description = ""
+
+
 setup(
     name='newslynx',
     version=VERSION,
     description="A modular toolkit for analytics.",
-    long_description=open(README, 'r').read(),
+    long_description=long_description,
     classifiers=[
         "Development Status :: 3 - Alpha",
         "Intended Audience :: Developers",
@@ -27,7 +46,7 @@ setup(
     license='CCSA-4.0',
     packages=find_packages(exclude=['ez_setup', 'examples', 'tests']),
     namespace_packages=['newslynx'],
-    package_data={'newslynx': ['sql/*.sql', 'models/*.yaml', 'sc/*/*.yaml', 'views/auth/templates/*.html']},
+    package_data={'newslynx': PACKAGE_DATA},
     include_package_data=True,
     zip_safe=False,
     install_requires=REQUIREMENTS,
