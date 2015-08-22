@@ -5,11 +5,40 @@ Generate a SousChef module from a template directory.
 import os
 from jinja2 import Template
 
-from newslynx.util import here, recursive_listdir
-from newslynx.lib.text import slug
+from newslynx.util import here
 
 
 DEFAULT_TMPL_DIR = here(__file__, 'template/')
+
+DUMMY_SOUS_CHEF_CLASS = """
+import os
+from newslynx.sc import SousChef
+
+class SayMyName(SousChef):
+
+    def run(self):
+        msg = 'Hello {my_name}!'.format(**self.options)
+        os.system("say '{}'".format(msg))
+        self.log.info(msg)
+        return self.options.items()
+
+"""
+
+DUMMY_SOUS_CHEF_CONFIG = """
+name: Say My Name
+slug: say-my-name
+description: Conveniently says your name.
+runs: {name}.SayMyName
+options:
+    my_name:
+        input_type: text
+        value_types:
+            - string
+        required: true
+        help:
+            description: Your name
+            placeholder: Merlynne
+"""
 
 
 def create(**kw):
@@ -25,7 +54,14 @@ def create(**kw):
     # create __init__.py
     init_py_path = os.path.join(module_dir, '__init__.py')
     if not os.path.exists(init_py_path):
-        open(init_py_path, 'a').close()
+        with open(init_py_path, 'wb') as f:
+            f.write(DUMMY_SOUS_CHEF_CLASS)
+
+    # create say_my_name.yaml
+    config_path = os.path.join(module_dir, 'say_my_name.yaml')
+    if not os.path.exists(config_path):
+        with open(config_path, 'wb') as f:
+            f.write(DUMMY_SOUS_CHEF_CONFIG.format(**kw))
 
     # get tmpl_dir
     tmpl_dir = kw.get('tmpl_dir', DEFAULT_TMPL_DIR)

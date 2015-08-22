@@ -73,7 +73,7 @@ def validate(sc, fp):
         _validate_command_sous_chef(sc)
 
     # special cases for sous chefs that create metrics
-    if 'metric' in sc['creates']:
+    if 'metric' in sc.get('creates', 'null'):
         _validate_metrics_sous_chef(sc)
 
     # if 'report' in sc['creates']:
@@ -121,58 +121,58 @@ def _validate_input_and_value_types(sc):
                 .format(slug, re_opt_name.pattern))
 
         if k in SOUS_CHEF_RESERVED_FIELDS:
-                msg = "Invalid option '{}' - '{}' Is a reserved option name."\
-                      .format(k, k)
-                _raise_sous_chef_schema_error(sc, msg)
+            msg = "Invalid option '{}' - '{}' Is a reserved option name."\
+                  .format(k, k)
+            _raise_sous_chef_schema_error(sc, msg)
 
         elif v.get('input_type') == 'checkbox' and \
                 not v.get('accepts_list', False):
-                msg = "Invalid option '{}' - Options with a 'checkbox' input_type must "\
-                      "accept multiple inputs."\
-                      .format(k)
-                _raise_sous_chef_schema_error(sc, msg)
+            msg = "Invalid option '{}' - Options with a 'checkbox' input_type must "\
+                  "accept multiple inputs."\
+                  .format(k)
+            _raise_sous_chef_schema_error(sc, msg)
 
         elif v.get('input_type') == 'datepicker' and \
                 not 'datetime' in v.get('value_types'):
-                msg = "Invalid option '{}' - Options with a 'datepicker' input_type must "\
-                      "include 'datetime' in value_types."\
-                      .format(k)
-                _raise_sous_chef_schema_error(sc, msg)
+            msg = "Invalid option '{}' - Options with a 'datepicker' input_type must "\
+                  "include 'datetime' in value_types."\
+                  .format(k)
+            _raise_sous_chef_schema_error(sc, msg)
 
         elif v.get('input_type') == 'number' and \
                 not 'numeric' in v.get('value_types'):
-                msg = "Invalid option '{}' - Options with a 'number' input_type must "\
-                      "include 'numeric' in value_types."\
-                      .format(k)
-                _raise_sous_chef_schema_error(sc, msg)
+            msg = "Invalid option '{}' - Options with a 'number' input_type must "\
+                  "include 'numeric' in value_types."\
+                  .format(k)
+            _raise_sous_chef_schema_error(sc, msg)
 
         elif 'searchstring' in v.get('value_types') and \
                 not v.get('input_type') == 'text':
-                msg = "Invalid option '{}' -  Options with a value_type of 'searchstring' "\
-                      "must have an input_type of 'text'."\
-                      .format(k)
-                _raise_sous_chef_schema_error(sc, msg)
+            msg = "Invalid option '{}' -  Options with a value_type of 'searchstring' "\
+                  "must have an input_type of 'text'."\
+                  .format(k)
+            _raise_sous_chef_schema_error(sc, msg)
 
         elif 'url' in v.get('value_types') and \
                 not v.get('input_type') == 'text':
-                msg = "Invalid option '{}' -  Options with a value_type of 'url'"\
-                      "must have an input_type of 'text'."\
-                      .format(k)
-                _raise_sous_chef_schema_error(sc, msg)
+            msg = "Invalid option '{}' -  Options with a value_type of 'url'"\
+                  "must have an input_type of 'text'."\
+                  .format(k)
+            _raise_sous_chef_schema_error(sc, msg)
 
         elif 'email' in v.get('value_types') and \
                 not v.get('input_type') == 'text':
-                msg = "Invalid option '{}' - Options with a value_type of 'email' "\
-                      "must have an input_type of 'text'."\
-                      .format(k)
-                _raise_sous_chef_schema_error(sc, msg)
+            msg = "Invalid option '{}' - Options with a value_type of 'email' "\
+                  "must have an input_type of 'text'."\
+                  .format(k)
+            _raise_sous_chef_schema_error(sc, msg)
 
         elif 'regex' in v.get('value_types') and \
                 not v.get('input_type') == 'text':
-                msg = "Invalid option '{}' - Options with a value_type of 'regex' "\
-                      "must have an input_type of 'text'."\
-                      .format(k)
-                _raise_sous_chef_schema_error(sc, msg)
+            msg = "Invalid option '{}' - Options with a value_type of 'regex' "\
+                  "must have an input_type of 'text'."\
+                  .format(k)
+            _raise_sous_chef_schema_error(sc, msg)
 
 
 def _validate_metrics_sous_chef(sc):

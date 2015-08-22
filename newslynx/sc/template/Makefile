@@ -7,7 +7,7 @@ install:
 
 	pip install .
 
-tests:
+all_tests:
 
 	nosetests
 
@@ -21,7 +21,7 @@ distribute:
 
 sous_chef_docs:
 
-	echo '\nSous Chefs\n-------------\n**newslynx-sc-rss** provides access to the following Sous Chefs\n' > docs/sous-chefs.rst
+	echo '\nSous Chefs\n-------------\n**{{ slug }}** provides access to the following Sous Chefs\n' > docs/sous-chefs.rst
 	newslynx sc-docs {{ name }} -f rst >> docs/sous-chefs.rst
 
 readme:

@@ -6,14 +6,6 @@
 
 ## Installation
 
-### Via pip
-
-```bash
-$ pip install {{ slug }}
-```
-
-### From source
-
 ```bash
 $ mkvirtualenv {{ slug }}
 $ git clone https://github.com/{{ github_user }}/{{ slug }}.git
@@ -78,7 +70,7 @@ See the [contributing guidelines](https://github.com/{{ github_user}}/{{ slug }}
 			* Cleans out cruft from this directory.
 		- `make install`: 
 			* Installs `{{ slug }}`. Assumes that you're in a virtual environment.
-		- `make tests`: 
+		- `make all_tests`: 
 			* Runs the tests.
 		- `make readme`
 			* Converts this file to `.rst`, including a table of contents, and saves it to [docs/index.rst](https://github.com/{{ github_user}}/{{ slug }}/blob/master/docs/index.rst)

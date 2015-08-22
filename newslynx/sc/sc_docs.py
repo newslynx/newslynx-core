@@ -18,10 +18,62 @@ SC_OPTS_TMPL = Template("""
 * API Slug: `{{ slug }}`
 
 
+#### Development
+
+Pass runtime options to `{{ slug }}` and stream output.
+
+**NOTE** Will not execute the SousChef's `load` method.
+
+```bash
+$ newslynx sc {{ filepath }} option=value1
+```
+
+Alernatively pass in a recipe file
+
+```bash
+$ newslynx sc {{ filepath }} --recipe=recipe.yaml
+```
+
+#### API Usage
+
+Add this Sous Chef to your authenticated org
+
+```bash
+$ newslynx api sous-chefs create -d={{ filepath }}
+```
+
+Create a Recipe with this Sous Chef with command line options.
+
+```bash
+$ newslynx api recipes create sous_chef={{ slug }} **options
+```
+
+Alerternatively pass in a recipe file.
+
+```bash
+$ newslynx api recipes create sous_chef={{ slug }} --data=recipe.yaml
+```
+
+Save the outputted `id` of this recipe, and execute it via the API.
+
+**NOTE** This will place the recipe in a task queue.
+
+```bash
+$ newslynx api recipes cook id=<id>
+```
+
+Alernatively, run the Recipe, passing in arbitrary runtime options, and stream it's output:
+
+**NOTE** Will not execute the SousChef's ``load`` method.
+
+```bash
+$ newslynx api recipes cook id=<id> --passthrough **options
+```
+
 #### Options
 
 
-`{{ slug }}` accepts the following options when creating Recipes
+In addition to default recipe options, `{{ slug }}` also accepts the following
 
 
 {% for name, params in options.iteritems() %}
@@ -99,6 +151,7 @@ def create(sc, fp, format='md'):
     Create documentation for a SousChef from it's configurations.
     """
     try:
+        sc['filepath'] = fp
         sc['default_options'] = sous_chef_schema.SOUS_CHEF_DEFAULT_OPTIONS.keys()
         opts = SC_OPTS_TMPL.render(**sc).strip().replace('\n\n', '\n')
         metrics = SC_METRICS_TMPL.render(**sc).strip().replace('\n\n', '\n')
