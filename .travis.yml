@@ -7,4 +7,4 @@ install:
   - "pip install ."
 
 # command to run tests
-# script: nosetests
+script: echo 'foo' > /dev/null
