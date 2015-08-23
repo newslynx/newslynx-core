@@ -28,7 +28,7 @@ Pass runtime options to `{{ slug }}` and stream output.
 $ newslynx sc {{ filepath }} option=value1
 ```
 
-Alernatively pass in a recipe file
+Alternatively pass in a recipe file
 
 ```bash
 $ newslynx sc {{ filepath }} --recipe=recipe.yaml
@@ -48,7 +48,7 @@ Create a Recipe with this Sous Chef with command line options.
 $ newslynx api recipes create sous_chef={{ slug }} **options
 ```
 
-Alerternatively pass in a recipe file.
+Alternatively pass in a recipe file.
 
 ```bash
 $ newslynx api recipes create sous_chef={{ slug }} --data=recipe.yaml
@@ -62,7 +62,7 @@ Save the outputted `id` of this recipe, and execute it via the API.
 $ newslynx api recipes cook id=<id>
 ```
 
-Alernatively, run the Recipe, passing in arbitrary runtime options, and stream it's output:
+Alternatively, run the Recipe, passing in arbitrary runtime options, and stream it's output:
 
 **NOTE** Will not execute the SousChef's ``load`` method.
 
