@@ -4,7 +4,7 @@ python:
 # command to install dependencies
 install:
     - "pip install ."
-    - "pip install -r test-requirements"
+    - "pip install -r test-requirements.txt"
 
 addons:
   postgresql: "9.3"
