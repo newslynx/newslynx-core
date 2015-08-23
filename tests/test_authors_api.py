@@ -1,3 +1,6 @@
+"""
+Test all Author API endpoints.
+"""
 import unittest
 from faker import Faker
 

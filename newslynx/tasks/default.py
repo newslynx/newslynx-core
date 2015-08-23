@@ -53,7 +53,6 @@ def org(
     tags(org, log)
     sous_chefs(org, log)
     recipes(org, log)
-    db.session.remove()
     return org
 
 
