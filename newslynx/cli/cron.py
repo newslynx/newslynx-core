@@ -16,7 +16,7 @@ def setup(parser):
     return 'cron', run
 
 
-def run(opts, log, **kwargs):
+def run(opts, **kwargs):
     from newslynx.scheduler import RecipeScheduler
-    scheduler = RecipeScheduler(log=log, **kwargs)
+    scheduler = RecipeScheduler(**kwargs)
     scheduler.run(**kwargs)

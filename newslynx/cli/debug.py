@@ -19,7 +19,7 @@ def setup(parser):
     return 'debug', run
 
 
-def run(opts, log, **kwargs):
+def run(opts, **kwargs):
     """
     Runs the debug server.
     """

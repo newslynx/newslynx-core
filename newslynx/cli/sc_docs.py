@@ -15,7 +15,7 @@ def setup(parser):
     return 'sc-docs', run
 
 
-def run(opts, log, **kw):
+def run(opts, **kw):
 
     for sc, fp in load_sous_chefs(sous_chef_dir=opts.module_path, incl_internal=False):
         print sc_docs.create(sc, fp, opts.format)

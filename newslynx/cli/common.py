@@ -3,7 +3,6 @@ import os
 from copy import copy
 
 from newslynx.lib import serialize
-
 from newslynx.constants import (
     NULL_VALUES, TRUE_VALUES, FALSE_VALUES)
 

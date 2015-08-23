@@ -1,10 +1,14 @@
 """
 Create, Manage, and Install Sous Chef modules
 """
+import logging
 
 from newslynx.sc import sc_module
 from newslynx.util import here
 from newslynx.lib.text import slug
+
+
+log = logging.getLogger(__name__)
 
 
 def setup(parser):
@@ -25,7 +29,7 @@ def setup(parser):
     return 'sc-create', run
 
 
-def run(opts, log, **kw):
+def run(opts, **kw):
 
     # parse paths
     if not '/' in opts.module_name:

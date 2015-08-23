@@ -5,6 +5,9 @@ Full access to the API client.
 import os
 import sys
 from inspect import isgenerator
+import logging
+
+log = logging.getLogger(__name__)
 
 # build up collections and command tree.
 _ignore_attrs = ['apikey', 'org', 'login', 'raise_errors']

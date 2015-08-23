@@ -5,6 +5,7 @@ import random
 from random import choice
 from string import letters
 import copy
+import logging
 
 from faker import Faker
 
@@ -23,6 +24,8 @@ from newslynx.util import here
 from newslynx.tasks import rollup_metric
 from newslynx.lib.text import slug
 
+log = logging.getLogger(__name__)
+
 # fake factory
 fake = Faker()
 
@@ -38,7 +41,7 @@ SUBJECT_TAG_NAMES = ['Environment', 'Money & politics', 'Government', 'Health']
 AUTHORS = ['Michael Keller', 'Brian Abelson', 'Merlynne Jones']
 
 # a lookup of letters to their number
-letters_to_int = dict(zip(list(set(letters.lower())), range(1,27)))
+letters_to_int = dict(zip(list(set(letters.lower())), range(1, 27)))
 
 
 def random_date(n1, n2):
@@ -87,6 +90,7 @@ def random_email():
 def random_hash():
     return hashlib.md5(str(uuid.uuid1())).hexdigest()
 
+
 def str_to_num(name):
     num = 0
     for c in name.lower():
@@ -117,7 +121,8 @@ def gen_org(users):
     # create the org and super user
     org = Org.query.filter_by(name=settings.SUPER_USER_ORG).first()
     if not org:
-        org = Org(name=settings.SUPER_USER_ORG, timezone=settings.SUPER_USER_ORG_TIMEZONE)
+        org = Org(name=settings.SUPER_USER_ORG,
+                  timezone=settings.SUPER_USER_ORG_TIMEZONE)
     else:
         org.timezone = settings.SUPER_USER_ORG_TIMEZONE
         org.name = settings.SUPER_USER_ORG
@@ -252,7 +257,8 @@ def gen_events(org, recipes, impact_tags, content_items, n_events):
 
         e = Event(
             org_id=org.id,
-            status=r.to_dict().get('options', {}).get('event_status', 'pending'),
+            status=r.to_dict().get('options', {}).get(
+                'event_status', 'pending'),
             recipe_id=r.id,
             source_id="{}:{}".format(r.slug, str(uuid.uuid1())),
             title=random_text(20),
@@ -282,7 +288,7 @@ def gen_events(org, recipes, impact_tags, content_items, n_events):
 # content_items
 def gen_content_item(org, recipes, subject_tags, authors):
 
-    r = choice([r for r in recipes if r.sous_chef.creates=='content'])
+    r = choice([r for r in recipes if r.sous_chef.creates == 'content'])
     st = choice(subject_tags)
     c = choice(authors)
     provenance = choice(CONTENT_ITEM_PROVENANCES)
@@ -327,7 +333,7 @@ def gen_content_metric_timeseries(org, content_items, metrics, n_content_item_ti
             _metrics = {}
             for m in metrics:
                 if 'timeseries' in m.content_levels:
-                    if m.type=='cumulative':
+                    if m.type == 'cumulative':
                         if m.name not in last_values:
                             last_values[m.name] = 0
                         last_values[m.name] += random_int(0, 100)
@@ -350,7 +356,6 @@ def gen_content_metric_timeseries(org, content_items, metrics, n_content_item_ti
                    """.format(**cmd_kwargs)
             db.session.execute(cmd)
     db.session.commit()
-
 
 
 def gen_org_metric_timeseries(org, metrics, n_org_timeseries_metrics=1000):
@@ -429,7 +434,8 @@ def main(
         verbose=True):
 
     # top level content_items
-    admin = db.session.query(User).filter_by(email=settings.SUPER_USER_EMAIL).first()
+    admin = db.session.query(User).filter_by(
+        email=settings.SUPER_USER_EMAIL).first()
     users = [gen_user() for _ in xrange(n_users)] + [admin]
     org = gen_org(users)
     impact_tags = gen_impact_tags(org, n_subject_tags)
@@ -439,18 +445,18 @@ def main(
 
     # generate content_items + metrics
     if verbose:
-        print "generating {} content items".format(n_content_items)
+        log.info("generating {} content items".format(n_content_items))
     content_items = []
     for i in xrange(n_content_items):
         content_item = gen_content_item(org, recipes, subject_tags, authors)
         content_items.append(content_item)
 
     if verbose:
-        print "generating {} events".format(n_events)
+        log.info("generating {} events".format(n_events))
 
     if verbose:
-        print "generating {} content item timeseries metrics"\
-            .format(n_content_item_timeseries_metrics)
+        log.info("generating {} content item timeseries metrics"
+                 .format(n_content_item_timeseries_metrics))
 
     gen_content_metric_timeseries(
         org,
@@ -459,8 +465,8 @@ def main(
         n_content_item_timeseries_metrics)
 
     if verbose:
-        print "generating {} org timeseries metrics"\
-            .format(n_org_timeseries_metrics)
+        log.info("generating {} org timeseries metrics"
+                 .format(n_org_timeseries_metrics))
 
     gen_org_metric_timeseries(
         org,
@@ -468,8 +474,8 @@ def main(
         n_org_timeseries_metrics)
 
     if verbose:
-        print "generating {} events"\
-            .format(n_events)
+        log.info("generating {} events"
+                 .format(n_events))
 
     # generate events
     gen_events(org, recipes, impact_tags, content_items, n_events)
@@ -480,7 +486,7 @@ def main(
 
     # rollup metrics
     if verbose:
-        print "rolling up metrics"
+        log.info("rolling up metrics")
     rollup_metric.content_timeseries_to_summary(org)
     rollup_metric.event_tags_to_summary(org)
 
@@ -489,8 +495,8 @@ def run(**kw):
     """
     A wrapper for random data generator which rollsback on error.
     """
-    # try:
-    main(**kw)
-    # except Exception as e:
-    #     db.session.rollback()
-    #     raise e
+    try:
+        main(**kw)
+    except Exception as e:
+        db.session.rollback()
+        raise e

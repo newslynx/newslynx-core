@@ -4,6 +4,9 @@ Create, Manage, and Install Sous Chef modules
 import os
 import sys
 from inspect import isgenerator
+import logging
+
+log = logging.getLogger(__name__)
 
 
 def setup(parser):
@@ -30,7 +33,7 @@ def setup(parser):
     return 'sc', run
 
 
-def run(opts, log, **kw):
+def run(opts, **kw):
 
     from newslynx.sc import sc_exec
     from newslynx.lib import serialize

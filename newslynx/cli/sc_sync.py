@@ -10,8 +10,8 @@ def setup(parser):
     return 'sc-sync', run
 
 
-def run(opts, log, **kw):
+def run(opts, **kw):
     """
     Sync all sous chefs for all organizations.
     """
-    sc_sync.orgs(log=log)
+    sc_sync.orgs()

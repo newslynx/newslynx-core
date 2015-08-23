@@ -10,7 +10,7 @@ def setup(parser):
     return 'db', run
 
 
-def run(opts, log, **kw):
+def run(opts, **kw):
     from flask.ext.migrate import Migrate, MigrateCommand
     from flask.ext.script import Manager
     from newslynx.views import app

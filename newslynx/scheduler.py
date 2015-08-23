@@ -8,13 +8,16 @@ gevent.monkey.patch_all()
 import time
 import copy
 import random
+import logging
+from traceback import format_exc
 
 from newslynx.client import API
 from newslynx.models import Recipe
 from newslynx.lib import dates
 from newslynx.core import gen_session
 from newslynx.core import settings
-from newslynx.logs import ColorLog
+
+log = logging.getLogger(__name__)
 
 
 class RecipeScheduler:
@@ -29,7 +32,6 @@ class RecipeScheduler:
         self.greenlets = {}
         self.jigger = kwargs.get(
             'jigger', settings.SCHEDULER_RESET_PAUSE_RANGE)
-        self.log = kwargs.get('log', ColorLog(**kwargs))
         self.org_id = kwargs.get('org_id', None)
 
     def random_pause(self):
@@ -46,19 +48,19 @@ class RecipeScheduler:
         self.session = gen_session()
 
     def fmt(self, recipe):
-        return "< {} | {} | {} | {} >"\
-            .format(recipe.org.slug, recipe.id, recipe.slug, recipe.schedule_by)
+        return "\n\n{2} | id: {1} | org: {0}\n"\
+            .format(recipe.org.slug, recipe.id, recipe.slug)
 
     def add(self, recipe, reset=False):
         """
         Add a scheduled recipe to the list of scheduled recipes.
         """
         if not reset:
-            self.log.info('adding {} '
-                          .format(self.fmt(recipe)))
+            log.info('adding: {} '
+                     .format(self.fmt(recipe)))
         else:
-            self.log.error('resetting {}'
-                           .format(self.fmt(recipe)))
+            log.warning('resetting: {}'
+                        .format(self.fmt(recipe)))
         self.running['{}:reset'.format(recipe.id)] = reset
         self.running[recipe.id] = recipe
 
@@ -68,8 +70,8 @@ class RecipeScheduler:
         """
 
         if kw.get('log', True):
-            self.log.error('removing {} '
-                           .format(self.fmt(recipe)))
+            log.warning('removing: {} '
+                        .format(self.fmt(recipe)))
         self.running.pop(recipe.id)
         self.running.pop('{}:reset'.format(recipe.id))
         greenlet = self.greenlets.pop(recipe.id)
@@ -87,8 +89,7 @@ class RecipeScheduler:
         """
         Cook a recipe.
         """
-        self.log.info('cooking {}'
-                      .format(self.fmt(recipe)), color='lightmagenta_ex')
+        log.info('cooking: {}'.format(self.fmt(recipe)))
 
         start = time.time()
 
@@ -100,26 +101,26 @@ class RecipeScheduler:
             job = api.recipes.cook(recipe.id)
 
         except Exception as e:
-            self.log.error('error {}'.format(self.fmt(recipe)))
-            self.log.exception(e, tb=True)
+            log.error('error cooking: {}'.format(self.fmt(recipe)))
+            log.error(format_exc())
 
         else:
-            self.log.warning('running {} job {job_id}'
-                             .format(self.fmt(recipe), **job), color='lightmagenta_ex')
+            log.warning('running job {job_id} for: {0}'
+                        .format(self.fmt(recipe), **job))
 
             try:
                 # poll the job's status
                 for res in api.jobs.poll(**job):
-                    self.log.warning(res)
+                    log.warning(res)
 
             except Exception as e:
-                self.log.error('error {}'.format(self.fmt(recipe)))
-                self.log.exception(e, tb=True)
+                log.error('error loading: {}'.format(self.fmt(recipe)))
+                log.error(format_exc())
 
             else:
                 duration = round((time.time() - start), 2)
-                self.log.info('cooked {} in {}s'
-                              .format(self.fmt(recipe), duration), color='lightmagenta_ex')
+                log.info(
+                    'cooked in {1}s: {0}'.format(self.fmt(recipe), duration))
 
     def time_of_day(self, recipe, reset):
         """
@@ -134,8 +135,8 @@ class RecipeScheduler:
         if reset:
             pause = min([self.min_pause, pause, self.random_pause()])
 
-        self.log.warning('first run of {} in {}s'
-                         .format(self.fmt(recipe), round(pause, 2)))
+        log.warning('first run in {1}s: {0}'
+                    .format(self.fmt(recipe), round(pause, 2)))
         time.sleep(pause)
 
         runs = 1
@@ -144,8 +145,8 @@ class RecipeScheduler:
             self.cook(recipe)
             # lock to org's timezone.
             pause = dates.seconds_until(time_of_day,  now=recipe.org.now)
-            self.log.warning('run #{} of {} in {}s'
-                             .format(runs, self.fmt(recipe), round(pause, 2)))
+            log.warning('run #{0} in {2}s of: {1}'
+                        .format(runs, self.fmt(recipe), round(pause, 2)))
             time.sleep(pause)
 
     def minutes(self, recipe, reset):
@@ -156,8 +157,8 @@ class RecipeScheduler:
         if reset:
             pause = min([pause, self.random_pause()])
 
-        self.log.warning('first run of {} in {}s'
-                         .format(self.fmt(recipe), round(pause, 2)))
+        log.warning('first run in {1}s: {0}'
+                    .format(self.fmt(recipe), round(pause, 2)))
         time.sleep(pause)
 
         runs = 1
@@ -168,8 +169,8 @@ class RecipeScheduler:
             self.cook(recipe)
             duration = time.time() - start
             pause = (recipe.minutes * 60) - duration
-            self.log.warning('run #{} of {} in {}s'
-                             .format(runs, self.fmt(recipe), round(pause, 2)))
+            log.warning('run #{0} in {2}s of: {1}'
+                        .format(runs, self.fmt(recipe), round(pause, 2)))
             time.sleep(pause)
 
     def crontab(self, recipe, reset):
@@ -185,9 +186,8 @@ class RecipeScheduler:
         if reset:
             pause = min([self.min_pause, pause, self.random_pause()])
 
-        self.log.warning('first run of {} in {}s'
-                         .format(self.fmt(recipe), round(pause, 2)))
-
+        log.warning('first run in {1}s: {0}'
+                    .format(self.fmt(recipe), round(pause, 2)))
         time.sleep(pause)
 
         runs = 1
@@ -196,8 +196,8 @@ class RecipeScheduler:
             self.cook(recipe)
             # lock to org's timezone.
             pause = cron.next(now=recipe.org.now)
-            self.log.warning('run #{} of {} in {}s'
-                             .format(runs, self.fmt(recipe), round(pause, 2)))
+            log.warning('run #{0} in {2}s of: {1}'
+                        .format(runs, self.fmt(recipe), round(pause, 2)))
             time.sleep(pause)
 
     def run_one(self, recipe, reset=False):
@@ -282,8 +282,8 @@ class RecipeScheduler:
                 continue
 
             if id not in scheduled_recipes or \
-                not scheduled_recipes[id].scheduled or \
-                not scheduled_recipes[id].active:
+                    not scheduled_recipes[id].scheduled or \
+                    not scheduled_recipes[id].active:
 
                 self.rm(recipe)
 
@@ -310,13 +310,14 @@ class RecipeScheduler:
         """
         Endlessly run and update scheduled recipes.
         """
-        interval = round(
-            float(kw.get('interval', settings.SCHEDULER_REFRESH_INTERVAL)), 2)
-        self.log.info('starting with refresh interval of {}s'.format(interval))
+        interval = float(
+            kw.get('interval', settings.SCHEDULER_REFRESH_INTERVAL))
+        interval = round(interval, 2)
+        log.info('starting with refresh interval of {}s'.format(interval))
         while 1:
             self.set_session()
             self.update()
             self.spawn()
             time.sleep(interval)
             self.session.flush()
-            self.log.info('refreshing')
+            log.info('refreshing')

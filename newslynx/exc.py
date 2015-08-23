@@ -36,16 +36,26 @@ class InternalServerError(Exception):
     status_code = 500
 
 
-# Internal Errors #
+# Sous Chef Errors #
 
 class SousChefSchemaError(Exception):
+
     """
     An error that's thrown when a SousChef has an invalid schema.
     """
     status_code = 400
 
 
+class SousChefInstallError(Exception):
+
+    """
+    An error that's thrown when a SousChef cannot be installed.
+    """
+    status_code = 400
+
+
 class SousChefInitError(Exception):
+
     """
     An error that's thrown when a SousChef is not properly initialized.
     """
@@ -53,6 +63,7 @@ class SousChefInitError(Exception):
 
 
 class SousChefDocError(Exception):
+
     """
     An error that's thrown when generating Sous Chef documentation.
     """
@@ -60,6 +71,7 @@ class SousChefDocError(Exception):
 
 
 class SousChefExecError(Exception):
+
     """
     An error that's thrown when a SousChef is not properly executed.
     """
@@ -67,6 +79,7 @@ class SousChefExecError(Exception):
 
 
 class SousChefModuleInitError(Exception):
+
     """
     An error that's thrown when a SousChef module is not properly initialized.
     """
@@ -74,42 +87,58 @@ class SousChefModuleInitError(Exception):
 
 
 class SousChefImportError(Exception):
+
     """
     An error that's thrown when a SousChef cannot be imported.
     """
     status_code = 400
 
 
+# Merlynne Errors #
+
 class MerlynneError(Exception):
+
     """
     An error that's thrown when a Merlynne is not properly initialized.
     """
     status_code = 400
 
+# Recipe Errors #
+
 
 class RecipeSchemaError(Exception):
+
     """
     An error that's thrown when a Recipe has an invalid schema
     according to it's SousChef.
     """
     status_code = 400
 
+# Search String Errors #
+
 
 class SearchStringError(Exception):
+
     """
     An error that's thrown when a search string is invalid.
     """
     status_code = 400
 
+# config.yaml Errors #
+
 
 class ConfigError(Exception):
+
     """
     An error that's thrown when something is wrong with the config file.
     """
     status_code = 400
 
+# newslynx.client Errors #
+
 
 class ClientError(Exception):
+
     """
     An error that's thrown when something is wrong on the API Client side.
     """
@@ -126,6 +155,12 @@ ERRORS = {
     "UnprocessableEntityError": UnprocessableEntityError,
     "InternalServerError": InternalServerError,
     "SousChefSchemaError": SousChefSchemaError,
+    "SousChefImportError": SousChefImportError,
+    "SousChefExecError": SousChefExecError,
+    "SousChefDocError": SousChefDocError,
+    "SousChefModuleInitError": SousChefModuleInitError,
+    "SousChefInstallError": SousChefInstallError,
+    "MerlynneError": MerlynneError,
     "RecipeSchemaError": RecipeSchemaError,
     "SearchStringError": SearchStringError,
     "ConfigError": ConfigError,

@@ -1,13 +1,16 @@
 """
 Sync sous chefs accross all organizations for an install.
 """
+import logging
+
 from newslynx.core import settings
-from newslynx.logs import StdLog, ColorLog
 from newslynx.tasks import default
 from newslynx.models import User
 
+log = logging.getLogger(__name__)
 
-def orgs(log=ColorLog()):
+
+def orgs():
     """
     Sync sous chefs for all Orgs.
     """
@@ -21,7 +24,8 @@ def orgs(log=ColorLog()):
                  admin=True,
                  super_user=True)
     else:
-        log.warning('Updating super user: "{}"'.format(settings.SUPER_USER_EMAIL))
+        log.warning(
+            'Updating super user: "{}"'.format(settings.SUPER_USER_EMAIL))
         u.apikey = settings.SUPER_USER_APIKEY
         u.email = settings.SUPER_USER_EMAIL
         u.password = settings.SUPER_USER_PASSWORD
@@ -30,4 +34,4 @@ def orgs(log=ColorLog()):
 
     for org in u.orgs:
         log.info('Syncing sous chefs for organization: {}'.format(org.name))
-        default.sous_chefs(org, log)
+        default.sous_chefs(org)

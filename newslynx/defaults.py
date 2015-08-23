@@ -24,7 +24,7 @@ CONFIG_FILE = os.getenv('NEWSLYNX_CONFIG_FILE',
 DEFAULT_TAGS = os.path.expanduser('~/.newslynx/defaults/tags.yaml')
 DEFAULT_RECIPES = os.path.expanduser('~/.newslynx/defaults/recipes.yaml')
 DEFAULT_REPORTS = os.path.expanduser('~/.newslynx/defaults/recipes.yaml')
-SC_HUB = os.path.expanduser('~/.newslynx/sc-hub/')
+SOUS_CHEFS_DIR = os.path.expanduser('~/.newslynx/sous-chefs/')
 
 # app configurations #
 API_URL = "http://localhost:5000"
@@ -33,7 +33,17 @@ API_VERSION = "v1"
 
 # logging configuration
 LOG_TIMING = False
-LOG_LEVEL = "DEBUG"
+LOG_LEVEL = "info"
+LOG_TYPE = 'color'
+LOG_DATE_FORMAT = '%H:%M:%S'
+LOG_JSON_FIELDS = [
+    'name',
+    'msg',
+    'lineno',
+    'created',
+    'pathname',
+    'levelname'
+]
 
 # security
 SUPER_USER_ORG = 'admin'
@@ -102,5 +112,3 @@ METRICS_CONTENT_GET_TIMESERIES_DAYS = 30
 
 # pandoc
 PANDOC_PATH = '/usr/local/bin/pandoc'
-
-

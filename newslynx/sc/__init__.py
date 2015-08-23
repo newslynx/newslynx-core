@@ -1,6 +1,7 @@
 """
 Interface for sous chefs.
 """
+import logging 
 import types
 from traceback import format_exc
 from collections import defaultdict
@@ -8,7 +9,6 @@ from collections import defaultdict
 from newslynx.client import API
 from newslynx.exc import (
     SousChefInitError, SousChefExecError)
-from newslynx.logs import StdLog, ColorLog
 
 
 class SousChef(object):
@@ -32,7 +32,7 @@ class SousChef(object):
                 'A SousChef requires a "org", "recipe", and "apikey" to run.')
 
         self.passthrough = kw.pop('passthrough', False)
-        self.log = ColorLog(**kw)  # TODO: logging configuration.
+        self.log = logging.getLogger(self.__class__.__name__)
 
         # api connection
         self.api = API(apikey=self.apikey, org=self.org['id'])

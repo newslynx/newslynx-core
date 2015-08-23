@@ -1,10 +1,11 @@
 """
 Load defaults for an Organization from configurations.
 """
+import logging
+
 from newslynx import init
 from newslynx.lib.text import slug
 from newslynx.core import db
-from newslynx.logs import StdLog, ColorLog
 from newslynx.exc import RecipeSchemaError
 from newslynx.models import (
     Org, User, Tag, Report, SousChef,
@@ -14,11 +15,13 @@ from newslynx.models import (
 from newslynx.core import settings
 
 
+log = logging.getLogger(__name__)
+
+
 def org(
         name=settings.SUPER_USER_ORG,
         timezone=settings.SUPER_USER_ORG_TIMEZONE,
-        email=settings.SUPER_USER_EMAIL,
-        log=ColorLog()):
+        email=settings.SUPER_USER_EMAIL):
 
     # create the org and super user
     org = Org.query.filter_by(name=name).first()
@@ -50,13 +53,13 @@ def org(
     org.users.append(u)
     db.session.add(org)
     db.session.commit()
-    tags(org, log)
-    sous_chefs(org, log)
-    recipes(org, log)
+    tags(org)
+    sous_chefs(org)
+    recipes(org)
     return org
 
 
-def tags(org, log=ColorLog()):
+def tags(org):
     """
     (Re)load all default tags.
     """
@@ -78,7 +81,7 @@ def tags(org, log=ColorLog()):
     return org
 
 
-def sous_chefs(org, log=ColorLog()):
+def sous_chefs(org):
     """
     (Re)load all sous chefs.
     """
@@ -101,7 +104,7 @@ def sous_chefs(org, log=ColorLog()):
     return org
 
 
-def recipes(org, log=ColorLog()):
+def recipes(org):
     """
     (Re)load all default recipes.
     """

@@ -7,11 +7,15 @@ patch_all()
 
 import sys
 import argparse
+import logging
+from traceback import format_exc
 from argparse import RawTextHelpFormatter
 
 from newslynx.cli.common import parse_runtime_args
-from newslynx.logs import ColorLog, StdLog
 from newslynx.exc import ConfigError
+
+
+log = logging.getLogger(__name__)
 
 
 def setup(parser):
@@ -51,17 +55,23 @@ def run():
     """
     The main cli function.
     """
-    log = ColorLog()
     opts = None
     kwargs = {}
     try:
+        from newslynx import settings
+        from newslynx import logs
+
         # create an argparse instance
-        parser = argparse.ArgumentParser(
-            prog='newslynx/nlx', formatter_class=RawTextHelpFormatter)
-        parser.add_argument('--no-color', dest='no_color', action="store_true",
-                            default=False, help='Disable colored logging.')
-        parser.add_argument('--no-interactive', dest='no_interactive', action="store_true",
-                            default=False, help='Dont prompt for config.')
+        parser = argparse.ArgumentParser(prog='newslynx/nlx', 
+                                         formatter_class=RawTextHelpFormatter)
+        parser.add_argument('--log-type', dest='log_type', type=str,
+                            default=settings.LOG_TYPE, help='The log format type.',
+                            choices=['color', 'std', 'json'])
+        parser.add_argument('--log-level', dest='log_level', type=str,
+                            default=settings.LOG_LEVEL, help='The logging level to filter below.',
+                            choices=['debug', 'info', 'warning', 'error', 'critical'])
+        parser.add_argument('--log-datefmt', dest='log_datefmt', type=str,
+                            default=settings.LOG_DATE_FORMAT, help='The date format to display.')
 
         # add the subparser "container"
         subcommands = setup(parser)
@@ -70,29 +80,30 @@ def run():
         opts, kwargs = parser.parse_known_args()
         kwargs = parse_runtime_args(kwargs)
 
-        if opts.no_color:
-            log = StdLog()
+        # setup logging
+        logs.setup_logger(level=opts.log_level,
+                          datefmt=opts.log_datefmt,
+                          type=opts.log_type)
 
-        # run the necessary subcommand
+        # check for proper subcommands
         if opts.cmd not in subcommands:
-            log.exception(
-                RuntimeError("No such subcommand."), no_color=opts.no_color)
+            log.error("No such subcommand.")
 
         try:
-            subcommands[opts.cmd](opts, log, **kwargs)
+            subcommands[opts.cmd](opts, **kwargs)
 
         except KeyboardInterrupt as e:
-            log.warning('\nInterrupted by user.\n', line=False)
+            log.warning('Interrupted by user.')
             sys.exit(2)  # interrupt
 
         except Exception as e:
-            log.exception(e, tb=True)
+            log.error(format_exc())
             sys.exit(1)
 
     except ConfigError as e:
-        log.exception(e, tb=False, line=False)
+        log.error(e.message)
         sys.exit(1)
 
     except KeyboardInterrupt as e:
-        log.warning('\nInterrupted by user.\n', line=False)
+        log.warning('Interrupted by user.')
         sys.exit(2)  # interrupt

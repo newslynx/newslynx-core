@@ -4,6 +4,8 @@ Initialize Database, Super User, and Sous Chefs
 import os
 import re
 import sys
+import logging
+from traceback import format_exc
 
 from newslynx.cli.common import LOGO
 from newslynx.init import load_sql
@@ -13,6 +15,8 @@ from newslynx.core import settings
 from newslynx.tasks import default
 
 re_conf = '{}:[^\n]+'
+
+log = logging.getLogger(__name__)
 
 
 def setup(parser):
@@ -29,34 +33,25 @@ def setup(parser):
     return 'init', run
 
 
-def run(opts, log, **kwargs):
+def run(opts, **kwargs):
     # create the database
-    log.info(LOGO + "\n", line=False, color='lightwhite_ex')
+    if not opts.log_type == 'json':
+        print LOGO
     with app.app_context():
 
         # import defaults
         from newslynx.defaults import (
             _DEFAULT_CONFIG, _CONFIG_REQUIRES, _DEFAULT_DEFAULTS)
-        try:
-            from newslynx.settings import CONFIG_FILE as config_file
-            from newslynx.settings import DEFAULT_TAGS as tags_file
-            from newslynx.settings import DEFAULT_RECIPES as recipes_file
-
-        except Exception:
-            from newslynx.defaults import CONFIG_FILE as default_config_file
-            from newslynx.defaults import DEFAULT_TAGS as default_tags_file
-            from newslynx.defaults import DEFAULT_RECIPES as default_recipes_file
-            config_file = None
-            tags_file = None
-            recipes_file = None
+        from newslynx.settings import CONFIG_FILE as config_file
+        from newslynx.settings import DEFAULT_TAGS as tags_file
+        from newslynx.settings import DEFAULT_RECIPES as recipes_file
 
         try:
-            log.info('\nCreating database "{}"\n'.format(
-                settings.SQLALCHEMY_DATABASE_URI), line=False)
+            log.info('(Re)Creating database "{}"'.format(settings.SQLALCHEMY_DATABASE_URI))
             db.configure_mappers()
             db.create_all()
 
-            log.info('\n(Re)Loading SQL Extensions\n', line=False)
+            log.info('(Re)Loading SQL Extensions')
 
             # load sql extensions + functions
             for sql in load_sql():
@@ -64,7 +59,7 @@ def run(opts, log, **kwargs):
 
             # install app defaults.
             if opts.app_defaults:
-                log.info('\nInitializing App Defaults\n', line=False)
+                log.info('(Re)Initializing App Defaults')
                 modules = [
                     ('default_tags', tags_file),
                     ('default_recipes', recipes_file)
@@ -81,10 +76,7 @@ def run(opts, log, **kwargs):
                     except OSError:
                         pass
 
-                    log.info('\nStoring default ', line=False, color="yellow")
-                    log.info(name, line=False, color='green')
-                    log.info(' in:\n', line=False, color="blue")
-                    log.info(m + "\n", line=False, color='magenta')
+                    log.info('Storing default {} in: {}'.format(name, config_file))
 
                     with open(m, 'wb') as f1:
                         with open(os.path.join(_DEFAULT_DEFAULTS, path), 'rb') as f2:
@@ -98,22 +90,18 @@ def run(opts, log, **kwargs):
                     else:
                         conf_str += "\n" + newval
 
-                log.info('\nStoring new configurations to:\n', line=False, color="blue")
-                log.info(config_file + "\n", color='magenta', line=False)
+                log.info('Storing new configurations to: {}'.format(config_file))
                 with open(config_file, 'wb') as f:
                     f.write(conf_str)
 
-            log.info('\nInitializing Super User Org {}\n'.format(
-                settings.SUPER_USER_ORG), line=False)
+            log.info('(Re)Initializing Super User Org {}'.format(settings.SUPER_USER_ORG))
             default.org()
 
         except Exception as e:
             db.session.rollback()
             db.session.close()
-            log.exception(e, tb=True)
+            log.error(format_exc())
             sys.exit(1)
         else:
-            log.info('\nSuccess!\n', line=False)
-            log.warning(
-                '\nYou can now start the API by running ', color="blue", line=False)
-            log.info('newslynx debug\n\n', color="green", line=False)
+            log.info('Success!')
+            log.info('You can now start the API by running: $ newslynx debug')
