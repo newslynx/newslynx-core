@@ -22,7 +22,7 @@ Requires `nose`
 $ nosetests
 ```
 
-## Documenation
+## Documentation
 
 Documentation for `{{ slug }}` is hosted on [Read The Docs](http://{{ slug }}.readthedocs.org/).
 
@@ -30,7 +30,7 @@ It's generated via the following steps
 
 * converts this file (`README.md`) into a ReStructured Text file, saving it to [docs/index.rst](https://github.com/{{ github_user}}/{{ slug }}/blob/master/docs/index.rst)
 * runs `newslynx sc-docs {{name}} -f rst` to generate documentation for all the Sous Chefs in `{{ slug }}` and saves the output to [docs/sous-chefs.rst](https://github.com/{{ github_user}}/{{ slug }}/blob/master/docs/sous-chefs.rst)
-* Builds Sphinx Documentaiton from these files.
+* Builds Sphinx Documentation from these files.
 
 
 ## Continuous Integration
@@ -58,7 +58,7 @@ See the [contributing guidelines](https://github.com/{{ github_user}}/{{ slug }}
 	* See the docs on this [here](https://docs.python.org/2/distutils/sourcedist.html#specifying-the-files-to-distribute).
 
 - [setup.py](https://github.com/{{ github_user}}/{{ slug }}/blob/master/setup.py)
-	* Specification's for building `{{ slug }}`'s PyPI dsitribution.
+	* Specification's for building `{{ slug }}`'s PyPI distribution.
 
 - [.travis.yml](https://github.com/{{ github_user}}/{{ slug }}/blob/master/.travis.yml)
 	* Configurations for Travis Continuous Integration
