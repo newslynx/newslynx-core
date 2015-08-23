@@ -7,6 +7,5 @@ install:
 
 script:
     - mkdir ~/.newslynx/
-    - wget https://github.com/newslynx/newslynx-core/blob/feature/modular/newslynx/dot_newslynx/config.yaml -O ~/.newslynx/config.yaml
-    - cat ~/.newslynx/config.yaml
+    - wget https://raw.githubusercontent.com/newslynx/newslynx-core/master/newslynx/dot_newslynx/config.yaml -O ~/.newslynx/config.yaml
     - nosetests
