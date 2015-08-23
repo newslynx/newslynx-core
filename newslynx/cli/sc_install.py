@@ -19,3 +19,4 @@ def run(opts, **kw):
     Install a Sous Chef module from GitHub.
     """
     sc_module.install(opts.git_url, update=opts.update)
+    log.info('Now run $ newslynx sc-sync')

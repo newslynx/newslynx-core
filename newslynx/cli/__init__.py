@@ -5,13 +5,14 @@ NewsLynx's CLI
 from gevent.monkey import patch_all
 patch_all()
 
+import os
 import sys
 import argparse
 import logging
 from traceback import format_exc
 from argparse import RawTextHelpFormatter
 
-from newslynx.cli.common import parse_runtime_args
+from newslynx.cli.common import parse_runtime_args, LOGO
 from newslynx.exc import ConfigError
 
 
@@ -63,7 +64,7 @@ def run():
         from newslynx import logs
 
         # create an argparse instance
-        parser = argparse.ArgumentParser(prog='newslynx/nlx', 
+        parser = argparse.ArgumentParser(prog='newslynx/nlx',
                                          formatter_class=RawTextHelpFormatter)
         parser.add_argument('--log-type', dest='log_type', type=str,
                             default=settings.LOG_TYPE, help='The log format type.',
@@ -102,7 +103,30 @@ def run():
             sys.exit(1)
 
     except ConfigError as e:
-        log.error(e.message)
+        print LOGO
+        from newslynx import defaults
+
+        # setup default logging
+        logs.setup_logger(level=defaults.LOG_LEVEL,
+                          datefmt=defaults.LOG_DATE_FORMAT,
+                          type=defaults.LOG_TYPE)
+        log.warning('No config file found.')
+
+        # make .newslynx folder
+        d = defaults.CONFIG_FILE.replace('.newslynx', '').strip()
+        if not os.path.exists(d):
+            log.info('Creating directory {}'.format(d))
+            os.makedirs(d)
+
+        # setup default config
+        if not os.path.exists(defaults.CONFIG_FILE):
+            logging.warning('Moving default config to: {}'.format(defaults.CONFIG_FILE))
+            with open(defaults.CONFIG_FILE, 'wb') as f:
+                f.write(open(defaults._DEFAULT_CONFIG).read())
+
+        # give more info
+        log.info('Now, modify your configurations in {}.'.format(defaults.CONFIG_FILE))
+        log.info('Once you\'re done, you can run $ newslynx init')
         sys.exit(1)
 
     except KeyboardInterrupt as e:

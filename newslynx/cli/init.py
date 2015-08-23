@@ -11,8 +11,9 @@ from newslynx.cli.common import LOGO
 from newslynx.init import load_sql
 from newslynx.views import app
 from newslynx.core import db
-from newslynx.core import settings
 from newslynx.tasks import default
+from newslynx.sc import sc_module
+from newslynx.lib.serialize import yaml_stream_to_obj
 
 re_conf = '{}:[^\n]+'
 
@@ -27,9 +28,9 @@ def setup(parser):
         "init",
         help="Initializes the database, super user, and core sous chefs.")
     init_parser = init_parser.add_argument(
-        '--app-defaults', dest='app_defaults',
+        '--bare', dest='bare',
         action='store_true', default=False,
-        help='Whether or not the initialize NewsLynx with the defaults that the App expects.')
+        help='Dont include the defaults for newslynx-app')
     return 'init', run
 
 
@@ -40,10 +41,15 @@ def run(opts, **kwargs):
     with app.app_context():
 
         # import defaults
-        from newslynx.defaults import _CONFIG_REQUIRES, _DEFAULT_DEFAULTS
+        from newslynx.defaults import _CONFIG_REQUIRES, _DEFAULT_DEFAULTS, _DEFAULT_CONFIG
         from newslynx.settings import CONFIG_FILE as config_file
         from newslynx.settings import DEFAULT_TAGS as tags_file
         from newslynx.settings import DEFAULT_RECIPES as recipes_file
+        from newslynx import settings
+
+        # app's sous_chefs
+        default_sous_chefs = yaml_stream_to_obj(open(_DEFAULT_CONFIG))\
+            .get('default_sous_chefs', [])
 
         try:
             log.info('(Re)Creating database "{}"'.format(
@@ -58,8 +64,10 @@ def run(opts, **kwargs):
                 db.session.execute(sql)
 
             # install app defaults.
-            if opts.app_defaults:
+            if not opts.bare:
                 log.info('(Re)Initializing App Defaults')
+                for sc_git in default_sous_chefs:
+                    sc_module.install(sc_git, update=True)
                 modules = [
                     ('default_tags', tags_file),
                     ('default_recipes', recipes_file)

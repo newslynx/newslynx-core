@@ -3,7 +3,6 @@ Generate a SousChef module from a template directory.
 """
 
 import os
-import sys
 import logging
 from traceback import format_exc
 import pip
@@ -119,22 +118,21 @@ def create(**kw):
 
 def install(git_url, sous_chef_dir=settings.SOUS_CHEFS_DIR, **kw):
     """
-    Fetch a git repository and store in the sous chef directory. 
+    Fetch a git repository and store in the sous chef directory.
     Then install it via pip
     """
 
     update = kw.pop('update', False)
 
     # ensure directory format
+    sous_chef_dir = os.path.expanduser(sous_chef_dir)
     if not sous_chef_dir.endswith('/'):
         sous_chef_dir += "/"
 
     # ensure sous chef dir exists
     if not os.path.exists(sous_chef_dir):
+        log.warning('Creating directory: {}'.format(sous_chef_dir))
         os.makedirs(sous_chef_dir)
-
-    # expand tilde
-    sous_chef_dir = os.path.expanduser(sous_chef_dir)
 
     # get module name:
     try:
@@ -172,5 +170,4 @@ def install(git_url, sous_chef_dir=settings.SOUS_CHEFS_DIR, **kw):
         log.error('Could not install: {}'.format(name))
     else:
         log.info('Successfully installed: {}'.format(name))
-        log.info('Now run $ newslynx sc-sync')
     return True

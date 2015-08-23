@@ -23,10 +23,20 @@ api_url: http://localhost:5000
 api_version: v1
 https: false # Change to `true` for production.
 
+# Directory which contains Sous Chefs
+sous_chefs_dir: '~/.newslynx/sous-chefs/'
+
 # Filepaths to default recipes + tags + reports to add for each
 # new organization.
 default_recipes: '~/.newslynx/defaults/recipes.yaml'
 default_tags: '~/.newslynx/defaults/tags.yaml'
 
-# Directory which contains Sous Chefs
-default_reports: '~/.newslynx/sous-chefs/'
+# List of sous chefs to install on initialization.
+default_sous_chefs: 
+- 'https://github.com/newslynx/newslynx-sc-twitter.git'
+- 'https://github.com/newslynx/newslynx-sc-shares.git'
+- 'https://github.com/newslynx/newslynx-sc-rss.git'
+- 'https://github.com/newslynx/newslynx-sc-reddit.git'
+- 'https://github.com/newslynx/newslynx-sc-google-analytics.git'
+- 'https://github.com/newslynx/newslynx-sc-facebook.git'
+

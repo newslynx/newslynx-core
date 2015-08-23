@@ -27,7 +27,7 @@ DEFAULT_REPORTS = os.path.expanduser('~/.newslynx/defaults/recipes.yaml')
 
 # sous chefs
 SOUS_CHEFS_DIR = os.path.expanduser('~/.newslynx/sous-chefs/')
-SOUS_CHEFS = []
+DEFAULT_SOUS_CHEFS = []
 
 # app configurations #
 API_URL = "http://localhost:5000"

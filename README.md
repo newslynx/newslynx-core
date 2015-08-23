@@ -64,18 +64,19 @@ Open another shell and run:
 $ redis-server
 ```
 
-##### Initialize the database, super user, and install built-in sous chefs.
+##### Initialize the database, super user, and install default sous chefs, tags, and recipes.
 
-If you're using our default setup, use the app defaults flag, which will create the necessary recipes and tags as specified in [newslynx/dot_newslynx/defaults](newslynx/dot_newslynx/defaults). Edit those files to make changes to default values.
+Run this command when working with `newslynx-app` 
 
 ```
 $ newslynx init --app-defaults
 ```
 
-**[Expert mode]** To install the barebones system:
+##### Initialize a bare install.
+**[Expert mode]**  don't default install sous chefs, tags, or recipes.
 
 ```
-$ newslynx init
+$ newslynx init --bare
 ```
 
 ##### Start the server
