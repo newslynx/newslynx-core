@@ -7,19 +7,46 @@
 
 ## Installation
 
+### Production
+
+To install `{{ slug }}` for an active installation of `newslynx-core`, clone it and copy into `~/.newslynx/sous-chefs`
+
 ```bash
-$ mkvirtualenv {{ slug }}
 $ git clone https://github.com/{{ github_user }}/{{ slug }}.git
-$ cd {{ slug }}
+$ mv {{ slug }}/ ~/.newslynx/sous-chefs/
+```
+
+Now install it within the same virtual environment as `newslynx`:
+
+```bash
+$ cd ~/.newslynx/sous-chefs/{{ slug }}/
 $ pip install .
 ```
+
+... and if you're running `newslynx` as `sudo`
+
+
+```bash
+$ cd ~/.newslynx/sous-chefs/{{ slug }}/ 
+$ sudo pip install .
+```
+
+Finally, run `newslynx sc-sync` to `{{ slug }}`'s Sous Chefs for all organizations.
+
+```bash
+$ newslynx sc-sync
+```
+
+### Development 
+
+If you want to run this SousChef on it's own environment, install it in a separate virutal environ 
 
 ## Tests
 
 Requires `nose`
 
 ```bash
-$ nosetests
+$ make all_tests
 ```
 
 ## Documentation

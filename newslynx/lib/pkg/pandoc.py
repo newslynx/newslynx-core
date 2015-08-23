@@ -3,7 +3,7 @@ from os.path import exists
 from tempfile import NamedTemporaryFile
 import os
 
-from newslynx.settings import PANDOC_PATH
+from newslynx.core import settings
 
 
 class Document(object):
@@ -30,6 +30,9 @@ class Document(object):
         self._format = None
         self._register_formats()
         self.arguments = []
+        if not settings.PANDOC_ENABLED:
+            raise NotImplemented("You must set  self.path in your config.yaml.")
+        self.path = settings.PANDOC_PATH
 
     def bib(self, bibfile):
         if not exists(bibfile):
@@ -66,7 +69,7 @@ class Document(object):
 
     def _output(self, format):
         subprocess_arguments = [
-            PANDOC_PATH, '--from=%s' % self._format, '--to=%s' % format]
+             self.path, '--from=%s' % self._format, '--to=%s' % format]
         subprocess_arguments.extend(self.arguments)
 
         p = subprocess.Popen(
@@ -85,7 +88,7 @@ class Document(object):
         temp_file.close()
 
         subprocess_arguments = [
-            PANDOC_PATH, temp_file.name, '-o %s' % output_filename]
+             self.path, temp_file.name, '-o %s' % output_filename]
         subprocess_arguments.extend(self.arguments)
         cmd = " ".join(subprocess_arguments)
         fin = os.popen(cmd)
