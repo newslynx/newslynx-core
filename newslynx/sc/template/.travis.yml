@@ -3,11 +3,10 @@ python:
   - "2.7"
 # command to install dependencies
 install:
-  - "pip install ."
+    - "pip install ."
 
-# command to run tests
-script: |
-    mkdir ~/.newslynx/ && \
-    wget https://raw.githubusercontent.com/newslynx/newslynx-core/master/newslynx/dot_newslynx/config.yaml \
-        -o ~/.newslynx/config.yaml && \ 
-    nosetests
+script:
+    - mkdir ~/.newslynx/
+    - wget https://github.com/newslynx/newslynx-core/blob/feature/modular/newslynx/dot_newslynx/config.yaml -o ~/.newslynx/config.yaml
+    - cat ~/.newslynx/config.yaml
+    - nosetests
