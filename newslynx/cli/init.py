@@ -40,14 +40,14 @@ def run(opts, **kwargs):
     with app.app_context():
 
         # import defaults
-        from newslynx.defaults import (
-            _DEFAULT_CONFIG, _CONFIG_REQUIRES, _DEFAULT_DEFAULTS)
+        from newslynx.defaults import _CONFIG_REQUIRES, _DEFAULT_DEFAULTS
         from newslynx.settings import CONFIG_FILE as config_file
         from newslynx.settings import DEFAULT_TAGS as tags_file
         from newslynx.settings import DEFAULT_RECIPES as recipes_file
 
         try:
-            log.info('(Re)Creating database "{}"'.format(settings.SQLALCHEMY_DATABASE_URI))
+            log.info('(Re)Creating database "{}"'.format(
+                settings.SQLALCHEMY_DATABASE_URI))
             db.configure_mappers()
             db.create_all()
 
@@ -76,7 +76,8 @@ def run(opts, **kwargs):
                     except OSError:
                         pass
 
-                    log.info('Storing default {} in: {}'.format(name, config_file))
+                    log.info(
+                        'Storing default {} in: {}'.format(name, config_file))
 
                     with open(m, 'wb') as f1:
                         with open(os.path.join(_DEFAULT_DEFAULTS, path), 'rb') as f2:
@@ -90,11 +91,13 @@ def run(opts, **kwargs):
                     else:
                         conf_str += "\n" + newval
 
-                log.info('Storing new configurations to: {}'.format(config_file))
+                log.info(
+                    'Storing new configurations to: {}'.format(config_file))
                 with open(config_file, 'wb') as f:
                     f.write(conf_str)
 
-            log.info('(Re)Initializing Super User Org {}'.format(settings.SUPER_USER_ORG))
+            log.info(
+                '(Re)Initializing Super User Org {}'.format(settings.SUPER_USER_ORG))
             default.org()
 
         except Exception as e:
