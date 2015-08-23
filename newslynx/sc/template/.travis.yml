@@ -6,4 +6,8 @@ install:
   - "pip install ."
 
 # command to run tests
-script: nosetests
+script: |
+    mkdir ~/.newslynx/ && \
+    wget https://raw.githubusercontent.com/newslynx/newslynx-core/master/newslynx/dot_newslynx/config.yaml \
+        -o ~/.newslynx/config.yaml && \ 
+    nosetests
