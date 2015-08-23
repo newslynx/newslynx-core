@@ -9,7 +9,7 @@
 secret_key: changeme
 app_secret_key: changemetoo
 super_user: admin
-super_user_email: changme@example.com
+super_user_email: changeme@example.com
 super_user_password: admin
 super_user_apikey: mj
 super_user_org: 'admin'
@@ -17,6 +17,10 @@ super_user_timezone: UTC
 
 # The Database URI (This is mandatory!)
 sqlalchemy_database_uri: 'postgres://localhost:5432/newslynx'
+
+# API information for the app to know
+api_url: http://localhost:5000
+api_version: v1
 
 # Filepaths to default recipes + tags to add for each
 # new organization.
