@@ -5,4 +5,4 @@
 - [x] Usage example for Sous Chefs with `newslynx sc`
 - [x] Programmatic testing of sous chef configurations.
 - [x] Generate Sous Chef modules
-- [x] Make Sous Chef modules easily installable.
+- [ ] Make Sous Chef modules easily installable.

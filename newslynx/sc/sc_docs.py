@@ -79,8 +79,8 @@ In addition to default recipe options, `{{ slug }}` also accepts the following
 {% for name, params in options.iteritems() %}
 {% if name not in default_options %}
 - `{{ name }}`
-{% if params.description is defined %}
-\t* {{ params.description }}
+{% if params.help.description is defined %}
+\t* {{ params.help.description }}
 {% endif %}
 {% if params.required is defined %}
 \t* **Required**
