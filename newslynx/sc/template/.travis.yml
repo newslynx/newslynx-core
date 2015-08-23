@@ -1,11 +1,22 @@
 language: python
 python:
   - "2.7"
+
 # command to install dependencies
 install:
     - "pip install ."
 
+addons:
+  postgresql: "9.3"
+
+services:
+  - redis-server
+
+before_script:
+  - psql -c 'create database newslynx;' -U postgres
+
 script:
     - mkdir ~/.newslynx/
     - wget https://raw.githubusercontent.com/newslynx/newslynx-core/master/newslynx/dot_newslynx/config.yaml -O ~/.newslynx/config.yaml
-    - nosetests
+    - "echo '\ntesting: true\n' >> ~/.newslynx/config.yaml"
+    - make all_tests
