@@ -24,7 +24,7 @@ def setup(parser):
     from newslynx.cli import (
         api, db, version, dev, init,
         debug, cron, echo, sc_create,
-        sc_docs, sc
+        sc_docs, sc, sc_sync
     )
     MODULES = [
         api,
@@ -37,7 +37,8 @@ def setup(parser):
         version,
         debug,
         sc_create,
-        sc_docs
+        sc_docs,
+        sc_sync
     ]
     subcommands = {}
     for module in MODULES:
