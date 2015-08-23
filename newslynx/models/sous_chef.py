@@ -41,7 +41,9 @@ class SousChef(db.Model):
         self.is_command = kw.get('is_command')
         if self.is_command:
             self.filepath = kw.get('runs')
-        self.creates = kw.get('creates')
+        self.creates = kw.get('creates', 'null')
+        if not self.creates:
+            self.creates = 'null'
         self.required_auths = kw.get('requires_auths', [])
         self.required_settings = kw.get('requires_settings', [])
         self.option_order = kw.get('option_order', [])
@@ -67,10 +69,11 @@ class SousChef(db.Model):
         if incl_options:
             d['options'] = self.ordered_options
             d['option_order'] = self.option_order
-        if 'metrics' in self.creates:
-            d['metrics'] = self.metrics
-        if 'report' in self.creates:
-            d['report'] = self.report
+        if self.creates:
+            if 'metrics' in self.creates:
+                d['metrics'] = self.metrics
+            if 'report' in self.creates:
+                d['report'] = self.report
         return d
 
     @property

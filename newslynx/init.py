@@ -77,7 +77,7 @@ def load_sous_chefs(sous_chef_dir=None, incl_internal=True):
             for fp in recursive_listdir(SOUS_CHEF_DIR):
                 if _is_config_file(fp):
                     sc = sous_chef_schema.load(fp)
-                    if 'sous_chef' in sc:
+                    if 'slug' in sc:
                         yield sc, fp
 
         # sous chef modules.

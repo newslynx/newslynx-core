@@ -85,6 +85,10 @@ def validate(sc, fp):
         # if 'report' in sc['creates']:
         #     sc = _validate_report_sous_chef(sc, fp)
 
+        # hack
+        if not sc.get('creates', None):
+            sc['creates']  = 'null'
+
         # if everything is kosher, merge the sous-chef options
         # with the defaults
         sc['options'] = update_nested_dict(
