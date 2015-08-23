@@ -24,7 +24,10 @@ CONFIG_FILE = os.getenv('NEWSLYNX_CONFIG_FILE',
 DEFAULT_TAGS = os.path.expanduser('~/.newslynx/defaults/tags.yaml')
 DEFAULT_RECIPES = os.path.expanduser('~/.newslynx/defaults/recipes.yaml')
 DEFAULT_REPORTS = os.path.expanduser('~/.newslynx/defaults/recipes.yaml')
+
+# sous chefs
 SOUS_CHEFS_DIR = os.path.expanduser('~/.newslynx/sous-chefs/')
+SOUS_CHEFS = []
 
 # app configurations #
 API_URL = "http://localhost:5000"
