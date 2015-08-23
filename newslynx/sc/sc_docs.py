@@ -18,22 +18,6 @@ SC_OPTS_TMPL = Template("""
 * API Slug: `{{ slug }}`
 
 
-#### Development
-
-Pass runtime options to `{{ slug }}` and stream output.
-
-**NOTE** Will not execute the SousChef's `load` method.
-
-```bash
-$ newslynx sc {{ filepath }} option=value1
-```
-
-Alternatively pass in a recipe file
-
-```bash
-$ newslynx sc {{ filepath }} --recipe=recipe.yaml
-```
-
 #### API Usage
 
 Add this Sous Chef to your authenticated org
@@ -68,6 +52,23 @@ Alternatively, run the Recipe, passing in arbitrary runtime options, and stream 
 
 ```bash
 $ newslynx api recipes cook id=<id> --passthrough **options
+```
+
+
+#### Development
+
+Pass runtime options to `{{ slug }}` and stream output.
+
+**NOTE** Will not execute the SousChef's `load` method.
+
+```bash
+$ newslynx sc {{ filepath }} option=value1
+```
+
+Alternatively pass in a recipe file
+
+```bash
+$ newslynx sc {{ filepath }} --recipe=recipe.yaml
 ```
 
 #### Options
