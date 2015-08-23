@@ -52,8 +52,8 @@ def load_sous_chefs(sous_chef_dir=None, incl_internal=True):
 
     # user-generated sous-chefs.
     if not sous_chef_dir:
-        if hasattr(settings, 'SOUS_CHEFS_DIR'):
-            sous_chef_dir = settings.SOUS_CHEFS_DIR
+        if hasattr(settings, 'SC_HUB'):
+            sous_chef_dir = settings.SC_HUB
 
             if sous_chef_dir.startswith('~'):
                 sous_chef_dir = \
@@ -68,7 +68,7 @@ def load_sous_chefs(sous_chef_dir=None, incl_internal=True):
                 )
         else:
             sous_chef_dir = os.path.expanduser(
-                '~/.newslynx/sous-chefs/')
+                '~/.newslynx/sc-hub/')
 
     def findsc(sous_chef_dir):
 
