@@ -11,7 +11,6 @@ from urlparse import urljoin
 
 import requests
 from bs4 import BeautifulSoup
-from PIL import Image, ImageOps
 
 from newslynx.lib import network
 from newslynx.lib import url
@@ -25,6 +24,9 @@ def b64_thumbnail_from_url(img_url, **kw):
     """
     Download an image and create a base64 thumbnail.
     """
+    
+    from PIL import Image, ImageOps
+
     if not img_url:
         return None
 
