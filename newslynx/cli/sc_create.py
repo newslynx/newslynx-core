@@ -20,6 +20,8 @@ def setup(parser):
                         dest='author', default='Merlynne')
     parser.add_argument('-t', '--template', dest='template', type=str,
                         help='A path to a module template. Defaults to built-in template.', default=None)
+    parser.add_argument('-u', '--update', dest='update', action="store_true",
+                        help='Whether or not to overwrite existing files')
     return 'sc-create', run
 
 
@@ -41,6 +43,7 @@ def run(opts, log, **kw):
         'description': opts.description,
         'github_user': opts.github_user,
         'author': opts.author,
+        'update': opts.update
     })
     if opts.template:
         kw['tmpl_dir'] = opts.template

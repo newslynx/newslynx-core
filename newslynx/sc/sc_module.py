@@ -45,21 +45,24 @@ def create(**kw):
     """
     Create a SousChef Module from a directory of Jinja Templates.
     """
+
+    update = kw.pop('update', False)
+
     # get root dir
     root_dir = "{root_dir}/{slug}/".format(**kw)
     module_dir = "{}{name}/".format(root_dir, **kw)
-    if not os.path.exists(module_dir):
+    if not os.path.exists(module_dir) and not update:
         os.makedirs(module_dir)
 
     # create __init__.py
     init_py_path = os.path.join(module_dir, '__init__.py')
-    if not os.path.exists(init_py_path):
+    if not os.path.exists(init_py_path) and not update:
         with open(init_py_path, 'wb') as f:
             f.write(DUMMY_SOUS_CHEF_CLASS)
 
     # create say_my_name.yaml
     config_path = os.path.join(module_dir, 'say_my_name.yaml')
-    if not os.path.exists(config_path):
+    if not os.path.exists(config_path) and not update:
         with open(config_path, 'wb') as f:
             f.write(DUMMY_SOUS_CHEF_CONFIG.format(**kw))
 
@@ -87,7 +90,11 @@ def create(**kw):
             # write the file
             while True:
                 try:
-                    if not os.path.exists(new_path):
+                    if not update:
+                        if not os.path.exists(new_path):
+                            with open(new_path, 'wb') as fh:
+                                fh.write(contents)
+                    else:
                         with open(new_path, 'wb') as fh:
                             fh.write(contents)
                     break

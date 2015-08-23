@@ -39,7 +39,22 @@ $ newslynx sc-sync
 
 ### Development 
 
-If you want to run this SousChef on it's own environment, install it in a separate virutal environ 
+If you want to modify / add Sous Chefs to `{{ slug }}`, instal it in it's own virtual environment.
+
+**NOTE** Will install a fresh version of `newslynx` via `pip`.
+
+```bash
+$ mkvirtualenv {{ slug }}
+$ git clone https://github.com/{{ github_user }}/{{ slug }}.git
+$ cd {{ slug }}
+$ pip install --editable .
+```
+
+You should now be able to run `{{ slug }}`'s Sous Chefs in development mode
+
+```bash 
+% newslynx sc {{ name }}/say_my_name.yaml --myname='Brian Abelson'
+```
 
 ## Tests
 

@@ -15,7 +15,7 @@ install:
 
 all_tests:
 
-	nosetests
+	nosetests --exe
 
 register:
 
