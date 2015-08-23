@@ -3,12 +3,23 @@ Generate a SousChef module from a template directory.
 """
 
 import os
+import sys
+import logging
+from traceback import format_exc
+import pip
+
 from jinja2 import Template
+from git import Repo
 
 from newslynx.util import here
+from newslynx.core import settings
+from newslynx.exc import SousChefInstallError
+
+log = logging.getLogger(__name__)
 
 
 DEFAULT_TMPL_DIR = here(__file__, 'template/')
+
 
 DUMMY_SOUS_CHEF_CLASS = """
 import os
@@ -23,6 +34,7 @@ class SayMyName(SousChef):
         return self.options.items()
 
 """
+
 
 DUMMY_SOUS_CHEF_CONFIG = """
 name: Say My Name
@@ -103,3 +115,62 @@ def create(**kw):
                     d = "/".join(new_path.split('/')[:-1])
                     if not os.path.exists(d):
                         os.makedirs(d)
+
+
+def install(git_url, sous_chef_dir=settings.SOUS_CHEFS_DIR, **kw):
+    """
+    Fetch a git repository and store in the sous chef directory. 
+    Then install it via pip
+    """
+
+    update = kw.pop('update', False)
+
+    # ensure directory format
+    if not sous_chef_dir.endswith('/'):
+        sous_chef_dir += "/"
+
+    # ensure sous chef dir exists
+    if not os.path.exists(sous_chef_dir):
+        os.makedirs(sous_chef_dir)
+
+    # expand tilde
+    sous_chef_dir = os.path.expanduser(sous_chef_dir)
+
+    # get module name:
+    try:
+        name = git_url.split('/')[-1].split('.')[0]
+    except Exception as e:
+        raise SousChefInstallError(
+            'Could not parse git_url: {}'.format(git_url))
+
+    # absolute directory of the Repo
+    repo_dir = "{}{}".format(sous_chef_dir, name)
+
+    # pull existing module
+    if os.path.exists(repo_dir):
+        if not update:
+            log.warning(
+                'To update "{}", add the "update" flag and re-run'.format(name))
+        else:
+            repo = Repo(repo_dir)
+            log.warning('Pulling "{}"'.format(git_url))
+            o = repo.remotes.origin
+            o.pull()
+
+    # clone new module
+    else:
+        log.info('Cloning "{}" ==> "{}"'.format(git_url, repo_dir))
+        try:
+            Repo.clone_from(git_url, repo_dir)
+        except Exception as e:
+            raise SousChefInstallError(
+                'Could not clone {}: {}'.format(git_url, format_exc()))
+
+    log.info('Installing: {}'.format(name))
+    sys_exit = pip.main(['install', '-e', repo_dir, '-q'])
+    if sys_exit != 0:
+        log.error('Could not install: {}'.format(name))
+    else:
+        log.info('Successfully installed: {}'.format(name))
+        log.info('Now run $ newslynx sc-sync')
+    return True

@@ -28,8 +28,8 @@ LOG_COLORS = {
 
 # setup core logger
 LOGGERS = {
-    'COLOR': "%(blue)s%(asctime)s%(reset)s | %(white)s%(name)s%(reset)s | %(message_log_color)s%(message)s%(reset)s",
-    'STD': "%(asctime)s | %(levelname)s | %(name)s | %(message)s"
+    'COLOR': "%(blue)s%(asctime)s%(reset)s | %(white)s%(name)s%(reset)s-%(white)s%(lineno)s%(reset)s | %(message_log_color)s%(message)s%(reset)s",
+    'STD': "%(asctime)s | %(levelname)s | %(name)s-%(lineno)s | %(message)s"
 }
 
 
