@@ -22,7 +22,7 @@ Requires `nose`
 $ nosetests
 ```
 
-## Documenation
+## Documentation
 
 Documentation for `{{ slug }}` is hosted on [Read The Docs](http://{{ slug }}.readthedocs.org/).
 
