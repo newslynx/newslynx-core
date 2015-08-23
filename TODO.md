@@ -6,4 +6,5 @@
 - [x] Programmatic testing of sous chef configurations.
 - [x] Generate Sous Chef modules
 - [x] Travis + Doc builds
-- [ ] Make Sous Chef modules easily installable.
+- [x] Make Sous Chef modules easily installable.
+- [x] Hub of Sous Chefs
