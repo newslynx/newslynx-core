@@ -5,7 +5,6 @@ import logging
 
 from colorlog import ColoredFormatter
 
-from newslynx import settings
 from newslynx.lib.serialize import obj_to_json
 
 # a lookup of levelname => object
@@ -48,13 +47,20 @@ class JSONLogger(logging.Formatter):
         return obj_to_json(fields)
 
 
-def setup_logger(
-        level=settings.LOG_LEVEL,
-        type=settings.LOG_TYPE,
-        datefmt=settings.LOG_DATE_FORMAT):
+def setup_logger(**kw):
     """
     Setup root logger.
     """
+    try:
+        from newslynx.core import settings
+        level = kw.pop('level', settings.LOG_LEVEL)
+        type = kw.pop('type', settings.LOG_TYPE)
+        datefmt = kw.pop('datefmt', settings.LOG_DATE_FORMAT)
+    except:
+        level = 'info'
+        type = 'color'
+        datefmt = '%H:%M:%S'
+
     # create a new log stream handler, and configure it
     ch = logging.StreamHandler()
 
