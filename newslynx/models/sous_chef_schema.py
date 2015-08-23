@@ -2,6 +2,7 @@ import os
 import re
 import importlib
 import os.path
+from traceback import format_exc
 
 from jsonschema import Draft4Validator
 
@@ -32,17 +33,21 @@ def load(fp):
     """
     Load a sous chef allowing for include statements.
     """
-    sc = yaml_stream_to_obj(open(fp))
-    incl = {}
-    incl_fp = sc.get('includes')
-    if len(sc.get('includes', [])):
-        for incl_fp in sc.get('includes'):
-            if not incl_fp.endswith('.yaml'):
-                incl_fp += ".yaml"
-            incl_fp = os.path.join(os.path.dirname(fp), incl_fp)
-            incl = yaml_stream_to_obj(open(incl_fp))
-            sc = update_nested_dict(sc, incl, overwrite=True)
-    return validate(sc, fp)
+    try:
+        sc = yaml_stream_to_obj(open(fp))
+        incl = {}
+        incl_fp = sc.get('includes')
+        if len(sc.get('includes', [])):
+            for incl_fp in sc.get('includes'):
+                if not incl_fp.endswith('.yaml'):
+                    incl_fp += ".yaml"
+                incl_fp = os.path.join(os.path.dirname(fp), incl_fp)
+                incl = yaml_stream_to_obj(open(incl_fp))
+                sc = update_nested_dict(sc, incl, overwrite=True)
+        return validate(sc, fp)
+    except:
+        msg = "{}\n{}".format(format_exc(), "failed on file {}".format(fp))
+        raise SousChefSchemaError(msg)
 
 
 def validate(sc, fp):
@@ -55,35 +60,39 @@ def validate(sc, fp):
     options and merge the default sous-chef options
     with the provied ones.
     """
-    # check the json schema
-    _validate_sous_chef_json_schema(sc)
+    try:
+        # check the json schema
+        _validate_sous_chef_json_schema(sc)
 
-    # check for checkbox option sous chefs
-    _validate_input_and_value_types(sc)
+        # check for checkbox option sous chefs
+        _validate_input_and_value_types(sc)
 
-    # check if `runs` is a python module that inherits from
-    # newslynx.sc.SousChef
-    if not '/' in sc['runs']:
-        sc['is_command'] = False
-        _validate_python_sous_chef(sc)
+        # check if `runs` is a python module that inherits from
+        # newslynx.sc.SousChef
+        if not '/' in sc['runs']:
+            sc['is_command'] = False
+            _validate_python_sous_chef(sc)
 
-    # otherwise validate the command
-    else:
-        sc['is_command'] = True
-        _validate_command_sous_chef(sc)
+        # otherwise validate the command
+        else:
+            sc['is_command'] = True
+            _validate_command_sous_chef(sc)
 
-    # special cases for sous chefs that create metrics
-    if 'metric' in sc.get('creates', 'null'):
-        _validate_metrics_sous_chef(sc)
+        # special cases for sous chefs that create metrics
+        if 'metric' in sc.get('creates', 'null'):
+            _validate_metrics_sous_chef(sc)
 
-    # if 'report' in sc['creates']:
-    #     sc = _validate_report_sous_chef(sc, fp)
+        # if 'report' in sc['creates']:
+        #     sc = _validate_report_sous_chef(sc, fp)
 
-    # if everything is kosher, merge the sous-chef options
-    # with the defaults
-    sc['options'] = update_nested_dict(
-        sc['options'], SOUS_CHEF_DEFAULT_OPTIONS)
-    return sc
+        # if everything is kosher, merge the sous-chef options
+        # with the defaults
+        sc['options'] = update_nested_dict(
+            sc['options'], SOUS_CHEF_DEFAULT_OPTIONS)
+        return sc
+    except:
+        msg = "{}\n{}".format(format_exc(), "failed on file {}".format(fp))
+        raise SousChefSchemaError(msg)
 
 
 def update(old_sous_chef, new_sous_chef):
@@ -226,7 +235,7 @@ def _validate_python_sous_chef(sc):
         sous_chef = getattr(m, c, None)
 
         if not sous_chef:
-            msg = '{} does not exist in module {}.'.format(c, module)
+            msg = '{} does not exist in module {}'.format(c, module)
             _raise_sous_chef_schema_error(sc, msg)
 
     except ImportError as e:
