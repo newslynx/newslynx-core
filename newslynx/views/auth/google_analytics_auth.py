@@ -1,16 +1,15 @@
 from urlparse import urljoin
+from urllib2 import HTTPError
 
 # TODO: remove reliance on this library for oauth
 import googleanalytics
-from urllib2 import HTTPError
-
 from googleanalytics.auth import Credentials
 from flask import (
     Blueprint, request, session, redirect, url_for,
     render_template
 )
 
-from newslynx import settings
+from newslynx.core import settings
 from newslynx.core import db
 from newslynx.models import Auth
 from newslynx.exc import AuthError, RequestError

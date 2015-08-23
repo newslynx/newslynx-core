@@ -9,26 +9,36 @@ import sys
 import argparse
 from argparse import RawTextHelpFormatter
 
-from newslynx.cli.common import parse_runtime_args, LOGO
+from newslynx.cli.common import parse_runtime_args
 from newslynx.logs import ColorLog, StdLog
 from newslynx.exc import ConfigError
 
 
-def setup(subparser):
+def setup(parser):
     """
     Install all subcommands.
     """
 
-    from newslynx.cli import api, db, version, dev, init, debug, cron, echo
+    subparser = parser.add_subparsers(help='Subcommands', dest='cmd')
+
+    from newslynx.cli import (
+        api, db, version, dev, init,
+        debug, cron, echo, sc_create,
+        sc_docs, sc, sc_sync
+    )
     MODULES = [
         api,
+        sc,
         db,
         dev,
         init,
         echo,
         cron,
         version,
-        debug
+        debug,
+        sc_create,
+        sc_docs,
+        sc_sync
     ]
     subcommands = {}
     for module in MODULES:
@@ -46,15 +56,15 @@ def run():
     kwargs = {}
     try:
         # create an argparse instance
-        parser = argparse.ArgumentParser(prog='newslynx/nlx', formatter_class=RawTextHelpFormatter)
+        parser = argparse.ArgumentParser(
+            prog='newslynx/nlx', formatter_class=RawTextHelpFormatter)
         parser.add_argument('--no-color', dest='no_color', action="store_true",
                             default=False, help='Disable colored logging.')
         parser.add_argument('--no-interactive', dest='no_interactive', action="store_true",
                             default=False, help='Dont prompt for config.')
 
         # add the subparser "container"
-        subparser = parser.add_subparsers(help='Subcommands', dest='cmd')
-        subcommands = setup(subparser)
+        subcommands = setup(parser)
 
         # parse the arguments + options
         opts, kwargs = parser.parse_known_args()
@@ -65,7 +75,8 @@ def run():
 
         # run the necessary subcommand
         if opts.cmd not in subcommands:
-            log.exception(RuntimeError("No such subcommand."), no_color=opts.no_color)
+            log.exception(
+                RuntimeError("No such subcommand."), no_color=opts.no_color)
 
         try:
             subcommands[opts.cmd](opts, log, **kwargs)

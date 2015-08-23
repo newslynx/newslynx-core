@@ -38,7 +38,7 @@ from newslynx.lib import url
 from newslynx.lib import text
 from newslynx.lib import html
 from newslynx.lib.serialize import obj_to_json
-from newslynx import settings
+from newslynx.core import settings
 from newslynx.constants import (
     METRIC_FACET_KEYS, EVENT_STATUSES,
     CONTENT_ITEM_TYPES)
@@ -641,6 +641,7 @@ def _prepare(obj, requires=[], recipe=None, type='event', org_id=None, extract=T
     # normalize the url
     if type == 'event':
         obj['url'] = _prepare_url(obj, 'url', expand=True, canonicalize=False)
+    
     elif type == 'content_item':
         obj['url'] = _prepare_url(obj, 'url', expand=True, canonicalize=True)
 

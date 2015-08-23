@@ -7,7 +7,7 @@ from sqlalchemy import func
 
 from newslynx.core import db
 from newslynx.tasks.compare_metric import ContentComparison
-from newslynx import settings
+from newslynx.core import settings
 from newslynx.models import (
     Org, Tag, Event, ContentItem)
 from newslynx.models.relations import (

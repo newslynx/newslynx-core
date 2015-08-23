@@ -4,10 +4,9 @@ Multi-Method Article Extraction
 
 import logging
 
-from readability.readability import Document
 from bs4 import BeautifulSoup
 
-from newslynx import settings
+from newslynx.core import settings
 from newslynx.lib import network
 from newslynx.lib import url
 from newslynx.lib import html
@@ -133,7 +132,8 @@ def body_via_readability(page_html, source_url):
     """
     Readbility is good at article + title.
     """
-
+    from readability.readability import Document
+    
     obj = Document(page_html)
     body = obj.summary()
     if not body:

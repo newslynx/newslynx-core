@@ -1,0 +1,11 @@
+language: python
+python:
+  - "2.7"
+# command to install dependencies
+install:
+    - "pip install ."
+
+script:
+    - mkdir ~/.newslynx/
+    - wget https://raw.githubusercontent.com/newslynx/newslynx-core/master/newslynx/dot_newslynx/config.yaml -O ~/.newslynx/config.yaml
+    - nosetests

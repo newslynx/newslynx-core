@@ -1,6 +1,8 @@
 """
 Objects that we need access to throughout the project.
 """
+from traceback import format_exc
+
 from sqlalchemy import func, cast
 from sqlalchemy_searchable import vectorizer
 from sqlalchemy.dialects.postgresql import ARRAY, JSON, TEXT, ENUM
@@ -72,7 +74,12 @@ try:
     db_session = gen_session()
     db_session.execute('SET TIMEZONE TO UTC')
 except Exception as e:
-    raise ConfigError(e.message)
+    if not settings.TESTING:
+        raise ConfigError(format_exc())
+    else:
+        db = None
+        db_session = None
+        pass
 
 
 # redis connection

@@ -2,9 +2,11 @@
 Report the version of newslynx.
 """
 
+
 def setup(parser):
-    api_parser = parser.add_parser("version", help="Report the version.")
+    parser.add_parser("version", help="Report the version.")
     return 'version', run
+
 
 def run(opts, log, **kwargs):
     """

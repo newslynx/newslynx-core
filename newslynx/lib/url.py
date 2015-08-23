@@ -19,7 +19,7 @@ from newslynx.lib import network
 from newslynx.lib import meta
 from newslynx.lib import html
 from newslynx.util import uniq
-from newslynx import settings
+from newslynx.core import settings
 
 # url chunks
 ALLOWED_TYPES = [
@@ -547,7 +547,7 @@ def from_string(string, **kw):
 
     # make sure short url regex doesn't create partial dupes.
     for u in short_urls:
-        if any([r.startswith(u) or u ==r for r in urls]):
+        if any([r.startswith(u) or u == r for r in urls]):
             short_urls.remove(u)
 
     # combine

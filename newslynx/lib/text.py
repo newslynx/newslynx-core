@@ -65,4 +65,4 @@ def slug(s, **kwargs):
     s = s.strip()
     if not isinstance(s, unicode):
         s = unicode(s, errors='ignore')
-    return _slugify(s)
+    return _slugify(s, **kwargs)

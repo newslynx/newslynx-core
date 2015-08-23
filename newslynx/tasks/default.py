@@ -4,56 +4,108 @@ Load defaults for an Organization from configurations.
 from newslynx import init
 from newslynx.lib.text import slug
 from newslynx.core import db
+from newslynx.logs import StdLog, ColorLog
 from newslynx.exc import RecipeSchemaError
 from newslynx.models import (
     Org, User, Tag, Report, SousChef,
     Metric, Recipe, Event,
     recipe_schema, sous_chef_schema
 )
-from newslynx import settings
+from newslynx.core import settings
 
 
 def org(
         name=settings.SUPER_USER_ORG,
-        timezone=settings.SUPER_USER_ORG_TIMEZONE):
+        timezone=settings.SUPER_USER_ORG_TIMEZONE,
+        email=settings.SUPER_USER_EMAIL,
+        log=ColorLog()):
 
     # create the org and super user
     org = Org.query.filter_by(name=name).first()
     if not org:
+        log.info('Creating super user org: "{}"'.format(name))
         org = Org(name=name, timezone=timezone)
     else:
+        log.warning('Updating super user org: "{}"'.format(name))
         org.timezone = timezone
         org.name = name
         org.slug = slug(unicode(name))
 
     # create the super user and add to the org.
-    u = User.query.filter_by(email=settings.SUPER_USER_EMAIL).first()
+    u = User.query.filter_by(email=email).first()
     if not u:
+        log.info('Creating super user: "{}"'.format(email))
         u = User(name=settings.SUPER_USER,
                  email=settings.SUPER_USER_EMAIL,
                  password=settings.SUPER_USER_PASSWORD,
                  admin=True,
                  super_user=True)
-    u.apikey = settings.SUPER_USER_APIKEY
+    else:
+        log.warning('Updating super user: "{}"'.format(email))
+        u.apikey = settings.SUPER_USER_APIKEY
+        u.email = settings.SUPER_USER_EMAIL
+        u.password = settings.SUPER_USER_PASSWORD
+        u.admin = True
+        u.super_user = True
     org.users.append(u)
     db.session.add(org)
     db.session.commit()
+    tags(org, log)
+    sous_chefs(org, log)
+    recipes(org, log)
+    db.session.remove()
+    return org
 
-    # load built-in sous-chefs
+
+def tags(org, log=ColorLog()):
+    """
+    (Re)load all default tags.
+    """
+    # add default tags
+    for tag in init.load_default_tags():
+        tag['org_id'] = org.id
+        t = Tag.query\
+            .filter_by(org_id=tag['org_id'], slug=tag['slug'], type=tag['type'])\
+            .first()
+        if not t:
+            log.info('Creating tag: "{slug}"'.format(**tag))
+            t = Tag(**tag)
+        else:
+            log.warning('Updating tag: "{slug}"'.format(**tag))
+            for k, v in tag.items():
+                setattr(t, k, v)
+        db.session.add(t)
+    db.session.commit()
+    return org
+
+
+def sous_chefs(org, log=ColorLog()):
+    """
+    (Re)load all sous chefs.
+    """
+    # load all sous-chefs
     for sc, fp in init.load_sous_chefs():
         sc = sous_chef_schema.validate(sc, fp)
         sc['org_id'] = org.id
         sc_obj = db.session.query(SousChef).filter_by(
             slug=sc['slug']).first()
         if not sc_obj:
+            log.info('Creating sous chef: "{slug}"'.format(**sc))
             sc_obj = SousChef(**sc)
         else:
+            log.warning('Updating sous chef: "{slug}"'.format(**sc))
             sc = sous_chef_schema.update(sc_obj.to_dict(), sc)
             for name, value in sc.items():
                 setattr(sc_obj, name, value)
         db.session.add(sc_obj)
     db.session.commit()
+    return org
 
+
+def recipes(org, log=ColorLog()):
+    """
+    (Re)load all default recipes.
+    """
     # add default recipes
     for recipe in init.load_default_recipes():
 
@@ -84,9 +136,11 @@ def org(
             .first()
 
         if not r:
+            log.info('Creating recipe: "{slug}"'.format(**recipe))
             # add to database here.
             r = Recipe(sc, **recipe)
         else:
+            log.warning('Updating recipe: "{slug}"'.format(**recipe))
             for name, value in recipe.items():
                 if name != 'options':
                     setattr(r, name, value)
@@ -104,6 +158,7 @@ def org(
                     .first()
                 # print "METRICS PARAMS", params
                 if not m:
+                    log.info('Creating metric: "{}"'.format(name))
                     m = Metric(
                         name=name,
                         recipe_id=r.id,
@@ -111,22 +166,11 @@ def org(
                         **params)
 
                 else:
+                    log.warning('Updating metric: "{}"'.format(name))
                     for k, v in params.items():
                         setattr(m, k, v)
 
                 db.session.add(m)
+        db.session.commit()
 
-    # add default tags
-    for tag in init.load_default_tags():
-        tag['org_id'] = org.id
-        t = Tag.query\
-            .filter_by(org_id=tag['org_id'], slug=tag['slug'], type=tag['type'])\
-            .first()
-        if not t:
-            t = Tag(**tag)
-        else:
-            for k, v in tag.items():
-                setattr(t, k, v)
-        db.session.add(t)
-    db.session.commit()
     return org

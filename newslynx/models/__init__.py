@@ -18,3 +18,5 @@ from .compare_cache import (
     ComparisonsCache, AllContentComparisonCache,
     SubjectTagsComparisonCache, ContentTypeComparisonCache,
     ImpactTagsComparisonCache)
+import sous_chef_schema 
+import recipe_schema

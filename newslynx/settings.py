@@ -15,12 +15,14 @@ If you prefer, you can also just import the CONFIG object:
     >>> 'merlynne@newslynx.org'
 
 """
+from traceback import format_exc
 import sys
 import os
 
 from newslynx.exc import ConfigError
 from newslynx.lib.serialize import yaml_stream_to_obj
 from newslynx import defaults
+
 
 def _load_config():
     """
@@ -42,7 +44,7 @@ def _load_config():
         raise ConfigError(
             "There was an error loading config '{}'.\n"
             "Here is the error message:\n{}."
-            .format(config_file, e.message))
+            .format(config_file, format_exc()))
 
     # update with environment variables
     for name, value in sorted(os.environ.items()):

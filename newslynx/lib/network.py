@@ -9,7 +9,7 @@ import time
 import requests
 from requests_toolbelt import SSLAdapter
 
-from newslynx import settings
+from newslynx.core import settings
 from newslynx.lib.serialize import json_to_obj
 
 

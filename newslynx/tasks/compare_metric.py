@@ -11,7 +11,7 @@ from collections import defaultdict
 from newslynx.util import gen_uuid
 from newslynx.core import db
 # from newslynx.models import Metric
-from newslynx import settings
+from newslynx.core import settings
 from .util import ResultIter
 
 
@@ -110,7 +110,7 @@ class Comparison(object):
 
     def _execute_one(self, query):
         """
-        Execute the chunked queries stream the results.
+        Execute the chunked queries and stream the results.
         """
         res = db.session.execute(query)
         if res:

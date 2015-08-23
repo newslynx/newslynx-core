@@ -7,7 +7,7 @@ from newslynx.lib import mail
 from newslynx.exc import (
     AuthError, RequestError, ForbiddenError)
 from newslynx.views.decorators import load_user
-from newslynx import settings
+from newslynx.core import settings
 from newslynx.views.util import (
     request_data, delete_response, arg_bool)
 

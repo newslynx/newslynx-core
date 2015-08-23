@@ -9,7 +9,7 @@ from flask import Response
 
 from newslynx.lib.pkg.pandoc import Document
 from newslynx.exc import RequestError
-from newslynx.settings import PANDOC_PATH
+from newslynx.core import settings
 
 _d = Document()
 FILE_FORMATS = ['pdf', 'odt']
@@ -58,7 +58,7 @@ def convert(contents, from_, to_):
     """
     Full interface to pandoc.
     """
-    if not os.path.exists(PANDOC_PATH):
+    if not os.path.exists(settings.PANDOC_PATH):
         raise RequestError(
             'Pandoc is not installed or `pandoc_path` is improperly configured.')
 

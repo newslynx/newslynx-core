@@ -7,7 +7,7 @@ def setup(parser):
     """
     Install this parser. Basic for now.
     """
-    from newslynx import settings
+    from newslynx.core import settings
 
     cron_parser = parser.add_parser(
         "cron", help="Spawns the dynamic scheduling daemon.")

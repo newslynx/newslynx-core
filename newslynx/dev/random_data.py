@@ -8,7 +8,7 @@ import copy
 
 from faker import Faker
 
-from newslynx import settings
+from newslynx.core import settings
 from newslynx.init import (
     load_default_recipes, load_default_tags,
     load_sous_chefs)

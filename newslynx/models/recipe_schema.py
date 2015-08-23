@@ -11,7 +11,7 @@ from newslynx.models import Recipe
 from newslynx.util import gen_short_uuid, update_nested_dict
 from newslynx.exc import (
     RecipeSchemaError, SearchStringError)
-from newslynx.models.sous_chef_schema import SOUS_CHEF_DEFAULT_OPTIONS
+from .sous_chef_schema import *
 from newslynx.constants import (
     TRUE_VALUES, FALSE_VALUES, NULL_VALUES,
     RECIPE_REMOVE_FIELDS, RECIPE_INTERNAL_FIELDS,
@@ -21,7 +21,6 @@ from newslynx.constants import (
 # order type checking from most to least
 # finnicky
 TYPE_SORT_ORDER = {
-    "json": 0,
     "email": 1,
     "url": 2,
     "crontab": 3,
@@ -31,7 +30,8 @@ TYPE_SORT_ORDER = {
     "numeric": 7,
     "boolean": 8,
     "nulltype": 9,
-    "string": 10
+    "json": 10,
+    "string": 11
 }
 
 

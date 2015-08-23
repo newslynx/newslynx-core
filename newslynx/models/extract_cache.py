@@ -1,4 +1,4 @@
-from newslynx import settings
+from newslynx.core import settings
 from newslynx.lib import url
 from newslynx.lib import article
 from newslynx.lib import image

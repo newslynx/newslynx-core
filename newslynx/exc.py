@@ -52,6 +52,34 @@ class SousChefInitError(Exception):
     status_code = 400
 
 
+class SousChefDocError(Exception):
+    """
+    An error that's thrown when generating Sous Chef documentation.
+    """
+    status_code = 400
+
+
+class SousChefExecError(Exception):
+    """
+    An error that's thrown when a SousChef is not properly executed.
+    """
+    status_code = 400
+
+
+class SousChefModuleInitError(Exception):
+    """
+    An error that's thrown when a SousChef module is not properly initialized.
+    """
+    status_code = 400
+
+
+class SousChefImportError(Exception):
+    """
+    An error that's thrown when a SousChef cannot be imported.
+    """
+    status_code = 400
+
+
 class MerlynneError(Exception):
     """
     An error that's thrown when a Merlynne is not properly initialized.

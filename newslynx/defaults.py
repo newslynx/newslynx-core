@@ -17,6 +17,7 @@ _CONFIG_REQUIRES = [
 ]
 _DEFAULT_DEFAULTS = here(__file__, "dot_newslynx/defaults/")
 
+TESTING = False
 CONFIG_FILE = os.getenv('NEWSLYNX_CONFIG_FILE',
                         os.path.expanduser('~/.newslynx/config.yaml'))
 
