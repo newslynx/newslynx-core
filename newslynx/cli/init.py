@@ -45,11 +45,11 @@ def run(opts, **kwargs):
         from newslynx.settings import CONFIG_FILE as config_file
         from newslynx.settings import DEFAULT_TAGS as tags_file
         from newslynx.settings import DEFAULT_RECIPES as recipes_file
-        from newslynx import settings
+        from newslynx.core import settings
 
         # app's sous_chefs
-        if hasattr(settings, 'SOUS_CHEFS') and len(settings.SOUS_CHEFS):
-            default_sous_chefs = settings.SOUS_CHEFS
+        if hasattr(settings, 'DEFAULT_SOUS_CHEFS') and len(settings.DEFAULT_SOUS_CHEFS):
+            default_sous_chefs = settings.DEFAULT_SOUS_CHEFS
         else:
             default_sous_chefs = yaml_stream_to_obj(open(_DEFAULT_CONFIG))\
                 .get('default_sous_chefs', [])
