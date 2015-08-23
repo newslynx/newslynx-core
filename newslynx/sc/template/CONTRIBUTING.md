@@ -18,7 +18,7 @@ propose changes to this document in a pull request.
 
 * When making a significant addition to `{{ slug }}`, make sure to prefix your branch name with `feature/` and increment the second number of the VERSION (IE: `0.2.1` => `0.3.0`).
 * When fixing a typo or a minor bug, make sure to prefix your branch name with `hotfix/` and increment the third number of the VERSION (IE: `0.2.1` => `0.2.2`)
-* When applicatble, add / modify existing tests in your pull request.
+* When applicable, add / modify existing tests in your pull request.
 
 ## Git Commit Messages
 
