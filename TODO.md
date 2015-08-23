@@ -5,4 +5,5 @@
 - [x] Usage example for Sous Chefs with `newslynx sc`
 - [x] Programmatic testing of sous chef configurations.
 - [x] Generate Sous Chef modules
+- [x] Travis + Doc builds
 - [ ] Make Sous Chef modules easily installable.
