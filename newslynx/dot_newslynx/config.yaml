@@ -2,7 +2,6 @@
 #  / \ / \ / \ / \ / \ / \ / \ / \
 # ( n | e | w | s | l | y | n | x )
 #  \_/ \_/ \_/ \_/ \_/ \_/ \_/ \_/
-
 #  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # Secret Stuff
@@ -17,9 +16,9 @@ super_user_org: 'admin'
 super_user_timezone: UTC
 
 # The Database URI (This is mandatory!)
-sqlalchemy_database_uri: postgres://localhost:5432/newslynx
+sqlalchemy_database_uri: 'postgres://localhost:5432/newslynx'
 
 # Filepaths to default recipes + tags to add for each
 # new organization.
-default_recipes: ~/.newslynx/defaults/recipes.yaml
-default_tags: ~/.newslynx/defaults/tags.yaml
+default_recipes: '~/.newslynx/defaults/recipes.yaml'
+default_tags: '~/.newslynx/defaults/tags.yaml'
