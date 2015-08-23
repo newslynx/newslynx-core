@@ -1,3 +1,5 @@
+import logging
+
 from flask import Blueprint
 
 from newslynx.core import db
@@ -15,6 +17,8 @@ from newslynx.views.util import (
 # bp
 bp = Blueprint('orgs', __name__)
 
+log = logging.getLogger(__name__)
+
 
 @bp.route('/api/v1/orgs', methods=['GET'])
 @load_user
@@ -27,6 +31,7 @@ def me_orgs(user):
 def org_create(user):
 
     req_data = request_data()
+    req_data = req_data['log'] = log
 
     if not user.super_user:
         raise ForbiddenError(
