@@ -31,7 +31,6 @@ def me_orgs(user):
 def org_create(user):
 
     req_data = request_data()
-    req_data = req_data['log'] = log
 
     if not user.super_user:
         raise ForbiddenError(
@@ -41,7 +40,7 @@ def org_create(user):
        or 'timezone' not in req_data:
         raise RequestError(
             "An Org requires a 'name' and 'timezone")
-    org = default.org(**req_data)
+    org = default.org(log=log, **req_data)
     db.session.commit()
     return jsonify(org)
 
