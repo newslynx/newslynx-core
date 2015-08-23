@@ -48,8 +48,11 @@ def run(opts, **kwargs):
         from newslynx import settings
 
         # app's sous_chefs
-        default_sous_chefs = yaml_stream_to_obj(open(_DEFAULT_CONFIG))\
-            .get('default_sous_chefs', [])
+        if hasattr(settings, 'SOUS_CHEFS') and len(settings.SOUS_CHEFS):
+            default_sous_chefs = settings.SOUS_CHEFS
+        else:
+            default_sous_chefs = yaml_stream_to_obj(open(_DEFAULT_CONFIG))\
+                .get('default_sous_chefs', [])
 
         try:
             log.info('(Re)Creating database "{}"'.format(
