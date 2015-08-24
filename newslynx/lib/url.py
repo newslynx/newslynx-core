@@ -167,7 +167,7 @@ def unshorten(orig_url, **kw):
     return u
 
 
-@network.retry(attempts=settings.BROWSER_MAX_RETRIES)
+@network.retry(attempts=settings.NETWORK_MAX_RETRIES)
 def shorten(url):
     """
     Shorten a url on bitly, return it's new short url

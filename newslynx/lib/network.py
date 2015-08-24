@@ -30,9 +30,9 @@ def retry(*dargs, **dkwargs):
        >>> None
     """
     # set defaults
-    attempts = dkwargs.get('attempts', settings.BROWSER_MAX_RETRIES)
-    wait = dkwargs.get('wait', settings.BROWSER_WAIT)
-    backoff = dkwargs.get('backoff', settings.BROWSER_BACKOFF)
+    attempts = dkwargs.get('attempts', settings.NETWORK_MAX_RETRIES)
+    wait = dkwargs.get('wait', settings.NETWORK_WAIT)
+    backoff = dkwargs.get('backoff', settings.NETWORK_BACKOFF)
     verbose = dkwargs.get('verbose', True)
     raise_uncaught_errors = dkwargs.get('raise_uncaught_errors', False)
     null_value = dkwargs.get('null_value', None)
@@ -104,8 +104,8 @@ def get_request_kwargs(timeout=None, useragent=None):
     are methods which need to be called every time we make a request
     """
     return {
-        'headers': {'User-Agent': useragent or settings.BROWSER_USER_AGENT},
-        'timeout': timeout or settings.BROWSER_TIMEOUT,
+        'headers': {'User-Agent': useragent or settings.NETWORK_USER_AGENT},
+        'timeout': timeout or settings.NETWORK_TIMEOUT,
         'allow_redirects': True,
         'verify': True
     }
@@ -120,7 +120,7 @@ def gen_session(**kw):
     return session
 
 
-@retry(attempts=settings.BROWSER_MAX_RETRIES)
+@retry(attempts=settings.NETWORK_MAX_RETRIES)
 def get(_u, **params):
     """Retrieves the html for either a url or a response object. All html
     extractions MUST come from this method due to some intricies in the
@@ -144,7 +144,7 @@ def get(_u, **params):
     return html
 
 
-@retry(attempts=settings.BROWSER_MAX_RETRIES)
+@retry(attempts=settings.NETWORK_MAX_RETRIES)
 def get_location(url):
     """
     most efficient method for unshortening a url.
@@ -156,7 +156,7 @@ def get_location(url):
     return url
 
 
-@retry(attempts=settings.BROWSER_MAX_RETRIES)
+@retry(attempts=settings.NETWORK_MAX_RETRIES)
 def get_json(_u, **params):
     """
     Fetches json from a url.
