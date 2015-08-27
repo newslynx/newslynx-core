@@ -19,7 +19,7 @@ For most applications, refer to our [installation guide](http://newslynx.readthe
 ```shell
 $ git clone https://github.com/newslynx/newslynx-core.git
 $ cd newslynx-core
-$ python setup.py install
+$ pip install .
 ```
 
 If you want to actively work on the codebase, install in `editable` mode:
