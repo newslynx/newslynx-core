@@ -14,6 +14,7 @@ app_install:
 	sleep 1 > /dev/null > /dev/null
 	-mkdir ~/.newslynx/sous-chefs > /dev/null
 	-mkdir ~/.newslynx/defaults > /dev/null
+	sleep 1 > /dev/null > /dev/null
 	sleep 1 > /dev/null
 	pip install . > /dev/null
 	newslynx init --empty
