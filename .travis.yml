@@ -14,6 +14,7 @@ services:
 
 before_script:
   - psql -c 'create database newslynx;' -U postgres
+  - apt-get install libxml2-dev libxml2-dev libxml2-dev libxslt1-dev libffi-dev postgresql-plpython python-pip python-dev python-setuptools pandoc
 
 script:
     - make app_install
