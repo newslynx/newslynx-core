@@ -20,8 +20,8 @@ fresh_env:
 app_install:
 
 	make  -s fresh_env 2> /dev/null
-	newslynx init --empty
-	make -s clean_sc > /dev/null
+	newslynx init --empty 2> /dev/null
+	make -s clean_sc 2> /dev/null
 	cat newslynx/app/sous-chefs.txt | xargs newslynx sc-install --dev
 	sleep 2 > /dev/null
 	newslynx init

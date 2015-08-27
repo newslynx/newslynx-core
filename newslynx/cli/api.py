@@ -6,6 +6,7 @@ import os
 import sys
 from inspect import isgenerator
 import logging
+from traceback import format_exc
 
 log = logging.getLogger(__name__)
 
