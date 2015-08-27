@@ -12,8 +12,6 @@ from newslynx.init import load_sql
 from newslynx.views import app
 from newslynx.core import db
 from newslynx.tasks import default
-from newslynx.sc import sc_module
-from newslynx.lib.serialize import yaml_stream_to_obj
 
 re_conf = '{}:[^\n]+'
 
@@ -36,23 +34,16 @@ def setup(parser):
 
 def run(opts, **kwargs):
     # create the database
-    if not opts.log_type == 'json':
+    if opts and not opts.log_type == 'json':
         print LOGO
     with app.app_context():
 
         # import defaults
-        from newslynx.defaults import _CONFIG_REQUIRES, _DEFAULT_DEFAULTS, _DEFAULT_CONFIG
+        from newslynx.defaults import _CONFIG_REQUIRES, _DEFAULT_DEFAULTS
         from newslynx.settings import CONFIG_FILE as config_file
         from newslynx.settings import DEFAULT_TAGS as tags_file
         from newslynx.settings import DEFAULT_RECIPES as recipes_file
         from newslynx.core import settings
-
-        # app's sous_chefs
-        if hasattr(settings, 'DEFAULT_SOUS_CHEFS') and len(settings.DEFAULT_SOUS_CHEFS):
-            default_sous_chefs = settings.DEFAULT_SOUS_CHEFS
-        else:
-            default_sous_chefs = yaml_stream_to_obj(open(_DEFAULT_CONFIG))\
-                .get('default_sous_chefs', [])
 
         try:
             log.info('(Re)Creating database "{}"'.format(
@@ -65,12 +56,10 @@ def run(opts, **kwargs):
             # load sql extensions + functions
             for sql in load_sql():
                 db.session.execute(sql)
-
             # install app defaults.
-            if not opts.bare:
-                log.info('(Re)Initializing App Defaults')
-                for sc_git in default_sous_chefs:
-                    sc_module.install(sc_git, update=True)
+            if (not opts or not opts.bare) and not kwargs.get('empty', False):
+                if not kwargs.get('empty', False):
+                    log.info('(Re)Initializing App Defaults')
                 modules = [
                     ('default_tags', tags_file),
                     ('default_recipes', recipes_file)
@@ -80,6 +69,7 @@ def run(opts, **kwargs):
                     m = os.path.expanduser(m)
                     parts = m.split('/')
                     default_dir = "/".join(parts[:-1])
+                    print "DEFAULT DIR", default_dir
                     path = parts[-1]
                     name = parts[-1].split('.')[0]
                     try:
@@ -101,21 +91,24 @@ def run(opts, **kwargs):
                         conf_str = cx.sub(newval, conf_str)
                     else:
                         conf_str += "\n" + newval
-
-                log.info(
-                    'Storing new configurations to: {}'.format(config_file))
+                if not kwargs.get('empty', False):
+                    log.info(
+                        'Storing new configurations to: {}'.format(config_file))
                 with open(config_file, 'wb') as f:
                     f.write(conf_str)
 
-            log.info(
-                '(Re)Initializing Super User Org {}'.format(settings.SUPER_USER_ORG))
-            default.org()
+            if not kwargs.get('empty', False):
+                log.info(
+                    '(Re)Initializing Super User Org {}'.format(settings.SUPER_USER_ORG))
+                default.org()
 
         except Exception as e:
             db.session.rollback()
             db.session.close()
             log.error(format_exc())
             sys.exit(1)
+
         else:
-            log.info('Success!')
-            log.info('You can now start the API by running: $ newslynx debug')
+            if not kwargs.get('empty', False):
+                log.info('Success!')
+                log.info('You can now start the API by running: $ newslynx debug')

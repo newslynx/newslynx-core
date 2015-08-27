@@ -122,8 +122,6 @@ def install(git_url, sous_chef_dir=settings.SOUS_CHEFS_DIR, **kw):
     Then install it via pip
     """
 
-    update = kw.pop('update', False)
-
     # ensure directory format
     sous_chef_dir = os.path.expanduser(sous_chef_dir)
     if not sous_chef_dir.endswith('/'):
@@ -145,15 +143,13 @@ def install(git_url, sous_chef_dir=settings.SOUS_CHEFS_DIR, **kw):
     repo_dir = "{}{}".format(sous_chef_dir, name)
 
     # pull existing module
+    exists = False
     if os.path.exists(repo_dir):
-        if not update:
-            log.warning(
-                'To update "{}", add the "update" flag and re-run'.format(name))
-        else:
-            repo = Repo(repo_dir)
-            log.warning('Pulling "{}"'.format(git_url))
-            o = repo.remotes.origin
-            o.pull()
+        exists = True
+        repo = Repo(repo_dir)
+        log.warning('Pulling latest version of "{}"'.format(git_url))
+        o = repo.remotes.origin
+        o.pull()
 
     # clone new module
     else:
@@ -164,10 +160,16 @@ def install(git_url, sous_chef_dir=settings.SOUS_CHEFS_DIR, **kw):
             raise SousChefInstallError(
                 'Could not clone {}: {}'.format(git_url, format_exc()))
 
-    log.info('Installing: {}'.format(name))
+    if exists:
+        log.warning('Reinstalling: {}'.format(name))
+    else:
+        log.info('Installing: {}'.format(name))
     sys_exit = pip.main(['install', '-e', repo_dir, '-q'])
     if sys_exit != 0:
         log.error('Could not install: {}'.format(name))
     else:
-        log.info('Successfully installed: {}'.format(name))
+        if exists:
+            log.warning('Successfully resintalled: {}'.format(name))
+        else:
+            log.info('Successfully installed: {}'.format(name))
     return True

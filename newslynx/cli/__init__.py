@@ -111,7 +111,6 @@ def run():
                           datefmt=defaults.LOG_DATE_FORMAT,
                           type=defaults.LOG_TYPE)
         print LOGO
-        log.error('No config file found.')
 
         # make .newslynx folder
         d = defaults.CONFIG_FILE.replace('config.yaml', '').strip()
@@ -127,10 +126,8 @@ def run():
                 f.write(open(defaults._DEFAULT_CONFIG).read())
 
         # give more info
-        log.info(
-            'Now, modify your configurations in {}.'.format(defaults.CONFIG_FILE))
-        log.info('Once you\'re done, you can run $ newslynx init')
-        sys.exit(1)
+        from newslynx.cli import init
+        init.run(opts, empty=True)
 
     except KeyboardInterrupt as e:
         log.warning('Interrupted by user.')

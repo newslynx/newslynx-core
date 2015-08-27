@@ -6,7 +6,7 @@ Default configurations that can be overriden by
 import os
 from newslynx.util import here
 
-_DEFAULT_CONFIG = here(__file__, "dot_newslynx/config.yaml")
+_DEFAULT_CONFIG = here(__file__, "app/config.yaml")
 _CONFIG_REQUIRES = [
     'super_user',
     'super_user_email',
@@ -15,7 +15,7 @@ _CONFIG_REQUIRES = [
     'sqlalchemy_database_uri',
     'secret_key'
 ]
-_DEFAULT_DEFAULTS = here(__file__, "dot_newslynx/defaults/")
+_DEFAULT_DEFAULTS = here(__file__, "app/defaults/")
 
 TESTING = False
 CONFIG_FILE = os.getenv('NEWSLYNX_CONFIG_FILE',
@@ -23,11 +23,9 @@ CONFIG_FILE = os.getenv('NEWSLYNX_CONFIG_FILE',
 
 DEFAULT_TAGS = os.path.expanduser('~/.newslynx/defaults/tags.yaml')
 DEFAULT_RECIPES = os.path.expanduser('~/.newslynx/defaults/recipes.yaml')
-DEFAULT_REPORTS = os.path.expanduser('~/.newslynx/defaults/recipes.yaml')
 
 # sous chefs
 SOUS_CHEFS_DIR = os.path.expanduser('~/.newslynx/sous-chefs/')
-DEFAULT_SOUS_CHEFS = []
 
 # app configurations #
 API_URL = "http://localhost:5000"

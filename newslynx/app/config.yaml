@@ -31,12 +31,3 @@ sous_chefs_dir: '~/.newslynx/sous-chefs/'
 default_recipes: '~/.newslynx/defaults/recipes.yaml'
 default_tags: '~/.newslynx/defaults/tags.yaml'
 
-# List of sous chefs to install on initialization.
-default_sous_chefs: 
-- 'https://github.com/newslynx/newslynx-sc-twitter.git'
-- 'https://github.com/newslynx/newslynx-sc-shares.git'
-- 'https://github.com/newslynx/newslynx-sc-rss.git'
-- 'https://github.com/newslynx/newslynx-sc-reddit.git'
-- 'https://github.com/newslynx/newslynx-sc-google-analytics.git'
-- 'https://github.com/newslynx/newslynx-sc-facebook.git'
-

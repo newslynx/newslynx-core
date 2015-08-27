@@ -14,22 +14,6 @@ NewsLynx Core was built to power [`newslynx-app`](http://github.com/newslynx/new
 
 For most applications, refer to our [installation guide](http://newslynx.readthedocs.org/en/latest/install.html). If you'd like to setup a development environment, following the instructions below for MacOS X.  If you'd like to spin up a Virtual Machine, check out our [automation guide](https://github.com/newslynx/automation).
 
-##### Install `newslynx`, prefrerably in a [virtual environment](http://docs.python-guide.org/en/latest/dev/virtualenvs/).
-
-```shell
-$ git clone https://github.com/newslynx/newslynx-core.git
-$ cd newslynx-core
-$ pip install .
-```
-
-If you want to actively work on the codebase, install in `editable` mode:
-
-```shell
-$ git clone https://github.com/newslynx/newslynx-core.git
-$ cd newslynx-core
-$ pip install --editable . 
-```
-
 ##### Install the dependencies:
 
 Install `redis`:
@@ -52,10 +36,6 @@ $ dropdb newslynx
 $ createdb newslynx
 ````
 
-##### Set your configurations
-
-Please refer to the [configuration docs](http://newslynx.readthedocs.org/en/latest/config.html)
-
 ##### Start the redis server
 
 Open another shell and run:
@@ -64,19 +44,36 @@ Open another shell and run:
 $ redis-server
 ```
 
-##### Initialize the database, super user, and install default sous chefs, tags, and recipes.
+##### Install `newslynx`, prefrerably in a [virtual environment](http://docs.python-guide.org/en/latest/dev/virtualenvs/).
+
+First clone this repository and move into it's root directory
+
+```shell
+$ git clone https://github.com/newslynx/newslynx-core.git
+$ cd newslynx-core
+```
+
+**OPTIONAL**
+Set your [configuration](http://newslynx.readthedocs.org/en/latest/config.html). If you don't do this, we will fallback on the [app's default configuration file](newslynx/app/config.yaml).
+
+
+###### Initialize the database, super user, and install default sous chefs, tags, and recipes.
 
 Run this command when working with `newslynx-app` 
 
-```
-$ newslynx init
+```shell
+$ git clone https://github.com/newslynx/newslynx-core.git
+$ cd newslynx-core
+$ make app_install
 ```
 
-##### Initialize a bare install.
-**[Expert mode]**  don't default install sous chefs, tags, or recipes.
+###### Initialize a bare install.
+**[Expert mode]**  don't install the app's default sous chefs, tags, or recipes.
 
 ```
-$ newslynx init --bare
+$ git clone https://github.com/newslynx/newslynx-core.git
+$ cd newslynx-core
+$ make bare_install 
 ```
 
 ##### Start the server

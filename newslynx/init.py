@@ -2,6 +2,7 @@
 Utilities for initializing NewsLynx
 """
 import os
+import logging
 
 from newslynx.lib.serialize import yaml_to_obj
 from newslynx.exc import ConfigError
@@ -9,6 +10,7 @@ from newslynx.core import settings
 from newslynx.models import sous_chef_schema
 from newslynx.util import recursive_listdir, here
 
+log = logging.getLogger(__name__)
 
 # directory of built-in sous chefs
 SOUS_CHEF_DIR = here(__file__, 'sc')
@@ -93,7 +95,7 @@ def load_sous_chefs(sous_chef_dir=None, incl_internal=True):
         yield sc, fp
 
     if not found:
-        raise ConfigError(
+        log.warning(
             "'{}' was explicitly declared as "
             "the sous_chef_dir but no sous chefs could "
             "not be found inside."
