@@ -3,8 +3,8 @@ python:
   - "2.7"
 # command to install dependencies
 install:
-    - "pip install ."
-    - "pip install -r test-requirements.txt"
+    - pip install -r requirements.txt
+    - pip install -r test-requirements.txt
 
 addons:
   postgresql: "9.3"
@@ -16,7 +16,4 @@ before_script:
   - psql -c 'create database newslynx;' -U postgres
 
 script:
-    - mkdir ~/.newslynx/
-    - wget https://raw.githubusercontent.com/newslynx/newslynx-core/master/newslynx/dot_newslynx/config.yaml -O ~/.newslynx/config.yaml
-    - "echo '\ntesting: true\n' >> ~/.newslynx/config.yaml"
-    # - nosetests
+    - make app_install
