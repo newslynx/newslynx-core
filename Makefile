@@ -18,7 +18,7 @@ app_install:
 	newslynx init --empty
 	-make clean_sc
 	sleep 2
-	cat newslynx/app/sc | xargs newslynx sc-install --dev
+	cat newslynx/app/sous-chefs | xargs newslynx sc-install --dev
 	newslynx init
 
 bare_install:
