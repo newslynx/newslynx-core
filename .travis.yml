@@ -1,10 +1,18 @@
+sudo: required
 language: python
 python:
   - "2.7"
 
+before_install:
+  - sudo apt-get -qq update
+  - sudo /etc/init.d/postgresql stop
+  - sudo apt-get install -y postgresql-9.3
+  - sudo apt-get install -y postgresql-contrib-9.3 postgresql-plpython-9.3
+  - psql -c 'create database newslynx;' -U postgres
+
 # command to install dependencies
 install:
-    - 
+    - make app_install
 
 sudo: yes
 
@@ -13,10 +21,3 @@ addons:
 
 services:
   - redis-server
-
-before_script:
-  - psql -c 'create database newslynx;' -U postgres
-  - sudo apt-get install -y libxml2-dev libxml2-dev libxml2-dev libxslt1-dev libffi-dev postgresql-plpython python-pip python-dev python-setuptools pandoc
-
-script:
-    - make app_install
