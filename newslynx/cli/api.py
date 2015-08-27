@@ -48,7 +48,7 @@ def setup(parser):
     return 'api', run
 
 
-def run(opts, log, **kwargs):
+def run(opts, **kwargs):
 
     from newslynx.lib import serialize
     from newslynx.cli.common import load_data
