@@ -87,10 +87,10 @@ def run(opts, **kwargs):
         if opts.method != 'ls':
             e = RuntimeError("Method '{}' does not exist for collection '{}'"
                              .format(opts.method, opts.collection))
-            log.exception(e, tb=False)
+            log.warning(e.message)
 
         else:
-            log.info("/{}\n".format(opts.collection), line=False, color='blue')
+            log.info("\n/{}\n".format(opts.collection), line=False, color='blue')
 
         # compute the tree here to save on processing time.
         options = [m.replace('_', '-') for m in dir(cobj) if _keep(m)]
@@ -98,7 +98,7 @@ def run(opts, **kwargs):
         # list of methods for this collection
         msg = "choose from the following methods:\n\t- {}"\
             .format("\n\t- ".join(options))
-        log.warning(msg, line=False)
+        log.warning(msg)
         sys.exit(1)
 
     # parse body file / json string.
@@ -111,11 +111,11 @@ def run(opts, **kwargs):
         res = mobj(**kwargs)
 
     except KeyboardInterrupt as e:
-        log.warning("\nInterrupted by user.\n", line=False)
+        log.warning("\nInterrupted by user. Exiting...\n")
         sys.exit(2)  # interrupt
 
     except Exception as e:
-        log.exception(e, tb=True)
+        log.error(format_exc())
         sys.exit(1)
 
     # stream output
