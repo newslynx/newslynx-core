@@ -14,13 +14,9 @@ NewsLynx Core was built to power [`newslynx-app`](http://github.com/newslynx/new
 
 For most applications, refer to our [installation guide](http://newslynx.readthedocs.org/en/latest/install.html). If you'd like to setup a development environment, following the instructions below for MacOS X.  If you'd like to spin up a Virtual Machine, check out our [automation guide](https://github.com/newslynx/automation).
 
-##### Install the dependencies:
+### Dependencies
 
-Install `redis`:
-
-```shell
-$ brew install redis
-```
+#### Postgres
 
 **NOTE** We recommend using [Postgres APP](http://postgresapp.com/). However, if you prefer the `brew` distribution, make sure to install it with plpythonu.
 
@@ -36,15 +32,23 @@ $ dropdb newslynx
 $ createdb newslynx
 ````
 
-##### Start the redis server
+#### Redis
 
-Open another shell and run:
+Install `redis`:
+
+```shell
+$ brew install redis
+```
+
+Open another tab in your shell and run:
 
 ```
 $ redis-server
 ```
 
-##### Install `newslynx`, prefrerably in a [virtual environment](http://docs.python-guide.org/en/latest/dev/virtualenvs/).
+### Installation / Initialization 
+
+**NOTE** we recommend that you install `newslynx` in a [virtual environment](http://docs.python-guide.org/en/latest/dev/virtualenvs/).
 
 First clone this repository and move into it's root directory
 
@@ -57,7 +61,7 @@ $ cd newslynx-core
 Set your [configuration](http://newslynx.readthedocs.org/en/latest/config.html). If you don't do this, we will fallback on the [app's default configuration file](newslynx/app/config.yaml).
 
 
-###### Initialize the database, super user, and install default sous chefs, tags, and recipes.
+#### Initialize the database, super user, and install default sous chefs, tags, and recipes.
 
 Run this command when working with `newslynx-app` 
 
@@ -67,7 +71,7 @@ $ cd newslynx-core
 $ make app_install
 ```
 
-###### Initialize a bare install.
+#### Initialize a bare install.
 **[Expert mode]**  don't install the app's default sous chefs, tags, or recipes.
 
 ```
@@ -76,25 +80,25 @@ $ cd newslynx-core
 $ make bare_install 
 ```
 
-##### Start the server
+#### Start the server
 
 - In debug mode: `newslynx debug`
 - Debug mode with errors: `newslynx debug --raise-errors`
 - Production `gunicorn` server: `bin/run`
 
-##### Start the task workers
+#### Start the task workers
 
 ```
 $ bin/start_workers
 ```
 
-##### Stop the task workers
+#### Stop the task workers
 
 ```
 $ bin/stop_workers
 ```
 
-##### Start the cron daemon
+#### Start the cron daemon
 ```
 $ newslynx cron
 ```
