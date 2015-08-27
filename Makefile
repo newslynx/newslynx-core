@@ -8,17 +8,18 @@ clean_sc:
 
 app_install:
 
-	-make clean
+	-make clean > /dev/null
 	-pip uninstall --yes newslynx 
-	-mkdir ~/.newslynx
-	sleep 1
-	-mkdir ~/.newslynx/sous-chefs
-	sleep 1
-	pip install .
+	-mkdir ~/.newslynx > /dev/null
+	sleep 1 > /dev/null > /dev/null
+	-mkdir ~/.newslynx/sous-chefs > /dev/null
+	-mkdir ~/.newslynx/defaults > /dev/null
+	sleep 1 > /dev/null
+	pip install . > /dev/null
 	newslynx init --empty
-	-make clean_sc
-	sleep 2
-	cat newslynx/app/sous-chefs | xargs newslynx sc-install --dev
+	-make clean_sc > /dev/null
+	sleep 2 > /dev/null
+	cat newslynx/app/sous-chefs.txt | xargs newslynx sc-install --dev
 	newslynx init
 
 bare_install:
