@@ -300,7 +300,7 @@ class RecipeScheduler:
             if 'reset' in str(id):
                 continue
 
-            # if this recipe is not already running, run it.
+            # if this recipe is not already running, run it. ee
             if id not in self.greenlets:
                 reset = self.running['{}:reset'.format(id)]
                 self.greenlets[id] = \

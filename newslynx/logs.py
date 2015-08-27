@@ -5,6 +5,7 @@ import logging
 
 from colorlog import ColoredFormatter
 
+
 from newslynx.lib.serialize import obj_to_json
 
 # a lookup of levelname => object
@@ -33,9 +34,11 @@ LOGGERS = {
 
 
 class JSONLogger(logging.Formatter):
+
     """
     Log messages as JSON.
     """
+
     def format(self, record):
         """
         Return logging information as JSON.
@@ -118,3 +121,9 @@ def _suppress():
 
     googleapiclient = logging.getLogger('googleapiclient')
     googleapiclient.setLevel(logging.ERROR)
+
+    import requests
+    from requests.packages.urllib3.exceptions import (
+        InsecureRequestWarning, InsecurePlatformWarning)
+    requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
+    requests.packages.urllib3.disable_warnings(InsecurePlatformWarning)
