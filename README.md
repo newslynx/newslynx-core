@@ -69,7 +69,7 @@ $ redis-server
 Run this command when working with `newslynx-app` 
 
 ```
-$ newslynx init --app-defaults
+$ newslynx init
 ```
 
 ##### Initialize a bare install.
