@@ -84,13 +84,13 @@ def setup_logger(**kw):
         # create a default formatter
         formatter = logging.Formatter(LOGGERS['STD'], datefmt=datefmt)
 
+    # suppress various loggers
+    _suppress()
+
     # install the formatter and add the handler to the root logger
     ch.setFormatter(formatter)
     logging.root.addHandler(ch)
     logging.root.setLevel(LOG_LEVELS[level.upper()])
-
-    # suppress various loggers
-    _suppress()
 
 
 def _suppress():
