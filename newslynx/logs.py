@@ -87,8 +87,7 @@ def setup_logger(**kw):
 
     # install the formatter and add the handler to the root logger
     ch.setFormatter(formatter)
-    if add_handler:
-        logging.root.addHandler(ch)
+    logging.root.addHandler(ch)
     logging.root.setLevel(LOG_LEVELS[level.upper()])
 
     # suppress various loggers
