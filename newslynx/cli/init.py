@@ -25,16 +25,19 @@ def setup(parser):
     init_parser = parser.add_parser(
         "init",
         help="Initializes the database, super user, and core sous chefs.")
-    init_parser = init_parser.add_argument(
+    init_parser.add_argument(
         '--bare', dest='bare',
         action='store_true', default=False,
         help='Dont include the defaults for newslynx-app')
+    init_parser.add_argument('--dev', dest="dev",
+                             action="store_true",
+                             help='An argument for the project\'s Makefile.')
     return 'init', run
 
 
 def run(opts, **kwargs):
     # create the database
-    if opts and not opts.log_type == 'json':
+    if opts and not opts.log_type == 'json' and not opts.dev:
         print LOGO
     with app.app_context():
 
@@ -69,7 +72,7 @@ def run(opts, **kwargs):
                     m = os.path.expanduser(m)
                     parts = m.split('/')
                     default_dir = "/".join(parts[:-1])
-                    print "DEFAULT DIR", default_dir
+
                     path = parts[-1]
                     name = parts[-1].split('.')[0]
                     try:
@@ -111,4 +114,5 @@ def run(opts, **kwargs):
         else:
             if not kwargs.get('empty', False):
                 log.info('Success!')
-                log.info('You can now start the API by running: $ newslynx debug')
+                log.info(
+                    'You can now start the API by running: $ newslynx debug')
