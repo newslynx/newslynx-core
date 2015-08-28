@@ -90,8 +90,8 @@ def events(data, **kw):
     8. Upsert all associations. Ignore events without ids because of step above.
     """
     print "DATA", data
-    
-    # parse kwargs.
+
+    # parse kwargs.s
     org_id = kw.get('org_id')
     recipe_id = kw.get('recipe_id', -9999)
     org_domains = kw.get('org_domains', [])

@@ -54,6 +54,7 @@ def setup_logger(**kw):
     """
     Setup root logger.
     """
+    add_handler = kw.get('add_handler', False)
     try:
         from newslynx.core import settings
         level = kw.pop('level', settings.LOG_LEVEL)
@@ -86,7 +87,8 @@ def setup_logger(**kw):
 
     # install the formatter and add the handler to the root logger
     ch.setFormatter(formatter)
-    logging.root.addHandler(ch)
+    if add_handler:
+        logging.root.addHandler(ch)
     logging.root.setLevel(LOG_LEVELS[level.upper()])
 
     # suppress various loggers
