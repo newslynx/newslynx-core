@@ -126,4 +126,5 @@ def run(opts, **kwargs):
     # stream
     else:
         sys.stdout.write(serialize.obj_to_json(res))
+        sys.stdout.write("\n")
     sys.exit(0)
