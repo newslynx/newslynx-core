@@ -4,9 +4,10 @@ All things related to html parsing.
 
 from HTMLParser import HTMLParser
 from urlparse import urljoin
+import lxml
+import lxml.html
 
-from bs4 import BeautifulSoup
-
+from newslynx.lib.common import make_soup
 from newslynx.lib import text
 
 
@@ -37,7 +38,6 @@ def is_html(htmlstring):
     """
     Detect whether a string is html or not.
     """
-    import lxml
 
     if not htmlstring:
         return False
@@ -65,7 +65,7 @@ def make_abs(htmlstring, source_url):
     """
     Make "src" and "href" attributes absolute.
     """
-    soup = BeautifulSoup(htmlstring)
+    soup = make_soup(htmlstring)
 
     # links
     for a in soup.find_all('a'):

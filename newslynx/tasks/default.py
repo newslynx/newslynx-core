@@ -43,6 +43,8 @@ def org(
                  password=settings.SUPER_USER_PASSWORD,
                  admin=True,
                  super_user=True)
+        u.apikey = settings.SUPER_USER_APIKEY
+
     else:
         log.warning('Updating super user: "{}"'.format(email))
         u.apikey = settings.SUPER_USER_APIKEY

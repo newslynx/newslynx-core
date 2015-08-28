@@ -1,12 +1,15 @@
 """
 Interface for sous chefs.
 """
-import logging 
+import logging
 import types
 from traceback import format_exc
 from collections import defaultdict
+import copy
 
 from newslynx.client import API
+from newslynx.core import settings
+from newslynx import logs
 from newslynx.exc import (
     SousChefInitError, SousChefExecError)
 
@@ -25,14 +28,14 @@ class SousChef(object):
         # parse required kwargs
         self.org = kw.pop('org')
         self.apikey = kw.pop('apikey')
-        self.recipe = kw.pop('recipe', {})
-        self.config = kw.pop('config', {})
-        if not self.org or not self.recipe or not self.apikey or not self.config:
+        self.recipe = kw.pop('recipe', {'id': None})
+        self.config = copy.copy(settings.CONFIG)
+        if not self.org or not self.recipe or not self.apikey:
             raise SousChefInitError(
                 'A SousChef requires a "org", "recipe", and "apikey" to run.')
 
         self.passthrough = kw.pop('passthrough', False)
-        self.log = logging.getLogger(self.__class__.__name__)
+        self.log = logging.getLogger(self.recipe.get('sous_chef', self.__class__.__name__))
 
         # api connection
         self.api = API(apikey=self.apikey, org=self.org['id'])

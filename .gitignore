@@ -1,10 +1,10 @@
 build/
 dist/
 docs/_build/
-examples/wisconsin-watch/
+wisconsin-watch/
 *.egg-info/
 *.DS_Store
 *.pyc
 *.log
 *.rdb
-
+wisconsin-watch/

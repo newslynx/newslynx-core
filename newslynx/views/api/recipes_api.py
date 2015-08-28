@@ -2,7 +2,7 @@ from collections import defaultdict, Counter
 from inspect import isgenerator
 import copy
 
-from sqlalchemy import or_
+from sqlalchemy import or_, text
 from flask import Blueprint, Response, stream_with_context, request
 
 from newslynx.core import db
@@ -30,6 +30,7 @@ bp = Blueprint('recipes', __name__)
 def list_recipes(user, org):
 
     # optionally filter by type/level/category
+    slug_regex = arg_str('slug_regex', default=None)
     include_statuses, exclude_statuses = \
         arg_list('status', default=[], typ=str, exclusions=True)
     include_creates, exclude_creates = \
@@ -48,6 +49,10 @@ def list_recipes(user, org):
     # base query
     recipe_query = db.session.query(Recipe)\
         .filter_by(org_id=org.id)
+
+    if slug_regex:
+        recipe_query = recipe_query.filter(text('recipes.slug ~ :regex')).params(
+            regex=slug_regex)
 
     # include statuses
     if len(include_statuses):

@@ -1,5 +1,6 @@
 from time import time
 import logging
+from traceback import format_exc 
 
 from flask import request
 from werkzeug.exceptions import HTTPException
@@ -44,7 +45,7 @@ def handle_exceptions(exc):
         body = {
             'status_code': 500,
             'error': exc.__class__.__name__,
-            'message': unicode(exc)
+            'message': format_exc()
         }
         headers = {}
 

@@ -84,13 +84,13 @@ def setup_logger(**kw):
         # create a default formatter
         formatter = logging.Formatter(LOGGERS['STD'], datefmt=datefmt)
 
-    # suppress various loggers
-    _suppress()
-
     # install the formatter and add the handler to the root logger
     ch.setFormatter(formatter)
     logging.root.addHandler(ch)
     logging.root.setLevel(LOG_LEVELS[level.upper()])
+
+    # suppress various loggers
+    _suppress()
 
 
 def _suppress():
@@ -105,6 +105,7 @@ def _suppress():
     warnings.filterwarnings('ignore',
                             'Unicode type received non-unicode bind param value.')
     from sqlalchemy.exc import SAWarning
+    warnings.filterwarnings('ignore', category=SAWarning)
     warnings.filterwarnings('ignore', category=SAWarning)
 
     # specific loggers
@@ -127,3 +128,6 @@ def _suppress():
         InsecureRequestWarning, InsecurePlatformWarning)
     requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
     requests.packages.urllib3.disable_warnings(InsecurePlatformWarning)
+    warnings.filterwarnings('ignore', category=InsecureRequestWarning)
+    warnings.filterwarnings('ignore', category=InsecurePlatformWarning)
+

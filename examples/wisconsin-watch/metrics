@@ -1,4 +1,0 @@
-#!/bin/sh 
-
-nlynx api recipes update id=9
-nlynx api recipes cook id=9

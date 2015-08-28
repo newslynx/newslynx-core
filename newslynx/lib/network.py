@@ -5,9 +5,16 @@ All things related to network requests
 from functools import wraps
 import logging
 import time
+import warnings
 
 import requests
 from requests_toolbelt import SSLAdapter
+from requests.packages.urllib3.exceptions import (
+    InsecureRequestWarning, InsecurePlatformWarning)
+requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
+requests.packages.urllib3.disable_warnings(InsecurePlatformWarning)
+warnings.filterwarnings('ignore', category=InsecureRequestWarning)
+warnings.filterwarnings('ignore', category=InsecurePlatformWarning)
 
 from newslynx.core import settings
 from newslynx.lib.serialize import json_to_obj
@@ -103,9 +110,10 @@ def get_request_kwargs(timeout=None, useragent=None):
     """This Wrapper method exists b/c some values in req_kwargs dict
     are methods which need to be called every time we make a request
     """
+    def_timeout = (settings.NETWORK_TIMEOUT[0], settings.NETWORK_TIMEOUT[1])
     return {
         'headers': {'User-Agent': useragent or settings.NETWORK_USER_AGENT},
-        'timeout': timeout or settings.NETWORK_TIMEOUT,
+        'timeout': timeout or def_timeout,
         'allow_redirects': True,
         'verify': True
     }

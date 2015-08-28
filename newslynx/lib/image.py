@@ -9,9 +9,7 @@ import base64
 import mimetypes
 from urlparse import urljoin
 
-import requests
-from bs4 import BeautifulSoup
-
+from newslynx.lib.common import make_soup
 from newslynx.lib import network
 from newslynx.lib import url
 from newslynx.core import settings
@@ -107,7 +105,7 @@ def from_html(htmlstring, source=None):
     """
     if not htmlstring:
         return []
-    soup = BeautifulSoup(htmlstring)
+    soup = make_soup(htmlstring)
     out_imgs = []
 
     for tag, attr in IMG_TAGS:

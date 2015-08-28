@@ -2,9 +2,9 @@
 Parsing Authors from html meta-tags and strings
 This module was adapted from newspaper: http://github.com/codelucas/newspaper
 """
-
 from bs4 import BeautifulSoup
 
+from newslynx.lib.common import make_soup
 from newslynx.lib import html
 from newslynx.lib.regex import (
     re_by, re_name_token, re_digits,
@@ -45,7 +45,7 @@ def extract(
 
     # soupify
     if not isinstance(soup, BeautifulSoup):
-        soup = BeautifulSoup(soup)
+        soup = make_soup(soup)
 
     # Search popular author tags for authors
 

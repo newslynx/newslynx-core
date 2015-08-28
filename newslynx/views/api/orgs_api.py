@@ -40,7 +40,7 @@ def org_create(user):
        or 'timezone' not in req_data:
         raise RequestError(
             "An Org requires a 'name' and 'timezone")
-    org = default.org(log=log, **req_data)
+    org = default.org(**req_data)
     db.session.commit()
     return jsonify(org)
 

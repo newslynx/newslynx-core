@@ -26,7 +26,7 @@ from newslynx.exc import ConfigError
 from newslynx import logs
 
 # setup logs
-# logs.setup_logger()
+# logs.setup_logger(add_handler=True)
 
 # Flask Application
 app = Flask(__name__)

@@ -50,6 +50,7 @@
 
 - sous_chef: twitter-search-content-item-links-to-event
   name: Search for tweets that link to content items and create events.
+  slug: default-twitter-search-content-item-links-to-event
   status: stable
   options:
     must_link: true
@@ -77,11 +78,6 @@
     schedule_by: minutes
     minutes: 15
 
-- sous_chef: google-alert-to-event
-  status: uninitialized
-  options:
-    schedule_by: minutes
-    minutes: 30
 
 ## CONTENT METRICS
 
@@ -89,6 +85,7 @@
   slug: default-google-analytics-to-content-timeseries
   status: uninitialized
   options:
+    days: 60
     schedule_by: time_of_day
     time_of_day: "12:30 AM"
 
@@ -110,24 +107,25 @@
   slug: default-share-counts-to-content-timeseries
   status: uninitialized
   options:
+    days: 60
     schedule_by: minutes
     minutes: 50
 
 ## ORG METRICS
 
-- sous_chef: facebook-page-to-org-timeseries
-  slug: default-facebook-page-to-org-timeseries
-  status: uninitialized
-  options:
-    schedule_by: minutes
-    minutes: 50
+# - sous_chef: facebook-page-to-org-timeseries
+#   slug: default-facebook-page-to-org-timeseries
+#   status: uninitialized
+#   options:
+#     schedule_by: minutes
+#     minutes: 50
 
-- sous_chef: twitter-user-to-org-timeseries
-  slug: default-twitter-user-to-org-timeseries
-  status: uninitialized
-  options:
-    schedule_by: minutes
-    minutes: 50
+# - sous_chef: twitter-user-to-org-timeseries
+#   slug: default-twitter-user-to-org-timeseries
+#   status: uninitialized
+#   options:
+#     schedule_by: minutes
+#     minutes: 50
 
 ## Internal
 

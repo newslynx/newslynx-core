@@ -7,14 +7,14 @@ import logging
 import copy
 
 from newslynx.core import db, rds, queues
-from newslynx.models import Recipe
+from newslynx.models import Recipe, Org
 from newslynx.lib import dates
 from newslynx.util import gen_uuid
 from newslynx.core import settings
 from newslynx.exc import InternalServerError, MerlynneError
 from newslynx.lib.serialize import (
     obj_to_pickle, pickle_to_obj)
-from newslynx import sc
+from newslynx.sc import sc_exec
 
 
 log = logging.getLogger(__name__)
@@ -56,7 +56,7 @@ class Merlynne(object):
         # import the sous chef here to get the timeout
         # and raise import errors before it attempts to run
         # in the queue
-        _sc = sc.import_sous_chef(self.sous_chef_path)
+        _sc = sc_exec.import_sous_chef(self.sous_chef_path)
 
         # send it to the queue
         if not self.passthrough:
@@ -103,9 +103,11 @@ def run(sous_chef_path, recipe_id, kw_key, **kw):
             rds.delete(kw_key)
 
         # import sous chef
-        SousChef = sc.import_sous_chef(sous_chef_path)
+        SousChef = sc_exec.import_sous_chef(sous_chef_path)
 
         # initialize it with kwargs
+        kw['org'] = db.session.query(Org).get(recipe.org.id).to_dict()
+        kw['recipe'] = recipe.to_dict()
         sous_chef = SousChef(**kw)
 
         # indicate that the job is running
@@ -132,8 +134,8 @@ def run(sous_chef_path, recipe_id, kw_key, **kw):
         recipe.status = "stable"
         recipe.traceback = None
         recipe.last_run = dates.now()
-        if len(sc.next_job.keys()):
-            recipe.last_job = sc.next_job
+        if len(sous_chef.next_job.keys()):
+            recipe.last_job = sous_chef.next_job
         db.session.add(recipe)
         db.session.commit()
         return True

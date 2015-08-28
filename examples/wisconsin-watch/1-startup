@@ -1,4 +1,0 @@
-#!/bin/sh 
-
-nlynx api orgs create name='Wisconsin Watch' timezone='US/Central' | jq .
-nlynx api auths grant service=twitter

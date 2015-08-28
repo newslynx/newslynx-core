@@ -106,7 +106,7 @@ class BaseClient(object):
                 yield {'status_code': 500, "error": e, "message": err_msg}
 
             # catch errors
-            if d.get('error'):
+            elif d.get('error'):
                 if self._raise_errors:
                     err = ERRORS.get(d['error'])
                     if not err:

@@ -15,7 +15,7 @@ install:
 	-@(mkdir ~/.newslynx/sous-chefs > /dev/null)
 	-@(mkdir ~/.newslynx/defaults > /dev/null)
 	@(sleep 1 > /dev/null)
-	@(pip install -q . 2> /dev/null)
+	@(pip install . -q 2> /dev/null)
 
 app_install:
 
@@ -30,7 +30,7 @@ bare_install:
 	@(make  -s install 2> /dev/null)
 	@(newslynx init --bare)
 
-local_tests:
+test_install:
 
 	-@(rm -rf ~/.newslynx)
 	-@(dropdb newslynx) 
@@ -38,7 +38,7 @@ local_tests:
 	-@(createdb newslynx)
 	@(sleep 2)
 	@(make app_install)
-	@(newslynx dev gen-random-data)
+	@(pip install -r test-requirements.txt -q 2> /dev/null)
 
 register:
 

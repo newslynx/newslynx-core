@@ -6,6 +6,7 @@ import logging
 
 from bs4 import BeautifulSoup
 
+from newslynx.lib.common import make_soup
 from newslynx.core import settings
 from newslynx.lib import network
 from newslynx.lib import url
@@ -44,7 +45,7 @@ def extract(source_url, **kw):
         log.warning("Failed to extract html from {}".format(source_url))
         return None
 
-    soup = BeautifulSoup(page_html)
+    soup = make_soup(page_html)
 
     # get canonical url
     canonical_url = meta.canonical_url(soup)
@@ -146,7 +147,7 @@ def body_via_article_tag(soup, source_url):
     Extract content from an "article" tag.
     """
     if not isinstance(soup, BeautifulSoup):
-        soup = BeautifulSoup(soup)
+        soup = make_soup(soup)
     articles = soup.find_all('article')
     if len(articles):
         raw_html = html.get_inner(articles[0])

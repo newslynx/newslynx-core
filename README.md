@@ -129,11 +129,10 @@ This repository contains a `Makefile` which provides access to the following com
 * `make bare_install`
 	- Installs `newslynx` and initializes the Super User
 
-* `make local_tests`
+* `make test_install`
 	- removes all files under `~/.newslynx`
 	- runs `make app_install`
-	- runs `newslynx dev gen-random-data`
-	- executes all [tests](#testing)
+	- runs `pip install -r test-requirements.txt`
 
 * `distribute`
 	- creates a new version of `newslynx` on PyPI

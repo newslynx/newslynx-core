@@ -3,6 +3,7 @@ import importlib
 import math
 from urlparse import urljoin
 import re
+from traceback import format_exc
 
 from flask import request, Response, url_for
 from flask import Blueprint
@@ -636,7 +637,7 @@ def error_response(name, err):
     """
     resp = {
         "error": name,
-        "message": err.message,
+        "message": format_exc(),
         "status_code": err.status_code
     }
     response = jsonify(resp)

@@ -12,14 +12,14 @@ from urlparse import (
 )
 
 import tldextract
-from bs4 import BeautifulSoup
 
-from newslynx.lib.regex import *
+from newslynx.lib.common import make_soup
 from newslynx.lib import network
 from newslynx.lib import meta
 from newslynx.lib import html
 from newslynx.util import uniq
 from newslynx.core import settings
+from newslynx.lib.regex import *
 
 # url chunks
 ALLOWED_TYPES = [
@@ -112,7 +112,7 @@ def prepare(url, source=None, canonicalize=True, expand=True, keep_params=KEEP_P
     if canonicalize:
         page_html = network.get(url)
         if page_html:
-            soup = BeautifulSoup(page_html)
+            soup = make_soup(page_html)
             canonical = meta.canonical_url(soup)
             if canonical:
                 return canonical
@@ -576,7 +576,7 @@ def from_html(htmlstring, **kw):
     final_urls = []
     if source:
         source_domain = get_domain(source)
-    soup = BeautifulSoup(htmlstring)
+    soup = make_soup(htmlstring)
     for tag in URL_TAGS:
 
         for el in soup.find_all(tag):
@@ -789,7 +789,7 @@ def _bypass_bitly_warning(url):
     Sometime bitly blocks unshorten attempts, this bypasses that.
     """
     html_string = network.get(url)
-    soup = BeautifulSoup(html_string)
+    soup = make_soup(html_string)
     a = soup.find('a', {'id': 'clickthrough'})
     if a:
         return a.attrs.get('href')
