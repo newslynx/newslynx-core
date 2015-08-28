@@ -33,7 +33,7 @@ def orgs():
         u.admin = True
         u.super_user = True
 
+    sc_module.update_all()
     for org in u.orgs:
         log.info('Syncing sous chefs for organization: {}'.format(org.name))
-        sc_module.update_all()
         default.sous_chefs(org)
