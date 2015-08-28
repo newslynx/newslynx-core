@@ -106,7 +106,9 @@ def run(sous_chef_path, recipe_id, kw_key, **kw):
         SousChef = sc_exec.import_sous_chef(sous_chef_path)
 
         # initialize it with kwargs
-        kw['org'] = db.session.query(Org).get(recipe.org.id).to_dict()
+        kw['org'] = db.session\
+            .query(Org).get(recipe.org.id)\
+            .to_dict(incl_domains=True)
         kw['recipe'] = recipe.to_dict()
         sous_chef = SousChef(**kw)
 

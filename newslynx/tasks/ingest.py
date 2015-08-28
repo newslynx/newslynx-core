@@ -19,6 +19,7 @@ import gevent
 import gevent.monkey
 gevent.monkey.patch_all()
 from gevent.pool import Pool
+import logging 
 
 from functools import partial
 from collections import defaultdict
@@ -42,6 +43,8 @@ from newslynx.core import settings
 from newslynx.constants import (
     METRIC_FACET_KEYS, EVENT_STATUSES,
     CONTENT_ITEM_TYPES)
+
+log = logging.getLogger(__name__)
 
 
 # the url cache object
@@ -86,7 +89,8 @@ def events(data, **kw):
     7. Upsert all events. Ignore events without links when the must_link flag is added.
     8. Upsert all associations. Ignore events without ids because of step above.
     """
-
+    print "DATA", data
+    
     # parse kwargs.
     org_id = kw.get('org_id')
     recipe_id = kw.get('recipe_id', -9999)
@@ -615,6 +619,7 @@ def _prepare(obj, requires=[], recipe=None, type='event', org_id=None, extract=T
     """
     Prepare a content item or an event.
     """
+    log.info('Got {}: {}'.format(type, obj))
     # check required fields
     _check_requires(obj, requires, type=type)
 

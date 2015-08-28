@@ -81,7 +81,7 @@ def retry(*dargs, **dkwargs):
 
                 except Exception as e:
                     if verbose:
-                        log.warning('Exception - {} on try {} for {}'.format(e, tries, args))
+                        logging.warning('Exception - {} on try {} for {}'.format(e, tries, args))
                     if raise_uncaught_errors:
                         raise e
                     else:
@@ -93,7 +93,7 @@ def retry(*dargs, **dkwargs):
                         r.raise_for_status()
                     except requests.exceptions.HTTPError as e:
                         if verbose:
-                            log.warning('Bad Status Code - {} for {}'.format(r.status_code, args))
+                            logging.warning('Bad Status Code - {} for {}'.format(r.status_code, args))
                         time.sleep(wait_time)
 
                 elif not err:

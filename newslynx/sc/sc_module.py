@@ -173,3 +173,33 @@ def install(git_url, sous_chef_dir=settings.SOUS_CHEFS_DIR, **kw):
         else:
             log.info('Successfully installed: {}'.format(name))
     return True
+
+
+def update(local_path, sous_chef_dir=settings.SOUS_CHEFS_DIR):
+    """
+    Update a sous chef module given it's local path.
+    """
+    # ensure directory format
+    sous_chef_dir = os.path.expanduser(sous_chef_dir)
+    if not sous_chef_dir.endswith('/'):
+        sous_chef_dir += "/"
+
+    repo_dir = "{}{}".format(sous_chef_dir, local_path)
+    log.warning('Pulling latest version of "{}"'.format(repo_dir))
+    repo = Repo(repo_dir)
+    o = repo.remotes.origin
+    o.pull()
+
+    sys_exit = pip.main(['install', '-e', repo_dir, '-q'])
+    if sys_exit != 0:
+        log.error('Could not install: {}'.format(local_path))
+    else:
+        log.info('Successfully installed: {}'.format(local_path))
+
+
+def update_all(sous_chef_dir=settings.SOUS_CHEFS_DIR):
+    """
+    Update all sous chef modules.
+    """
+    for local_path in os.listdir(sous_chef_dir):
+        update(local_path, sous_chef_dir)

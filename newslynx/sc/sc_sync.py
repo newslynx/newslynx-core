@@ -6,6 +6,7 @@ import logging
 from newslynx.core import settings
 from newslynx.tasks import default
 from newslynx.models import User
+from newslynx.sc import sc_module
 
 log = logging.getLogger(__name__)
 
@@ -34,4 +35,5 @@ def orgs():
 
     for org in u.orgs:
         log.info('Syncing sous chefs for organization: {}'.format(org.name))
+        sc_module.update_all()
         default.sous_chefs(org)

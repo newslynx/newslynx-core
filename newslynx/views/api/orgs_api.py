@@ -65,7 +65,7 @@ def org(user, org_id):
     # localize
     localize(org)
 
-    return jsonify(org)
+    return jsonify(org.to_dict(incl_domains=True))
 
 
 @bp.route('/api/v1/orgs/<int:org_id>/simple-content', methods=['GET'])

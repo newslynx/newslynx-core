@@ -113,9 +113,9 @@ def prepare(url, source=None, canonicalize=True, expand=True, keep_params=KEEP_P
         page_html = network.get(url)
         if page_html:
             soup = make_soup(page_html)
-            canonical = meta.canonical_url(soup)
-            if canonical:
-                return canonical
+            _url = meta.canonical_url(soup)
+            if _url:
+                url = _url
 
     # if it got converted to None, return
     if not url:
