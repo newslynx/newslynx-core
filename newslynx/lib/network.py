@@ -19,9 +19,6 @@ warnings.filterwarnings('ignore', category=InsecurePlatformWarning)
 from newslynx.core import settings
 from newslynx.lib.serialize import json_to_obj
 
-
-log = logging.getLogger(__name__)
-
 FAIL_ENCODING = 'ISO-8859-1'
 
 ssl_adapter = SSLAdapter('SSLv3')
@@ -46,6 +43,9 @@ def retry(*dargs, **dkwargs):
 
     # wrapper
     def wrapper(f):
+
+        # logger
+        log = logging.getLogger(f.__name__)
 
         @wraps(f)
         def wrapped_func(*args, **kw):
