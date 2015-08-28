@@ -10,10 +10,6 @@ before_install:
   - sudo apt-get install -y postgresql-contrib-9.3 postgresql-plpython-9.3
   - psql -c 'create database newslynx;' -U postgres
 
-# command to install dependencies
-install:
-    - make app_install
-
 sudo: yes
 
 addons:
@@ -21,3 +17,6 @@ addons:
 
 services:
   - redis-server
+
+script:
+  - make app_install
