@@ -6,8 +6,9 @@ clean_sc:
 
 	rm -rf *.egg-info build dist && find ~/.newslynx/sous-chefs -name "*.pyc" -exec rm -rf {} \;
 
-fresh_env:
+install:
 
+	echo "creating a fresh install of newslynx..."
 	-@(make clean > /dev/null)
 	-@(pip uninstall --yes newslynx 2> /dev/null  > /dev/null)
 	-@(mkdir ~/.newslynx > /dev/null)
@@ -18,21 +19,18 @@ fresh_env:
 
 app_install:
 
-	@(make  -s fresh_env 2> /dev/null)
-	@(newslynx init --empty 2> /dev/null)
+	@(make  -s install 2> /dev/null)
 	@(make -s clean_sc 2> /dev/null)
+	@(newslynx init --empty 2> /dev/null)
 	@(cat newslynx/app/sous-chefs.txt | xargs newslynx sc-install --dev)
-	@(sleep 2 > /dev/null)
 	@(newslynx init --dev)
 
 bare_install:
 
-	-@(make clean)
-	-@(pip uninstall --yes newslynx)
-	@(pip install .)
+	@(make  -s install 2> /dev/null)
 	@(newslynx init --bare)
 
-test_install:
+local_tests:
 
 	-@(rm -rf ~/.newslynx)
 	-@(dropdb newslynx) 
