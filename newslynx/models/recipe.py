@@ -58,7 +58,7 @@ class Recipe(db.Model):
         'User', backref=db.backref('recipes', lazy='dynamic'), lazy='joined')
 
     __table_args__ = (
-        db.UniqueConstraint('org_id', 'slug'),
+        db.UniqueConstraint('org_id', 'name'),
     )
 
     def __init__(self, sous_chef, **kw):

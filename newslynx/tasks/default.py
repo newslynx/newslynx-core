@@ -26,10 +26,10 @@ def org(
     # create the org and super user
     org = Org.query.filter_by(name=name).first()
     if not org:
-        log.info('Creating super user org: "{}"'.format(name))
+        log.info('Creating org: "{}"'.format(name))
         org = Org(name=name, timezone=timezone)
     else:
-        log.warning('Updating super user org: "{}"'.format(name))
+        log.warning('Updating org: "{}"'.format(name))
         org.timezone = timezone
         org.name = name
         org.slug = slug(unicode(name))

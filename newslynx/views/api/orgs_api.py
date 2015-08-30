@@ -40,7 +40,11 @@ def org_create(user):
        or 'timezone' not in req_data:
         raise RequestError(
             "An Org requires a 'name' and 'timezone")
-    org = default.org(**req_data)
+
+    org = default.org(
+        name=req_data['name'],
+        timezone=req_data['timezone']
+    )
     db.session.commit()
     return jsonify(org)
 
@@ -107,7 +111,6 @@ def org_update(user, org_id):
         raise NotFoundError(
             'Org {} does not exist.'.format(org_id))
 
-
     if user.id not in org.user_ids:
         raise ForbiddenError(
             "You are not allowed to access this Org.")
@@ -157,7 +160,6 @@ def org_delete(user, org_id):
         raise NotFoundError(
             'Org {} does not exist.'.format(org_id))
 
-
     # localize
     localize(org)
 
@@ -184,7 +186,6 @@ def org_users(user, org_id):
     if not org:
         raise NotFoundError(
             'Org {} does not exist.'.format(org_id))
-
 
     # localize
     localize(org)
@@ -265,7 +266,6 @@ def org_user(user, org_id, user_email):
         raise NotFoundError(
             'Org {} does not exist.'.format(org_id))
 
-
     # ensure the active user can edit this Org
     if user.id not in org.user_ids:
         raise ForbiddenError(
@@ -304,7 +304,6 @@ def org_add_user(user, org_id, user_email):
     if not org:
         raise NotFoundError(
             'Org {} does not exist.'.format(org_id))
-
 
     # ensure the active user can edit this Org
     if user.id not in org.user_ids:

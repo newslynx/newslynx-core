@@ -19,10 +19,12 @@ import gevent
 import gevent.monkey
 gevent.monkey.patch_all()
 from gevent.pool import Pool
-import logging
 
+import logging
 from functools import partial
 from datetime import datetime
+
+from psycopg2 import IntegrityError
 
 from newslynx.core import db
 from newslynx.util import gen_uuid
@@ -37,6 +39,7 @@ from newslynx.lib import stats
 from newslynx.lib import url
 from newslynx.lib import text
 from newslynx.lib import html
+from newslynx.lib import author
 from newslynx.lib.serialize import obj_to_json
 from newslynx.core import settings
 from newslynx.constants import (
@@ -474,6 +477,7 @@ def content(data, **kw):
         if len(queries):
             q = "\nUNION ALL\n".join(queries)
             for row in ResultIter(db.session.execute(q)):
+                print "RESULTS", row
                 id = row['uniqkey']
                 k = 'author_ids'
                 if k in meta[id]:
@@ -493,21 +497,22 @@ def content(data, **kw):
 
         # if we should create them, do so.
         if len(to_create):
-
             # create authors + keep track of content relations
             authors_to_ids = dict()
             seen = set()
             for uniqkey, oid, name in to_create:
-                if name not in seen:
+                name = name.upper().strip()
+                if name not in seen and name.lower().strip() not in author.BAD_TOKENS:
                     authors_to_ids[name] = {}
-                    seen.add(name)
+                    seen.add(name.upper().strip())
                     a = Author(org_id=oid, name=name)
                     db.session.add(a)
                     authors_to_ids[name]['obj'] = a
                 # keep track of ALL ids assoicated with this author.
-                if not 'ids' in authors_to_ids[name]:
-                    authors_to_ids[name]['ids'] = []
-                authors_to_ids[name]['ids'].append(uniqkey)
+                if name in authors_to_ids:
+                    if not 'ids' in authors_to_ids[name]:
+                        authors_to_ids[name]['ids'] = []
+                    authors_to_ids[name]['ids'].append(uniqkey)
 
             # create new authors so we
             # can access their IDs.
@@ -606,9 +611,10 @@ def content(data, **kw):
         db.session.commit()
 
     _assc()
-    db.session.remove()
+
     # just return true for the queue.
     if queued:
+        db.session.remove()
         return True
 
     return [c.to_dict() for c in cis.values()]

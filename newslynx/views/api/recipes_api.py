@@ -174,7 +174,14 @@ def create_recipe(user, org):
     recipe = recipe_schema.validate(req_data, sc.to_dict())
     r = Recipe(sc, user_id=user.id, org_id=org.id, **recipe)
     db.session.add(r)
-    db.session.commit()
+    try:
+        db.session.commit()
+    except Exception as e:
+        raise ConflictError(
+            "You tried to create a recipe that already exists. "
+            "Here's the exact error:\n{}"
+            .format(e.message)
+        )
 
     # if the recipe creates metrics create them in here.
     if 'metrics' in sc.creates:

@@ -29,7 +29,9 @@ TAG_VALS = [
 
 # tokens indicative of non-authors (usually photographers)
 BAD_TOKENS = [
-    'getty', 'images', 'photo'
+    'getty', 'images', 'photo', 'january', 'february', 'march',
+    'april', 'may', 'june', 'july', 'august', 'september', 'october',
+    'november', 'december'
 ]
 
 
