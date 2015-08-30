@@ -24,7 +24,7 @@ class DeleteOldEvents(SousChef):
         d = dates.now() - timedelta(days=self.options.get('days', 7))
         results = self.api.events.search(
             statuses='deleted',
-            updated_after=d.isoformat(),
+            updated_before=d.isoformat(),
             per_page=100,
             fields='id')
 

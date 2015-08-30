@@ -2,7 +2,7 @@
 The messy work of making unstructured data structured.
 Upserting all the things since 2015.
 
-We want ingestion to decrease the amount of labor involved in 
+We want ingestion to decrease the amount of labor involved in
 writing Sous Chefs. As a result we adhere to the following principles:
 
 1. Everything should work as an upsert.
@@ -19,10 +19,9 @@ import gevent
 import gevent.monkey
 gevent.monkey.patch_all()
 from gevent.pool import Pool
-import logging 
+import logging
 
 from functools import partial
-from collections import defaultdict
 from datetime import datetime
 
 from newslynx.core import db
@@ -89,7 +88,6 @@ def events(data, **kw):
     7. Upsert all events. Ignore events without links when the must_link flag is added.
     8. Upsert all associations. Ignore events without ids because of step above.
     """
-    print "DATA", data
 
     # parse kwargs.s
     org_id = kw.get('org_id')
@@ -140,7 +138,8 @@ def events(data, **kw):
         # function for cleaning urls.
         def _link(args):
             source_id, l = args
-            l = _prepare_url({'l': l}, field='l', expand=True, canonicalize=True)
+            l = _prepare_url(
+                {'l': l}, field='l', expand=True, canonicalize=True)
             if l:
                 if not len(org_domains):
                     return source_id, l
@@ -509,7 +508,7 @@ def content(data, **kw):
                 if not 'ids' in authors_to_ids[name]:
                     authors_to_ids[name]['ids'] = []
                 authors_to_ids[name]['ids'].append(uniqkey)
-            
+
             # create new authors so we
             # can access their IDs.
             db.session.commit()
@@ -619,7 +618,7 @@ def _prepare(obj, requires=[], recipe=None, type='event', org_id=None, extract=T
     """
     Prepare a content item or an event.
     """
-    log.info('Got {}: {}'.format(type, obj))
+
     # check required fields
     _check_requires(obj, requires, type=type)
 
@@ -646,7 +645,7 @@ def _prepare(obj, requires=[], recipe=None, type='event', org_id=None, extract=T
     # normalize the url
     if type == 'event':
         obj['url'] = _prepare_url(obj, 'url', expand=True, canonicalize=False)
-    
+
     elif type == 'content_item':
         obj['url'] = _prepare_url(obj, 'url', expand=True, canonicalize=True)
 
