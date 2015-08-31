@@ -12,7 +12,7 @@
 To install `{{ slug }}` for an active installation of `newslynx-core`, run the following command:
 
 ```bash
-$ newslynx sc-install https://github.com/{{ github_user }}/{{ slug }}.svg.git
+$ newslynx sc-install https://github.com/{{ github_user }}/{{ slug }}.git
 ```
 
 To add `{{ slug }}` all orgnaizations, run:
