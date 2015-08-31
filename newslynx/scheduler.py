@@ -1,9 +1,9 @@
 """
 The Recipe Scheduler
 """
-import gevent
-import gevent.monkey
-gevent.monkey.patch_all()
+# import gevent
+# import gevent.monkey
+# gevent.monkey.patch_all()
 
 import time
 import copy
