@@ -340,7 +340,7 @@ def create_event(user, org):
         org_id=org.id,
         org_domains=org.domains,
         must_link=arg_bool('must_link', False),
-        recipe_id=arg_int('recipe_id', default=None),
+        recipe_id=arg_str('recipe_id', default=None),
         queued=False)
 
     if len(events) == 1:
@@ -368,7 +368,7 @@ def bulk_create_event(user, org):
         org_id=org.id,
         org_domains=org.domains,
         must_link=arg_bool('must_link', False),
-        recipe_id=arg_int('recipe_id', default=None),
+        recipe_id=arg_str('recipe_id', default=None),
         queued=True)
 
     ret = url_for_job_status(apikey=user.apikey, job_id=job_id, queue='bulk')

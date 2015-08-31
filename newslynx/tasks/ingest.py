@@ -198,7 +198,6 @@ def events(data, **kw):
         db.session.close()
         db.engine.dispose()
 
-
     # STEP 4: LOOKUP TAG IDS
     def _tags():
         tag_query = """
@@ -267,7 +266,6 @@ def events(data, **kw):
         db.session.commit()
         db.session.close()
         db.engine.dispose()
-
 
      # STEP 6 Perform reconcilation steps in parallel.
     def _reconcile():

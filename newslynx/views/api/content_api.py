@@ -496,7 +496,7 @@ def create_content(user, org):
     """
     req_data = request_data()
     extract = arg_bool('extract', default=True)
-    recipe_id = arg_int('recipe_id', default=None)
+    recipe_id = arg_str('recipe_id', default=None)
 
     content = load_data.content(
         req_data,
@@ -518,7 +518,7 @@ def bulk_create_content(user, org):
     """
     req_data = request_data()
     extract = arg_bool('extract', default=True)
-    recipe_id = arg_int('recipe_id', default=None)
+    recipe_id = arg_str('recipe_id', default=None)
 
     job_id = load_data.content(
         req_data,
