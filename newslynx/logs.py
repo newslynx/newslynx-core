@@ -7,6 +7,7 @@ from colorlog import ColoredFormatter
 
 
 from newslynx.lib.serialize import obj_to_json
+from newslynx import settings 
 
 # a lookup of levelname => object
 LOG_LEVELS = {
