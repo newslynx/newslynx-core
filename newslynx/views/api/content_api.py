@@ -3,6 +3,7 @@ from gevent.pool import Pool
 from copy import copy
 
 from flask import Blueprint
+from sqlalchemy.dialects import postgresql
 
 from sqlalchemy import distinct
 from sqlalchemy.types import Numeric
@@ -391,8 +392,7 @@ def search_content(user, org):
     validate_content_item_search_vector(kw['search_vector'])
 
     # base query
-    content_query = ContentItem.query\
-        .outerjoin(ContentMetricSummary)
+    content_query = ContentItem.query.join(ContentMetricSummary)
 
     # apply filters
     content_query, event_ids = \
@@ -404,6 +404,7 @@ def search_content(user, org):
         content_query = content_query.with_entities(*cols)
 
     # apply sort if we havent already sorted by query relevance.
+    paginate = True
     if not kw['sort_ids']:
         if kw['sort_field'] != 'relevance':
             if not metric_sort:
@@ -416,8 +417,11 @@ def search_content(user, org):
 
     elif len(include_content_items):
         ids = [str(i) for i in include_content_items]
-        sort_str = "idx(ARRAY[{}], content.id)".format(",".join(ids))
+        if len(ids) > 100:
+            raise RequestError('You cannot include an array of content item ids longer than 100 elements.')
+        sort_str = "content_idx(ARRAY[{}], content.id)".format(",".join(ids))
         content_query = content_query.order_by(sort_str)
+        paginate = False
 
     # facets
     validate_content_item_facets(kw['facets'])
@@ -459,11 +463,15 @@ def search_content(user, org):
         for by, result in content_facet_pool.imap_unordered(fx, kw['facets']):
             facets[by] = result
 
-    content = content_query\
-        .paginate(kw['page'], kw['per_page'], False)
+    if paginate:
+        content = content_query\
+            .paginate(kw['page'], kw['per_page'], False)
+        total = content.total
+        content = content.items
 
-    # total results
-    total = content.total
+    else:
+        content = content_query.all()
+        total = len(content)
 
     # generate pagination urls
     pagination = \
@@ -471,9 +479,9 @@ def search_content(user, org):
 
     # reformat entites as dictionary
     if kw['fields']:
-        content = [dict(zip(kw['fields'], r)) for r in content.items]
+        content = [dict(zip(kw['fields'], r)) for r in content]
     else:
-        content = [t.to_dict(**kw) for t in content.items]
+        content = [t.to_dict(**kw) for t in content]
 
     resp = {
         'content_items': content,

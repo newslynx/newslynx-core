@@ -257,15 +257,18 @@ def search_events(user, org):
         event_query = event_query.with_entities(*columns)
 
     # apply sort if we havent already sorted by query relevance.
-
+    paginate = True
     if not kw['sort_ids']:
         if kw['sort_field'] != 'relevance':
             sort_obj = eval('Event.{sort_field}.{direction}'.format(**kw))
             event_query = event_query.order_by(sort_obj())
 
     elif len(include_events):
+        paginate = False
         ids = [str(i) for i in include_events]
-        sort_str = "idx(ARRAY[{}], events.id)".format(",".join(ids))
+        if len(ids) > 100:
+            raise RequestError('You cannot include an array of content item ids longer than 100 elements.')
+        sort_str = "events_idx(ARRAY[{}], events.id)".format(",".join(ids))
         event_query = event_query.order_by(sort_str)
 
     # facets
@@ -292,11 +295,15 @@ def search_events(user, org):
             facets[by] = result
 
     # paginate event_query
-    events = event_query\
-        .paginate(kw['page'], kw['per_page'], False)
-
-    # total results
-    total = events.total
+    if paginate:
+        events = event_query\
+            .paginate(kw['page'], kw['per_page'], False)
+        # total results
+        total = events.total
+        events = events.items
+    else:
+        events = event_query.all()
+        total = len(events)
 
     # generate pagination urls
     pagination = \
@@ -304,10 +311,10 @@ def search_events(user, org):
 
     # reformat entites as dictionary
     if kw['fields']:
-        events = [dict(zip(kw['fields'], r)) for r in events.items]
+        events = [dict(zip(kw['fields'], r)) for r in events]
     else:
         events = [e.to_dict(incl_body=kw['incl_body'], incl_img=kw['incl_img'])
-                  for e in events.items]
+                  for e in events]
     resp = {
         'events': events,
         'pagination': pagination,
