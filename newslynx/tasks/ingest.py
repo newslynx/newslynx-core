@@ -24,8 +24,6 @@ import logging
 from functools import partial
 from datetime import datetime
 
-from psycopg2 import IntegrityError
-
 from newslynx.core import db
 from newslynx.util import gen_uuid
 from newslynx.models import Recipe, Event, ContentItem, Author
@@ -196,6 +194,10 @@ def events(data, **kw):
                 if k not in meta[src_id]:
                     meta[src_id][k] = []
                 meta[src_id][k].append(row['id'])
+        db.session.commit()
+        db.session.close()
+        db.engine.dispose()
+
 
     # STEP 4: LOOKUP TAG IDS
     def _tags():
@@ -236,6 +238,10 @@ def events(data, **kw):
                 if k not in meta[src_id]:
                     meta[src_id][k] = []
                 meta[src_id][k].append(row['id'])
+        db.session.commit()
+        db.session.close()
+        db.engine.dispose()
+
 
     # STEP 5 Check for duplicate events.
 
@@ -259,6 +265,10 @@ def events(data, **kw):
 
                 # keep track of ones that exist.
                 meta[row['source_id']]['exists'] = True
+        db.session.commit()
+        db.session.close()
+        db.engine.dispose()
+
 
      # STEP 6 Perform reconcilation steps in parallel.
 
@@ -329,11 +339,14 @@ def events(data, **kw):
 
     _assc()
     db.session.commit()
-    db.session.remove()
     # just return true for the queue.
     if queued:
-        return True
-    return [e.to_dict() for e in events.values()]
+        ret = True
+    else:
+        ret = [e.to_dict() for e in events.values()]
+    db.session.close()
+    db.engine.dispose()
+    return ret
 
 
 ########################################
@@ -442,6 +455,9 @@ def content(data, **kw):
                 if k not in meta[id]:
                     meta[id][k] = []
                 meta[id][k].append(row['id'])
+        db.session.commit()
+        db.session.close()
+        db.engine.dispose()
 
     # Step 3: Upsert Authors
     def _authors():
@@ -467,7 +483,7 @@ def content(data, **kw):
             ids = ",".join([str(i) for i in uniq(ids)])
             if names or ids:
                 if not names:
-                    names = '__null___'
+                    names = "'__null___'"
                 if not ids:
                     ids = '-99999'
                 queries.append(
@@ -477,7 +493,6 @@ def content(data, **kw):
         if len(queries):
             q = "\nUNION ALL\n".join(queries)
             for row in ResultIter(db.session.execute(q)):
-                print "RESULTS", row
                 id = row['uniqkey']
                 k = 'author_ids'
                 if k in meta[id]:
@@ -508,6 +523,7 @@ def content(data, **kw):
                     a = Author(org_id=oid, name=name)
                     db.session.add(a)
                     authors_to_ids[name]['obj'] = a
+
                 # keep track of ALL ids assoicated with this author.
                 if name in authors_to_ids:
                     if not 'ids' in authors_to_ids[name]:
@@ -527,6 +543,8 @@ def content(data, **kw):
                     if k not in meta[uniqkey]:
                         meta[uniqkey][k] = []
                     meta[uniqkey][k].append(obj.id)
+        db.session.close()
+        db.engine.dispose()
 
     # Step 4: Detect Duplicates.
     def _dupes():
@@ -546,6 +564,9 @@ def content(data, **kw):
                 if not meta[row['uniqkey']].get('exists', None):
                     # keep track of ones that exist.
                     meta[row['uniqkey']]['exists'] = True
+        db.session.commit()
+        db.session.close()
+        db.engine.dispose()
 
     # Step 5: Perform reconcilation in parallel.
     def _reconcile():
@@ -556,7 +577,7 @@ def content(data, **kw):
         gevent.joinall(tasks)
 
     _reconcile()
-    db.session.commit()
+    # db.session.commit()
 
     # Step 6: Create/Update content items.
     def _upsert_content():
@@ -614,10 +635,12 @@ def content(data, **kw):
 
     # just return true for the queue.
     if queued:
-        db.session.remove()
-        return True
-
-    return [c.to_dict() for c in cis.values()]
+        ret = True
+    else:
+        ret = [c.to_dict() for c in cis.values()]
+    db.session.close()
+    db.engine.dispose()
+    return ret
 
 
 def _prepare(obj, requires=[], recipe=None, type='event', org_id=None, extract=True):
@@ -995,6 +1018,7 @@ def org_timeseries(data, **kw):
         db.session.execute(q)
         db.session.commit()
         db.session.remove()
+        db.engine.dispose()
     if queued:
         return True
     return objects

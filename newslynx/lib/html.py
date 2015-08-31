@@ -5,6 +5,7 @@ All things related to html parsing.
 from HTMLParser import HTMLParser
 from urlparse import urljoin
 import lxml.html as lxhtml
+import lxml.html.clean as lxhtmlclean
 
 from newslynx.lib.common import make_soup
 from newslynx.lib import text
@@ -49,9 +50,10 @@ def prepare(htmlstring, source_url=None, safe_attrs=['src', 'href']):
     absolutify images and links, ascii-dammify it,
     and clean whitespace.
     """
+
     if not htmlstring:
         return None
-    cleaner = lxhtml.clean.Cleaner(safe_attrs_only=True, safe_attrs=set(safe_attrs))
+    cleaner = lxhtmlclean.Cleaner(safe_attrs_only=True, safe_attrs=set(safe_attrs))
     cleansed = cleaner.clean_html(htmlstring)
     soup = make_abs(cleansed, source_url)
     cleansed = get_inner(soup)
