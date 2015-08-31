@@ -9,7 +9,6 @@ import copy
 
 from newslynx.client import API
 from newslynx.core import settings
-from newslynx import logs
 from newslynx.exc import (
     SousChefInitError, SousChefExecError)
 
@@ -47,7 +46,7 @@ class SousChef(object):
 
         # options for this recipe
         # allow arbitrary runtime arguments.
-        self.options = self.recipe.get('options', **kw)
+        self.options = self.recipe.get('options', {})
         self.recipe_id = self.recipe.get('id', None)
 
         # handle cache-clears between jobs.

@@ -12,7 +12,7 @@ log = logging.getLogger(__name__)
 def setup(parser):
     from newslynx.core import settings
 
-    sc_parser = parser.add_parser('sc')
+    sc_parser = parser.add_parser('sc-run')
     sc_parser.add_argument('sous_chef',
                            type=str, help='The relative path to the sous chef configuration file.')
     sc_parser.add_argument('-r', "--recipe", dest='recipe',
@@ -30,7 +30,7 @@ def setup(parser):
                            help="The ID/Slug of the organization you'd like to access. "
                            "Will default to $NEWSLYNX_ORG",
                            default=os.getenv('NEWSLYNX_ORG', settings.SUPER_USER_ORG))
-    return 'sc', run
+    return 'sc-run', run
 
 
 def run(opts, **kw):
@@ -60,7 +60,7 @@ def run(opts, **kw):
     if recipe:
         kw.update(recipe)
 
-    res = sc_exec.run_sous_chef(opts.sous_chef, **kw)
+    res = sc_exec.run(opts.sous_chef, **kw)
     if not res:
         return
     # stream output

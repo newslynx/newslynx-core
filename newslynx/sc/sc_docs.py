@@ -18,23 +18,45 @@ SC_OPTS_TMPL = Template("""
 * API Slug: `{{ slug }}`
 
 
-#### API Usage
+#### Usage
+
+##### Standalone
+
+Run this Sous Chef via the api, passing in arbitrary runtime options, and stream it's output.
+
+```shell
+$ newslynx api sous-chefs cook -d={{ filepath }} --passthrough **options
+```
+
+Run this Sous Chef via the api, and if applicable, send it's output to bulkload.
+
+```shell
+$ newslynx api sous-chefs cook -d={{ filepath }} **options
+```
+
+Do either of the above two, but pass in a recipe file
+
+```shell
+$ newslynx api sous-chefs cook -d=recipe.yaml
+```
+
+##### Recipes
 
 Add this Sous Chef to your authenticated org
 
-```bash
+```shell
 $ newslynx api sous-chefs create -d={{ filepath }}
 ```
 
 Create a Recipe with this Sous Chef with command line options.
 
-```bash
+```shell
 $ newslynx api recipes create sous_chef={{ slug }} **options
 ```
 
 Alternatively pass in a recipe file.
 
-```bash
+```shell
 $ newslynx api recipes create sous_chef={{ slug }} --data=recipe.yaml
 ```
 
@@ -42,7 +64,7 @@ Save the outputted `id` of this recipe, and execute it via the API.
 
 **NOTE** This will place the recipe in a task queue.
 
-```bash
+```shell
 $ newslynx api recipes cook id=<id>
 ```
 
@@ -50,25 +72,24 @@ Alternatively, run the Recipe, passing in arbitrary runtime options, and stream 
 
 **NOTE** Will not execute the SousChef's ``load`` method.
 
-```bash
+```shell
 $ newslynx api recipes cook id=<id> --passthrough **options
 ```
 
-
-#### Development
+##### Development
 
 Pass runtime options to `{{ slug }}` and stream output.
 
 **NOTE** Will not execute the SousChef's `load` method.
 
-```bash
-$ newslynx sc {{ filepath }} option=value1
+```shell
+$ newslynx sc-run {{ filepath }} option=value1
 ```
 
 Alternatively pass in a recipe file
 
-```bash
-$ newslynx sc {{ filepath }} --recipe=recipe.yaml
+```shell
+$ newslynx sc-run {{ filepath }} --recipe=recipe.yaml
 ```
 
 #### Options
@@ -159,7 +180,7 @@ def create(sc, fp, format='md'):
         content = "\n{}\n\n{}\n".format(opts, metrics)
         return doc.convert(content, 'md', format)
 
-    except Exception as e:
+    except:
         msg = """
         Documentation for Sous Chef {slug} located at {0}
         failed to generate for the following reason:

@@ -27,7 +27,6 @@ class SousChef(db.Model):
     requires_settings = db.Column(ARRAY(db.Text))
     options = db.Column(JSON)
     metrics = db.Column(JSON)
-    report = db.Column(JSON)
 
     def __init__(self, **kw):
 
@@ -49,7 +48,6 @@ class SousChef(db.Model):
         self.option_order = kw.get('option_order', [])
         self.options = kw.get('options', {})
         self.metrics = kw.get('metrics', {})
-        self.report = kw.get('report', {})
 
     def to_dict(self, **kw):
         incl_options = kw.get('incl_options', True)
@@ -72,9 +70,25 @@ class SousChef(db.Model):
         if self.creates:
             if 'metrics' in self.creates:
                 d['metrics'] = self.metrics
-            if 'report' in self.creates:
-                d['report'] = self.report
         return d
+
+    @property
+    def config(self, **kw):
+        """
+        The original configuration representation.
+        """
+        return {
+            'name': self.name,
+            'slug': self.slug,
+            'description': self.description,
+            'runs': self.runs,
+            'creates': self.creates,
+            'requires_auths': self.requires_auths,
+            'requires_settings': self.requires_settings,
+            'option_order': self.option_order,
+            'options': self.options,
+            'metrics': self.metrics,
+        }
 
     @property
     def ordered_options(self):

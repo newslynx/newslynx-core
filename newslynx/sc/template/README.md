@@ -9,29 +9,13 @@
 
 ### Production
 
-To install `{{ slug }}` for an active installation of `newslynx-core`, clone it and copy into `~/.newslynx/sous-chefs`
+To install `{{ slug }}` for an active installation of `newslynx-core`, run the following command:
 
 ```bash
-$ git clone https://github.com/{{ github_user }}/{{ slug }}.git
-$ mv {{ slug }}/ ~/.newslynx/sous-chefs/
+$ newslynx sc-install https://github.com/{{ github_user }}/{{ slug }}.svg.git
 ```
 
-Now install it within the same virtual environment as `newslynx`:
-
-```bash
-$ cd ~/.newslynx/sous-chefs/{{ slug }}/
-$ pip install .
-```
-
-... and if you're running `newslynx` as `sudo`
-
-
-```bash
-$ cd ~/.newslynx/sous-chefs/{{ slug }}/ 
-$ sudo pip install .
-```
-
-Finally, run `newslynx sc-sync` to `{{ slug }}`'s Sous Chefs for all organizations.
+To add `{{ slug }}` all orgnaizations, run:
 
 ```bash
 $ newslynx sc-sync
@@ -39,12 +23,11 @@ $ newslynx sc-sync
 
 ### Development 
 
-If you want to modify / add Sous Chefs to `{{ slug }}`, instal it in it's own virtual environment.
+If you want to modify / add Sous Chefs to `{{ slug }}`, do the following:
 
 **NOTE** Will install a fresh version of `newslynx` via `pip`.
 
 ```bash
-$ mkvirtualenv {{ slug }}
 $ git clone https://github.com/{{ github_user }}/{{ slug }}.git
 $ cd {{ slug }}
 $ pip install --editable .
@@ -53,7 +36,7 @@ $ pip install --editable .
 You should now be able to run `{{ slug }}`'s Sous Chefs in development mode
 
 ```bash 
-% newslynx sc {{ name }}/say_my_name.yaml --myname='Brian Abelson'
+% newslynx sc-run {{ name }}/say_my_name.yaml --myname='Brian Abelson'
 ```
 
 ## Tests

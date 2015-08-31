@@ -2,6 +2,7 @@ import importlib
 import types
 from traceback import format_exc
 
+from newslynx.sc import SousChef
 from newslynx.exc import (
     SousChefExecError,
     SousChefImportError)
@@ -10,7 +11,7 @@ from newslynx.models import (
     recipe_schema)
 
 
-def import_sous_chef(sous_chef_path):
+def from_import_path(sous_chef_path):
     """
     Import a sous chef.
     """
@@ -26,6 +27,11 @@ def import_sous_chef(sous_chef_path):
                 '{} does not exist in module {}.'
                 .format(c, module))
 
+        if not issubclass(sous_chef, SousChef):
+            raise SousChefImportError(
+                '{} is not a subclass of newslynx.sc.Souschef'
+                .format(sous_chef_path))
+
     except ImportError:
         raise SousChefImportError(
             "{} is not importable."
@@ -33,7 +39,7 @@ def import_sous_chef(sous_chef_path):
     return sous_chef
 
 
-def run_sous_chef(config, **kw):
+def run(config, **kw):
     """
     Programmatically execute a sous chef given configutations
     and recipe options. Will not load data back into NewsLynx. This can
@@ -47,7 +53,7 @@ def run_sous_chef(config, **kw):
                     config.endswith('yml')):
                 config = sous_chef_schema.load(config)
             else:
-                msg = 'Invalid input for config: {}'.format(config)
+                msg = 'Invalid input for config file: {}'.format(config)
                 raise SousChefExecError(msg)
         else:
             config = sous_chef_schema.validate(config, None)
@@ -66,14 +72,14 @@ def run_sous_chef(config, **kw):
             id=-1
         )
         recipe.update(kw)
-        sc_opts['recipe'] = \
-            recipe_schema.validate(recipe, config)
+
+        sc_opts['recipe'] = recipe_schema.validate(recipe, config)
 
         # import sous chef
-        SC = import_sous_chef(config['runs'])
+        SC = from_import_path(config['runs'])
 
         # initialize it with kwargs and cook
-        return SC(**sc_opts).cook()
+        return SC(**sc_opts).run()
 
     # bubble up traceback.
     except:

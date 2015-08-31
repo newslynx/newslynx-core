@@ -29,11 +29,11 @@ def setup(parser):
     from newslynx.cli import (
         api, db, version, dev, init,
         debug, cron, echo, sc_create,
-        sc_docs, sc, sc_sync, sc_install
+        sc_docs, sc_run, sc_sync, sc_install
     )
     MODULES = [
         api,
-        sc,
+        sc_run,
         db,
         dev,
         init,
@@ -129,6 +129,6 @@ def run():
         from newslynx.cli import init
         init.run(opts, empty=True)
 
-    except KeyboardInterrupt as e:
+    except KeyboardInterrupt:
         log.warning('Interrupted by user.')
         sys.exit(2)  # interrupt

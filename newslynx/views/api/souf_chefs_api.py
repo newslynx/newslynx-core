@@ -1,11 +1,13 @@
 from collections import defaultdict, Counter
+import logging 
 
-from flask import Blueprint
+from flask import Blueprint, Response, stream_with_context
 
 from newslynx.core import db
 from newslynx.models import SousChef
 from newslynx.models import sous_chef_schema
-from newslynx.lib.serialize import jsonify
+from newslynx.sc import sc_exec
+from newslynx.lib.serialize import jsonify, obj_to_json
 from newslynx.views.decorators import load_user, load_org
 from newslynx.models.util import fetch_by_id_or_field
 from newslynx.views.util import *
@@ -13,7 +15,7 @@ from newslynx.views.util import *
 
 # blueprint
 bp = Blueprint('sous_chefs', __name__, )
-
+log = logging.getLogger(__name__)
 
 # utils
 
@@ -151,3 +153,50 @@ def delete_sous_chef(user, sous_chef):
     db.session.delete(sc)
     db.session.commit()
     return delete_response()
+
+
+@bp.route('/api/v1/sous-chefs/<sous_chef>/cook', methods=['GET', 'POST'])
+@load_user
+@load_org
+def cook_sous_chef(user, org, sous_chef):
+    """
+    Run Sous Chefs via the API.
+    """
+    sc = fetch_by_id_or_field(SousChef, 'slug', sous_chef)
+    if not sc:
+        raise NotFoundError(
+            'A SousChef does not exist with ID/slug {}'
+            .format(sous_chef))
+
+    # setup kwargs for sous chef.
+    kw = dict(
+        org=org.to_dict(
+            incl_auths=True,
+            auths_as_dict=True,
+            settings_as_dict=True,
+            incl_domains=True,
+            incl_users=True),
+        apikey=user.apikey,
+        passthrough=arg_bool('load')
+    )
+
+    # parse runtime options from params + body.
+    ignore = ['apikey', 'org', 'localize', 'load']
+    options = {
+        k: v for k, v in dict(request.args.items()).items()
+        if k not in ignore
+    }
+    options.update({
+        k: v for k, v in request_data().items() if k not in ignore
+    })
+    kw.update(options)
+    log.info('KWARGS:\n{}'.format(kw))
+    # run the sous chef
+    resp = sc_exec.run(sc.config, **kw)
+
+    # stream results
+    def generate():
+        for item in resp:
+            yield obj_to_json(item) + "\n"
+
+    return Response(stream_with_context(generate()))

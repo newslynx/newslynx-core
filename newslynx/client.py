@@ -1012,6 +1012,19 @@ class SousChefs(BaseClient):
         url = self._format_url('sous-chefs', id)
         return self._request('PUT', url, data=kw, params=params)
 
+    def cook(self, id, **kw):
+        """
+        Run a Sous Chef
+        """
+        kw, params = self._split_auth_params_from_data(kw, kw_incl='load')
+        url = self._format_url('sous-chefs', id, 'cook')
+        # add apikey/org when required or set by user.
+        params.update({'apikey': self.apikey})
+        if 'org' not in kw:
+            kw['org'] = self.org
+        r = requests.post(url, params=params, data=obj_to_json(kw), stream=True)
+        return self._stream(r)
+
 
 class Templates(BaseClient):
 

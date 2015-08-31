@@ -56,7 +56,7 @@ class Merlynne(object):
         # import the sous chef here to get the timeout
         # and raise import errors before it attempts to run
         # in the queue
-        _sc = sc_exec.import_sous_chef(self.sous_chef_path)
+        _sc = sc_exec.from_import_path(self.sous_chef_path)
 
         # send it to the queue
         if not self.passthrough:
@@ -103,7 +103,7 @@ def run(sous_chef_path, recipe_id, kw_key, **kw):
             rds.delete(kw_key)
 
         # import sous chef
-        SousChef = sc_exec.import_sous_chef(sous_chef_path)
+        SousChef = sc_exec.from_import_path(sous_chef_path)
 
         # initialize it with kwargs
         kw['org'] = db.session\
