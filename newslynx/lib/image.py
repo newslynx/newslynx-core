@@ -90,7 +90,11 @@ def extension_from_mimetype(mimetype):
     """
     Guess a image's extension from it's mimetype.
     """
+    if not mimetype:
+        return None
     ext = mimetypes.guess_extension(mimetype)
+    if not ext:
+        return None
     if ext.startswith('.'):
         ext = ext[1:]
     # this is a bug in mimetypes
