@@ -100,8 +100,12 @@ def get_setting(user, org, level, name_id):
         raise NotFoundError(
             'You cannot store settings for \'{}\''
             .format(level))
-    s = fetch_by_id_or_field(
-        Setting, 'name', name_id, org_id=org.id, user_id=user.id, level=level)
+    if level == 'me':
+        s = fetch_by_id_or_field(
+            Setting, 'name', name_id, org_id=org.id, user_id=user.id, level=level)
+    else:
+        s = fetch_by_id_or_field(
+                Setting, 'name', name_id, org_id=org.id, level=level)
     if not s:
         raise NotFoundError(
             'Setting "{}" does not yet exist for Org "{}"'
