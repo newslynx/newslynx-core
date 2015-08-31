@@ -267,7 +267,7 @@ def search_events(user, org):
         paginate = False
         ids = [str(i) for i in include_events]
         if len(ids) > 100:
-            raise RequestError('You cannot include an array of content item ids longer than 100 elements.')
+            raise RequestError('You cannot include an array of event ids longer than 100 elements.')
         sort_str = "events_idx(ARRAY[{}], events.id)".format(",".join(ids))
         event_query = event_query.order_by(sort_str)
 
