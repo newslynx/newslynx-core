@@ -66,8 +66,6 @@ Set your [configuration](http://newslynx.readthedocs.org/en/latest/config.html).
 Run this command when working with `newslynx-app` 
 
 ```shell
-$ git clone https://github.com/newslynx/newslynx-core.git
-$ cd newslynx-core
 $ make app_install
 ```
 
@@ -75,8 +73,6 @@ $ make app_install
 **[Expert mode]**  don't install the app's default sous chefs, tags, or recipes.
 
 ```
-$ git clone https://github.com/newslynx/newslynx-core.git
-$ cd newslynx-core
 $ make bare_install 
 ```
 
