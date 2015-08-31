@@ -1105,22 +1105,39 @@ def _prepare_metrics(obj, metrics_lookup):
     for k in obj.keys():
         if k == 'datetime':
             continue
+
+        # fetch from lookup
         m = metrics_lookup.get(k)
         if not m:
             raise RequestError(
                 "Metric '{}' does not exist at this level."
                 .format(k))
 
+        # validate facet formatting.
         if m['faceted'] and not isinstance(obj[k], list):
             raise RequestError(
                 "Metric '{}' is faceted but was not passed in as a list."
                 .format(k))
 
-        if m['faceted'] and not set(obj[k][0].keys()) == set(METRIC_FACET_KEYS):
+        if m['faceted'] and len(obj[k]) \
+           and not set(obj[k][0].keys()) == set(METRIC_FACET_KEYS):
             raise RequestError(
                 "Metric '{}' is faceted, but it\'s elements are not properly formatted. "
                 "Each facet must be a dictionary of '{\"facet\":\"facet_name\", \"value\": 1234}"
                 .format(k))
+
+        # remove empty facets
+        if m['faceted'] and not len(obj[k]):
+            obj.pop(k)
+
+        # parse numbers.
         if not m['faceted']:
             obj[k] = stats.parse_number(obj[k])
+
+        # parse facet values.
+        else:
+            for i, v in enumerate(obj[k]):
+                obj[k][i]['value'] = \
+                    stats.parse_number(obj[k][i]['value'])
+
     return obj
