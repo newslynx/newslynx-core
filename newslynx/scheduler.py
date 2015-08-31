@@ -45,6 +45,8 @@ class RecipeScheduler:
         return min(self.jigger)
 
     def set_session(self):
+        if hasattr(self, 'session'):
+            self.session.close()
         self.session = gen_session()
 
     def fmt(self, recipe):
@@ -100,7 +102,7 @@ class RecipeScheduler:
         try:
             job = api.recipes.cook(recipe.id)
 
-        except Exception as e:
+        except:
             log.error('error cooking: {}'.format(self.fmt(recipe)))
             log.error(format_exc())
 
@@ -113,7 +115,7 @@ class RecipeScheduler:
                 for res in api.jobs.poll(**job):
                     log.warning(res)
 
-            except Exception as e:
+            except:
                 log.error('error loading: {}'.format(self.fmt(recipe)))
                 log.error(format_exc())
 
