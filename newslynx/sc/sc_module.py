@@ -30,7 +30,7 @@ class SayMyName(SousChef):
         msg = 'Hello {my_name}!'.format(**self.options)
         os.system("say '{}'".format(msg))
         self.log.info(msg)
-        return self.options.items()
+        return self.options
 
 """
 
