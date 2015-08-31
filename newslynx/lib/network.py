@@ -6,6 +6,7 @@ from functools import wraps
 import logging
 import time
 import warnings
+from traceback import format_exc
 
 import requests
 from requests_toolbelt import SSLAdapter
@@ -81,7 +82,7 @@ def retry(*dargs, **dkwargs):
 
                 except Exception as e:
                     if verbose:
-                        logging.warning('Exception - {} on try {} for {}'.format(e, tries, args))
+                        logging.warning('Exception - {} on try {} for {}'.format(format_exc(), tries, args))
                     if raise_uncaught_errors:
                         raise e
                     else:

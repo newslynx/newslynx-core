@@ -51,10 +51,13 @@ def prepare(htmlstring, source_url=None, safe_attrs=['src', 'href']):
     and clean whitespace.
     """
 
-    if not htmlstring:
+    if not htmlstring or htmlstring == "":
         return None
     cleaner = lxhtmlclean.Cleaner(safe_attrs_only=True, safe_attrs=set(safe_attrs))
-    cleansed = cleaner.clean_html(htmlstring)
+    try:
+        cleansed = cleaner.clean_html(htmlstring)
+    except:
+        return None
     soup = make_abs(cleansed, source_url)
     cleansed = get_inner(soup)
     return text.prepare(cleansed)

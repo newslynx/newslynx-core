@@ -144,7 +144,8 @@ def unshorten(orig_url, **kw):
     """
     Unshorten a url.
     """
-
+    if not orig_url:
+        return None 
     # set vars
     max_attempts = kw.get('max_attempts', 3)
     interval = kw.get('interval', 0.5)
@@ -377,6 +378,8 @@ def is_article(url, pattern=None):
         return False
 
     path = urlparse(url).path
+    if not path:
+        return None
 
     # input url is not in valid form (scheme, netloc, tld)
     if not path.startswith('/'):
@@ -696,6 +699,8 @@ def reconcile_embed(url):
     //www.youtube.com/embed/vYNnPx8fZBs
     into a full url
     """
+    if not url:
+        return None
     if url.startswith('//'):
         url = "http:{}".format(url)
     return url

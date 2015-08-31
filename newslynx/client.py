@@ -305,11 +305,11 @@ class Orgs(BaseClient):
                 'You must pass in the \'user\' id or email as the second argument.')
         return self._request('PUT', url, params=kw)
 
-    def update_user(self, id=None, user_id=None, **kw):
-        """
-        mirrors add_user
-        """
-        return self.add_user(id=id, user_id=user_id, **kw)
+    # def update_user(self, id=None, user_id=None, **kw):
+    #     """
+    #     mirrors add_user
+    #     """
+    #     return self.add_user(id=id, user_id=user_id, **kw)
 
     def remove_user(self, id=None, user_id=None, **kw):
         """

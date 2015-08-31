@@ -10,7 +10,8 @@ from newslynx.tasks import default
 from newslynx.lib.serialize import jsonify
 from newslynx.lib.text import slug
 from newslynx.exc import (
-    AuthError, RequestError, ForbiddenError, NotFoundError)
+    AuthError, RequestError, ForbiddenError, NotFoundError,
+    ConflictError)
 from newslynx.views.decorators import load_user
 from newslynx.views.util import (
     request_data, delete_response, arg_bool, localize)
@@ -234,7 +235,7 @@ def org_create_user(user, org_id):
             "You are not allowed to access this Org.")
 
     if User.query.filter_by(email=email).first():
-        raise RequestError(
+        raise ConflictError(
             'A User with email "{}" already exists'
             .format(email))
 
