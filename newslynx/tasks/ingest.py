@@ -242,7 +242,6 @@ def events(data, **kw):
         db.session.close()
         db.engine.dispose()
 
-
     # STEP 5 Check for duplicate events.
 
     def _dupes():
@@ -271,7 +270,6 @@ def events(data, **kw):
 
 
      # STEP 6 Perform reconcilation steps in parallel.
-
     def _reconcile():
         # execute reconciliation tasks in parallel.
         tasks = []
@@ -754,8 +752,10 @@ def _provenance(obj, recipe, type='event'):
         obj['recipe_id'] = None
 
         if type == 'event':
-            obj['source_id'] = "manual:{}".format(
-                obj.get('source_id', gen_uuid()))
+            src_id = obj.get('source_id')
+            if not src_id:
+                src_id = gen_uuid()
+            obj['source_id'] = "manual:{}".format(src_id)
 
     else:
         if type == 'event':

@@ -17,6 +17,6 @@ before_script:
 
 script:
     - mkdir ~/.newslynx/
-    - wget https://raw.githubusercontent.com/newslynx/newslynx-core/master/newslynx/dot_newslynx/config.yaml -O ~/.newslynx/config.yaml
+    - wget https://raw.githubusercontent.com/newslynx/newslynx-core/master/newslynx/app/config.yaml -O ~/.newslynx/config.yaml
     - "echo '\ntesting: true\n' >> ~/.newslynx/config.yaml"
     - make all_tests
