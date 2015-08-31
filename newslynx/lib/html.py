@@ -39,9 +39,12 @@ def is_html(htmlstring):
     Detect whether a string is html or not.
     """
 
-    if not htmlstring:
+    if not htmlstring or htmlstring == "":
         return False
-    return lxhtml.fromstring(htmlstring).find('.//*') is not None
+    try:
+        return lxhtml.fromstring(htmlstring).find('.//*') is not None
+    except:
+        return False
 
 
 def prepare(htmlstring, source_url=None, safe_attrs=['src', 'href']):

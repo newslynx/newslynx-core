@@ -145,7 +145,7 @@ def unshorten(orig_url, **kw):
     Unshorten a url.
     """
     if not orig_url:
-        return None 
+        return None
     # set vars
     max_attempts = kw.get('max_attempts', 3)
     interval = kw.get('interval', 0.5)
@@ -158,9 +158,13 @@ def unshorten(orig_url, **kw):
     while attempts < max_attempts:
         u = _unshorten(u)
         attempts += 1
+        # catch failures
         if not u:
             return orig_url
-        if not is_shortened(u):
+        # urls that probably aren't shortened.
+        elif u == orig_url:
+            return orig_url
+        elif not is_shortened(u):
             return u
         interval *= factor
         time.sleep(interval)
@@ -812,7 +816,7 @@ def _unshorten(url, pattern=None):
     url = network.get_location(url)
 
     if not is_valid(url):
-        return orig_url
+        return None
 
     # check if there's a bitly warning.
     if re_bitly_warning.search(url):
