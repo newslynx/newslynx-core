@@ -111,10 +111,9 @@ def get_request_kwargs(timeout=None, useragent=None):
     """This Wrapper method exists b/c some values in req_kwargs dict
     are methods which need to be called every time we make a request
     """
-    def_timeout = 5
     return {
         'headers': {'User-Agent': useragent or settings.NETWORK_USER_AGENT},
-        'timeout': timeout or def_timeout,
+        'timeout': timeout or settings.NETWORK_TIMEOUT,
         'allow_redirects': True,
         'verify': True
     }
