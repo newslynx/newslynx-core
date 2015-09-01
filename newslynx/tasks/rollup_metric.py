@@ -12,7 +12,44 @@ from newslynx.tasks.query_metric import QueryContentMetricTimeseries
 from newslynx.models import Org
 
 
-def content_timeseries_to_summary(org, content_item_ids=[], num_hours=24):
+# short cuts 
+def all(org, content_item_ids=[], num_hours=24):
+    """
+    Rollup all metrics.
+    """
+    content_summary(org, content_item_ids, num_hours)
+    org_timeseries(org)
+    org_summary(org)
+    return True
+
+
+def content_summary(org, content_item_ids=[], num_hours=24):
+    """
+    Rollup content summary metrics.
+    """
+    content_summary_from_events(org, content_item_ids)
+    content_summary_from_content_timeseries(org, content_item_ids, num_hours)
+    return True
+
+
+def org_timeseries(org):
+    """
+    Rollup content timeseries => org timeseries.
+    """
+    org_timeseries_from_content_timeseries(org)
+    return True
+
+
+def org_summary(org):
+    """
+    Rollup org timeseries => org summary & content summary => org summary
+    """
+    org_summary_from_content_summary(org)
+    org_summary_from_org_timeseries(org)
+    return True
+
+
+def content_summary_from_content_timeseries(org, content_item_ids=[], num_hours=24):
     """
     Rollup content-timseries metrics into summaries.
     Optimize this query by only updating content items
@@ -21,11 +58,6 @@ def content_timeseries_to_summary(org, content_item_ids=[], num_hours=24):
 
     # just use this to generate a giant timeseries select with computed
     # metrics.
-    if not len(content_item_ids):
-        content_item_ids = org.content_item_ids
-    if not len(content_item_ids):
-        raise RequestError('You must have content items to run this method.')
-
     ts = QueryContentMetricTimeseries(org, content_item_ids, unit=None)
 
     metrics, ss = summary_select(org.content_timeseries_metric_rollups)
@@ -35,7 +67,7 @@ def content_timeseries_to_summary(org, content_item_ids=[], num_hours=24):
         'metrics': metrics,
         'org_id': org.id,
         'last_updated': (dates.now() - timedelta(hours=num_hours)).isoformat(),
-        'ts_query': computed_query(ts.query, org.computed_content_summary_metrics)
+        'ts_query': ts.query,
     }
 
     q = """SELECT upsert_content_metric_summary({org_id}, content_item_id, metrics::text)
@@ -63,74 +95,7 @@ def content_timeseries_to_summary(org, content_item_ids=[], num_hours=24):
     return True
 
 
-def org_timeseries(org):
-
-    # summarize the content timeseries table
-    content_ts = QueryContentMetricTimeseries(org, org.content_item_ids,
-                                              unit=None, group_by_id=False)
-
-    # summarize the org timeseries table
-    org_ts = QueryOrgMetricTimeseries(org, [org.id], unit=None)
-
-    # select statements.
-    metrics, ss = summary_select(org.timeseries_metric_rollups)
-
-    # computed metrics
-    org.content_summary_metrics
-
-    # generate the base query
-    base_query = \
-    """SELECT upsert_org_metric_timeseries({org_id}, metrics::text)
-           FROM  (
-              SELECT
-                (SELECT row_to_json(_) from (SELECT {metrics}) as _) as metrics
-              FROM (
-                 SELECT
-                    {select_statements}
-                FROM ({ts_query}) zzzz
-                ) t1
-            ) t2
-    """
-
-
-def summary_select(metrics_to_select):
-    """
-    generate aggregation statments + list of metric names.
-    """
-    summary_pattern = "{agg}({name}) AS {name}"
-    select_statements = []
-    metrics = []
-    for n, m in metrics_to_select.items():
-        ss = summary_pattern.format(**m)
-        select_statements.append(ss)
-        metrics.append(n)
-    return ", ".join(metrics), ",\n".join(select_statements)
-
-
-def computed_query(query, computed_metrics):
-    """
-    Add computed metrics to a query.
-    """
-    selects = []
-    for n, m in computed_metrics.items():
-        formula = m.get('formula')
-        formula = formula.replace('{', '"').replace('}', '"')
-        selects.append("{f} as {name}".format(f=formula, **m))
-    if len(selects):
-        selects = "," + "\n\t,".join(selects)
-    else:
-        selects = ""
-    return \
-        """SELECT base_query.*
-              {0}
-        FROM (
-            {1}
-        )
-        AS base_query
-    """.format(selects, query)
-
-
-def event_tags_to_summary(org, content_item_ids=[]):
+def content_summary_from_events(org, content_item_ids=[]):
     """
     Count up impact tag categories + levels assigned to events
     by the content_items they're associated with.
@@ -261,3 +226,113 @@ def event_tags_to_summary(org, content_item_ids=[]):
     db.session.execute(q)
     db.session.commit()
     return True
+
+
+def org_timeseries_from_content_timeseries(org):
+    """
+    Rollup content timeseries => org timeseries.
+    """
+    # summarize the content timeseries table
+    content_ts = QueryContentMetricTimeseries(org, org.content_item_ids,
+                                              unit='hour', group_by_id=False)
+
+    # select statements.
+    metrics, ss = summary_select(org.timeseries_metric_rollups)
+
+    qkw = {
+        'org_id': org.id,
+        'metrics': metrics,
+        'select_statements': ss,
+        'ts_query': content_ts
+    }
+
+    # generate the query
+    q = \
+        """SELECT upsert_org_metric_timeseries({org_id}, datetime, metrics::text)
+           FROM  (
+              SELECT
+                datetime,
+                (SELECT row_to_json(_) from (SELECT {metrics}) as _) as metrics
+              FROM (
+                 SELECT
+                    {select_statements}
+                FROM ({ts_query}) zzzz
+                ) t1
+            ) t2
+    """.format(**qkw)
+    db.session.execute(q)
+    db.session.commit()
+    return True
+
+
+def org_summary_from_content_summary(org):
+    """
+    Rollup content summary => org summary.
+    """
+
+    metrics, ss = summary_select(org.summary_metric_rollups)
+
+    qkw = {
+        'select_statements': ss,
+        'metrics': metrics,
+        'org_id': org.id
+    }
+
+    q = \
+        """SELECT upsert_org_metric_summary({org_id}, metrics::text)
+           FROM  (
+              SELECT
+                (SELECT row_to_json(_) from (SELECT {metrics}) as _) as metrics
+              FROM (
+                SELECT
+                    {select_statements}
+                FROM content_metric_summary
+                WHERE org_id = {org_id}
+                GROUP BY org_id
+                ) t1
+            ) t2
+        """.format(**qkw)
+
+
+def org_summary_from_org_timeseries(org):
+    """
+    Rollup org timeseries => org summary.
+    """
+    pass
+
+
+def summary_select(metrics_to_select):
+    """
+    generate aggregation statments + list of metric names.
+    """
+    summary_pattern = "{agg}({name}) AS {name}"
+    select_statements = []
+    metrics = []
+    for n, m in metrics_to_select.items():
+        ss = summary_pattern.format(**m)
+        select_statements.append(ss)
+        metrics.append(n)
+    return ", ".join(metrics), ",\n".join(select_statements)
+
+
+def computed_query(query, computed_metrics):
+    """
+    Add computed metrics to a query.
+    """
+    selects = []
+    for n, m in computed_metrics.items():
+        formula = m.get('formula')
+        formula = formula.replace('{', '"').replace('}', '"')
+        selects.append("{f} as {name}".format(f=formula, **m))
+    if len(selects):
+        selects = "," + "\n\t,".join(selects)
+    else:
+        selects = ""
+    return \
+        """SELECT base_query.*
+              {0}
+        FROM (
+            {1}
+        )
+        AS base_query
+    """.format(selects, query)

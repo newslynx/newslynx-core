@@ -313,7 +313,8 @@ class Org(db.Model):
     @property
     def content_metric_comparison_names(self):
         """
-        The names of content summary metrics that should be used to generate comparisons.
+        The names of content summary metrics that
+        should be used to generate comparisons.
         """
         metrics = self.metrics\
             .filter(Metric.content_levels.contains(['summary', 'comparison']))\
@@ -362,8 +363,10 @@ class Org(db.Model):
         generating comparisons on these metrics.
         """
         metrics = self.metrics\
-            .filter(Metric.org_levels.contains(['timeseries', 'summary']))\
+            .filter(Metric.org_levels.contains(['timeseries']))\
+            .filter(Metric.content_levels.contains['timeseries'])\
             .filter(~Metric.faceted)\
+            .filter(Metric.type != 'computed')\
             .all()
         return {m.name: m.to_dict() for m in metrics}
 
@@ -448,6 +451,20 @@ class Org(db.Model):
             .with_entities(Metric.name)\
             .all()
         return [m[0] for m in metrics]
+
+    @property
+    def summary_metric_rollups(self):
+        """
+        Content summary metrics that should be rolled-up
+        from summary =>  org summary.
+        """
+        metrics = self.metrics\
+            .filter(Metric.org_levels.contains(['summary']))\
+            .filter(Metric.content_levels.contains['summary'])\
+            .filter(~Metric.faceted)\
+            .filter(Metric.type != 'computed')\
+            .all()
+        return {m.name: m.to_dict() for m in metrics}
 
     def to_dict(self, **kw):
 

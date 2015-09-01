@@ -92,9 +92,16 @@ def refresh_content_summary(user, org):
     """
     Refresh content summary metrics
     """
+    # how many hours since last update should we refresh?
     since = arg_int('since', 24)
-    rollup_metric.content_timeseries_to_summary(org, [], since)
-    rollup_metric.event_tags_to_summary(org)
+
+    # compute event metrics first
+    rollup_metric.content_summary_event_metrics(org)
+
+    # rollup timeseries => summary
+    rollup_metric.content_summary(org, [], since)
+
+    # simple response
     return jsonify({'success': True})
 
 

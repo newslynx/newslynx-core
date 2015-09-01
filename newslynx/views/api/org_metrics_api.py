@@ -45,7 +45,7 @@ def get_org_summary(user, org_id_slug):
 
 @bp.route('/api/v1/orgs/<org_id_slug>/summary', methods=['POST'])
 @load_user
-def org_metrics_summary(user, org_id_slug):
+def create_org_metrics_summary(user, org_id_slug):
 
     # fetch org
     org = fetch_by_id_or_field(Org, 'slug', org_id_slug)
@@ -95,10 +95,10 @@ def get_org_timeseries(user, org_id_slug):
 
     # select / exclude
     select, exclude = arg_list(
-        'select', typ=str, exclusions=True, default=['all'])
-    if 'all' in select:
+        'select', typ=str, exclusions=True, default=['*'])
+    if '*' in select:
         exclude = []
-        select = "all"
+        select = "*"
 
     kw = dict(
         unit=arg_str('unit', default='hour'),
@@ -140,10 +140,11 @@ def create_org_timeseries(user, org_id_slug):
 
     req_data = request_data()
 
-    ret = ingest_metric.org_timeseries(
+    ret = load.org_timeseries(
         req_data,
         org_id=org.id,
-        metrics_lookup=org.metrics_lookup,
+        metrics_lookup=org.timeseries_metrics,
+        queued=False,
         commit=True
     )
     return jsonify(ret)

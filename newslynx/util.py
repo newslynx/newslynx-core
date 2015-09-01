@@ -74,3 +74,11 @@ def gen_short_uuid(n=6):
     start = random.choice(range(1, (len(uuid) - n)+1))
     end = start + n
     return uuid[start:end]
+
+
+def chunk_list(l, n=MAX_CHUNK_SIZE):
+    """
+    Yield successive n-sized chunks from l.
+    """
+    for i in xrange(0, len(l), n):
+        yield l[i:i+n]

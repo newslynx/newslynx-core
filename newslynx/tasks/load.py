@@ -24,9 +24,10 @@ from newslynx.tasks import ingest
 from newslynx.lib.serialize import (
     pickle_to_obj, obj_to_pickle,
     json_to_obj, obj_to_json)
+from newslynx import util
 
 
-MAX_CHUNK_SIZE = 100
+MAX_CHUNK_SIZE = 250
 MAX_WORKERS = 5
 
 
@@ -174,7 +175,7 @@ def bulkworker(job_id, **qkw):
         rds.delete(k)
 
         # chunk list
-        chunked_data = chunk_list(data, qkw.get('chunk_size'))
+        chunked_data = util.chunk_list(data, qkw.get('chunk_size'))
 
         # partial funtion
         load_fx = partial(ingest.source, **job)
@@ -197,9 +198,3 @@ def bulkworker(job_id, **qkw):
             .format(end-start))
 
 
-def chunk_list(l, n=MAX_CHUNK_SIZE):
-    """
-    Yield successive n-sized chunks from l.
-    """
-    for i in xrange(0, len(l), n):
-        yield l[i:i+n]
