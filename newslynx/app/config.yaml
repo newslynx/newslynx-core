@@ -23,6 +23,9 @@ api_url: http://localhost:5000
 api_version: v1
 https: false # Change to `true` for production.
 
+# needed for authentication with Facebook and Google Analytics
+api_dns: http://<domain-name>:5000
+
 # Directory which contains Sous Chefs
 sous_chefs_dir: '~/.newslynx/sous-chefs/'
 
