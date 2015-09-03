@@ -19,7 +19,7 @@ super_user_timezone: UTC
 sqlalchemy_database_uri: 'postgresql://localhost:5432/newslynx'
 
 # API information for the app to know
-api_url: http://localhost:5000
+api_url: http://localhost:5000 # Omit trailing slash.
 api_version: v1
 https: false # Change to `true` for production.
 
