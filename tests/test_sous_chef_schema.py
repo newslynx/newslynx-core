@@ -2,7 +2,9 @@ import unittest
 
 from newslynx.exc import SousChefSchemaError
 from newslynx.models import sous_chef_schema, SousChef
-from newslynx.core import db_session
+from newslynx.core import gen_session
+
+db_session = gen_session()
 
 
 class TestSousChefJSONSchema(unittest.TestCase):

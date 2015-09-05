@@ -11,9 +11,10 @@ from newslynx.models import sous_chef_schema
 from newslynx.models import recipe_schema
 from newslynx.exc import RecipeSchemaError
 from newslynx.models import Recipe, SousChef
-from newslynx.core import db_session
+from newslynx.core import gen_session
 from newslynx.util import gen_short_uuid
 
+db_session = gen_session()
 
 sous_chef = {
     "name": "Twitter List",

@@ -73,16 +73,12 @@ try:
     # session for interactions outside of app context.
     def gen_session():
         return scoped_session(sessionmaker(bind=engine))
-    db_session = gen_session()
-    db_session.execute('SET TIMEZONE TO UTC')
+
 except Exception as e:
     if not settings.TESTING:
         raise ConfigError(format_exc())
     else:
-        db = None
-        db_session = None
         pass
-
 
 # redis connection
 rds = redis.from_url(settings.REDIS_URL)
