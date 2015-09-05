@@ -29,6 +29,7 @@ SOUS_CHEFS_DIR = os.path.expanduser('~/.newslynx/sous-chefs/')
 
 # app configurations #
 API_URL = "http://localhost:5000"
+API_DNS = "http://changeme.com:5000"
 API_PORT = 5000
 API_VERSION = "v1"
 

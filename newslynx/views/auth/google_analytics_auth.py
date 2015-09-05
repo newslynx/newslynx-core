@@ -31,7 +31,7 @@ if settings.GA_ENABLED:
         settings.GOOGLE_ANALYTICS_CLIENT_ID,
         settings.GOOGLE_ANALYTICS_CLIENT_SECRET,
         redirect_uri=urljoin(
-            settings.API_URL,
+            settings.API_DNS,
             '/api/v1/auths/google-analytics/callback'))
 
 
