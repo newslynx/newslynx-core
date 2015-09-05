@@ -20,6 +20,7 @@ sqlalchemy_database_uri: 'postgresql://localhost:5432/newslynx'
 
 # API information for the app to know
 api_url: http://localhost:5000 # Omit trailing slash.
+api_dns: http://changeme:5000 # The url of where the app lives (used for authentication redirects)
 api_version: v1
 https: false # Change to `true` for production.
 
