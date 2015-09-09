@@ -7,6 +7,8 @@ import random
 from uuid import uuid4
 from hashlib import md5
 
+MAX_CHUNK_SIZE = 250
+# MAX_WORKERS = 5
 
 def here(f, *args):
     """
