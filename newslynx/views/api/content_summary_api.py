@@ -95,9 +95,6 @@ def refresh_content_summary(user, org):
     # how many hours since last update should we refresh?
     since = arg_int('since', 24)
 
-    # compute event metrics first
-    rollup_metric.content_summary_event_metrics(org)
-
     # rollup timeseries => summary
     rollup_metric.content_summary(org, [], since)
 
