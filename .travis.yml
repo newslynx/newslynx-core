@@ -19,4 +19,6 @@ services:
   - redis-server
 
 script:
-  - make app_install
+    - mkdir ~/.newslynx/
+    - wget https://raw.githubusercontent.com/newslynx/newslynx-core/master/newslynx/app/config.yaml -O ~/.newslynx/config.yaml
+    - make app_install
