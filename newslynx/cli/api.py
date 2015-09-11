@@ -71,11 +71,10 @@ def run(opts, **kwargs):
     if not cobj:
         # report options
         collections = [c.replace('_', "-") for c in dir(api) if _keep(c)]
-        e = RuntimeError("Collection '{}' does not exist."
+        log.error("Collection '{}' does not exist."
                          .format(opts.collection))
-        log.exception(e, tb=False)
         log.warning("Choose from the following collections:\n\t- {}"
-                    .format(opts.collection, "\n\t- {}".join(collections)), line=False)
+                    .format(opts.collection, "\n\t- {}".join(collections)))
         sys.exit(1)
 
     # get the method
@@ -86,12 +85,8 @@ def run(opts, **kwargs):
 
         # report options
         if opts.method != 'ls':
-            e = RuntimeError("Method '{}' does not exist for collection '{}'"
-                             .format(opts.method, opts.collection))
-            log.warning(e.message)
-
-        else:
-            log.info("\n/{}\n".format(opts.collection), line=False, color='blue')
+            log.warning("Method '{}' does not exist for collection '{}'"
+                        .format(opts.method, opts.collection))
 
         # compute the tree here to save on processing time.
         options = [m.replace('_', '-') for m in dir(cobj) if _keep(m)]
@@ -99,8 +94,9 @@ def run(opts, **kwargs):
         # list of methods for this collection
         msg = "choose from the following methods:\n\t- {}"\
             .format("\n\t- ".join(options))
-        log.warning(msg)
-        sys.exit(1)
+
+        log.warning("\n/{}\n".format(opts.collection) + msg)
+        sys.exit(0)
 
     # parse body file / json string.
     d = load_data(opts.data)
