@@ -27,6 +27,8 @@ def content_summary(org, content_item_ids=[], num_hours=24):
     """
     Rollup content summary metrics.
     """
+    if not len(content_item_ids):
+        content_item_ids = org.content_item_ids
     content_summary_from_events(org, content_item_ids)
     content_summary_from_content_timeseries(org, content_item_ids, num_hours)
     return True
