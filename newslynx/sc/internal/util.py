@@ -5,21 +5,27 @@ from newslynx.lib import dates
 
 
 class RefreshContentSummaryMetrics(SousChef):
-
+    
+    timeout = 720 
+    
     def run(self):
         res = self.api.content.refresh_summaries()
         assert(res.get('success', False))
 
 
 class RefreshContentComparisons(SousChef):
-
+    
+    timeout = 720 
+    
     def run(self):
         res = self.api.content.refresh_comparisons()
         assert(res.get('success', False))
 
 
 class DeleteOldEvents(SousChef):
-
+    
+    timeout = 720 
+    
     def run(self):
         d = dates.now() - timedelta(days=self.options.get('days', 7))
         results = self.api.events.search(
