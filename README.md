@@ -1,4 +1,4 @@
-![travis-img](https://travis-ci.org/newslynx/newslynx-core.svg)
+[![travis-img](https://travis-ci.org/newslynx/newslynx-core.svg)](https://travis-ci.org/newslynx/newslynx-core)
 # newslynx-core
 
 NewsLynx Core is an expandable open-source toolkit for building modular content analytics workflows. It provides a fully RESTful API as well as a comprehensive `python` client and command line interface.
