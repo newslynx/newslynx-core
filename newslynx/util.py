@@ -7,8 +7,6 @@ import random
 from uuid import uuid4
 from hashlib import md5
 
-MAX_CHUNK_SIZE = 250
-# MAX_WORKERS = 5
 
 def here(f, *args):
     """
@@ -78,7 +76,7 @@ def gen_short_uuid(n=6):
     return uuid[start:end]
 
 
-def chunk_list(l, n=MAX_CHUNK_SIZE):
+def chunk_list(l, n):
     """
     Yield successive n-sized chunks from l.
     """
