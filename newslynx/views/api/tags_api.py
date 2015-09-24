@@ -308,7 +308,7 @@ def merge_tags(user, org, from_tag_id, to_tag_id):
         # update event metrics
         if len(content_item_ids):
             # update event-level metrics for this content item id
-            rollup_metric.event_tags_to_summary(org, content_item_ids)
+            rollup_metric.content_summary_from_events(org, content_item_ids)
 
     return jsonify(to_t)
 
