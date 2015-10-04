@@ -113,10 +113,12 @@ class SubjectTagsComparisonCache(ComparisonCache):
         """
         Get all subject tag ids.
         """
-        tag_ids = org.tags\
+        tag_ids = db.session.query(Tag)\
+            .filter_by(org_id=org.id)
             .filter_by(type='subject')\
             .with_entities(Tag.id)\
             .all()
+        db.session.remove()
         return [t[0] for t in tag_ids]
 
     def get_content_item_ids(self, org, tag_id, **kw):
@@ -127,6 +129,7 @@ class SubjectTagsComparisonCache(ComparisonCache):
             .query(func.distinct(content_items_tags.c.content_item_id))\
             .filter(content_items_tags.c.tag_id == tag_id)\
             .all()
+        db.session.remove()
         return [c[0] for c in content_items]
 
 
@@ -138,10 +141,12 @@ class ImpactTagsComparisonCache(ComparisonCache):
         """
         Get all subject tag ids.
         """
-        tag_ids = org.tags\
+        tag_ids = db.session.query(Tag)\
+            .filter_by(org_id=org.id)
             .filter_by(type='impact')\
             .with_entities(Tag.id)\
             .all()
+        db.session.remove()
         return [t[0] for t in tag_ids]
 
     def get_content_item_ids(self, org, tag_id, **kw):
@@ -153,6 +158,7 @@ class ImpactTagsComparisonCache(ComparisonCache):
             .join(Event)\
             .filter(Event.tags.any(Tag.id == tag_id))\
             .all()
+        db.session.remove()
         return [c[0] for c in content_items]
 
 
@@ -164,6 +170,7 @@ class ContentTypeComparisonCache(ComparisonCache):
         types = db.session.query(func.distinct(ContentItem.type))\
             .filter_by(org_id=org.id)\
             .all()
+        db.session.remove()
         return [t[0] for t in types]
 
     def get_content_item_ids(self, org, type, **kw):
@@ -171,4 +178,6 @@ class ContentTypeComparisonCache(ComparisonCache):
             .filter_by(org_id=org.id)\
             .filter_by(type=type)\
             .all()
+        db.session.remove()
         return [c[0] for c in content_items]
+

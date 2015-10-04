@@ -117,6 +117,7 @@ class Comparison(object):
             for r in ResultIter(res):
                 if r:
                     yield r
+        db.session.remove()
 
     def execute(self):
         """
