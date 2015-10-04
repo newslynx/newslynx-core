@@ -70,9 +70,7 @@ def end_timing(response):
 @app.teardown_appcontext
 def shutdown_sessions(exception=None):
     db.session.remove()
-    db.session.dispose()
 
 
 # register blueprints
 register_blueprints(app, api, admin, auth)
-
