@@ -149,6 +149,7 @@ def list_recipes(user, org):
         'facets': facets,
         'recipes': clean_recipes
     }
+    db.session.remove()
     return jsonify(resp)
 
 
@@ -306,6 +307,7 @@ def update_recipe(user, org, recipe_id):
             db.session.add(m)
 
     db.session.commit()
+    db.session.remove()
     return jsonify(r)
 
 
@@ -337,7 +339,7 @@ def delete_recipe(user, org, recipe_id):
     """.format(r.id)
     db.session.execute(cmd)
     db.session.commit()
-
+    db.session.remove()
     return delete_response()
 
 
@@ -412,7 +414,7 @@ def cook_a_recipe(user, org, recipe_id):
         r.status = 'queued'
         db.session.add(r)
         db.session.commit()
-
+        db.session.remove()
         # # return job status url
         ret = url_for_job_status(apikey=user.apikey, job_id=resp, queue='recipe')
         return jsonify(ret, status=202)
