@@ -12,7 +12,7 @@ from newslynx.tasks.query_metric import QueryContentMetricTimeseries
 from newslynx.models import Org
 
 
-# short cuts
+# short cuts 
 def all(org, content_item_ids=[], num_hours=24):
     """
     Rollup all metrics.
@@ -113,7 +113,7 @@ def content_summary_from_events(org, content_item_ids=[]):
     case_statements = []
 
     case_pattern = """
-        sum(CASE WHEN {type} = '{value}'
+    sum(CASE WHEN {type} = '{value}'
              THEN 1
              ELSE 0
         END) AS {name}"""
@@ -244,8 +244,8 @@ def org_timeseries_from_content_timeseries(org):
     qkw = {
         'org_id': org.id,
         'metrics': metrics,
-        'select_statements': ss + ", datetime",
-        'ts_query': content_ts.query
+        'select_statements': ss,
+        'ts_query': content_ts.qu
     }
 
     # generate the query
@@ -258,11 +258,11 @@ def org_timeseries_from_content_timeseries(org):
               FROM (
                  SELECT
                     {select_statements}
-                 FROM ({ts_query}) zzzz
-                 GROUP BY datetime
+                FROM ({ts_query}) zzzz
                 ) t1
             ) t2
     """.format(**qkw)
+    print q
     db.session.execute(q)
     db.session.commit()
     return True
@@ -295,7 +295,6 @@ def org_summary_from_content_summary(org):
                 ) t1
             ) t2
         """.format(**qkw)
-    print q
 
 
 def org_summary_from_org_timeseries(org):
@@ -342,7 +341,6 @@ def computed_query(query, computed_metrics):
     """.format(selects, query)
 
 if __name__ == '__main__':
-    from newslynx.models import Org
+    from newslynx.models import Org 
     o = Org.query.get(1)
-    print content_summary_from_events(o)
-    print org_summary_from_content_summary(o)
+    print org_timeseries_from_content_timeseries(o)
