@@ -51,6 +51,8 @@ class Org(db.Model):
     events = db.relationship('Event', lazy='dynamic', cascade='all')
     content_items = db.relationship(
         'ContentItem', lazy='dynamic', cascade='all')
+    sous_chefs = db.relationship(
+        'SousChef', lazy='dynamic', cascade='all')
     metrics = db.relationship('Metric', lazy='dynamic', cascade='all')
     recipes = db.relationship(
         'Recipe', lazy='dynamic', cascade='all',
@@ -364,9 +366,8 @@ class Org(db.Model):
         """
         metrics = self.metrics\
             .filter(Metric.org_levels.contains(['timeseries']))\
-            .filter(Metric.content_levels.contains['timeseries'])\
+            .filter(Metric.content_levels.contains(['timeseries']))\
             .filter(~Metric.faceted)\
-            .filter(Metric.type != 'computed')\
             .all()
         return {m.name: m.to_dict() for m in metrics}
 
@@ -460,9 +461,8 @@ class Org(db.Model):
         """
         metrics = self.metrics\
             .filter(Metric.org_levels.contains(['summary']))\
-            .filter(Metric.content_levels.contains['summary'])\
+            .filter(Metric.content_levels.contains(['summary']))\
             .filter(~Metric.faceted)\
-            .filter(Metric.type != 'computed')\
             .all()
         return {m.name: m.to_dict() for m in metrics}
 
