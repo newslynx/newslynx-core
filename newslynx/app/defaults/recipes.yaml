@@ -5,7 +5,9 @@
   name: Ingest Articles from an RSS Feed
   slug: rss-feed-to-article
   status: uninitialized
-  options: {}
+  options:
+    schedule_by: minutes
+    minutes: 15
 
 ## PROMOTIONS
 
