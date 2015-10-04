@@ -196,6 +196,7 @@ def events(data, **kw):
                 meta[src_id][k].append(row['id'])
         db.session.commit()
         db.session.close()
+        db.session.remove()
         db.engine.dispose()
 
     # STEP 4: LOOKUP TAG IDS
@@ -239,6 +240,7 @@ def events(data, **kw):
                 meta[src_id][k].append(row['id'])
         db.session.commit()
         db.session.close()
+        db.session.remove()
         db.engine.dispose()
 
     # STEP 5 Check for duplicate events.
@@ -265,6 +267,7 @@ def events(data, **kw):
                 meta[row['source_id']]['exists'] = True
         db.session.commit()
         db.session.close()
+        db.session.remove()
         db.engine.dispose()
 
      # STEP 6 Perform reconcilation steps in parallel.
@@ -341,6 +344,7 @@ def events(data, **kw):
     else:
         ret = [e.to_dict() for e in events.values()]
     db.session.close()
+    db.session.remove()
     db.engine.dispose()
     return ret
 
@@ -453,6 +457,7 @@ def content(data, **kw):
                 meta[id][k].append(row['id'])
         db.session.commit()
         db.session.close()
+        db.session.remove()
         db.engine.dispose()
 
     # Step 3: Upsert Authors
@@ -540,6 +545,7 @@ def content(data, **kw):
                         meta[uniqkey][k] = []
                     meta[uniqkey][k].append(obj.id)
         db.session.close()
+        db.session.remove()
         db.engine.dispose()
 
     # Step 4: Detect Duplicates.
@@ -562,6 +568,7 @@ def content(data, **kw):
                     meta[row['uniqkey']]['exists'] = True
         db.session.commit()
         db.session.close()
+        db.session.remove()
         db.engine.dispose()
 
     # Step 5: Perform reconcilation in parallel.
@@ -635,6 +642,7 @@ def content(data, **kw):
     else:
         ret = [c.to_dict() for c in cis.values()]
     db.session.close()
+    db.session.remove()
     db.engine.dispose()
     return ret
 
@@ -969,6 +977,7 @@ def content_summary(data, **kw):
         db.session.execute(q)
         db.session.commit()
         db.session.remove()
+        db.session.dispose()
     if queued:
         return True
     return objects
@@ -1061,6 +1070,7 @@ def org_summary(data, **kw):
         db.session.execute(q)
         db.session.commit()
         db.session.remove()
+        db.session.dispose()
     if queued:
         return True
     return objects
