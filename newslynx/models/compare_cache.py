@@ -37,13 +37,14 @@ class ComparisonCache(Cache):
 
     # TODO: Pooled Exectution
     def work(self, org_id, **kw):
-        org = Org.query.get(org_id)
+        org = db.session.query(Org).get(org_id)
         comparisons = {}
         for facet in self.get_facets(org, **kw):
             ids = self.get_content_item_ids(org, facet, **kw)
             if len(ids):
                 cc = ContentComparison(org, ids)
                 comparisons[facet] = list(cc.execute())
+        db.session.remove()
         return self.format_comparisons(comparisons)
 
 
@@ -85,10 +86,9 @@ class ComparisonsCache(Cache):
             return cr.value
 
         comparisons = {}
-        #pool = Pool(self.pool_size)
         for typ in types:
             comparisons.update(fx(typ))
-        return comparsions
+        return comparisons
 
 
 class AllContentComparisonCache(ComparisonCache):
@@ -118,7 +118,6 @@ class SubjectTagsComparisonCache(ComparisonCache):
             .filter_by(type='subject')\
             .with_entities(Tag.id)\
             .all()
-        db.session.remove()
         return [t[0] for t in tag_ids]
 
     def get_content_item_ids(self, org, tag_id, **kw):
@@ -129,7 +128,6 @@ class SubjectTagsComparisonCache(ComparisonCache):
             .query(func.distinct(content_items_tags.c.content_item_id))\
             .filter(content_items_tags.c.tag_id == tag_id)\
             .all()
-        db.session.remove()
         return [c[0] for c in content_items]
 
 
@@ -146,7 +144,6 @@ class ImpactTagsComparisonCache(ComparisonCache):
             .filter_by(type='impact')\
             .with_entities(Tag.id)\
             .all()
-        db.session.remove()
         return [t[0] for t in tag_ids]
 
     def get_content_item_ids(self, org, tag_id, **kw):
@@ -158,7 +155,6 @@ class ImpactTagsComparisonCache(ComparisonCache):
             .join(Event)\
             .filter(Event.tags.any(Tag.id == tag_id))\
             .all()
-        db.session.remove()
         return [c[0] for c in content_items]
 
 
@@ -170,7 +166,7 @@ class ContentTypeComparisonCache(ComparisonCache):
         types = db.session.query(func.distinct(ContentItem.type))\
             .filter_by(org_id=org.id)\
             .all()
-        db.session.remove()
+
         return [t[0] for t in types]
 
     def get_content_item_ids(self, org, type, **kw):
@@ -178,5 +174,5 @@ class ContentTypeComparisonCache(ComparisonCache):
             .filter_by(org_id=org.id)\
             .filter_by(type=type)\
             .all()
-        db.session.remove()
+
         return [c[0] for c in content_items]
