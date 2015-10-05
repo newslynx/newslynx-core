@@ -117,15 +117,15 @@ class Comparison(object):
             for r in ResultIter(res):
                 if r:
                     yield r
-        db.session.remove()
 
     def execute(self):
         """
         Pooled execution.
         """
-        for results in self.pool.imap_unordered(self._execute_one, self.queries):
-            for r in results:
+        for query in self.queries:
+	    for r in self._execute_one(query):
                 yield r
+        db.session.remove()
 
 
 ## Comparison Query Objects

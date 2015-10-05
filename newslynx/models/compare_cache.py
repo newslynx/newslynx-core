@@ -19,7 +19,7 @@ from newslynx.models.cache import Cache
 
 class ComparisonCache(Cache):
     key_prefix = settings.COMPARISON_CACHE_PREFIX
-    tll = settings.COMPARISON_CACHE_TTL
+    ttl = settings.COMPARISON_CACHE_TTL
 
     def get_facets(self, org, **kw):
         raise NotImplemented
@@ -85,9 +85,9 @@ class ComparisonsCache(Cache):
             return cr.value
 
         comparsions = {}
-        pool = Pool(self.pool_size)
-        for comp in pool.imap_unordered(fx, types):
-            comparsions.update(comp)
+        #pool = Pool(self.pool_size)
+        for typ in types:
+            comparisons.update(fx(typ))
         return comparsions
 
 
@@ -147,7 +147,6 @@ class ImpactTagsComparisonCache(ComparisonCache):
             .with_entities(Tag.id)\
             .all()
         db.session.remove()
-        db.session.dispose()
         return [t[0] for t in tag_ids]
 
     def get_content_item_ids(self, org, tag_id, **kw):
@@ -160,7 +159,6 @@ class ImpactTagsComparisonCache(ComparisonCache):
             .filter(Event.tags.any(Tag.id == tag_id))\
             .all()
         db.session.remove()
-        db.session.dispose()
         return [c[0] for c in content_items]
 
 
@@ -173,7 +171,6 @@ class ContentTypeComparisonCache(ComparisonCache):
             .filter_by(org_id=org.id)\
             .all()
         db.session.remove()
-        db.session.dispose()
         return [t[0] for t in types]
 
     def get_content_item_ids(self, org, type, **kw):
@@ -182,5 +179,4 @@ class ContentTypeComparisonCache(ComparisonCache):
             .filter_by(type=type)\
             .all()
         db.session.remove()
-        db.session.dispose()
         return [c[0] for c in content_items]
