@@ -44,7 +44,6 @@ class ComparisonCache(Cache):
             if len(ids):
                 cc = ContentComparison(org, ids)
                 comparisons[facet] = list(cc.execute())
-        db.session.remove()
         return self.format_comparisons(comparisons)
 
 
