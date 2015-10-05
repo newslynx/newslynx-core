@@ -119,7 +119,6 @@ class SubjectTagsComparisonCache(ComparisonCache):
             .with_entities(Tag.id)\
             .all()
         db.session.remove()
-        db.session.dispose()
         return [t[0] for t in tag_ids]
 
     def get_content_item_ids(self, org, tag_id, **kw):
@@ -131,7 +130,6 @@ class SubjectTagsComparisonCache(ComparisonCache):
             .filter(content_items_tags.c.tag_id == tag_id)\
             .all()
         db.session.remove()
-        db.session.dispose()
         return [c[0] for c in content_items]
 
 
