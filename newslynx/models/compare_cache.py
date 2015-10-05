@@ -38,12 +38,14 @@ class ComparisonCache(Cache):
     # TODO: Pooled Exectution
     def work(self, org_id, **kw):
         org = db.session.query(Org).get(org_id)
+        metrics = org.content_metric_comparisons
         comparisons = {}
         for facet in self.get_facets(org, **kw):
             ids = self.get_content_item_ids(org, facet, **kw)
             if len(ids):
-                cc = ContentComparison(org, ids)
+                cc = ContentComparison(org, ids, metrics)
                 comparisons[facet] = list(cc.execute())
+        db.session.remove()
         return self.format_comparisons(comparisons)
 
 

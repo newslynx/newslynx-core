@@ -18,9 +18,8 @@ from .util import ResultIter
 class Comparison(object):
     table = None
     id_col = None
-    metrics_attr = None
 
-    def __init__(self, org, ids, **kw):
+    def __init__(self, org, ids, metrics, **kw):
         self.org = org
         if not isinstance(ids, list):
             ids = [ids]
@@ -30,8 +29,7 @@ class Comparison(object):
         self.rm_null = kw.get('rm_null', False)
         self.percentiles = kw.get(
             'percentiles', settings.COMPARISON_PERCENTILES)
-        if self.metrics_attr:
-            self.metrics = getattr(org, self.metrics_attr)
+        self.metrics = metrics
 
     @property
     def ids_array(self):
@@ -123,17 +121,16 @@ class Comparison(object):
         Pooled execution.
         """
         for query in self.queries:
-	    for r in self._execute_one(query):
+            for r in self._execute_one(query):
                 yield r
         db.session.remove()
 
 
-## Comparison Query Objects
+# Comparison Query Objects
 
 class ContentComparison(Comparison):
     table = "content_metric_summary"
     id_col = "content_item_id"
-    metrics_attr = "content_metric_comparisons"
 
 
 # class OrgComparison(Comparison):
