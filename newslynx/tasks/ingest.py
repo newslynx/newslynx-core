@@ -975,7 +975,6 @@ def content_summary(data, **kw):
         db.session.execute(q)
         db.session.commit()
         db.session.remove()
-        db.session.dispose()
     if queued:
         return True
     return objects
@@ -1068,7 +1067,6 @@ def org_summary(data, **kw):
         db.session.execute(q)
         db.session.commit()
         db.session.remove()
-        db.session.dispose()
     if queued:
         return True
     return objects
