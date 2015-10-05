@@ -84,7 +84,7 @@ class ComparisonsCache(Cache):
             cr = cobj.get(org_id)
             return cr.value
 
-        comparsions = {}
+        comparisons = {}
         #pool = Pool(self.pool_size)
         for typ in types:
             comparisons.update(fx(typ))
