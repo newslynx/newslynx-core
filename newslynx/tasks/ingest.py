@@ -197,7 +197,7 @@ def events(data, **kw):
         db.session.commit()
         db.session.close()
         db.session.remove()
-        db.engine.dispose()
+
 
     # STEP 4: LOOKUP TAG IDS
     def _tags():
@@ -241,7 +241,7 @@ def events(data, **kw):
         db.session.commit()
         db.session.close()
         db.session.remove()
-        db.engine.dispose()
+
 
     # STEP 5 Check for duplicate events.
 
@@ -268,7 +268,7 @@ def events(data, **kw):
         db.session.commit()
         db.session.close()
         db.session.remove()
-        db.engine.dispose()
+
 
      # STEP 6 Perform reconcilation steps in parallel.
     def _reconcile():
@@ -345,7 +345,6 @@ def events(data, **kw):
         ret = [e.to_dict() for e in events.values()]
     db.session.close()
     db.session.remove()
-    db.engine.dispose()
     return ret
 
 
@@ -458,7 +457,7 @@ def content(data, **kw):
         db.session.commit()
         db.session.close()
         db.session.remove()
-        db.engine.dispose()
+
 
     # Step 3: Upsert Authors
     def _authors():
@@ -546,7 +545,7 @@ def content(data, **kw):
                     meta[uniqkey][k].append(obj.id)
         db.session.close()
         db.session.remove()
-        db.engine.dispose()
+
 
     # Step 4: Detect Duplicates.
     def _dupes():
@@ -569,7 +568,7 @@ def content(data, **kw):
         db.session.commit()
         db.session.close()
         db.session.remove()
-        db.engine.dispose()
+
 
     # Step 5: Perform reconcilation in parallel.
     def _reconcile():
@@ -643,7 +642,6 @@ def content(data, **kw):
         ret = [c.to_dict() for c in cis.values()]
     db.session.close()
     db.session.remove()
-    db.engine.dispose()
     return ret
 
 
@@ -1025,7 +1023,7 @@ def org_timeseries(data, **kw):
         db.session.execute(q)
         db.session.commit()
         db.session.remove()
-        db.engine.dispose()
+
     if queued:
         return True
     return objects
