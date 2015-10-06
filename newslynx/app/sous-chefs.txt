@@ -4,3 +4,4 @@ https://github.com/newslynx/newslynx-sc-rss.git
 https://github.com/newslynx/newslynx-sc-reddit.git
 https://github.com/newslynx/newslynx-sc-google-analytics.git
 https://github.com/newslynx/newslynx-sc-facebook.git
+https://github.com/newslynx/newslynx-sc-homepage.git

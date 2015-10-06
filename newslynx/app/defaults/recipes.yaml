@@ -48,6 +48,14 @@
     schedule_by: minutes
     minutes: 30
 
+- sous_chef: homepage-to-content-timeseries
+  name: Time on Homepage for content items
+  slug: default-homepage-to-content-timeseries
+  status: uninitialized
+  options:
+    schedule_by: minutes
+    minutes: 60
+
 ## Events
 
 - sous_chef: twitter-search-content-item-links-to-event
