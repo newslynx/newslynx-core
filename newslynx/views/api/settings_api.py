@@ -3,7 +3,7 @@ from flask import Blueprint
 from newslynx.core import db
 from newslynx.models import Setting
 from newslynx.models.util import fetch_by_id_or_field
-from newslynx.lib.serialize import jsonify, json_to_obj
+from newslynx.lib.serialize import jsonify, json_to_obj, obj_to_json
 from newslynx.exc import RequestError, NotFoundError, ConflictError
 from newslynx.views.decorators import load_user, load_org
 from newslynx.views.util import (
@@ -143,7 +143,7 @@ def update_setting(user, org, level, name_id):
     if json_value:
         if isinstance(value, basestring):
             try:
-                json_to_obj(value)
+                obj_to_json(value)
             except:
                 raise RequestError(
                     "Setting '{}' with value '{}' was declared as a "
@@ -154,9 +154,6 @@ def update_setting(user, org, level, name_id):
     if name:
         s.name = name
 
-    if value:
-        s.value = value
-
     if json_value:
         if not isinstance(json_value, bool):
             if str(json_value).lower() in TRUE_VALUES:
@@ -164,7 +161,9 @@ def update_setting(user, org, level, name_id):
             else:
                 json_value = False
         s.json_value = json_value
-
+        s.value = obj_to_json(value)
+    else:
+       s.value = value
     db.session.add(s)
     db.session.commit()
 
