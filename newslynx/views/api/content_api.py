@@ -609,9 +609,10 @@ def update_content_item(user, org, content_item_id):
     try:
         db.session.add(c)
         db.session.commit()
+    
     except Exception as e:
         raise RequestError(
-            'There was a problem updated this Content Item. '
+            'There was a problem updating this Content Item. '
             'Here is the error: {}'
             .format(e.message))
     return jsonify(c)

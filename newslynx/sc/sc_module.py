@@ -201,5 +201,5 @@ def update_all(sous_chef_dir=settings.SOUS_CHEFS_DIR):
     """
     Update all sous chef modules.
     """
-    for local_path in os.listdir(sous_chef_dir):
+    for local_path in os.listdir(os.path.expand_user(sous_chef_dir)):
         update(local_path, sous_chef_dir)
