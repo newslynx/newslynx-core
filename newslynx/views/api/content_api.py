@@ -392,7 +392,7 @@ def search_content(user, org):
     validate_content_item_search_vector(kw['search_vector'])
 
     # base query
-    content_query = ContentItem.query.join(ContentMetricSummary)
+    content_query = ContentItem.query
 
     # apply filters
     content_query, event_ids = \
@@ -477,6 +477,7 @@ def search_content(user, org):
     pagination = \
         urls_for_pagination('content.search_content', total, **raw_kw)
 
+    print content_query
     # reformat entites as dictionary
     if kw['fields']:
         content = [dict(zip(kw['fields'], r)) for r in content]
