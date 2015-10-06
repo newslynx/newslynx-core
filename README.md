@@ -147,6 +147,7 @@ This repository contains a `Makefile` which provides access to the following com
 * [Command Line Interface](http://newslynx.readthedocs.org/en/latest/cli.html)
 * [Write your own Sous Chef](http://newslynx.readthedocs.org/en/latest/writing-sous-chefs.html)
 
+
 ## Application Structure
 
 
