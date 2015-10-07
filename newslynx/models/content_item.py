@@ -182,7 +182,6 @@ class ContentItem(db.Model):
         """
         return self.summary.metrics
 
-
     def to_dict(self, **kw):
         # incl_links = kw.get('incl_links', False)
         incl_body = kw.get('incl_body', False)

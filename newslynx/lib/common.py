@@ -1,3 +1,6 @@
+"""
+common utilities shared throughout lib
+"""
 
 from bs4 import BeautifulSoup
 
