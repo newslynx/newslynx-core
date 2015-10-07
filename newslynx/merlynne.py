@@ -15,6 +15,7 @@ from newslynx.exc import InternalServerError, MerlynneError
 from newslynx.lib.serialize import (
     obj_to_pickle, pickle_to_obj)
 from newslynx.sc import sc_exec
+from newslynx import notify
 
 
 log = logging.getLogger(__name__)
@@ -158,14 +159,24 @@ def run(sous_chef_path, recipe_id, kw_key, **kw):
 
             # notification
             tb = format_exc()
-            notify(recipe, tb)
+            error_notification(recipe, tb)
             return MerlynneError(tb)
 
         raise MerlynneError(format_exc())
 
 
-def notify(recipe, tb):
+def error_notification(recipe, tb):
     """
     Send a notification of a failed recipe.
     """
-    
+    msg = """
+    `{slug}` failed at `{last_run}` for organiation `{org_id}`.
+    Here's the traceback:
+    ```
+    {tb}
+    ```
+    """.format(tb=tb, **recipe.to_dict())
+
+    for m in settings.NOTIFY_METHODS:
+        method = notify.METHODS[m]
+        method.send(msg)

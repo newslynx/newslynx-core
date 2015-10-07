@@ -19,20 +19,23 @@ class Notification(object):
         raise NotImplemented('Must implement a dispatch method')
 
     def send(self, tb, **kw):
-        return self.dispatch(self.format(tb, **kw))
+        return self.dispatch(self.format(tb, **kw), **kw)
 
 
 class EmailNotificaton(Notification):
 
     server = Server()
 
-    def dispatch(self, msg):
+    def dispatch(self, msg, **kw):
         self.server.outbox.login()
         kw = {
-            'subject': "{} {}".format(settings.NOTIFY_EMAIL_SUBJECT_PREFIX, dates.now().isoformat()),
+            'subject': "{} <{}> {}".format(
+                settings.NOTIFY_EMAIL_SUBJECT_PREFIX, 
+                kw.get('subject', 'none'),
+                dates.now().isoformat()),
             'body': msg,
-            'to_': ",".join(settings.NOTIFY_EMAIL_RECIPIENTS),
-            'from_': settings.MAIL_USERNAME
+            'to_': kw.get('to_', ",".join(settings.NOTIFY_EMAIL_RECIPIENTS)),
+            'from_':  kw.get('from_', settings.MAIL_USERNAME)
         }
         self.server.outbox.send(**kw)
         self.server.outbox.logout()
@@ -40,13 +43,14 @@ class EmailNotificaton(Notification):
 
 class SlackNotification(Notification):
 
-    def dispatch(self, msg):
+    def dispatch(self, msg, **kw):
 
         payload = {
             "text": msg,
-            "channel": settings.NOTIFY_SLACK_CHANNEL,
-            "username": settings.NOTIFY_SLACK_USERNAME,
-            "icon_emoji": settings.NOTIFY_SLACK_EMOJI
+            "channel": kw.get('channel', settings.NOTIFY_SLACK_CHANNEL),
+            "username": kw.username('username', settings.NOTIFY_SLACK_USERNAME),
+            "icon_emoji": kw.get('icon_emoji', settings.NOTIFY_SLACK_EMOJI)
         }
-
         requests.post(settings.NOTIFY_SLACK_WEBHOOK, data=obj_to_json(payload))
+
+
