@@ -155,4 +155,17 @@ def run(sous_chef_path, recipe_id, kw_key, **kw):
             recipe.last_run = dates.now()
             db.session.add(recipe)
             db.session.commit()
-        return MerlynneError(format_exc())
+
+            # notification
+            tb = format_exc()
+            notify(recipe, tb)
+            return MerlynneError(tb)
+
+        raise MerlynneError(format_exc())
+
+
+def notify(recipe, tb):
+    """
+    Send a notification of a failed recipe.
+    """
+    
