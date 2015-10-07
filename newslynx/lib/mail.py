@@ -178,4 +178,3 @@ class Server(object):
     def __init__(self, **kw):
         self.inbox = Inbox(**kw)
         self.outbox = Outbox(**kw)
-
