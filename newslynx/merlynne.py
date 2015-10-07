@@ -170,7 +170,7 @@ def error_notification(recipe, tb):
     Send a notification of a failed recipe.
     """
     msg = """
-    Recipe with `{slug}` failed at `{last_run}` for organiation `{org_id}`.
+    **Recipe** with **slug** `{slug}` failed at `{last_run}` for organization `{org_id}`.
     Here's the traceback:
     ```
     {tb}
