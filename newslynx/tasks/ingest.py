@@ -86,8 +86,10 @@ def events(data, **kw):
     4. Lookup Tags
     5. Check for duplicates
     6. Perform last three tasks in parallel.
-    7. Upsert all events. Ignore events without links when the must_link flag is added.
-    8. Upsert all associations. Ignore events without ids because of step above.
+    7. Upsert all events. Ignore events without links 
+       when the must_link flag is added.
+    8. Upsert all associations. Ignore events 
+       without ids because of step above.
     """
 
     # parse kwargs.s
@@ -198,7 +200,6 @@ def events(data, **kw):
         db.session.close()
         db.session.remove()
 
-
     # STEP 4: LOOKUP TAG IDS
     def _tags():
         tag_query = """
@@ -242,7 +243,6 @@ def events(data, **kw):
         db.session.close()
         db.session.remove()
 
-
     # STEP 5 Check for duplicate events.
 
     def _dupes():
@@ -268,7 +268,6 @@ def events(data, **kw):
         db.session.commit()
         db.session.close()
         db.session.remove()
-
 
      # STEP 6 Perform reconcilation steps in parallel.
     def _reconcile():
@@ -458,7 +457,6 @@ def content(data, **kw):
         db.session.close()
         db.session.remove()
 
-
     # Step 3: Upsert Authors
     def _authors():
         author_query = """
@@ -546,7 +544,6 @@ def content(data, **kw):
         db.session.close()
         db.session.remove()
 
-
     # Step 4: Detect Duplicates.
     def _dupes():
         dupe_query = \
@@ -568,7 +565,6 @@ def content(data, **kw):
         db.session.commit()
         db.session.close()
         db.session.remove()
-
 
     # Step 5: Perform reconcilation in parallel.
     def _reconcile():
