@@ -137,9 +137,17 @@ class Outbox(object):
 
         # format message
         message = self._parse(**kw)
-        to = [message.get('To')]
-        if message.get('Cc') != '':
-            to += message.email['Cc'].split(',')
+
+        # parse recipients
+        to = message.get('To')
+        if not isinstance(to, list):
+            to = to.split(',')
+
+        cc = message.get('Cc')
+        if not isinstance('Cc', list):
+            cc = [c for c in cc.split(',') if c.strip()]
+
+        to += cc
 
         # send
         ret = self.connection.sendmail(
@@ -172,9 +180,11 @@ class Outbox(object):
 
 
 class Server(object):
+
     """
     unified wrapper.
     """
+
     def __init__(self, **kw):
         self.inbox = Inbox(**kw)
         self.outbox = Outbox(**kw)

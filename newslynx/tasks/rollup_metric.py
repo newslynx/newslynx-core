@@ -12,7 +12,7 @@ from newslynx.tasks.query_metric import QueryContentMetricTimeseries
 from newslynx.models import Org
 
 
-# short cuts 
+# short cuts
 def all(org, content_item_ids=[], num_hours=24):
     """
     Rollup all metrics.
@@ -29,6 +29,9 @@ def content_summary(org, content_item_ids=[], num_hours=24):
     """
     if not len(content_item_ids):
         content_item_ids = org.content_item_ids
+    if not len(content_item_ids):
+        # ignore organizations with content items.
+        return True
     content_summary_from_events(org, content_item_ids)
     content_summary_from_content_timeseries(org, content_item_ids, num_hours)
     return True
@@ -44,7 +47,8 @@ def org_timeseries(org):
 
 def org_summary(org):
     """
-    Rollup org timeseries => org summary & content summary => org summary
+    Rollup org timeseries => org summary 
+    & content summary => org summary
     """
     org_summary_from_content_summary(org)
     org_summary_from_org_timeseries(org)
