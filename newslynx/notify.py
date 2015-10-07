@@ -30,7 +30,7 @@ class EmailNotificaton(Notification):
         self.server.outbox.login()
         kw = {
             'subject': "{} <{}> {}".format(
-                settings.NOTIFY_EMAIL_SUBJECT_PREFIX, 
+                settings.NOTIFY_EMAIL_SUBJECT_PREFIX,
                 kw.get('subject', 'none'),
                 dates.now().isoformat()),
             'body': msg,
@@ -48,9 +48,13 @@ class SlackNotification(Notification):
         payload = {
             "text": msg,
             "channel": kw.get('channel', settings.NOTIFY_SLACK_CHANNEL),
-            "username": kw.username('username', settings.NOTIFY_SLACK_USERNAME),
+            "username": kw.get('username', settings.NOTIFY_SLACK_USERNAME),
             "icon_emoji": kw.get('icon_emoji', settings.NOTIFY_SLACK_EMOJI)
         }
         requests.post(settings.NOTIFY_SLACK_WEBHOOK, data=obj_to_json(payload))
 
-
+# lookup of config param to notification engine.
+METHODS = {
+    'slack': SlackNotification(),
+    'email': EmailNotificaton()
+}

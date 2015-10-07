@@ -170,7 +170,7 @@ def error_notification(recipe, tb):
     Send a notification of a failed recipe.
     """
     msg = """
-    `{slug}` failed at `{last_run}` for organiation `{org_id}`.
+    Recipe with `{slug}` failed at `{last_run}` for organiation `{org_id}`.
     Here's the traceback:
     ```
     {tb}
@@ -179,4 +179,4 @@ def error_notification(recipe, tb):
 
     for m in settings.NOTIFY_METHODS:
         method = notify.METHODS[m]
-        method.send(msg)
+        method.send(msg, subject="recipes")
