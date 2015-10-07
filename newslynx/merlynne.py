@@ -175,7 +175,9 @@ def error_notification(recipe, tb):
     ```
     {tb}
     ```
-    You can access this recipe via GET `/api/v1/recipes/{id}?org={org_id}&apikey=<super_user_apikey>`
+    You can access this recipe via 
+
+    *GET* `/api/v1/recipes/{id}?org={org_id}&apikey=<super_user_apikey>`
     """.format(tb=tb, **recipe.to_dict())
 
     for m in settings.NOTIFY_METHODS:
