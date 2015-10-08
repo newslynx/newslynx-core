@@ -1,6 +1,6 @@
 from time import time
 import logging
-from traceback import format_exc 
+from traceback import format_exc
 
 from flask import request
 from werkzeug.exceptions import HTTPException
@@ -17,6 +17,7 @@ from newslynx import settings
 
 
 log = logging.getLogger(__name__)
+
 
 @app.errorhandler(401)
 @app.errorhandler(403)

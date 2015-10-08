@@ -126,6 +126,8 @@ def _validate_input_and_value_types(sc):
     opts = sc.get('options', {})
     for k, v in opts.items():
 
+        # various edge cases 
+
         if not re_opt_name.match(k):
             raise SousChefSchemaError(
                 "Error validating: '{}' - Option '{}' for SousChef '{}' is invalid. "
@@ -204,7 +206,7 @@ def _validate_metrics_sous_chef(sc):
                   .format(re_opt_name.pattern)
             _raise_sous_chef_schema_error(sc, msg)
 
-        # TODO MORE checking logic.
+        # TODO MORE schema logic vis-a-vis computed metrics
 
 
 def _validate_sous_chef_json_schema(sc):
