@@ -59,6 +59,8 @@ def org_summary(org):
     return True
 
 
+# custom event rollup.
+
 def content_summary_from_events(org, content_item_ids=[]):
     """
     Count up impact tag categories + levels assigned to events
@@ -192,6 +194,8 @@ def content_summary_from_events(org, content_item_ids=[]):
     return True
 
 
+# configurable rollups.
+
 def content_summary_from_content_timeseries(org, content_item_ids=[], num_hours=24):
     """
     Rollup content-timseries metrics into summaries.
@@ -203,7 +207,7 @@ def content_summary_from_content_timeseries(org, content_item_ids=[], num_hours=
     # metrics.
     ts = QueryContentMetricTimeseries(org, content_item_ids, unit=None)
     ts.compute = False
-    metrics, ss = summary_select(org.content_timeseries_metric_rollups)
+    metrics, ss = _summary_select(org.content_timeseries_metric_rollups)
 
     qkw = {
         'select_statements': ss,
@@ -247,7 +251,7 @@ def org_timeseries_from_content_timeseries(org, content_item_ids=[], num_hours=2
                                               unit='hour', group_by_id=False)
     content_ts.compute = False
     # select statements.
-    metrics, ss = summary_select(org.timeseries_metric_rollups)
+    metrics, ss = _summary_select(org.timeseries_metric_rollups)
 
     qkw = {
         'org_id': org.id,
@@ -282,8 +286,8 @@ def org_summary_from_content_summary(org):
     Rollup content summary => org summary.
     """
 
-    metrics, js = json_select(org.summary_metric_rollups)
-    metrics, ss = summary_select(org.summary_metric_rollups)
+    metrics, js = _json_select(org.summary_metric_rollups)
+    metrics, ss = _summary_select(org.summary_metric_rollups)
 
     qkw = {
         'select_statements': ss,
@@ -322,7 +326,7 @@ def org_summary_from_org_timeseries(org):
     ts_query = QueryOrgMetricTimeseries(org, [org.id], unit=None)
     ts_query.computed = False
 
-    metrics, ss = summary_select(org.timeseries_to_summary_metric_rollups)
+    metrics, ss = _summary_select(org.timeseries_to_summary_metric_rollups)
 
     qkw = {
         'org_id': org.id,
@@ -347,7 +351,9 @@ def org_summary_from_org_timeseries(org):
     return True
 
 
-def json_select(metrics_to_select):
+# utils
+
+def _json_select(metrics_to_select):
     """
     Pull a json key out of the metrics column.
     """
@@ -361,7 +367,7 @@ def json_select(metrics_to_select):
     return ", ".join(metrics), ",\n".join(select_statements)
 
 
-def summary_select(metrics_to_select):
+def _summary_select(metrics_to_select):
     """
     generate aggregation statments + list of metric names.
     """
