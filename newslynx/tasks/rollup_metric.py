@@ -30,7 +30,7 @@ def content_summary(org, content_item_ids=[], num_hours=24):
     if not len(content_item_ids):
         content_item_ids = org.content_item_ids
     if not len(content_item_ids):
-        # ignore organizations with content items.
+        # ignore organizations without content items.
         return True
     content_summary_from_events(org, content_item_ids)
     content_summary_from_content_timeseries(org, content_item_ids, num_hours)
@@ -65,7 +65,7 @@ def content_summary_from_content_timeseries(org, content_item_ids=[], num_hours=
     # just use this to generate a giant timeseries select with computed
     # metrics.
     ts = QueryContentMetricTimeseries(org, content_item_ids, unit=None)
-
+    ts.compute = False
     metrics, ss = summary_select(org.content_timeseries_metric_rollups)
 
     qkw = {
@@ -96,6 +96,7 @@ def content_summary_from_content_timeseries(org, content_item_ids=[], num_hours=
                 ) t1
             ) t2
         """.format(**qkw)
+    print q
     db.session.execute(q)
     db.session.commit()
     return True
@@ -266,7 +267,6 @@ def org_timeseries_from_content_timeseries(org):
                 ) t1
             ) t2
     """.format(**qkw)
-    print q
     db.session.execute(q)
     db.session.commit()
     return True
@@ -316,6 +316,7 @@ def summary_select(metrics_to_select):
     select_statements = []
     metrics = []
     for n, m in metrics_to_select.items():
+        formula = m.get('formula')
         ss = summary_pattern.format(**m)
         select_statements.append(ss)
         metrics.append(n)
@@ -328,7 +329,7 @@ def computed_query(query, computed_metrics):
     """
     selects = []
     for n, m in computed_metrics.items():
-        formula = m.get('formula')
+        
         formula = formula.replace('{', '"').replace('}', '"')
         selects.append("{f} as {name}".format(f=formula, **m))
     if len(selects):
@@ -345,6 +346,6 @@ def computed_query(query, computed_metrics):
     """.format(selects, query)
 
 if __name__ == '__main__':
-    from newslynx.models import Org 
-    o = Org.query.get(1)
-    print org_timeseries_from_content_timeseries(o)
+    from newslynx.models import Org
+    o = Org.query.get(2)
+    print content_summary_from_content_timeseries(o, num_hours=43242)

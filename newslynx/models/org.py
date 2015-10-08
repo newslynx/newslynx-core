@@ -187,6 +187,7 @@ class Org(db.Model):
         """
         metrics = self.metrics\
             .filter(Metric.content_levels.contains(['timeseries', 'summary']))\
+            .filter(Metric.type != 'computed')\
             .filter(~Metric.faceted)\
             .all()
         return {m.name: m.to_dict() for m in metrics}
@@ -360,13 +361,15 @@ class Org(db.Model):
     @property
     def timeseries_metric_rollups(self):
         """
-        Content metrics that should be rolled-up from timeseries => summary.
+        Content metrics that should be rolled-up from content timeseries =>
+        org timeseries.
         Computed timeseries metrics can and should be summarized for ease of
         generating comparisons on these metrics.
         """
         metrics = self.metrics\
             .filter(Metric.org_levels.contains(['timeseries']))\
             .filter(Metric.content_levels.contains(['timeseries']))\
+            .filter(~Metric.type != 'computed')\
             .filter(~Metric.faceted)\
             .all()
         return {m.name: m.to_dict() for m in metrics}
