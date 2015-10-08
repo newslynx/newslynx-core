@@ -9,6 +9,7 @@ from newslynx.lib.serialize import jsonify
 from newslynx.views.util import request_data, url_for_job_status
 from newslynx.tasks import load
 from newslynx.tasks import rollup_metric
+from newslynx.tasks import compute_metric
 from newslynx.views.util import arg_int
 
 
@@ -98,6 +99,9 @@ def refresh_content_summary(user, org):
     # rollup timeseries => summary
     rollup_metric.content_summary(org, [], since)
 
+    # compute metrics
+    compute_metric.content_summary(org, [])
+
     # simple response
     return jsonify({'success': True})
 
@@ -110,6 +114,11 @@ def refresh_one_content_summary(user, org, content_item_id):
     Refresh content summary metrics
     """
     since = arg_int('since', 24)
-    rollup_metric.content_timeseries_to_summary(org, [content_item_id], since)
-    rollup_metric.event_tags_to_summary(org, [content_item_id])
+
+    # rollup timeseries => summary
+    rollup_metric.content_summary(org, [content_item_id], since)
+
+    # compute metrics
+    compute_metric.content_summary(org, ids=[content_item_id])
+
     return jsonify({'success': True})

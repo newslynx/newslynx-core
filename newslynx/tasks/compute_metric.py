@@ -19,7 +19,9 @@ def content_summary(org):
         'content_metric_summary',
         org.computed_content_summary_metrics,
         org.computable_content_summary_metrics,
-        extra_cols=['org_id', 'content_item_id']
+        extra_cols=['org_id', 'content_item_id'],
+        id_col='content_item_id',
+        ids=[]
     )
 
 
@@ -29,6 +31,7 @@ def org_summary(org):
     """
     return computed_query(
         org,
+        [],
         'org_metric_summary',
         org.computed_summary_metrics,
         org.computable_summary_metrics,
@@ -36,7 +39,9 @@ def org_summary(org):
     )
 
 
-def computed_query(org, table, computed_metrics, source_metrics, extra_cols=[]):
+def computed_query(org, table,
+                   computed_metrics, source_metrics, extra_cols=[],
+                   id_col=None, ids=[]):
     """
     Compute metrics and store them back.
     """
@@ -63,6 +68,12 @@ def computed_query(org, table, computed_metrics, source_metrics, extra_cols=[]):
     if not len(sources):
         return True
 
+    if not len(ids):
+        id_filter = ""
+    else:
+        id_filter = "AND {} not in ARRAY[{}]".format(
+            id_col, ",".join([str(i) for i in ids]))
+
     # query kwargs
     qkw = {
         'table': table,
@@ -70,7 +81,8 @@ def computed_query(org, table, computed_metrics, source_metrics, extra_cols=[]):
         'metrics': metrics,
         'computes': computes,
         'sources': sources,
-        'org_id': org.id
+        'org_id': org.id,
+        'id_filter': id_filter
     }
 
     q = \
@@ -88,7 +100,8 @@ def computed_query(org, table, computed_metrics, source_metrics, extra_cols=[]):
                     {extra_cols},
                     {sources}
                   FROM {table}
-                  WHERE org_id = {org_id}
+                  WHERE org_id = {org_id} 
+                  {id_filter}
                 ) t1
               ) t2
            ) t3
