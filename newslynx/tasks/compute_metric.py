@@ -10,7 +10,7 @@ def refresh_all(org):
     return True
 
 
-def content_summary(org):
+def content_summary(org, ids=[]):
     """
     Content summary computed metrics.
     """
@@ -31,7 +31,6 @@ def org_summary(org):
     """
     return computed_query(
         org,
-        [],
         'org_metric_summary',
         org.computed_summary_metrics,
         org.computable_summary_metrics,

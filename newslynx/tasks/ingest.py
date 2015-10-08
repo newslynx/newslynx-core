@@ -994,7 +994,7 @@ def org_timeseries(data, **kw):
         data = [data]
 
     for obj in data:
-
+        obj.pop('org_id')
         metrics = _prepare_metrics(obj, metrics_lookup)
         cmd_kwargs = {
             "org_id": org_id,
@@ -1041,7 +1041,7 @@ def org_summary(data, **kw):
         data = [data]
 
     for obj in data:
-
+        obj.pop('org_id')
         metrics = _prepare_metrics(obj, metrics_lookup)
         cmd_kwargs = {
             "org_id": org_id,

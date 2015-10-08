@@ -13,9 +13,7 @@ from newslynx.tasks import rollup_metric
 from newslynx.tasks import compute_metric
 from newslynx.models.util import fetch_by_id_or_field
 from newslynx.views.util import (
-    arg_bool, arg_str, localize,
-    url_for_job_status,  arg_list, arg_date, arg_int,
-    request_ts)
+    localize, url_for_job_status,  arg_int, request_ts)
 
 # blueprint
 bp = Blueprint('org_metrics', __name__)
@@ -23,7 +21,7 @@ bp = Blueprint('org_metrics', __name__)
 log = logging.getLogger(__name__)
 
 
-@bp.route('/api/v1/org/<org_id_slug>/summary', methods=['GET'])
+@bp.route('/api/v1/org/<int:org_id_slug>/summary', methods=['GET'])
 @load_user
 def get_org_summary(user, org_id_slug):
 
@@ -46,7 +44,7 @@ def get_org_summary(user, org_id_slug):
     return jsonify(org.summary_metrics)
 
 
-@bp.route('/api/v1/orgs/<org_id_slug>/summary', methods=['POST'])
+@bp.route('/api/v1/orgs/<int:org_id_slug>/summary', methods=['POST'])
 @load_user
 def create_org_metrics_summary(user, org_id_slug):
 
@@ -77,7 +75,7 @@ def create_org_metrics_summary(user, org_id_slug):
     return jsonify(ret)
 
 
-@bp.route('/api/v1/org/<org_id_slug>/timeseries', methods=['GET'])
+@bp.route('/api/v1/org/<int:org_id_slug>/timeseries', methods=['GET'])
 @load_user
 def get_org_timeseries(user, org_id_slug):
 
@@ -99,7 +97,7 @@ def get_org_timeseries(user, org_id_slug):
     return jsonify(list(q.execute()))
 
 
-@bp.route('/api/v1/orgs/<org_id_slug>/timeseries', methods=['POST'])
+@bp.route('/api/v1/orgs/<int:org_id_slug>/timeseries', methods=['POST'])
 @load_user
 def create_org_timeseries(user, org_id_slug):
 
@@ -131,7 +129,7 @@ def create_org_timeseries(user, org_id_slug):
     return jsonify(ret)
 
 
-@bp.route('/api/v1/orgs/<org_id_slug>/timeseries/bulk', methods=['POST'])
+@bp.route('/api/v1/orgs/<int:org_id_slug>/timeseries/bulk', methods=['POST'])
 @load_user
 def bulk_create_org_timeseries(user, org_id_slug):
 
@@ -160,7 +158,7 @@ def bulk_create_org_timeseries(user, org_id_slug):
     return jsonify(ret)
 
 
-@bp.route('/api/v1/org/<org_id_slug>/timeseries', methods=['PUT'])
+@bp.route('/api/v1/orgs/<int:org_id_slug>/timeseries', methods=['PUT'])
 @load_user
 def refresh_org_timeseries(user, org_id_slug):
     """
@@ -189,7 +187,7 @@ def refresh_org_timeseries(user, org_id_slug):
     return jsonify({'success': True})
 
 
-@bp.route('/api/v1/org/<org_id_slug>/summary', methods=['PUT'])
+@bp.route('/api/v1/orgs/<int:org_id_slug>/summary', methods=['PUT'])
 @load_user
 def refresh_org_summary(user, org_id_slug):
     """
