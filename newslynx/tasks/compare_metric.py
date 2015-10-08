@@ -12,7 +12,7 @@ from newslynx.util import gen_uuid
 from newslynx.core import db
 # from newslynx.models import Metric
 from newslynx.core import settings
-from .util import ResultIter
+from newslynx.tasks.util import ResultIter
 
 
 class Comparison(object):

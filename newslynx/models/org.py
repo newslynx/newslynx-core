@@ -179,6 +179,56 @@ class Org(db.Model):
         return [m[0] for m in metrics]
 
     @property
+    def computable_content_timeseries_metrics(self):
+        """
+        Metrics to compute on top of the content timeseries store.
+        """
+        metrics = self.metrics\
+            .filter(Metric.content_levels.contains(['timeseries']))\
+            .filter(Metric.type != 'computed')\
+            .filter(~Metric.faceted)\
+            .all()
+        return {m.name: m.to_dict() for m in metrics}
+
+    @property
+    def computable_content_timeseries_metric_names(self):
+        """
+        The names of metrics to compute on top of the content timeseries store.
+        """
+        metrics = self.metrics\
+            .filter(Metric.content_levels.contains(['timeseries']))\
+            .filter(Metric.type != 'computed')\
+            .filter(~Metric.faceted)\
+            .with_entities(Metric.name)\
+            .all()
+        return [m[0] for m in metrics]
+
+    @property
+    def computed_content_timeseries_metrics(self):
+        """
+        Metrics to compute on top of the content timeseries store.
+        """
+        metrics = self.metrics\
+            .filter(Metric.content_levels.contains(['timeseries']))\
+            .filter(Metric.type == 'computed')\
+            .filter(~Metric.faceted)\
+            .all()
+        return {m.name: m.to_dict() for m in metrics}
+
+    @property
+    def computed_content_timeseries_metric_names(self):
+        """
+        The names of metrics to compute on top of the content timeseries store.
+        """
+        metrics = self.metrics\
+            .filter(Metric.content_levels.contains(['timeseries']))\
+            .filter(Metric.type == 'computed')\
+            .filter(~Metric.faceted)\
+            .with_entities(Metric.name)\
+            .all()
+        return [m[0] for m in metrics]
+
+    @property
     def content_timeseries_metric_rollups(self):
         """
         Content metrics that should be rolled-up from timeseries => summary.
@@ -193,13 +243,17 @@ class Org(db.Model):
         return {m.name: m.to_dict() for m in metrics}
 
     @property
-    def computed_content_timeseries_metrics(self):
+    def timeseries_metric_rollups(self):
         """
-        Metrics to compute on top of the timeseries store.
+        Content metrics that should be rolled-up from content timeseries =>
+        org timeseries.
+        Computed timeseries metrics can and should be summarized for ease of
+        generating comparisons on these metrics.
         """
         metrics = self.metrics\
+            .filter(Metric.org_levels.contains(['timeseries']))\
             .filter(Metric.content_levels.contains(['timeseries']))\
-            .filter(Metric.type == 'computed')\
+            .filter(Metric.type != 'computed')\
             .filter(~Metric.faceted)\
             .all()
         return {m.name: m.to_dict() for m in metrics}
@@ -234,7 +288,6 @@ class Org(db.Model):
         """
         metrics = self.metrics\
             .filter(Metric.content_levels.contains(['summary']))\
-            .filter(~Metric.content_levels.contains(['timeseries']))\
             .filter(Metric.type == 'computed')\
             .filter(~Metric.faceted)\
             .all()
@@ -247,7 +300,6 @@ class Org(db.Model):
         """
         metrics = self.metrics\
             .filter(Metric.content_levels.contains(['summary']))\
-            .filter(~Metric.content_levels.contains(['timeseries']))\
             .filter(Metric.type == 'computed')\
             .filter(~Metric.faceted)\
             .with_entities(Metric.name)\
@@ -327,6 +379,17 @@ class Org(db.Model):
         return [m[0] for m in metrics]
 
     @property
+    def content_faceted_metrics(self):
+        """
+        faceted content metrics.
+        """
+        metrics = self.metrics\
+            .filter(Metric.faceted)\
+            .filter(Metric.content_levels.contains(['summary']))\
+            .all()
+        return {m.name: m.to_dict() for m in metrics}
+
+    @property
     def content_faceted_metric_names(self):
         """
         The names of faceted content metrics.
@@ -337,6 +400,20 @@ class Org(db.Model):
             .with_entities(Metric.name)\
             .all()
         return [m[0] for m in metrics]
+
+    @property
+    def summary_metric_rollups(self):
+        """
+        Content summary metrics that should be rolled-up
+        from summary =>  org summary.
+        """
+        metrics = self.metrics\
+            .filter(Metric.org_levels.contains(['summary']))\
+            .filter(Metric.content_levels.contains(['summary']))\
+            .filter(Metric.type != 'computed')\
+            .filter(~Metric.faceted)\
+            .all()
+        return {m.name: m.to_dict() for m in metrics}
 
     ## ORG TIMESERIES METRICS
 
@@ -349,43 +426,7 @@ class Org(db.Model):
         Computed metrics should be rolled-up to the org timeseries.
         """
         metrics = self.metrics\
-            .filter(
-                or_(Metric.org_levels.contains(['timeseries']),
-                    and_(Metric.content_levels.contains(['timeseries']),
-                         Metric.org_levels.contains(['timeseries']))
-                    ))\
-            .filter(~Metric.faceted)\
-            .all()
-        return {m.name: m.to_dict() for m in metrics}
-
-    @property
-    def timeseries_metric_rollups(self):
-        """
-        Content metrics that should be rolled-up from content timeseries =>
-        org timeseries.
-        Computed timeseries metrics can and should be summarized for ease of
-        generating comparisons on these metrics.
-        """
-        metrics = self.metrics\
             .filter(Metric.org_levels.contains(['timeseries']))\
-            .filter(Metric.content_levels.contains(['timeseries']))\
-            .filter(Metric.type != 'computed')\
-            .filter(~Metric.faceted)\
-            .all()
-        return {m.name: m.to_dict() for m in metrics}
-
-    @property
-    def timeseries_to_summary_metric_rollups(self):
-        """
-        Content metrics that should be rolled-up from content timeseries =>
-        org timeseries.
-        Computed timeseries metrics can and should be summarized for ease of
-        generating comparisons on these metrics.
-        """
-        metrics = self.metrics\
-            .filter(Metric.org_levels.contains(['timeseries']))\
-            .filter(Metric.org_levels.contains(['summary']))\
-            .filter(Metric.type != 'computed')\
             .filter(~Metric.faceted)\
             .all()
         return {m.name: m.to_dict() for m in metrics}
@@ -414,7 +455,6 @@ class Org(db.Model):
         """
         metrics = self.metrics\
             .filter(Metric.org_levels.contains(['timeseries']))\
-            .filter(~Metric.content_levels.contains(['timeseries']))\
             .filter(Metric.type == 'computed')\
             .all()
         return {m.name: m.to_dict() for m in metrics}
@@ -426,7 +466,6 @@ class Org(db.Model):
         """
         metrics = self.metrics\
             .filter(Metric.org_levels.contains(['timeseries']))\
-            .filter(~Metric.content_levels.contains(['timeseries']))\
             .filter(Metric.type == 'computed')\
             .with_entities(Metric.name)\
             .all()
@@ -437,14 +476,43 @@ class Org(db.Model):
         """
         Metrics which can be used in computed summary metrics.
         """
-        return self.timeseries_metrics
+        metrics = self.metrics\
+            .filter(Metric.org_levels.contains(['timeseries']))\
+            .filter(Metric.type != 'computed')\
+            .filter(~Metric.faceted)\
+            .all()
+        return {m.name: m.to_dict() for m in metrics}
 
     @property
     def computable_timeseries_metrics_names(self):
         """
         The names of metrics which can be used in computed summary metrics.
         """
-        return self.timeseries_metric_names
+        metrics = self.metrics\
+            .filter(Metric.org_levels.contains(['timeseries']))\
+            .filter(Metric.type != 'computed')\
+            .filter(~Metric.faceted)\
+            .with_entities(Metric.name)\
+            .all()
+        return [m[0] for m in metrics]
+
+    @property
+    def timeseries_to_summary_metric_rollups(self):
+        """
+        Content metrics that should be rolled-up from content timeseries =>
+        org timeseries.
+        Computed timeseries metrics can and should be summarized for ease of
+        generating comparisons on these metrics.
+        """
+        metrics = self.metrics\
+            .filter(Metric.org_levels.contains(['timeseries']))\
+            .filter(Metric.org_levels.contains(['summary']))\
+            .filter(Metric.type != 'computed')\
+            .filter(~Metric.faceted)\
+            .all()
+        return {m.name: m.to_dict() for m in metrics}
+
+    # ORG SUMMARY
 
     @property
     def summary_metrics(self):
@@ -462,29 +530,59 @@ class Org(db.Model):
         Metrics which can exist in the org summary store.
         """
         metrics = self.metrics\
-            .filter(
-                or_(Metric.org_levels.contains(['summary']),
-                    and_(Metric.content_levels.contains(['summary']),
-                         Metric.org_levels.contains(['summary']))
-                    ))\
+            .filter(Metric.org_levels.contains(['summary']))\
             .filter(~Metric.faceted)\
             .with_entities(Metric.name)\
             .all()
         return [m[0] for m in metrics]
 
     @property
-    def summary_metric_rollups(self):
+    def computed_summary_metrics(self):
         """
-        Content summary metrics that should be rolled-up
-        from summary =>  org summary.
+        Org-specific computed timeseries metrics.
         """
         metrics = self.metrics\
             .filter(Metric.org_levels.contains(['summary']))\
-            .filter(Metric.content_levels.contains(['summary']))\
+            .filter(Metric.type == 'computed')\
+            .all()
+        return {m.name: m.to_dict() for m in metrics}
+
+    @property
+    def computed_summary_metric_names(self):
+        """
+        The names of metrics which can be used in computed summary metrics.
+        """
+        metrics = self.metrics\
+            .filter(Metric.org_levels.contains(['summary']))\
+            .filter(Metric.type == 'computed')\
+            .with_entities(Metric.name)\
+            .all()
+        return [m[0] for m in metrics]
+
+    @property
+    def computable_summary_metrics(self):
+        """
+        Metrics which can be used in computed summary metrics.
+        """
+        metrics = self.metrics\
+            .filter(Metric.org_levels.contains(['summary']))\
             .filter(Metric.type != 'computed')\
             .filter(~Metric.faceted)\
             .all()
         return {m.name: m.to_dict() for m in metrics}
+
+    @property
+    def computable_summary_metric_names(self):
+        """
+        The names of metrics which can be used in computed summary metrics.
+        """
+        metrics = self.metrics\
+            .filter(Metric.org_levels.contains(['summary']))\
+            .filter(Metric.type != 'computed')\
+            .filter(~Metric.faceted)\
+            .with_entities(Metric.name)\
+            .all()
+        return [m[0] for m in metrics]
 
     def to_dict(self, **kw):
 

@@ -16,12 +16,12 @@ from newslynx.models import Org
 
 
 # short cuts
-def refresh_all(org, content_item_ids=[], num_hours=24):
+def rollup(org, content_item_ids=[], num_hours=24):
     """
     Rollup all metrics.
     """
     content_summary(org, content_item_ids, num_hours)
-    org_timeseries(org)
+    org_timeseries(org, content_item_ids, num_hours)
     org_summary(org)
     db.session.remove()
     return True
@@ -41,11 +41,11 @@ def content_summary(org, content_item_ids=[], num_hours=24):
     return True
 
 
-def org_timeseries(org):
+def org_timeseries(org, content_item_ids=[], num_hours=24):
     """
     Rollup content timeseries => org timeseries.
     """
-    org_timeseries_from_content_timeseries(org)
+    org_timeseries_from_content_timeseries(org, content_item_ids, num_hours)
     return True
 
 
@@ -379,4 +379,3 @@ def _summary_select(metrics_to_select):
         select_statements.append(ss)
         metrics.append(n)
     return ", ".join(metrics), ",\n".join(select_statements)
-
