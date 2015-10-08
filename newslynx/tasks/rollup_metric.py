@@ -20,7 +20,7 @@ def refresh_all(org, content_item_ids=[], num_hours=24):
     """
     Rollup all metrics.
     """
-    # content_summary(org, content_item_ids, num_hours)
+    content_summary(org, content_item_ids, num_hours)
     org_timeseries(org)
     org_summary(org)
     db.session.remove()
