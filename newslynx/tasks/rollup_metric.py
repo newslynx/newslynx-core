@@ -54,8 +54,8 @@ def org_summary(org):
     Rollup org timeseries => org summary
     & content summary => org summary
     """
-    org_summary_from_content_summary(org)
     org_summary_from_org_timeseries(org)
+    org_summary_from_content_summary(org)
     return True
 
 
@@ -75,7 +75,7 @@ def content_summary_from_events(org, content_item_ids=[]):
     case_statements = []
 
     case_pattern = """
-    sum(CASE WHEN {type} = '{value}'
+        sum(CASE WHEN {type} = '{value}'
              THEN 1
              ELSE 0
         END) AS {name}"""
