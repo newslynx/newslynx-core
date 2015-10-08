@@ -35,15 +35,14 @@ def load(fp):
     """
     try:
         sc = yaml_stream_to_obj(open(fp))
-        incl = {}
-        incl_fp = sc.get('includes')
-        if len(sc.get('includes', [])):
-            for incl_fp in sc.get('includes'):
-                if not incl_fp.endswith('.yaml'):
-                    incl_fp += ".yaml"
-                incl_fp = os.path.join(os.path.dirname(fp), incl_fp)
-                incl = yaml_stream_to_obj(open(incl_fp))
-                sc = update_nested_dict(sc, incl, overwrite=True)
+        # update with includes.
+        for incl_fp in sc.get('includes', []):
+            if not incl_fp.endswith('.yaml'):
+                incl_fp += ".yaml"
+            incl_fp = os.path.join(os.path.dirname(fp), incl_fp)
+            incl = yaml_stream_to_obj(open(incl_fp))
+            sc = update_nested_dict(sc, incl, overwrite=True)
+        # validate
         return validate(sc, fp)
     except:
         msg = "{}\n{}".format(format_exc(), "failed on file {}".format(fp))
@@ -87,7 +86,7 @@ def validate(sc, fp):
 
         # hack
         if not sc.get('creates', None):
-            sc['creates']  = 'null'
+            sc['creates'] = 'null'
 
         # if everything is kosher, merge the sous-chef options
         # with the defaults
