@@ -1,6 +1,5 @@
 import logging
 import copy
-from datetime import timedelta
 
 from sqlalchemy import distinct
 from flask import Blueprint
@@ -12,7 +11,6 @@ from newslynx.models import ContentItem
 from newslynx.lib.serialize import jsonify
 from newslynx.views.util import request_data, url_for_job_status
 from newslynx.tasks import load
-from newslynx.lib import dates
 from newslynx.tasks.query_metric import QueryContentMetricTimeseries
 from newslynx.models.relations import (
     content_items_events,
@@ -20,12 +18,6 @@ from newslynx.models.relations import (
     content_items_authors,
     events_tags
 )
-
-from newslynx.settings import (
-    METRICS_CONTENT_LIST_TIMESERIES_DAYS,
-    METRICS_CONTENT_GET_TIMESERIES_DAYS
-)
-
 from newslynx.views.util import (
     arg_bool, arg_str, validate_ts_unit, arg_list,
     arg_date, arg_int
@@ -219,11 +211,9 @@ def list_content_timeseries(user, org):
     # execute the query.
     kw = request_ts(
         unit='day',
-        group_by_id=True,
-        after=dates.now() - timedelta(METRICS_CONTENT_LIST_TIMESERIES_DAYS)
+        group_by_id=True
     )
     q = QueryContentMetricTimeseries(org,  cids, **kw)
-    # print q.query
     return jsonify(list(q.execute()))
 
 
@@ -243,11 +233,6 @@ def get_content_timeseries(user, org, content_item_id):
         raise NotFoundError(
             'A ContentItem with ID {} does not exist'
             .format(content_item_id))
-
-    kw = request_ts(
-        after=dates.now() - timedelta(METRICS_CONTENT_GET_TIMESERIES_DAYS)
-    )
-
     q = QueryContentMetricTimeseries(org, [content_item_id], **kw)
     return jsonify(list(q.execute()))
 

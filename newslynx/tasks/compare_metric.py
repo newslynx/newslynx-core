@@ -1,16 +1,8 @@
 """
 This module exists for generating comparison queries.
 """
-import gevent
-import gevent.monkey
-gevent.monkey.patch_all()
-from gevent.pool import Pool
-
-from collections import defaultdict
-
 from newslynx.util import gen_uuid
 from newslynx.core import db
-# from newslynx.models import Metric
 from newslynx.core import settings
 from newslynx.tasks.util import ResultIter
 
@@ -25,7 +17,6 @@ class Comparison(object):
             ids = [ids]
         self.ids = ids
         self.bulk_size = kw.get('bulk_size', 1000)
-        self.pool = Pool(kw.get('pool_size', 20))
         self.rm_null = kw.get('rm_null', False)
         self.percentiles = kw.get(
             'percentiles', settings.COMPARISON_PERCENTILES)
