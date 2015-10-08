@@ -1,6 +1,15 @@
 from newslynx.core import db
 
 
+def refresh_all(org):
+    """
+    Shortcut.
+    """
+    content_summary(org)
+    org_summary(org)
+    return True
+
+
 def content_summary(org):
     """
     Content summary computed metrics.
@@ -48,7 +57,7 @@ def computed_query(org, table, computed_metrics, source_metrics, extra_cols=[]):
         return True
 
     # grab sources
-    _, sources = _json_select(source_metrics)
+    sources = _json_select(source_metrics)
 
     # no need to continue
     if not len(sources):
@@ -84,8 +93,9 @@ def computed_query(org, table, computed_metrics, source_metrics, extra_cols=[]):
               ) t2
            ) t3
     """.format(**qkw)
-    print q
-
+    db.session.execute(q)
+    db.session.commit()
+    return True
 
 
 def _json_select(metrics_to_select):
@@ -94,12 +104,10 @@ def _json_select(metrics_to_select):
     """
     s = "(metrics ->> '{name}')::text::numeric as {name}"
     select_statements = []
-    metrics = []
     for n, m in metrics_to_select.items():
         ss = s.format(**m)
         select_statements.append(ss)
-        metrics.append(n)
-    return ", ".join(metrics), ",\n".join(select_statements)
+    return ",\n".join(select_statements)
 
 if __name__ == '__main__':
     from newslynx.models import Org
