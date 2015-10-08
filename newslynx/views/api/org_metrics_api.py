@@ -1,6 +1,6 @@
 import logging
 
-from flask import Blueprint, request
+from flask import Blueprint
 
 from newslynx.views.decorators import load_user
 from newslynx.exc import NotFoundError, ForbiddenError
@@ -9,10 +9,13 @@ from newslynx.lib.serialize import jsonify
 from newslynx.views.util import request_data
 from newslynx.tasks import load
 from newslynx.tasks.query_metric import QueryOrgMetricTimeseries
+from newslynx.tasks import rollup_metric
+from newslynx.tasks import compute_metric
 from newslynx.models.util import fetch_by_id_or_field
 from newslynx.views.util import (
-    arg_bool, arg_str, validate_ts_unit, localize,
-    url_for_job_status,  arg_list, arg_date, arg_int)
+    arg_bool, arg_str, localize,
+    url_for_job_status,  arg_list, arg_date, arg_int,
+    request_ts)
 
 # blueprint
 bp = Blueprint('org_metrics', __name__)
@@ -91,29 +94,7 @@ def get_org_timeseries(user, org_id_slug):
         raise ForbiddenError(
             'You are not allowed to access this Org')
 
-    # todo: validate which metrics you can select.
-
-    # select / exclude
-    select, exclude = arg_list(
-        'select', typ=str, exclusions=True, default=['*'])
-    if '*' in select:
-        exclude = []
-        select = "*"
-
-    kw = dict(
-        unit=arg_str('unit', default='hour'),
-        sparse=arg_bool('sparse', default=True),
-        sig_digits=arg_int('sig_digits', default=2),
-        select=select,
-        exclude=exclude,
-        group_by_id=arg_bool('group_by_id', default=True),
-        rm_nulls=arg_bool('rm_nulls', default=False),
-        time_since_start=arg_bool('time_since_start', default=False),
-        transform=arg_str('transform', default=None),
-        before=arg_date('before', default=None),
-        after=arg_date('after', default=None)
-    )
-
+    kw = request_ts()
     q = QueryOrgMetricTimeseries(org, [org.id], **kw)
     return jsonify(list(q.execute()))
 
@@ -177,3 +158,61 @@ def bulk_create_org_timeseries(user, org_id_slug):
     )
     ret = url_for_job_status(apikey=user.apikey, job_id=job_id, queue='bulk')
     return jsonify(ret)
+
+
+@bp.route('/api/v1/org/<org_id_slug>/timeseries', methods=['PUT'])
+@load_user
+def refresh_org_timeseries(user, org_id_slug):
+    """
+    Refresh content summary metrics
+    """
+    # fetch org
+    org = fetch_by_id_or_field(Org, 'slug', org_id_slug)
+
+    # if it still doesn't exist, raise an error.
+    if not org:
+        raise NotFoundError(
+            'This Org does not exist.')
+
+    # ensure the active user can edit this Org
+    if user.id not in org.user_ids:
+        raise ForbiddenError(
+            'You are not allowed to access this Org')
+
+    # how many hours since last update should we refresh?
+    since = arg_int('since', 24)
+
+    # rollup timeseries => summary
+    rollup_metric.org_timeseries(org, [], since)
+
+    # simple response
+    return jsonify({'success': True})
+
+
+@bp.route('/api/v1/org/<org_id_slug>/summary', methods=['PUT'])
+@load_user
+def refresh_org_summary(user, org_id_slug):
+    """
+    Refresh content summary metrics
+    """
+    # fetch org
+    org = fetch_by_id_or_field(Org, 'slug', org_id_slug)
+
+    # if it still doesn't exist, raise an error.
+    if not org:
+        raise NotFoundError(
+            'This Org does not exist.')
+
+    # ensure the active user can edit this Org
+    if user.id not in org.user_ids:
+        raise ForbiddenError(
+            'You are not allowed to access this Org')
+
+    # rollup timeseries => summary
+    rollup_metric.org_summary(org)
+
+    # compute metrics
+    compute_metric.org_summary(org)
+
+    # simple response
+    return jsonify({'success': True})

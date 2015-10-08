@@ -565,6 +565,50 @@ def validate_metric_aggregations(values):
             .format(', '.join(bad_values), msg, ", ".join(METRIC_AGGREGATIONS)))
 
 
+# helpers form timeseries.
+
+def request_ts(**d):
+    """
+    A helper for parsing timeseries query strings.
+    """
+    # set defaults
+    d.setdefault('unit', 'hour')
+    d.setdefault('sparse', True)
+    d.setdefault('sig_digits', 2)
+    d.setdefault('group_by_id', True)
+    d.setdefault('select', ['*'])
+    d.setdefault('time_since_start', False)
+    d.setdefault('rm_nulls', False)
+    d.setdefault('transform', None)
+    d.setdefault('before', None)
+    d.setdefault('after', None)
+
+    # select / exclude
+    select, exclude = arg_list(
+        'select', typ=str, exclusions=True, default=d['select'])
+    if '*' in select:
+        exclude = []
+        select = "*"
+
+    # parse query kwargs.
+    kw = dict(
+        unit=arg_str('unit', default=d['unit']),
+        sparse=arg_bool('sparse', default=d['sparse']),
+        sig_digits=arg_int('sig_digits', default=d['sig_digits']),
+        group_by_id=arg_bool('group_by_id', default=d['group_by_id']),
+        select=select,
+        exclude=exclude,
+        rm_nulls=arg_bool('rm_nulls', default=d['rm_nulls']),
+        time_since_start=arg_bool(
+            'time_since_start', default=d['time_since_start']),
+        transform=arg_str('transform', default=d['transform']),
+        before=arg_date('before', default=d['before']),
+        after=arg_date('after', default=d['after'])
+    )
+    kw['unit'] = validate_ts_unit(kw['unit'])
+    return kw
+
+
 # Pagination
 
 def urls_for_pagination(handler, total_results, **kw):

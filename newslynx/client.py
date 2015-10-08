@@ -305,12 +305,6 @@ class Orgs(BaseClient):
                 'You must pass in the \'user\' id or email as the second argument.')
         return self._request('PUT', url, params=kw)
 
-    # def update_user(self, id=None, user_id=None, **kw):
-    #     """
-    #     mirrors add_user
-    #     """
-    #     return self.add_user(id=id, user_id=user_id, **kw)
-
     def remove_user(self, id=None, user_id=None, **kw):
         """
         Remove an existing user from an organization.
@@ -339,6 +333,14 @@ class Orgs(BaseClient):
         url = self._format_url('orgs', org, 'timeseries')
         return self._request('POST', url, params=params, data=kw)
 
+    def refresh_timeseries(self, id=None, **kw):
+        """
+        Bulk create summary metric(s) for content items.
+        """
+        org = self._check_org(id)
+        url = self._format_url('orgs', org, 'timeseries')
+        return self._request('PUT', url, params=kw)
+
     def bulk_create_timeseries(self, id=None, **kw):
         """
         Bulk create timeseries metric(s) for content items.
@@ -365,6 +367,14 @@ class Orgs(BaseClient):
         kw, params = self._split_auth_params_from_data(kw)
         url = self._format_url('orgs', org, 'summary')
         return self._request('POST', url, params=params, data=kw)
+
+    def refresh_summary(self, id=None, **kw):
+        """
+        Bulk create summary metric(s) for content items.
+        """
+        org = self._check_org(id)
+        url = self._format_url('orgs', org, 'summary')
+        return self._request('PUT', url, params=kw)
 
     def simple_content(self, id=None, **kw):
         """

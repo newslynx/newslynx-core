@@ -100,7 +100,7 @@ def computed_query(org, table,
                     {extra_cols},
                     {sources}
                   FROM {table}
-                  WHERE org_id = {org_id} 
+                  WHERE org_id = {org_id}
                   {id_filter}
                 ) t1
               ) t2
@@ -121,8 +121,3 @@ def _json_select(metrics_to_select):
         ss = s.format(**m)
         select_statements.append(ss)
     return ",\n".join(select_statements)
-
-if __name__ == '__main__':
-    from newslynx.models import Org
-    org = Org.query.get(1)
-    org_summary(org)
