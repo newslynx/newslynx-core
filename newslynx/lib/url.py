@@ -101,7 +101,7 @@ def prepare(url, source=None, canonicalize=True, expand=True, keep_params=KEEP_P
 
     # check for missing scheme
     if not get_scheme(url):
-        url = "http://{}".format(url)
+        url = "http://" + url
 
     # check short urls
     if expand:
@@ -196,7 +196,7 @@ def get_domain(url, **kw):
 
     # check for missing scheme
     if not get_scheme(url):
-        url = "http://{}".format(url)
+        url = "http://" + url
 
     domain = urlparse(url, **kw).netloc
     domain = re_www.sub('', domain)
@@ -237,7 +237,7 @@ def get_path(url, **kw):
 
     # check for missing scheme
     if not get_scheme(url):
-        url = "http://{}".format(url)
+        url = "http://" + url
 
     return urlparse(url, **kw).path
 
@@ -251,7 +251,7 @@ def get_slug(url):
 
     # check for missing scheme
     if not get_scheme(url):
-        url = "http://{}".format(url)
+        url = "http://" + url
 
     url = get_path(url.decode('utf-8', 'ignore'))
     url = re_html.sub('', url).strip().lower()
@@ -275,7 +275,7 @@ def get_hash(url):
 
     # check for missing scheme
     if not get_scheme(url):
-        url = "http://{}".format(url)
+        url = "http://" + url
 
     url = re_http.sub('', url)
     url = re_www.sub('', url)
@@ -292,7 +292,7 @@ def get_path_hash(url, **kw):
 
     # check for missing scheme
     if not get_scheme(url):
-        url = "http://{}".format(url)
+        url = "http://" + url
 
     url = get_path(url, **kw)
     url = re_html.sub('', url)
@@ -308,7 +308,7 @@ def get_query_string(url, **kw):
 
     # check for missing scheme
     if not get_scheme(url):
-        url = "http://{}".format(url)
+        url = "http://" + url
 
     return urlparse(url, **kw).query
 
@@ -325,7 +325,7 @@ def get_filetype(url, **kw):
 
     # check for missing scheme
     if not get_scheme(url):
-        url = "http://{}".format(url)
+        url = "http://" + url
 
     path = get_path(url, **kw)
     # Eliminate the trailing '/', we are extracting the file
