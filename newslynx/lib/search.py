@@ -170,8 +170,8 @@ class SearchString(object):
 
         for t in text:
 
-            raw = copy(t)
-            t = self._process_text(t, **kw)
+            raw = self._prepare_text(t, **kw)
+            t = self._process_text(raw, **kw)
             tests = []
 
             for term in self.terms:
@@ -198,7 +198,7 @@ class SearchString(object):
         """
         if term in text:
             return True
-        elif term in raw.lower():
+        elif term in raw:
             return True
         return False
 
@@ -223,13 +223,16 @@ class SearchString(object):
             return True
         return False
 
+    def _prepare_text(self, text, **kw):
+        """
+        unidecode + lowercase
+        """
+        return unicode(unidecode(text.lower().decode('utf-8')), errors='ignore')
+
     def _process_text(self, text, **kw):
         """
         Preprocess text.
         """
-        # always lower case + unidecode
-        text = unicode(
-            unidecode(text.lower().decode('utf-8')), errors='ignore')
 
         # optionally remove punctuation
         if kw.get('rm_punct', True):
