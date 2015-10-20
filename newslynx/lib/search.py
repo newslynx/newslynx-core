@@ -169,7 +169,6 @@ class SearchString(object):
             text = [text]
 
         for t in text:
-
             raw = self._prepare_text(t, **kw)
             t = self._process_text(raw, **kw)
             tests = []
