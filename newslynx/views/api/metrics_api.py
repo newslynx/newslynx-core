@@ -38,7 +38,7 @@ def list_metrics(user, org):
     computed = arg_bool('computed', default=None)
 
     # base query
-    metric_query = Metric.query.join(Recipe).join(SousChef).filter_by(org_id == org.id)
+    metric_query = Metric.query.join(Recipe).join(SousChef).filter(Metric.org_id == org.id)
 
     # validate sort fields are part of Recipe object.
     if sort_field:
